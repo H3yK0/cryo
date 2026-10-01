@@ -1,0 +1,34 @@
+Cryo is a simple yet complete personal finance app. It tracks income, expenses, credit cards, investments and savings goals, and shows everything in one clear overview.
+
+<b>Log money the way you talk</b>
+Type or say a phrase like "almoço 32,50 no débito" (lunch 32.50 on debit) or "tv 1200 em 10x no cartão" (TV 1200 in 10 installments on the card). Cryo understands the amount, category, account, date and even installments. You just check and save. It also learns from your corrections.
+
+<b>Features</b>
+<ul>
+<li>Overview: account balances, net worth, and what came in and went out this month</li>
+<li>End-of-month forecast: how much should be left at the current pace, and a daily spending allowance</li>
+<li>Spending heatmap calendar: each day is colored by how much you spent</li>
+<li>Money flow chart: where your money came from and where it went</li>
+<li>Credit cards: statements, available limit and installment purchases</li>
+<li>Recurring bills and income, with due-date reminders</li>
+<li>Budgets per category, with alerts at 80% and when exceeded</li>
+<li>Savings goals that tell you how much to save per month</li>
+<li>Investments: contributions, withdrawals and returns</li>
+<li>Transfers between accounts</li>
+</ul>
+
+<b>Real privacy</b>
+<ul>
+<li>Your data stays on your phone. The app has no internet permission</li>
+<li>No account, no ads, no tracking</li>
+<li>Lock with fingerprint, face or your device PIN</li>
+<li>Option to hide amounts on screen</li>
+<li>File backup and spreadsheet (CSV) export</li>
+</ul>
+
+<b>Material You design</b>
+Colors follow your wallpaper (Android 12+), with light and dark themes.
+
+Voice entry uses the speech recognizer installed on your device. Typing the phrase always works.
+
+The app is currently available in Brazilian Portuguese only, with amounts in Brazilian reais (R$).

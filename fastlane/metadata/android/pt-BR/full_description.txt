@@ -1,0 +1,34 @@
+Cryo é um app de organização financeira simples de usar e completo. Ele registra entradas, saídas, cartões, investimentos e metas, e mostra tudo numa visão geral clara.
+
+<b>Registre do jeito que você fala</b>
+Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cryo entende o valor, a categoria, a conta, a data e até as parcelas. Você só confere e salva. Ele também aprende com as suas correções.
+
+<b>O que você encontra</b>
+<ul>
+<li>Visão geral: saldo das contas, patrimônio e quanto entrou e saiu no mês</li>
+<li>Previsão do fim do mês: quanto deve sobrar no ritmo atual e quanto dá para gastar por dia</li>
+<li>Calendário de calor: cada dia ganha uma cor conforme o quanto você gastou</li>
+<li>Fluxo do dinheiro: de onde o dinheiro veio e para onde foi</li>
+<li>Cartões de crédito: faturas, limite disponível e compras parceladas</li>
+<li>Contas fixas: aluguel, internet, salário, com lembrete antes do vencimento</li>
+<li>Orçamento por categoria, com aviso aos 80% e quando estourar</li>
+<li>Metas e caixinhas: mostra quanto guardar por mês para chegar lá</li>
+<li>Investimentos: aportes, resgates e rendimento</li>
+<li>Transferências entre contas</li>
+</ul>
+
+<b>Privacidade de verdade</b>
+<ul>
+<li>Os dados ficam só no seu celular. O app não tem permissão de acesso à internet</li>
+<li>Sem cadastro, sem anúncios e sem rastreamento</li>
+<li>Bloqueio com digital, rosto ou senha do celular</li>
+<li>Modo para esconder os valores da tela</li>
+<li>Backup em arquivo e exportação para planilha (CSV)</li>
+</ul>
+
+<b>Visual Material You</b>
+As cores acompanham o seu papel de parede (Android 12 ou mais novo), com tema claro e escuro.
+
+O registro por voz usa o reconhecimento de fala instalado no celular. Digitar a frase funciona sempre.
+
+O app está em português do Brasil e usa valores em reais (R$).

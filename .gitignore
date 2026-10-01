@@ -1,0 +1,21 @@
+# Gradle / Android Studio
+.gradle/
+build/
+.kotlin/
+.idea/
+*.iml
+local.properties
+captures/
+.cxx/
+.externalNativeBuild/
+.DS_Store
+
+# Chave de assinatura pessoal: NUNCA publicar
+keystore/
+*.jks
+*.keystore
+*.p12
+
+# Capturas geradas pelos testes (as imagens da loja ficam em fastlane/)
+/screenshots/
+/app/screenshots/

@@ -1,0 +1,1 @@
+First public release: phrase and voice entry, end-of-month forecast, spending heatmap, money flow chart, credit cards with installments, recurring bills with reminders, budgets, savings goals, investments, fingerprint lock, backup and CSV export.

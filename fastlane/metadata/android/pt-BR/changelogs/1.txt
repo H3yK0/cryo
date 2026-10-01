@@ -1,0 +1,1 @@
+Primeira versão pública: registro por frase e voz, previsão do mês, calendário de calor, fluxo do dinheiro, cartões com parcelas, contas fixas com lembrete, orçamentos, metas, investimentos, bloqueio por digital, backup e exportação CSV.
