@@ -1,0 +1,1 @@
+Nova área de Dívidas: cadastre empréstimos, financiamentos, acordos e dívidas com pessoas, e veja quanto falta, as parcelas atrasadas e quando você fica livre. As parcelas aparecem em Contas fixas, na previsão do mês e nos lembretes. Novo arquivo de metas e de itens da Carteira, com opção de restaurar. Backups da versão 1.0 continuam funcionando.

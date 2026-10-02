@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.h3yk0.cryo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "1.1"
     }
 
     signingConfigs {
@@ -41,6 +41,8 @@ android {
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
             if (keystoreProps.isNotEmpty()) signingConfig = signingConfigs.getByName("release")
+            // Compilação reproduzível: não grava no APK o commit/estado do git de quem compilou.
+            vcsInfo.include = false
         }
         debug {
             applicationIdSuffix = ".debug"
@@ -80,6 +82,12 @@ android {
         includeInApk = false
         includeInBundle = false
     }
+}
+
+// Compilação reproduzível (F-Droid): o perfil de inicialização (assets/dexopt/baseline.prof e .profm)
+// pode sair diferente de uma máquina para outra. Sem ele, o APK compilado pelo F-Droid fica idêntico ao do GitHub.
+tasks.configureEach {
+    if (name.contains("ArtProfile")) enabled = false
 }
 
 kotlin {

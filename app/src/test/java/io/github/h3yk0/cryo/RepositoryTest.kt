@@ -4,14 +4,20 @@ package io.github.h3yk0.cryo
 
 import androidx.test.core.app.ApplicationProvider
 import io.github.h3yk0.cryo.data.Backup
+import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.Bill
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.data.db.Debt
+import io.github.h3yk0.cryo.data.db.DebtKind
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.Ledger
+import io.github.h3yk0.cryo.domain.debtCategory
 import io.github.h3yk0.cryo.domain.key
 import io.github.h3yk0.cryo.domain.ym
+import org.json.JSONArray
+import org.json.JSONObject
 import io.github.h3yk0.cryo.notify.dueReminders
 import io.github.h3yk0.cryo.notify.reminderTitle
 import kotlinx.coroutines.runBlocking
@@ -90,22 +96,107 @@ class RepositoryTest {
     @Test fun backupIdaEVolta() = runBlocking {
         seed(c, today)
         val before = c.repo.loadOnce()
+        assertTrue(before.debts.isNotEmpty() && before.debtAdjustments.isNotEmpty())
         val json = Backup.export(before)
         c.repo.eraseAll()
         assertTrue(c.repo.loadOnce().txs.isEmpty())
-        c.repo.replaceAll(Backup.import(json))
+        val restored = Backup.import(json)
+        assertEquals(Backup.VERSION, restored.version)
+        c.repo.replaceAll(restored.snapshot)
         val after = c.repo.loadOnce()
         assertEquals(before.txs.toSet(), after.txs.toSet())
         assertEquals(before.accounts, after.accounts)
         assertEquals(before.cards, after.cards)
+        assertEquals(before.categories, after.categories)
         assertEquals(before.goals, after.goals)
         assertEquals(before.bills.toSet(), after.bills.toSet())
         assertEquals(before.budgets.toSet(), after.budgets.toSet())
         assertEquals(before.yields.toSet(), after.yields.toSet())
+        assertEquals(before.debts, after.debts)
+        assertEquals(before.debtAdjustments.toSet(), after.debtAdjustments.toSet())
         assertEquals(Ledger(before, today).netWorth, Ledger(after, today).netWorth)
         val csv = Backup.csv(after, today)
         assertTrue(csv.lines()[0].contains("Data;Tipo;Descrição"))
+        assertTrue(csv.lines()[0].endsWith(";Dívida"))
         assertEquals(after.txs.size + 2, csv.lines().size) // cabeçalho + linhas + linha vazia final
         try { Backup.import("{\"app\":\"Outro\"}"); throw AssertionError("deveria falhar") } catch (e: IllegalArgumentException) { }
+    }
+
+    /** Backup feito na 1.0 (sem dívidas) abre na 1.1 e ganha a categoria de dívidas. */
+    @Test fun backupDaVersao10() = runBlocking {
+        val r = c.repo
+        val acc = r.saveAccount(Account(name = "Conta", initialBalance = 1_000, color = 0))
+        r.saveTx(Tx(type = TxType.EXPENSE, amount = 500, date = today, accountId = acc, description = "Pão"))
+        val root = JSONObject(Backup.export(r.loadOnce()))
+        root.put("version", 1)
+        root.remove("debts")
+        root.remove("debtAdjustments")
+        val cats = root.getJSONArray("categories")
+        val old = JSONArray()
+        for (i in 0 until cats.length()) cats.getJSONObject(i).let { if (it.getString("icon") != DefaultData.DEBT_ICON) old.put(it) }
+        root.put("categories", old)
+        val txs = root.getJSONArray("transactions")
+        for (i in 0 until txs.length()) txs.getJSONObject(i).remove("debtId")
+
+        val restored = Backup.import(root.toString())
+        assertEquals(1, restored.version)
+        assertNull(restored.snapshot.categories.debtCategory())
+        r.replaceAll(restored.snapshot, fromOldVersion = true)
+        val s = r.loadOnce()
+        assertNotNull(s.categories.debtCategory())
+        assertEquals("Pão", s.txs.single().description)
+        assertTrue(s.debts.isEmpty())
+
+        root.put("version", Backup.VERSION + 1)
+        try { Backup.import(root.toString()); throw AssertionError("deveria recusar backup mais novo") } catch (e: IllegalArgumentException) { }
+    }
+
+    @Test fun dividasNoBanco() = runBlocking {
+        val r = c.repo
+        val acc = r.saveAccount(Account(name = "Conta", initialBalance = 100_000, color = 0))
+        val id = r.createDebt(
+            Debt(
+                name = "Empréstimo", kind = DebtKind.LOAN, color = 0, initialBalance = 0, installmentAmount = 25_000,
+                installmentCount = 4, dueDay = 10, startYm = 202610, accountId = acc,
+            ),
+            received = 100_000, accountId = acc, date = today,
+        )
+        var l = Ledger(r.loadOnce(), today)
+        val d = l.debt[id]!!
+        assertEquals(200_000L, l.balance(acc)) // o dinheiro do empréstimo entrou na conta
+        assertEquals(0L, l.monthSummary(today.ym()).income) // mas não é receita
+        assertEquals(100_000L, l.debtInfo(d).outstanding)
+        assertEquals(4, l.debtInfo(d).installmentsLeft)
+
+        // parcela paga com R$ 10 de multa: a multa sai da conta mas não abate a dívida
+        val u = r.payDebt(d, 25_000, acc, today, installment = true, extra = 1_000)
+        l = Ledger(r.loadOnce(), today)
+        assertEquals(75_000L, l.debtInfo(d).outstanding)
+        assertEquals(200_000L - 26_000, l.balance(acc))
+        val parcela = l.s.txs.single { it.debtId == id && it.type == TxType.EXPENSE }
+        assertEquals("Parcela · Empréstimo", parcela.description)
+        assertEquals(r.debtCategoryId(), parcela.categoryId)
+        assertTrue(l.s.txs.any { it.description == "Juros/multa · Empréstimo" && it.debtId == null })
+        assertEquals(26_000L, l.monthSummary(today.ym()).expense)
+
+        r.undo(u)
+        l = Ledger(r.loadOnce(), today)
+        assertEquals(100_000L, l.debtInfo(d).outstanding)
+        assertEquals(200_000L, l.balance(acc))
+
+        // correção do saldo e quitação com desconto
+        r.adjustDebt(d, 5_000, today, "Juros e encargos")
+        assertEquals(105_000L, Ledger(r.loadOnce(), today).debtInfo(d).outstanding)
+        r.payDebt(d, 95_000, acc, today, installment = false, discount = 10_000)
+        l = Ledger(r.loadOnce(), today)
+        assertTrue(l.debtInfo(d).isPaidOff)
+        assertTrue(l.debtOverview.open.isEmpty())
+
+        // apagar a dívida mantém os pagamentos no extrato (o dinheiro saiu de verdade)
+        r.deleteDebt(d)
+        val s = r.loadOnce()
+        assertTrue(s.debts.isEmpty())
+        assertTrue(s.debtAdjustments.isEmpty())
+        assertTrue(s.txs.any { it.amount == 95_000L && it.debtId == null })
     }
 }

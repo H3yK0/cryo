@@ -62,7 +62,7 @@ import io.github.h3yk0.cryo.ui.components.LocalSettings
 fun Ledger.parseContext(settings: AppSettings) = ParseContext(
     today = today, accounts = s.accounts, cards = s.cards, categories = s.categories,
     investments = s.investments, goals = s.goals, learned = learnedCategories,
-    defaultAccountId = settings.defaultAccountId,
+    defaultAccountId = settings.defaultAccountId, debts = s.debts,
 )
 
 /**

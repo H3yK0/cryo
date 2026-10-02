@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -26,8 +27,11 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.Inventory2
+import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
@@ -121,6 +125,7 @@ fun WalletScreen() {
                     WorthLine("Investimentos", l.totalInvestments)
                     WorthLine("Metas e caixinhas", l.totalGoals)
                     WorthLine("Cartões (a pagar)", -l.s.cards.sumOf { l.cardOutstanding(it.id) })
+                    if (l.totalDebts != 0L) WorthLine("Dívidas", -l.totalDebts)
                 }
             }
 
@@ -175,6 +180,29 @@ fun WalletScreen() {
                 }
             }
 
+            item { SectionTitle("Dívidas") { TextButton(onClick = { nav.go(Routes.debtEdit()) }) { Icon(Icons.Rounded.Add, null); Text("Nova") } } }
+            if (l.debtOverview.open.isEmpty()) {
+                item {
+                    CryoCard(onClick = { nav.go(Routes.DEBTS) }) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            IconBadge(Icons.Rounded.RequestQuote, MaterialTheme.colorScheme.primary)
+                            Spacer(Modifier.width(12.dp))
+                            Text(
+                                if (l.s.debts.isEmpty()) {
+                                    "Empréstimos, financiamentos, acordos ou dinheiro que você deve a alguém ficam aqui, separados do resto."
+                                } else {
+                                    "Nenhuma dívida em aberto. Veja as quitadas em Dívidas."
+                                },
+                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.weight(1f),
+                            )
+                        }
+                    }
+                }
+            } else {
+                item { DebtSummaryCard(l, LocalSettings.current.hideValues, onClick = { nav.go(Routes.DEBTS) }) }
+            }
+
             item {
                 SectionTitle("Investimentos") { TextButton(onClick = { nav.go(Routes.investmentEdit()) }) { Icon(Icons.Rounded.Add, null); Text("Novo") } }
             }
@@ -219,12 +247,126 @@ fun WalletScreen() {
             val archived = l.s.accounts.count { it.archived } + l.s.cards.count { it.archived } + l.s.investments.count { it.archived }
             if (archived > 0) {
                 item {
-                    Text(
-                        "$archived ${if (archived == 1) "item arquivado" else "itens arquivados"} (não aparecem nas listas).",
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 8.dp),
+                    OutlinedButton(
+                        onClick = { nav.go(Routes.WALLET_ARCHIVE) },
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp).height(52.dp),
+                    ) {
+                        Icon(Icons.Rounded.Inventory2, null); Spacer(Modifier.width(8.dp))
+                        Text("Arquivados ($archived)")
+                    }
+                }
+            }
+        }
+    }
+}
+
+/* ============================ Itens arquivados ============================ */
+
+/** Contas, cartões e investimentos arquivados: continuam com o histórico e podem voltar quando quiser. */
+@Composable
+fun WalletArchiveScreen() {
+    val l = rememberLedger() ?: return LoadingBox()
+    val nav = LocalNav.current
+    val c = LocalContainer.current
+    val accounts = l.s.accounts.filter { it.archived }
+    val cards = l.s.cards.filter { it.archived }
+    val investments = l.s.investments.filter { it.archived }
+
+    Scaffold(topBar = { CryoTopBar("Arquivados", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+        LazyColumn(
+            Modifier.fillMaxSize().padding(pad),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (accounts.isEmpty() && cards.isEmpty() && investments.isEmpty()) {
+                item {
+                    EmptyState(
+                        Icons.Rounded.Inventory2, "Nada arquivado",
+                        "Contas, cartões e investimentos que você arquivar ficam aqui, com todo o histórico. Dá para restaurar quando quiser.",
                     )
                 }
+                return@LazyColumn
+            }
+            item {
+                Text(
+                    "Itens arquivados não aparecem nas listas nem na hora de lançar, mas o histórico continua no extrato.",
+                    style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                )
+            }
+            if (accounts.isNotEmpty()) {
+                item { SectionTitle("Contas") }
+                items(accounts, key = { "a${it.id}" }) { a ->
+                    ArchivedRow(
+                        icon = accountIcon(a.type), color = Color(a.color), title = a.name, subtitle = accountTypeName(a.type),
+                        value = l.balance(a.id), onClick = { nav.go(Routes.account(a.id)) },
+                        onRestore = {
+                            c.launch {
+                                c.repo.saveAccount(a.copy(archived = false))
+                                c.message("Conta ${a.name} restaurada", "Desfazer") { c.repo.saveAccount(a.copy(archived = true)) }
+                            }
+                        },
+                    )
+                }
+            }
+            if (cards.isNotEmpty()) {
+                item { SectionTitle("Cartões de crédito") }
+                items(cards, key = { "c${it.id}" }) { card ->
+                    val owed = l.cardOutstanding(card.id)
+                    ArchivedRow(
+                        icon = Icons.Rounded.CreditCard, color = Color(card.color), title = card.name,
+                        subtitle = if (owed > 0) "Ainda há fatura a pagar" else "Sem fatura em aberto",
+                        value = if (owed > 0) owed else null, onClick = { nav.go(Routes.card(card.id)) },
+                        onRestore = {
+                            c.launch {
+                                c.repo.saveCard(card.copy(archived = false))
+                                c.message("Cartão ${card.name} restaurado", "Desfazer") { c.repo.saveCard(card.copy(archived = true)) }
+                            }
+                        },
+                    )
+                }
+            }
+            if (investments.isNotEmpty()) {
+                item { SectionTitle("Investimentos") }
+                items(investments, key = { "i${it.id}" }) { i ->
+                    ArchivedRow(
+                        icon = Icons.AutoMirrored.Rounded.TrendingUp, color = Color(i.color), title = i.name,
+                        subtitle = investmentKindName(i.kind), value = l.investmentValue(i.id),
+                        onClick = { nav.go(Routes.investment(i.id)) },
+                        onRestore = {
+                            c.launch {
+                                c.repo.saveInvestment(i.copy(archived = false))
+                                c.message("${i.name} restaurado", "Desfazer") { c.repo.saveInvestment(i.copy(archived = true)) }
+                            }
+                        },
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ArchivedRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    color: Color,
+    title: String,
+    subtitle: String,
+    value: Long?,
+    onClick: () -> Unit,
+    onRestore: () -> Unit,
+) {
+    CryoCard(onClick = onClick, color = MaterialTheme.colorScheme.surfaceContainerLowest) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconBadge(icon, color.copy(alpha = 0.6f))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                if (value != null) MoneyText(value, style = MaterialTheme.typography.bodyMedium)
+            }
+            FilledTonalButton(onClick = onRestore, contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)) {
+                Icon(Icons.Rounded.Unarchive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Restaurar")
             }
         }
     }
@@ -341,7 +483,7 @@ fun AccountDetailScreen(id: Long) {
             }
             item { SectionTitle("Movimentações", Modifier.padding(horizontal = 16.dp)) }
             if (list.isEmpty()) item { Text("Nada por aqui ainda.", Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }) }
+            items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true) }
         }
     }
 }
@@ -544,11 +686,11 @@ fun CardDetailScreen(id: Long) {
             if (inv.items.isEmpty()) {
                 item { Text("Nenhuma compra nesta fatura.", Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
-            items(inv.items.sortedByDescending { it.date }, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }) }
+            items(inv.items.sortedByDescending { it.date }, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true) }
             val payments = l.s.txs.filter { it.type == TxType.CARD_PAYMENT && it.cardId == id && it.invoiceYm == ymKey }
             if (payments.isNotEmpty()) {
                 item { SectionTitle("Pagamentos", Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
-                items(payments, key = { "p${it.id}" }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }) }
+                items(payments, key = { "p${it.id}" }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true) }
             }
         }
     }
@@ -693,7 +835,7 @@ fun InvestmentDetailScreen(id: Long) {
             if (hist.isEmpty()) item { Text("Sem movimentações ainda.", Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
             items(hist.size) { i ->
                 when (val h = hist[i]) {
-                    is Tx -> TxRow(h, l, onClick = { nav.go(Routes.txEdit(h.id)) })
+                    is Tx -> TxRow(h, l, onClick = { nav.go(Routes.txEdit(h.id)) }, showDate = true)
                     is InvestmentYield -> YieldRow(h, onDelete = {
                         c.launch { c.repo.deleteYield(h); c.message("Atualização removida") }
                     })

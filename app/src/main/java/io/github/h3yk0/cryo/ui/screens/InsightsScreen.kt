@@ -251,6 +251,7 @@ private fun ForecastCard(f: MonthForecast) {
         Line("Já saiu", -f.expenseSoFar, CryoTheme.colors.expense)
         if (f.pendingBillsExpense > 0) Line("Contas fixas a pagar", -f.pendingBillsExpense, CryoTheme.colors.expense)
         if (f.scheduledExpense > 0) Line("Parcelas e agendados", -f.scheduledExpense, CryoTheme.colors.expense)
+        if (f.pendingDebts > 0) Line("Parcelas de dívidas a pagar", -f.pendingDebts, CryoTheme.colors.expense)
         if (f.remainingDays > 0) {
             Line("Dia a dia (${if (hide) Money.HIDDEN else Money.format(f.dailyRate)}/dia × ${f.remainingDays} dias)", -f.projectedVariable, CryoTheme.colors.expense)
         }

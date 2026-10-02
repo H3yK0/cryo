@@ -1,4 +1,4 @@
-Cryo is a simple yet complete personal finance app. It tracks income, expenses, credit cards, investments and savings goals, and shows everything in one clear overview.
+Cryo is a simple yet complete personal finance app. It tracks income, expenses, credit cards, debts, investments and savings goals, and shows everything in one clear overview.
 
 <b>Log money the way you talk</b>
 Type or say a phrase like "almoço 32,50 no débito" (lunch 32.50 on debit) or "tv 1200 em 10x no cartão" (TV 1200 in 10 installments on the card). Cryo understands the amount, category, account, date and even installments. You just check and save. It also learns from your corrections.
@@ -10,9 +10,10 @@ Type or say a phrase like "almoço 32,50 no débito" (lunch 32.50 on debit) or "
 <li>Spending heatmap calendar: each day is colored by how much you spent</li>
 <li>Money flow chart: where your money came from and where it went</li>
 <li>Credit cards: statements, available limit and installment purchases</li>
+<li>Debts: loans, financing, agreements and money you owe to someone, with installments, overdue alerts, what is left and when you will be debt-free</li>
 <li>Recurring bills and income, with due-date reminders</li>
 <li>Budgets per category, with alerts at 80% and when exceeded</li>
-<li>Savings goals that tell you how much to save per month</li>
+<li>Savings goals that tell you how much to save per month, with an archive for finished ones</li>
 <li>Investments: contributions, withdrawals and returns</li>
 <li>Transfers between accounts</li>
 </ul>

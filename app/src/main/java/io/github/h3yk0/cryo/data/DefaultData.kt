@@ -20,6 +20,15 @@ object DefaultData {
     private fun c(name: String, kind: CategoryKind, icon: String, color: Long, keywords: String, order: Int) =
         Category(name = name, kind = kind, icon = icon, color = color.toInt(), keywords = keywords, sortOrder = order)
 
+    const val DEBT_ICON = "debt"
+
+    /** Categoria usada nos pagamentos de dívidas (também criada na atualização para a versão 1.1). */
+    fun debtCategory() = c(
+        "Dívidas e empréstimos", CategoryKind.EXPENSE, DEBT_ICON, 0xFFB23A48,
+        "divida,dividas,emprestimo,emprestimos,financiamento,consignado,crediario,carne,prestacao,acordo,agiota",
+        16,
+    )
+
     fun categories(): List<Category> {
         val e = CategoryKind.EXPENSE
         val i = CategoryKind.INCOME
@@ -40,7 +49,8 @@ object DefaultData {
             c("Presentes", e, "gift", 0xFFFB8C00, "presente,presentes,aniversario,lembrancinha,amigo secreto", 13),
             c("Viagem", e, "flight", 0xFF039BE5, "viagem,hotel,passagem aerea,hospedagem,airbnb,pousada,aviao,rodoviaria,excursao", 14),
             c("Impostos e taxas", e, "receipt", 0xFF546E7A, "imposto,taxa,tarifa,juros,multa,iof,anuidade,cartorio,das,darf,inss,irpf", 15),
-            c("Outros gastos", e, "more", 0xFF757575, "", 16),
+            debtCategory(),
+            c("Outros gastos", e, "more", 0xFF757575, "", 17),
 
             c("Salário", i, "work", 0xFF2E7D32, "salario,holerite,contracheque,adiantamento,13o,decimo terceiro,ferias,plr,pagamento do mes", 20),
             c("Extras e freelas", i, "laptop", 0xFF00ACC1, "freela,freelance,bico,extra,servico,job,trabalho extra,comissao,bonus,gorjeta,hora extra", 21),
@@ -61,6 +71,7 @@ object DefaultData {
         "gift" to "Presente", "flight" to "Viagem", "receipt" to "Taxas", "coffee" to "Café", "gas" to "Combustível",
         "baby" to "Bebê", "build" to "Reforma", "work" to "Trabalho", "laptop" to "Freela", "sell" to "Vendas",
         "trending" to "Rendimentos", "undo" to "Reembolso", "redeem" to "Presentes", "savings" to "Poupança",
+        DEBT_ICON to "Dívidas",
         "money" to "Dinheiro", "star" to "Favorito", "more" to "Outros",
     )
 

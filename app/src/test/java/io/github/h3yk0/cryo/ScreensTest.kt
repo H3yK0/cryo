@@ -25,6 +25,8 @@ import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.Bill
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.data.db.Debt
+import io.github.h3yk0.cryo.data.db.DebtKind
 import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Investment
 import io.github.h3yk0.cryo.data.db.InvestmentKind
@@ -41,7 +43,12 @@ import io.github.h3yk0.cryo.ui.Navigator
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
+import io.github.h3yk0.cryo.ui.screens.DebtDetailScreen
+import io.github.h3yk0.cryo.ui.screens.DebtEditorScreen
+import io.github.h3yk0.cryo.ui.screens.DebtsScreen
+import io.github.h3yk0.cryo.ui.screens.GoalsArchiveScreen
 import io.github.h3yk0.cryo.ui.screens.InsightsScreen
+import io.github.h3yk0.cryo.ui.screens.WalletArchiveScreen
 import io.github.h3yk0.cryo.ui.screens.OnboardingScreen
 import io.github.h3yk0.cryo.ui.screens.PlanScreen
 import io.github.h3yk0.cryo.ui.screens.SettingsScreen
@@ -140,6 +147,29 @@ class ScreensTest {
 
     @Config(qualifiers = "w393dp-h2400dp-xxhdpi")
     @Test fun insightsDark() = shot("16_analises_escuro", dark = true) { InsightsScreen() }
+
+    @Config(qualifiers = "w393dp-h1700dp-xxhdpi")
+    @Test fun debts() = shot("17_dividas") { DebtsScreen() }
+
+    @Config(qualifiers = "w393dp-h1900dp-xxhdpi")
+    @Test fun debtDetail() = shot("18_divida_detalhe") { DebtDetailScreen(1) }
+
+    @Config(qualifiers = "w393dp-h2600dp-xxhdpi")
+    @Test fun debtEditor() = shot("19_divida_cadastro") { DebtEditorScreen(null) }
+
+    @Config(qualifiers = "w393dp-h1300dp-xxhdpi")
+    @Test fun goalsArchive() = shot("22_metas_arquivadas") { GoalsArchiveScreen() }
+
+    @Test fun walletArchive() = shot("23_carteira_arquivados") { WalletArchiveScreen() }
+
+    @Config(qualifiers = "w393dp-h1700dp-xxhdpi")
+    @Test fun debtsDark() = shot("24_dividas_escuro", dark = true) { DebtsScreen() }
+
+    @Config(qualifiers = "w393dp-h1600dp-xxhdpi")
+    @Test fun billsWithDebts() = shot("25_contas_fixas_com_parcelas") { PlanScreen(1) }
+
+    @Config(qualifiers = "w393dp-h1400dp-xxhdpi")
+    @Test fun debtDetailPaidOff() = shot("26_divida_quitada") { DebtDetailScreen(4) }
 }
 
 /** Dados de exemplo realistas: 4 meses de vida financeira. */
@@ -172,7 +202,7 @@ suspend fun seed(c: AppContainer, today: LocalDate) {
 
     val start = today.ym().minusMonths(3).key()
     val ids = listOf(
-        Bill(name = "Salário", amount = 320000, dueDay = 5, kind = CategoryKind.INCOME, categoryId = cat("Salário"), accountId = principal, remind = false, startYm = start),
+        Bill(name = "Salário", amount = 420000, dueDay = 5, kind = CategoryKind.INCOME, categoryId = cat("Salário"), accountId = principal, remind = false, startYm = start),
         Bill(name = "Aluguel", amount = 90000, dueDay = 5, categoryId = cat("Moradia"), accountId = principal, startYm = start),
         Bill(name = "Conta de luz", amount = 18000, dueDay = 10, categoryId = cat("Contas da casa"), accountId = principal, startYm = start),
         Bill(name = "Internet", amount = 9990, dueDay = 15, categoryId = cat("Contas da casa"), accountId = principal, startYm = start),
@@ -230,4 +260,68 @@ suspend fun seed(c: AppContainer, today: LocalDate) {
         val inv = l.invoice(card, m)
         if (inv.due.isBefore(today) && inv.remaining > 0) r.payInvoice(card, m, inv.remaining, principal, inv.due)
     }
+
+    seedDebts(c, today, principal)
+
+    // Arquivados: uma meta concluída (com o dinheiro ainda guardado), uma já usada e uma conta antiga
+    val show = r.saveGoal(Goal(name = "Show de rock", target = 80000, emoji = "🎸", color = Palette.pick(11), archived = true))
+    r.saveTx(Tx(type = TxType.GOAL_IN, amount = 80000, date = today.minusMonths(3), description = "Guardado", accountId = principal, goalId = show))
+    val note = r.saveGoal(Goal(name = "Notebook novo", target = 350000, emoji = "💻", color = Palette.pick(6), archived = true))
+    r.saveTx(Tx(type = TxType.GOAL_IN, amount = 350000, date = today.minusMonths(4), description = "Saldo inicial", goalId = note))
+    r.saveTx(Tx(type = TxType.GOAL_OUT, amount = 350000, date = today.minusMonths(3), description = "Retirado", accountId = principal, goalId = note))
+    r.saveAccount(Account(name = "Conta antiga", type = AccountType.CHECKING, initialBalance = 0, color = Palette.pick(12), sortOrder = 3, archived = true))
+}
+
+/** Dívidas de exemplo: financiamento, empréstimo (com o dinheiro que entrou), dívida com pessoa e uma já quitada. */
+suspend fun seedDebts(c: AppContainer, today: LocalDate, account: Long) {
+    val r = c.repo
+    val ym0 = today.ym()
+    suspend fun create(d: Debt, received: Long = 0, at: LocalDate = today): Debt =
+        d.copy(id = r.createDebt(d, received, if (received > 0) account else null, at))
+
+    // 36 parcelas de R$ 380; 26 já pagas antes de começar a usar o Cryo.
+    val moto = create(
+        Debt(
+            name = "Financiamento da moto", creditor = "Banco", kind = DebtKind.FINANCING, color = Palette.pick(1),
+            initialBalance = 10L * 38_000, installmentAmount = 38_000, installmentCount = 36, paidBefore = 26, dueDay = 15,
+            startYm = ym0.minusMonths(3).key(), accountId = account,
+        ),
+    )
+    for (back in 3 downTo 0) {
+        val due = ym0.minusMonths(back.toLong()).atDay(15)
+        if (!due.isAfter(today)) r.payDebt(moto, 38_000, account, due, installment = true)
+    }
+
+    // Pegou R$ 1.900 e vai devolver 12 × R$ 180 (R$ 2.160): a diferença são os juros.
+    val loan = create(
+        Debt(
+            name = "Empréstimo pessoal", creditor = "Banco", kind = DebtKind.LOAN, color = Palette.pick(10),
+            initialBalance = 216_000 - 190_000, installmentAmount = 18_000, installmentCount = 12, dueDay = 5,
+            startYm = ym0.minusMonths(1).key(), accountId = account,
+        ),
+        received = 190_000, at = ym0.minusMonths(2).atDay(20),
+    )
+    for (back in 1 downTo 0) {
+        val due = ym0.minusMonths(back.toLong()).atDay(5)
+        if (due.isBefore(today)) r.payDebt(loan, 18_000, account, due, installment = true)
+    }
+
+    val ana = create(
+        Debt(
+            name = "Devo à Ana", creditor = "Ana", kind = DebtKind.PERSON, color = Palette.pick(13), initialBalance = 60_000,
+            startYm = ym0.minusMonths(2).key(), deadline = today.plusMonths(3), accountId = account,
+        ),
+        at = today.minusMonths(2),
+    )
+    r.payDebt(ana, 20_000, account, today.minusMonths(1), installment = false)
+
+    val carne = create(
+        Debt(
+            name = "Carnê da loja", creditor = "Loja", kind = DebtKind.OTHER, color = Palette.pick(0), initialBalance = 30_000,
+            installmentAmount = 15_000, installmentCount = 6, paidBefore = 4, dueDay = 20, startYm = ym0.minusMonths(2).key(),
+            accountId = account,
+        ),
+    )
+    r.payDebt(carne, 15_000, account, ym0.minusMonths(2).atDay(20), installment = true)
+    r.payDebt(carne, 13_000, account, ym0.minusMonths(1).atDay(20), installment = false, discount = 2_000)
 }

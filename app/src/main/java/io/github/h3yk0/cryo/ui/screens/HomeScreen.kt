@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.EventRepeat
 import androidx.compose.material.icons.rounded.Lightbulb
+import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
@@ -52,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.domain.BillState
 import io.github.h3yk0.cryo.domain.Dates
+import io.github.h3yk0.cryo.domain.DebtState
 import io.github.h3yk0.cryo.domain.InvoiceStatus
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
@@ -135,7 +137,7 @@ fun HomeScreen() {
 
             item { MonthCard(l, month.income, month.expense, forecast.projectedResult, forecast.dailyAllowance, forecast.remainingDays) }
 
-            val alerts = buildAlerts(l)
+            val alerts = buildAlerts(l, settings.hideValues)
             if (alerts.isNotEmpty()) {
                 items(alerts) { a ->
                     val (container, content) = when (a.level) {
@@ -205,6 +207,11 @@ fun HomeScreen() {
                         )
                     }
                 }
+            }
+
+            if (l.debtOverview.open.isNotEmpty()) {
+                item { SectionTitle("Dívidas") { TextButton(onClick = { nav.go(Routes.DEBTS) }) { Text("Ver todas") } } }
+                item { DebtSummaryCard(l, settings.hideValues, onClick = { nav.go(Routes.DEBTS) }) }
             }
 
             val budgets = l.budgetUsages(l.today.ym())
@@ -310,7 +317,7 @@ private fun BalanceHero(l: Ledger) {
             MoneyText(l.netWorth, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onPrimaryContainer)
         }
         Text(
-            "Contas + investimentos + caixinhas − cartões",
+            "Contas + investimentos + caixinhas − cartões" + if (l.totalDebts != 0L) " − dívidas" else "",
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.8f),
         )
     }
@@ -365,23 +372,41 @@ private fun Stat(label: String, value: Long, color: Color, icon: ImageVector, mo
 
 private data class AlertItem(val text: String, val level: Int, val icon: ImageVector, val route: String)
 
-private fun buildAlerts(l: Ledger): List<AlertItem> {
+private fun buildAlerts(l: Ledger, hide: Boolean): List<AlertItem> {
     val out = ArrayList<AlertItem>()
     val ym = java.time.YearMonth.from(l.today)
     l.billStatuses(ym).forEach { s ->
         if (s.bill.kind != CategoryKind.EXPENSE) return@forEach
         when (s.state) {
-            BillState.OVERDUE -> out += AlertItem("${s.bill.name} venceu ${Dates.relative(s.due, l.today)} · ${Money.format(s.bill.amount)}", 2, Icons.Rounded.ErrorOutline, Routes.plan(1))
-            BillState.DUE_SOON -> out += AlertItem("${s.bill.name} vence ${Dates.relative(s.due, l.today)} · ${Money.format(s.bill.amount)}", 1, Icons.Rounded.EventRepeat, Routes.plan(1))
+            BillState.OVERDUE -> out += AlertItem("${s.bill.name} venceu ${Dates.relative(s.due, l.today)} · ${fmt(s.bill.amount, hide)}", 2, Icons.Rounded.ErrorOutline, Routes.plan(1))
+            BillState.DUE_SOON -> out += AlertItem("${s.bill.name} vence ${Dates.relative(s.due, l.today)} · ${fmt(s.bill.amount, hide)}", 1, Icons.Rounded.EventRepeat, Routes.plan(1))
+            else -> {}
+        }
+    }
+    l.debtOverview.open.forEach { i ->
+        val due = i.nextDue ?: return@forEach
+        when (i.state) {
+            DebtState.OVERDUE -> out += AlertItem(
+                if (i.hasInstallments) {
+                    "Parcela de ${i.debt.name} atrasada desde ${Dates.short(due)} · ${fmt(i.nextAmount, hide)}"
+                } else {
+                    "O prazo de ${i.debt.name} venceu em ${Dates.short(due)}"
+                },
+                2, Icons.Rounded.RequestQuote, Routes.debt(i.debt.id),
+            )
+            DebtState.DUE_SOON -> out += AlertItem(
+                "Parcela de ${i.debt.name} vence ${Dates.relative(due, l.today)} · ${fmt(i.nextAmount, hide)}",
+                1, Icons.Rounded.RequestQuote, Routes.debt(i.debt.id),
+            )
             else -> {}
         }
     }
     l.activeCards.forEach { card ->
         val inv = l.focusInvoice(card)
         when (inv.status(l.today)) {
-            InvoiceStatus.OVERDUE -> out += AlertItem("Fatura do ${card.name} vencida: ${Money.format(inv.remaining)}", 2, Icons.Rounded.CreditCard, Routes.card(card.id))
+            InvoiceStatus.OVERDUE -> out += AlertItem("Fatura do ${card.name} vencida: ${fmt(inv.remaining, hide)}", 2, Icons.Rounded.CreditCard, Routes.card(card.id))
             InvoiceStatus.CLOSED -> if (inv.due.toEpochDay() - l.today.toEpochDay() <= 5) {
-                out += AlertItem("Fatura do ${card.name} vence ${Dates.relative(inv.due, l.today)}: ${Money.format(inv.remaining)}", 1, Icons.Rounded.CreditCard, Routes.card(card.id))
+                out += AlertItem("Fatura do ${card.name} vence ${Dates.relative(inv.due, l.today)}: ${fmt(inv.remaining, hide)}", 1, Icons.Rounded.CreditCard, Routes.card(card.id))
             }
             else -> {}
         }

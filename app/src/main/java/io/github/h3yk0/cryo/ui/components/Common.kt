@@ -45,6 +45,7 @@ import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Pets
 import androidx.compose.material.icons.rounded.PhoneAndroid
 import androidx.compose.material.icons.rounded.Receipt
+import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Redeem
 import androidx.compose.material.icons.rounded.Restaurant
 import androidx.compose.material.icons.rounded.Savings
@@ -112,6 +113,7 @@ import io.github.h3yk0.cryo.AppContainer
 import io.github.h3yk0.cryo.data.AppSettings
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
+import io.github.h3yk0.cryo.domain.Dates
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
@@ -187,6 +189,7 @@ fun categoryIcon(key: String): ImageVector = when (key) {
     "savings" -> Icons.Rounded.Savings
     "money" -> Icons.Rounded.Payments
     "star" -> Icons.Rounded.Star
+    "debt" -> Icons.Rounded.RequestQuote
     else -> Icons.Rounded.MoreHoriz
 }
 
@@ -277,6 +280,7 @@ fun typeLabel(t: TxType): String = when (t) {
     TxType.INVEST_OUT -> "Resgate"
     TxType.GOAL_IN -> "Guardado em meta"
     TxType.GOAL_OUT -> "Retirado de meta"
+    TxType.DEBT_IN -> "Empréstimo recebido"
 }
 
 fun typeIcon(t: TxType): ImageVector = when (t) {
@@ -286,6 +290,7 @@ fun typeIcon(t: TxType): ImageVector = when (t) {
     TxType.GOAL_IN, TxType.GOAL_OUT -> Icons.Rounded.Flag
     TxType.INCOME -> Icons.Rounded.Payments
     TxType.EXPENSE -> Icons.Rounded.MoreHoriz
+    TxType.DEBT_IN -> Icons.Rounded.RequestQuote
 }
 
 /** Efeito no bolso: + entrada, − saída, 0 movimentação interna. */
@@ -313,6 +318,7 @@ fun txSubtitle(t: Tx, l: Ledger): String {
         TxType.INVEST_OUT -> parts += "${t.investmentId?.let { l.investment[it]?.name } ?: "investimento"} → ${l.accountName(t.accountId)}"
         TxType.GOAL_IN -> parts += "${l.accountName(t.accountId)} → ${t.goalId?.let { l.goal[it]?.name } ?: "meta"}"
         TxType.GOAL_OUT -> parts += "${t.goalId?.let { l.goal[it]?.name } ?: "meta"} → ${l.accountName(t.accountId)}"
+        TxType.DEBT_IN -> parts += "${t.debtId?.let { l.debt[it]?.name } ?: "dívida"} → ${l.accountName(t.accountId)}"
     }
     if (t.billId != null) parts += "conta fixa"
     return parts.joinToString(" · ")
@@ -328,10 +334,12 @@ fun TxLeadingBadge(t: Tx, l: Ledger, size: Dp = 40.dp) {
     }
 }
 
+/** Linha de uma movimentação. [showDate]: põe a data no começo (listas sem cabeçalho de dia, como históricos). */
 @Composable
-fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier) {
+fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier, showDate: Boolean = false) {
     val signed = txSignedAmount(t)
     val future = t.date.isAfter(l.today)
+    val datePart = if (!showDate) "" else (if (t.date.year == l.today.year) Dates.short(t.date) else Dates.full(t.date)) + " · "
     val amountColor = when {
         signed > 0 -> incomeColor()
         signed < 0 -> MaterialTheme.colorScheme.onSurface
@@ -349,7 +357,7 @@ fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier) 
         Column(Modifier.weight(1f)) {
             Text(txTitle(t, l), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                txSubtitle(t, l) + if (future) " · agendado" else "",
+                datePart + txSubtitle(t, l) + if (future) " · agendado" else "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,

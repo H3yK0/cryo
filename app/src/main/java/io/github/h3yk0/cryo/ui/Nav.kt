@@ -47,7 +47,12 @@ import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
 import io.github.h3yk0.cryo.ui.screens.CardEditorScreen
 import io.github.h3yk0.cryo.ui.screens.CategoriesScreen
 import io.github.h3yk0.cryo.ui.screens.CategoryEditorScreen
+import io.github.h3yk0.cryo.ui.screens.DebtDetailScreen
+import io.github.h3yk0.cryo.ui.screens.DebtEditorScreen
+import io.github.h3yk0.cryo.ui.screens.DebtsScreen
 import io.github.h3yk0.cryo.ui.screens.GoalEditorScreen
+import io.github.h3yk0.cryo.ui.screens.GoalsArchiveScreen
+import io.github.h3yk0.cryo.ui.screens.WalletArchiveScreen
 import io.github.h3yk0.cryo.ui.screens.HomeScreen
 import io.github.h3yk0.cryo.ui.screens.InsightsScreen
 import io.github.h3yk0.cryo.ui.screens.InvestmentDetailScreen
@@ -73,7 +78,12 @@ object Routes {
     const val INVESTMENT = "investment/{id}"
     const val INVESTMENT_EDIT = "investment/edit/{id}"
     const val GOAL_EDIT = "goal/edit/{id}"
+    const val GOALS_ARCHIVE = "goals/archive"
     const val BILL_EDIT = "bill/edit/{id}?kind={kind}"
+    const val DEBTS = "debts"
+    const val DEBT = "debt/{id}"
+    const val DEBT_EDIT = "debt/edit/{id}"
+    const val WALLET_ARCHIVE = "wallet/archive"
     const val SETTINGS = "settings"
     const val CATEGORIES = "categories"
     const val CATEGORY_EDIT = "category/edit/{id}?kind={kind}"
@@ -90,6 +100,8 @@ object Routes {
     fun investmentEdit(id: Long = 0) = "investment/edit/$id"
     fun goalEdit(id: Long = 0) = "goal/edit/$id"
     fun billEdit(id: Long = 0, kind: CategoryKind = CategoryKind.EXPENSE) = "bill/edit/$id?kind=${kind.name}"
+    fun debt(id: Long) = "debt/$id"
+    fun debtEdit(id: Long = 0) = "debt/edit/$id"
     fun categoryEdit(id: Long = 0, kind: CategoryKind = CategoryKind.EXPENSE) = "category/edit/$id?kind=${kind.name}"
 }
 
@@ -146,7 +158,10 @@ fun CryoRoot(openOnStart: String?) {
         }
     }
     LaunchedEffect(openOnStart) {
-        if (openOnStart == "bills") navigator.open(Routes.plan(1))
+        when (openOnStart) {
+            "bills" -> navigator.open(Routes.plan(1))
+            "debts" -> navigator.go(Routes.DEBTS)
+        }
     }
 
     androidx.compose.runtime.CompositionLocalProvider(LocalNav provides navigator) {
@@ -240,6 +255,15 @@ fun CryoRoot(openOnStart: String?) {
                         runCatching { CategoryKind.valueOf(e.arguments?.getString("kind") ?: "") }.getOrDefault(CategoryKind.EXPENSE),
                     )
                 }
+                composable(Routes.GOALS_ARCHIVE) { GoalsArchiveScreen() }
+                composable(Routes.DEBTS) { DebtsScreen() }
+                composable(Routes.DEBT, arguments = listOf(navArgument("id") { type = NavType.LongType })) { e ->
+                    DebtDetailScreen(e.arguments!!.getLong("id"))
+                }
+                composable(Routes.DEBT_EDIT, arguments = listOf(navArgument("id") { type = NavType.LongType })) { e ->
+                    DebtEditorScreen(e.arguments!!.getLong("id").takeIf { it > 0 })
+                }
+                composable(Routes.WALLET_ARCHIVE) { WalletArchiveScreen() }
                 composable(Routes.SETTINGS) { SettingsScreen() }
                 composable(Routes.CATEGORIES) { CategoriesScreen() }
                 composable(

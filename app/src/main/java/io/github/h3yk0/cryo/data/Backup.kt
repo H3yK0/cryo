@@ -9,6 +9,9 @@ import io.github.h3yk0.cryo.data.db.Budget
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.data.db.Debt
+import io.github.h3yk0.cryo.data.db.DebtAdjustment
+import io.github.h3yk0.cryo.data.db.DebtKind
 import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Investment
 import io.github.h3yk0.cryo.data.db.InvestmentKind
@@ -23,7 +26,8 @@ import java.time.LocalDate
 
 /** Cópia de segurança em JSON (tudo) e exportação em CSV (planilhas). */
 object Backup {
-    private const val VERSION = 1
+    /** 1 = Cryo 1.0; 2 = Cryo 1.1 (dívidas). */
+    const val VERSION = 2
 
     private fun JSONObject.optLongOrNull(k: String): Long? = if (isNull(k) || !has(k)) null else getLong(k)
     private fun JSONObject.optIntOrNull(k: String): Int? = if (isNull(k) || !has(k)) null else getInt(k)
@@ -60,7 +64,7 @@ object Backup {
                 .put("installmentNumber", it.installmentNumber).put("installmentTotal", it.installmentTotal)
                 .put("investmentId", it.investmentId.orNull()).put("goalId", it.goalId.orNull())
                 .put("billId", it.billId.orNull()).put("billYm", it.billYm.orNull()).put("note", it.note)
-                .put("createdAt", it.createdAt)
+                .put("createdAt", it.createdAt).put("debtId", it.debtId.orNull())
         })
         root.put("investments", s.investments.toJson {
             JSONObject().put("id", it.id).put("name", it.name).put("kind", it.kind.name).put("color", it.color)
@@ -84,14 +88,31 @@ object Backup {
         root.put("budgets", s.budgets.toJson {
             JSONObject().put("categoryId", it.categoryId).put("limitAmount", it.limitAmount)
         })
+        root.put("debts", s.debts.toJson {
+            JSONObject().put("id", it.id).put("name", it.name).put("creditor", it.creditor).put("kind", it.kind.name)
+                .put("color", it.color).put("initialBalance", it.initialBalance)
+                .put("installmentAmount", it.installmentAmount).put("installmentCount", it.installmentCount)
+                .put("paidBefore", it.paidBefore).put("dueDay", it.dueDay).put("startYm", it.startYm)
+                .put("deadline", it.deadline?.toString().orNull()).put("accountId", it.accountId.orNull())
+                .put("remind", it.remind).put("remindDaysBefore", it.remindDaysBefore).put("note", it.note)
+                .put("archived", it.archived).put("createdAt", it.createdAt)
+        })
+        root.put("debtAdjustments", s.debtAdjustments.toJson {
+            JSONObject().put("id", it.id).put("debtId", it.debtId).put("date", it.date.toString())
+                .put("amount", it.amount).put("note", it.note)
+        })
         return root.toString(1)
     }
 
-    /** Lê um backup. Lança exceção com mensagem amigável se o arquivo não for do Cryo. */
-    fun import(json: String): Snapshot {
+    data class Restored(val snapshot: Snapshot, val version: Int)
+
+    /** Lê um backup (de qualquer versão do Cryo). Lança exceção com mensagem amigável se o arquivo não for do Cryo. */
+    fun import(json: String): Restored {
         val root = try { JSONObject(json) } catch (e: Exception) { throw IllegalArgumentException("O arquivo não é um backup válido.") }
         if (root.optString("app") != "Cryo") throw IllegalArgumentException("Este arquivo não é um backup do Cryo.")
-        return Snapshot(
+        val version = root.optInt("version", 1)
+        if (version > VERSION) throw IllegalArgumentException("Este backup é de uma versão mais nova do Cryo. Atualize o app.")
+        val snapshot = Snapshot(
             accounts = root.getJSONArray("accounts").mapObj {
                 Account(
                     id = it.getLong("id"), name = it.getString("name"), type = AccountType.valueOf(it.getString("type")),
@@ -124,7 +145,7 @@ object Backup {
                     installmentNumber = it.optInt("installmentNumber"), installmentTotal = it.optInt("installmentTotal"),
                     investmentId = it.optLongOrNull("investmentId"), goalId = it.optLongOrNull("goalId"),
                     billId = it.optLongOrNull("billId"), billYm = it.optIntOrNull("billYm"), note = it.optString("note"),
-                    createdAt = it.optLong("createdAt"),
+                    createdAt = it.optLong("createdAt"), debtId = it.optLongOrNull("debtId"),
                 )
             },
             investments = root.getJSONArray("investments").mapObj {
@@ -159,7 +180,26 @@ object Backup {
             budgets = root.getJSONArray("budgets").mapObj {
                 Budget(categoryId = it.getLong("categoryId"), limitAmount = it.getLong("limitAmount"))
             },
+            debts = root.optJSONArray("debts")?.mapObj {
+                Debt(
+                    id = it.getLong("id"), name = it.getString("name"), creditor = it.optString("creditor"),
+                    kind = DebtKind.valueOf(it.getString("kind")), color = it.getInt("color"),
+                    initialBalance = it.getLong("initialBalance"), installmentAmount = it.optLong("installmentAmount"),
+                    installmentCount = it.optInt("installmentCount"), paidBefore = it.optInt("paidBefore"),
+                    dueDay = it.optInt("dueDay", 10), startYm = it.getInt("startYm"),
+                    deadline = it.optStr("deadline")?.let(LocalDate::parse), accountId = it.optLongOrNull("accountId"),
+                    remind = it.optBoolean("remind", true), remindDaysBefore = it.optInt("remindDaysBefore", 1),
+                    note = it.optString("note"), archived = it.optBoolean("archived"), createdAt = it.optLong("createdAt"),
+                )
+            }.orEmpty(),
+            debtAdjustments = root.optJSONArray("debtAdjustments")?.mapObj {
+                DebtAdjustment(
+                    id = it.getLong("id"), debtId = it.getLong("debtId"), date = LocalDate.parse(it.getString("date")),
+                    amount = it.getLong("amount"), note = it.optString("note"),
+                )
+            }.orEmpty(),
         )
+        return Restored(snapshot, version)
     }
 
     /** CSV com ";" (abre direto no Excel/Planilhas em português). */
@@ -174,9 +214,10 @@ object Backup {
             TxType.EXPENSE to "Despesa", TxType.INCOME to "Receita", TxType.TRANSFER to "Transferência",
             TxType.CARD_PAYMENT to "Pagamento de fatura", TxType.INVEST_IN to "Aporte", TxType.INVEST_OUT to "Resgate",
             TxType.GOAL_IN to "Guardado em meta", TxType.GOAL_OUT to "Retirado de meta",
+            TxType.DEBT_IN to "Empréstimo recebido",
         )
         val sb = StringBuilder("﻿")
-        sb.append("Data;Tipo;Descrição;Categoria;Conta;Destino;Cartão;Parcela;Valor;Observação\n")
+        sb.append("Data;Tipo;Descrição;Categoria;Conta;Destino;Cartão;Parcela;Valor;Observação;Dívida\n")
         for (t in s.txs.sortedBy { it.date }) {
             val signed = when (t.type) {
                 TxType.EXPENSE, TxType.CARD_PAYMENT, TxType.INVEST_IN, TxType.GOAL_IN -> -t.amount
@@ -187,6 +228,7 @@ object Backup {
                 TxType.TRANSFER -> l.accountName(t.toAccountId)
                 TxType.INVEST_IN, TxType.INVEST_OUT -> t.investmentId?.let { l.investment[it]?.name } ?: ""
                 TxType.GOAL_IN, TxType.GOAL_OUT -> t.goalId?.let { l.goal[it]?.name } ?: ""
+                TxType.DEBT_IN -> l.accountName(t.accountId)
                 else -> ""
             }
             sb.append(
@@ -196,7 +238,7 @@ object Backup {
                     esc(t.accountId?.let { l.account[it]?.name } ?: ""), esc(dest),
                     esc(t.cardId?.let { l.card[it]?.name } ?: ""),
                     if (t.installmentTotal > 1) "${t.installmentNumber}/${t.installmentTotal}" else "",
-                    money(signed), esc(t.note),
+                    money(signed), esc(t.note), esc(t.debtId?.let { l.debt[it]?.name } ?: ""),
                 ).joinToString(";"),
             ).append('\n')
         }

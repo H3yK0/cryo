@@ -61,6 +61,7 @@ import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalFixedToday
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
+import io.github.h3yk0.cryo.ui.screens.DebtsScreen
 import io.github.h3yk0.cryo.ui.screens.InsightsScreen
 import io.github.h3yk0.cryo.ui.screens.PlanScreen
 import io.github.h3yk0.cryo.ui.screens.TransactionsScreen
@@ -158,6 +159,8 @@ class StoreAssetsTest {
     @Test fun s8Cartao() { show { CardDetailScreen(1) }; shot(8) }
 
     @Test fun s9Escuro() { show(dark = true) { CryoRoot(null) }; shot(9) }
+
+    @Test fun s10Dividas() { show { DebtsScreen() }; shot(10) }
 
     /** Ícone 512×512 a partir do mesmo desenho do ícone do app (cantos arredondados, fundo transparente). */
     @Test fun icone() {

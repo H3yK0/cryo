@@ -23,13 +23,15 @@ data class MonthForecast(
     val scheduledExpense: Long,
     val pendingBillsIncome: Long,
     val pendingBillsExpense: Long,
+    /** Parcelas de dívidas deste mês (e atrasadas) que ainda não foram pagas. */
+    val pendingDebts: Long,
     val dailyRate: Long,
     val projectedVariable: Long,
     val usedHistory: Boolean,
     val series: List<ForecastPoint>,
 ) {
     val projectedIncome: Long get() = incomeSoFar + scheduledIncome + pendingBillsIncome
-    val projectedExpense: Long get() = expenseSoFar + scheduledExpense + pendingBillsExpense + projectedVariable
+    val projectedExpense: Long get() = expenseSoFar + scheduledExpense + pendingBillsExpense + pendingDebts + projectedVariable
     val projectedResult: Long get() = projectedIncome - projectedExpense
     val currentResult: Long get() = incomeSoFar - expenseSoFar
     val remainingDays: Int get() = daysInMonth - dayOfMonth
@@ -37,13 +39,14 @@ data class MonthForecast(
     /** Quanto dá para gastar por dia (incluindo hoje) e ainda terminar o mês no zero a zero. */
     val dailyAllowance: Long
         get() {
-            val free = projectedIncome - expenseSoFar - scheduledExpense - pendingBillsExpense
+            val free = projectedIncome - expenseSoFar - scheduledExpense - pendingBillsExpense - pendingDebts
             return free / (remainingDays + 1)
         }
 }
 
+/** Gasto do dia a dia: não é conta fixa, nem parcela de cartão, nem pagamento de dívida. */
 private fun isVariable(t: io.github.h3yk0.cryo.data.db.Tx) =
-    t.type == TxType.EXPENSE && t.billId == null && t.installmentTotal <= 1
+    t.type == TxType.EXPENSE && t.billId == null && t.debtId == null && t.installmentTotal <= 1
 
 fun Ledger.forecast(): MonthForecast {
     val ym = today.ym()
@@ -61,6 +64,13 @@ fun Ledger.forecast(): MonthForecast {
     val pending = billStatuses(ym).filter { it.payment == null }
     val pendExp = pending.filter { it.bill.kind == CategoryKind.EXPENSE }.sumOf { it.bill.amount }
     val pendInc = pending.filter { it.bill.kind == CategoryKind.INCOME }.sumOf { it.bill.amount }
+    // Parcelas de dívidas ainda não pagas. Pagamentos já agendados para depois de hoje entram em "agendados".
+    val scheduledDebtPay = future.filter { it.type == TxType.EXPENSE && it.debtId != null }
+        .groupBy { it.debtId!! }.mapValues { (_, list) -> list.sumOf { it.amount } }
+    val debtsDue = activeDebts.map { debtInfo(it) }
+        .map { it to (it.pendingThisMonth - (scheduledDebtPay[it.debt.id] ?: 0L)).coerceAtLeast(0) }
+        .filter { it.second > 0 }
+    val pendDebts = debtsDue.sumOf { it.second }
 
     // Ritmo de gastos do dia a dia (sem contas fixas e sem parcelas).
     val variableSoFar = past.filter(::isVariable).sumOf { it.amount }
@@ -102,14 +112,18 @@ fun Ledger.forecast(): MonthForecast {
             val day = max(p.due.dayOfMonth, d + 1).coerceAtMost(days)
             proj[day] += if (p.bill.kind == CategoryKind.INCOME) p.bill.amount.toDouble() else -p.bill.amount.toDouble()
         }
+        for ((i, pend) in debtsDue) {
+            val dueDay = if (i.overdueCount > 0) d + 1 else ym.dayClamped(i.debt.dueDay).dayOfMonth
+            proj[max(dueDay, d + 1).coerceAtMost(days)] -= pend.toDouble()
+        }
         var pc = cum.toDouble()
         for (day in d + 1..days) {
             pc += proj[day] - rate
             points += ForecastPoint(day, null, pc.roundToLong())
         }
-    } else if (pending.isNotEmpty()) {
+    } else if (pending.isNotEmpty() || pendDebts > 0) {
         // Último dia do mês: o que ainda está pendente entra direto no ponto final.
-        val pendNet = pending.sumOf { if (it.bill.kind == CategoryKind.INCOME) it.bill.amount else -it.bill.amount }
+        val pendNet = pending.sumOf { if (it.bill.kind == CategoryKind.INCOME) it.bill.amount else -it.bill.amount } - pendDebts
         points += ForecastPoint(days, null, cum + pendNet)
     }
 
@@ -117,7 +131,7 @@ fun Ledger.forecast(): MonthForecast {
         ym = ym, dayOfMonth = d, daysInMonth = days,
         incomeSoFar = incomeSoFar, expenseSoFar = expenseSoFar,
         scheduledIncome = schedInc, scheduledExpense = schedExp,
-        pendingBillsIncome = pendInc, pendingBillsExpense = pendExp,
+        pendingBillsIncome = pendInc, pendingBillsExpense = pendExp, pendingDebts = pendDebts,
         dailyRate = rate.roundToLong(), projectedVariable = projectedVariable,
         usedHistory = usedHistory, series = points,
     )
@@ -125,7 +139,7 @@ fun Ledger.forecast(): MonthForecast {
 
 /* ======================== Fluxo do dinheiro ======================== */
 
-enum class FlowKind { CATEGORY, SURPLUS, FROM_BALANCE, INVEST, GOALS, OTHERS }
+enum class FlowKind { CATEGORY, SURPLUS, FROM_BALANCE, BORROWED, INVEST, GOALS, OTHERS }
 
 data class FlowNode(val label: String, val value: Long, val color: Int, val kind: FlowKind = FlowKind.CATEGORY)
 
@@ -147,6 +161,7 @@ fun Ledger.moneyFlow(ym: YearMonth, maxDestinations: Int = 6): MoneyFlow {
     if (others > 0) dest += FlowNode("Outras categorias", others, 0xFF9E9E9E.toInt(), FlowKind.OTHERS)
 
     val summary = monthSummary(ym, until)
+    if (summary.borrowed > 0) sources += FlowNode("Dinheiro emprestado", summary.borrowed, 0xFFB23A48.toInt(), FlowKind.BORROWED)
     if (summary.invested > 0) dest += FlowNode("Investimentos", summary.invested, 0xFF3F51B5.toInt(), FlowKind.INVEST)
     if (summary.saved > 0) dest += FlowNode("Metas e caixinhas", summary.saved, 0xFF00897B.toInt(), FlowKind.GOALS)
 
@@ -211,6 +226,17 @@ fun Ledger.insights(): List<Insight> {
     }
     val overdue = billStatuses(ym).count { it.state == BillState.OVERDUE }
     if (overdue > 0) out += Insight(if (overdue == 1) "Há 1 conta fixa vencida." else "Há $overdue contas fixas vencidas.", false)
+
+    val debts = debtOverview
+    if (debts.overdueCount > 0) {
+        out += Insight(
+            if (debts.overdueCount == 1) "Há 1 parcela de dívida atrasada." else "Há ${debts.overdueCount} parcelas de dívidas atrasadas.",
+            false,
+        )
+    }
+    activeDebts.map { debtInfo(it) }
+        .firstOrNull { it.isPaidOff && it.lastPayment?.ym() == ym }
+        ?.let { out += Insight("Você quitou ${it.debt.name} neste mês. Parabéns! 🎉", true) }
 
     if (now.income > 0 && now.expense < now.income && d >= 15) {
         val pct = ((now.income - now.expense) * 100.0 / now.income).roundToLong()

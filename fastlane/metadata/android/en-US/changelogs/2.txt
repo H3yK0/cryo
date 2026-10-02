@@ -1,0 +1,1 @@
+New Debts area: track loans, financing, agreements and money owed to people, and see what is left, overdue installments and when you will be debt-free. Installments show up in recurring bills, the monthly forecast and reminders. New archive for goals and wallet items, with restore. Backups from version 1.0 still work.

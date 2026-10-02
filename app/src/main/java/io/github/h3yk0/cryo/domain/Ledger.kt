@@ -8,6 +8,8 @@ import io.github.h3yk0.cryo.data.db.Budget
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.data.db.Debt
+import io.github.h3yk0.cryo.data.db.DebtAdjustment
 import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Investment
 import io.github.h3yk0.cryo.data.db.InvestmentYield
@@ -29,6 +31,8 @@ data class Snapshot(
     val goals: List<Goal> = emptyList(),
     val bills: List<Bill> = emptyList(),
     val budgets: List<Budget> = emptyList(),
+    val debts: List<Debt> = emptyList(),
+    val debtAdjustments: List<DebtAdjustment> = emptyList(),
 )
 
 /* ----------------------------- Cartão ----------------------------- */
@@ -98,7 +102,14 @@ data class BudgetUsage(val category: Category, val limit: Long, val spent: Long)
 
 data class CategoryTotal(val category: Category?, val total: Long)
 
-data class MonthSummary(val income: Long, val expense: Long, val invested: Long, val saved: Long) {
+data class MonthSummary(
+    val income: Long,
+    val expense: Long,
+    val invested: Long,
+    val saved: Long,
+    /** Dinheiro emprestado que entrou (não é receita). */
+    val borrowed: Long = 0,
+) {
     val result: Long get() = income - expense
 }
 
@@ -113,11 +124,13 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
     val investment = s.investments.associateBy { it.id }
     val goal = s.goals.associateBy { it.id }
     val bill = s.bills.associateBy { it.id }
+    val debt = s.debts.associateBy { it.id }
 
     val activeAccounts get() = s.accounts.filter { !it.archived }
     val activeCards get() = s.cards.filter { !it.archived }
     val activeInvestments get() = s.investments.filter { !it.archived }
     val activeGoals get() = s.goals.filter { !it.archived }
+    val activeDebts get() = s.debts.filter { !it.archived }
     fun categories(kind: CategoryKind) = s.categories.filter { it.kind == kind && !it.archived }
 
     /* ------------------------------ contas ------------------------------ */
@@ -133,7 +146,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
                 TxType.INCOME -> add(t.accountId, t.amount)
                 TxType.TRANSFER -> { add(t.accountId, -t.amount); add(t.toAccountId, t.amount) }
                 TxType.CARD_PAYMENT, TxType.INVEST_IN, TxType.GOAL_IN -> add(t.accountId, -t.amount)
-                TxType.INVEST_OUT, TxType.GOAL_OUT -> add(t.accountId, t.amount)
+                TxType.INVEST_OUT, TxType.GOAL_OUT, TxType.DEBT_IN -> add(t.accountId, t.amount)
             }
         }
         m
@@ -234,8 +247,49 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
 
     val totalGoals: Long by lazy { s.goals.sumOf { goalSaved(it.id) } }
 
-    /** Patrimônio: contas + investimentos + caixinhas − dívidas de cartão. */
-    val netWorth: Long by lazy { totalBalance + totalInvestments + totalGoals - s.cards.sumOf { cardOutstanding(it.id) } }
+    /* ------------------------------ dívidas ------------------------------ */
+
+    private val debtTxs by lazy { s.txs.filter { it.debtId != null }.groupBy { it.debtId!! } }
+    private val debtAdj by lazy { s.debtAdjustments.groupBy { it.debtId } }
+    private val debtCache = HashMap<Long, DebtInfo>()
+
+    fun debtInfo(d: Debt): DebtInfo = debtCache.getOrPut(d.id) {
+        DebtMath.info(d, debtTxs[d.id].orEmpty(), debtAdj[d.id].orEmpty(), today)
+    }
+
+    /** Pagamentos, empréstimos e ajustes de uma dívida, do mais novo para o mais antigo. */
+    fun debtHistory(id: Long): List<Any> =
+        (debtTxs[id].orEmpty() + debtAdj[id].orEmpty()).sortedByDescending {
+            when (it) { is Tx -> it.date; is DebtAdjustment -> it.date; else -> LocalDate.MIN }
+        }
+
+    val debtOverview: DebtOverview by lazy {
+        val infos = activeDebts.map { debtInfo(it) }
+        val open = infos.filter { !it.isPaidOff }
+        val ends = open.map { it.payoffYm }
+        DebtOverview(
+            total = open.sumOf { it.remaining },
+            paidAll = open.sumOf { it.paidAll },
+            monthlyInstallments = open.filter { it.hasInstallments }.sumOf { it.debt.installmentAmount },
+            pendingThisMonth = open.sumOf { it.pendingThisMonth },
+            overdueCount = open.sumOf { it.overdueCount },
+            freeOfDebtYm = if (open.isNotEmpty() && ends.all { it != null }) ends.filterNotNull().max() else null,
+            open = open.sortedWith(compareBy<DebtInfo>({ it.state.ordinal }, { it.nextDue ?: LocalDate.MAX })),
+        )
+    }
+
+    val totalDebts: Long get() = debtOverview.total
+
+    /** Média do que entrou por mês nos últimos 3 meses completos (ou neste mês, se ainda não há histórico). */
+    val averageIncome: Long by lazy {
+        val months = (1..3).map { monthSummary(today.ym().minusMonths(it.toLong())).income }.filter { it > 0 }
+        if (months.isEmpty()) monthSummary(today.ym()).income else months.sum() / months.size
+    }
+
+    /** Patrimônio: contas + investimentos + caixinhas − cartões − dívidas. */
+    val netWorth: Long by lazy {
+        totalBalance + totalInvestments + totalGoals - s.cards.sumOf { cardOutstanding(it.id) } - totalDebts
+    }
 
     /* --------------------------- totais do mês -------------------------- */
 
@@ -248,7 +302,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
     }
 
     fun monthSummary(ym: YearMonth, untilDay: Int? = null): MonthSummary {
-        var inc = 0L; var exp = 0L; var inv = 0L; var sav = 0L
+        var inc = 0L; var exp = 0L; var inv = 0L; var sav = 0L; var bor = 0L
         for (t in monthTxs(ym)) {
             if (untilDay != null && t.date.dayOfMonth > untilDay) continue
             when (t.type) {
@@ -258,10 +312,11 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
                 TxType.INVEST_OUT -> inv -= t.amount
                 TxType.GOAL_IN -> sav += t.amount
                 TxType.GOAL_OUT -> sav -= t.amount
+                TxType.DEBT_IN -> bor += t.amount
                 else -> {}
             }
         }
-        return MonthSummary(inc, exp, inv, sav)
+        return MonthSummary(inc, exp, inv, sav, bor)
     }
 
     fun byCategory(ym: YearMonth, kind: CategoryKind, untilDay: Int? = null): List<CategoryTotal> {
@@ -319,6 +374,8 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
         val m = HashMap<String, Long>()
         for (t in s.txs) {
             if ((t.type != TxType.EXPENSE && t.type != TxType.INCOME) || t.categoryId == null) continue
+            // Descrições criadas pelo próprio app ("Parcela · Financiamento") não ensinam nada.
+            if (t.debtId != null || t.description.contains(" · ")) continue
             val norm = t.description.normalized().trim()
             if (norm.isEmpty()) continue
             m.putIfAbsent(norm, t.categoryId)
@@ -330,7 +387,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
 
     /** Descrições recentes (para sugestões ao digitar). */
     fun recentDescriptions(type: TxType, limit: Int = 30): List<Tx> =
-        s.txs.asSequence().filter { it.type == type && it.description.isNotBlank() }
+        s.txs.asSequence().filter { it.type == type && it.description.isNotBlank() && it.debtId == null && !it.description.contains(" · ") }
             .distinctBy { it.description.normalized() }.take(limit).toList()
 
     fun accountName(id: Long?): String = id?.let { account[it]?.name } ?: "—"

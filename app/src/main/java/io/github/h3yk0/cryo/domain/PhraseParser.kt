@@ -7,9 +7,12 @@ import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.data.db.Debt
+import io.github.h3yk0.cryo.data.db.DebtKind
 import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Investment
 import io.github.h3yk0.cryo.data.db.TxType
+import io.github.h3yk0.cryo.data.DefaultData
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.time.DayOfWeek
@@ -26,6 +29,7 @@ data class ParseContext(
     /** palavra/descrição normalizada -> categoria usada antes */
     val learned: Map<String, Long> = emptyMap(),
     val defaultAccountId: Long? = null,
+    val debts: List<Debt> = emptyList(),
 )
 
 data class ParsedEntry(
@@ -40,6 +44,7 @@ data class ParsedEntry(
     val date: LocalDate,
     val investmentId: Long?,
     val goalId: Long?,
+    val debtId: Long? = null,
 )
 
 /**
@@ -72,6 +77,18 @@ class PhraseParser(private val ctx: ParseContext) {
         val invMatches = matchNames(ctx.investments.filter { !it.archived }.map { it.id to it.name })
         val accMatches = matchNames(ctx.accounts.filter { !it.archived }.map { it.id to it.name })
         val cardMatches = matchNames(ctx.cards.filter { !it.archived }.map { it.id to it.name })
+        val activeDebts = ctx.debts.filter { !it.archived }
+        val debtMatches = matchNames(activeDebts.map { it.id to "${it.name} ${it.creditor}" }, DEBT_GENERIC_WORDS)
+        val debtMatch = debtMatches.firstOrNull()
+
+        // Dívidas: "paguei a parcela da moto", "paguei 200 pro joão", "peguei 300 emprestado com o joão"
+        val borrowVerb = has(
+            "\\b(peguei|pedi|tomei|recebi|consegui) (?:\\S+ ){0,3}emprestad[oa]s?\\b|\\bme emprest(?:ou|aram|ou)\\b|" +
+                "\\b(?:peguei|fiz|tomei|contratei) (?:um |o )?emprestimo\\b",
+        )
+        val installmentWord = Regex("\\b(parcelas?|prestacao|prestacoes)\\b").findAll(text).any { free(it.range) }
+        val debtNoun = installmentWord ||
+            has("\\b(divida|dividas|emprestimo|financiamento|acordo|carne|crediario|consignado)\\b")
 
         val goalWord = has("\\b(caixinha|cofrinho|meta)\\b")
         val goalOutVerb = has("\\b(tirei|retirei|resgatei|saquei|usei|peguei)\\b")
@@ -87,6 +104,23 @@ class PhraseParser(private val ctx: ParseContext) {
                 "bonus|comissao|mesada|13o|decimo terceiro|plr|adiantamento|venda|vendas|deposito)\\b",
         )
 
+        // Sem o nome da dívida na frase: a única que existe, ou a única do tipo citado ("o financiamento").
+        val kindHint = when {
+            has("\\bfinanciamento\\b") -> DebtKind.FINANCING
+            has("\\b(emprestimo|consignado)\\b") -> DebtKind.LOAN
+            has("\\bacordo\\b") -> DebtKind.AGREEMENT
+            else -> null
+        }
+        val guessedDebt = activeDebts.singleOrNull() ?: kindHint?.let { k -> activeDebts.singleOrNull { it.kind == k } }
+        val payDebt: Debt? = when {
+            borrowVerb -> null
+            debtMatch != null && (payVerb || installmentWord) && (debtNoun || !keywordOutside(debtMatch.ranges)) ->
+                activeDebts.first { it.id == debtMatch.id }
+            // Só assume uma dívida não citada se nada na frase indicar outra categoria.
+            debtMatch == null && (payVerb || installmentWord) && debtNoun && !keywordOutside(emptyList()) -> guessedDebt
+            else -> null
+        }
+
         val type = when {
             goalMatches.isNotEmpty() && (goalInVerb || goalOutVerb || goalWord) ->
                 if (goalOutVerb) TxType.GOAL_OUT else TxType.GOAL_IN
@@ -97,6 +131,8 @@ class PhraseParser(private val ctx: ParseContext) {
             has("\\bfatura\\b") && (payVerb || cardMatches.isNotEmpty()) -> TxType.CARD_PAYMENT
             (transferVerb || goalInVerb) && accMatches.isNotEmpty() -> TxType.TRANSFER
             goalInVerb && ctx.goals.any { !it.archived } -> TxType.GOAL_IN
+            borrowVerb -> TxType.DEBT_IN
+            payDebt != null -> TxType.EXPENSE
             incomeVerb -> TxType.INCOME
             expenseVerb -> TxType.EXPENSE
             incomeNoun -> TxType.INCOME
@@ -116,6 +152,7 @@ class PhraseParser(private val ctx: ParseContext) {
         var cardId: Long? = null
         var investmentId: Long? = null
         var goalId: Long? = null
+        var debtId: Long? = null
 
         fun methodAccount(): Long? = when {
             wantsCash -> accountOfType(AccountType.CASH)
@@ -171,7 +208,22 @@ class PhraseParser(private val ctx: ParseContext) {
                 if (accountId == null) accountId = defaultAccount()?.takeIf { it != toAccountId }
                     ?: ctx.accounts.firstOrNull { !it.archived && it.id != toAccountId }?.id
             }
-            TxType.EXPENSE -> {
+            TxType.DEBT_IN -> {
+                debtMatch?.let { consume(it) }
+                debtId = debtMatch?.id ?: guessedDebt?.id
+                val acc = accMatches.firstOrNull { a -> debtMatch == null || a.ranges.none { it in debtMatch.ranges } }
+                acc?.let { consume(it) }
+                accountId = acc?.id ?: methodAccount()
+            }
+            TxType.EXPENSE -> if (payDebt != null) {
+                // Pagamento de dívida: sempre sai de uma conta.
+                debtMatch?.let { consume(it) }
+                debtId = payDebt.id
+                val acc = accMatches.firstOrNull { a -> debtMatch == null || a.ranges.none { it in debtMatch.ranges } }
+                acc?.let { consume(it) }
+                accountId = acc?.id ?: payDebt.accountId?.takeIf { id -> ctx.accounts.any { it.id == id && !it.archived } }
+                    ?: methodAccount()
+            } else {
                 val c = cardMatches.firstOrNull()
                 val a = accMatches.firstOrNull()
                 val sameWords = c != null && a != null && c.ranges.any { it in a.ranges }
@@ -205,11 +257,23 @@ class PhraseParser(private val ctx: ParseContext) {
         // Categoria e descrição (com o que sobrou da frase)
         val descTokens = toks.filter { !it.used && it.norm !in STOP_WORDS && it.norm.any(Char::isLetterOrDigit) }
         val descNorm = descTokens.joinToString(" ") { it.norm }
-        val categoryId = if (type == TxType.EXPENSE || type == TxType.INCOME) {
-            guessCategory(if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE, descTokens, descNorm)
-        } else null
+        val isDebtPayment = payDebt != null && type == TxType.EXPENSE
+        val categoryId = when {
+            isDebtPayment -> ctx.categories.debtCategory()?.id
+            type == TxType.EXPENSE || type == TxType.INCOME ->
+                guessCategory(if (type == TxType.INCOME) CategoryKind.INCOME else CategoryKind.EXPENSE, descTokens, descNorm)
+            else -> null
+        }
 
         var description = descTokens.joinToString(" ") { cleanOrig(it.orig) }.trim()
+        val debt = activeDebts.firstOrNull { it.id == debtId }
+        if (debt != null) {
+            description = when {
+                type == TxType.DEBT_IN -> "Empréstimo · ${debt.name}"
+                debt.installmentAmount > 0 -> "Parcela · ${debt.name}"
+                else -> "Pagamento · ${debt.name}"
+            }
+        }
         if (description.isEmpty()) {
             description = when (type) {
                 TxType.EXPENSE, TxType.INCOME -> ctx.categories.firstOrNull { it.id == categoryId }?.name ?: ""
@@ -219,6 +283,7 @@ class PhraseParser(private val ctx: ParseContext) {
                 TxType.INVEST_OUT -> "Resgate"
                 TxType.GOAL_IN -> "Dinheiro guardado"
                 TxType.GOAL_OUT -> "Dinheiro retirado"
+                TxType.DEBT_IN -> "Empréstimo recebido"
             }
         }
 
@@ -226,7 +291,7 @@ class PhraseParser(private val ctx: ParseContext) {
 
         return ParsedEntry(
             type = type,
-            amount = amount,
+            amount = amount ?: if (isDebtPayment) payDebt?.installmentAmount?.takeIf { it > 0 } else null,
             description = description.capFirst(),
             categoryId = categoryId,
             accountId = accountId,
@@ -236,6 +301,7 @@ class PhraseParser(private val ctx: ParseContext) {
             date = date,
             investmentId = investmentId,
             goalId = goalId,
+            debtId = debtId,
         )
     }
 
@@ -417,10 +483,20 @@ class PhraseParser(private val ctx: ParseContext) {
 
     /* ---------------------------- entidades ---------------------------- */
 
-    private fun matchNames(items: List<Pair<Long, String>>): List<EMatch> = items.mapNotNull { (id, name) ->
-        val norm = name.normalized()
+    /** Alguma palavra-chave de categoria (fora da dívida) aparece na frase? Ex.: "gasolina da moto". */
+    private fun keywordOutside(ranges: List<IntRange>): Boolean =
+        ctx.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived && it.icon != DefaultData.DEBT_ICON }.any { c ->
+            c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }.any { kw ->
+                Regex("\\b${Regex.escape(kw)}(?:s|es)?\\b").findAll(text).any { m ->
+                    ranges.none { r -> r.first <= m.range.last && m.range.first <= r.last }
+                }
+            }
+        }
+
+    private fun matchNames(items: List<Pair<Long, String>>, extraGeneric: Set<String> = emptySet()): List<EMatch> = items.mapNotNull { (id, name) ->
+        val norm = name.normalized().trim()
         var words = norm.split(Regex("[^a-z0-9]+"))
-            .filter { it.length >= 2 && it !in GENERIC_NAME_WORDS && !it.all(Char::isDigit) }
+            .filter { it.length >= 2 && it !in GENERIC_NAME_WORDS && it !in extraGeneric && !it.all(Char::isDigit) }
         if (words.isEmpty()) words = listOf(norm.trim()).filter { it.isNotEmpty() }
         val ranges = words.mapNotNull { w ->
             Regex("\\b${Regex.escape(w)}\\b").findAll(text).firstOrNull { free(it.range) }?.range
@@ -471,6 +547,12 @@ class PhraseParser(private val ctx: ParseContext) {
 
     companion object {
         private const val NUM = "(\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2})?|\\d+(?:,\\d{1,2})?|\\d+\\.\\d{1,2})"
+
+        /** Palavras comuns em nomes de dívidas que não ajudam a diferenciar uma da outra. */
+        private val DEBT_GENERIC_WORDS = setOf(
+            "divida", "dividas", "emprestimo", "financiamento", "parcela", "parcelas", "acordo", "devo", "ao", "aos",
+            "com", "pro", "loja", "carne", "crediario", "consignado",
+        )
 
         private val GENERIC_NAME_WORDS = setOf(
             "conta", "cartao", "de", "do", "da", "dos", "das", "banco", "credito", "debito", "corrente",

@@ -6,6 +6,8 @@ import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.data.db.Debt
+import io.github.h3yk0.cryo.data.db.DebtKind
 import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Investment
 import io.github.h3yk0.cryo.data.db.TxType
@@ -221,5 +223,80 @@ class PhraseParserTest {
         val r = p("dízimo 300")
         assertEquals(cat("Dízimo e doações"), r.categoryId)
         assertEquals(30000L, r.amount)
+    }
+
+    /* ------------------------------ dívidas ------------------------------ */
+
+    private val debts = listOf(
+        Debt(
+            id = 1, name = "Financiamento da moto", creditor = "Banco", kind = DebtKind.FINANCING, color = 0,
+            initialBalance = 600_000, installmentAmount = 45_000, installmentCount = 24, dueDay = 15,
+            startYm = 202609, accountId = 4,
+        ),
+        Debt(id = 2, name = "Devo ao João", creditor = "João", kind = DebtKind.PERSON, color = 0, initialBalance = 80_000, startYm = 202609),
+    )
+    private val debtCat = cats.first { it.icon == DefaultData.DEBT_ICON }.id
+    private fun pd(s: String, list: List<Debt> = debts) = PhraseParser(ctx.copy(debts = list)).parse(s)
+
+    @Test fun parcelaDeDivida() {
+        val r = pd("paguei a parcela da moto")
+        assertEquals(TxType.EXPENSE, r.type)
+        assertEquals(1L, r.debtId)
+        assertEquals(45_000L, r.amount) // sem valor na frase: usa o valor da parcela
+        assertEquals(debtCat, r.categoryId)
+        assertEquals(4L, r.accountId) // a conta cadastrada para pagar a dívida
+        assertNull(r.cardId)
+        assertEquals("Parcela · Financiamento da moto", r.description)
+        val r2 = pd("paguei 460 da prestação do financiamento pelo nubank")
+        assertEquals(1L, r2.debtId)
+        assertEquals(46_000L, r2.amount)
+        assertEquals(1L, r2.accountId)
+    }
+
+    @Test fun pagamentoParaPessoa() {
+        val r = pd("paguei 200 pro joão")
+        assertEquals(TxType.EXPENSE, r.type)
+        assertEquals(2L, r.debtId)
+        assertEquals(20_000L, r.amount)
+        assertEquals(debtCat, r.categoryId)
+        assertEquals("Pagamento · Devo ao João", r.description)
+    }
+
+    @Test fun pegueiEmprestado() {
+        val r = pd("peguei 300 emprestado com o joão")
+        assertEquals(TxType.DEBT_IN, r.type)
+        assertEquals(2L, r.debtId)
+        assertEquals(30_000L, r.amount)
+        assertEquals(1L, r.accountId)
+        assertNull(r.categoryId) // não é receita
+        val r2 = p("peguei 500 emprestado")
+        assertEquals(TxType.DEBT_IN, r2.type)
+        assertNull(r2.debtId)
+        assertEquals(TxType.DEBT_IN, pd("a Ana me emprestou 150", emptyList()).type)
+    }
+
+    @Test fun gastoComAMotoNaoEDivida() {
+        val r = pd("gasolina da moto 50")
+        assertEquals(TxType.EXPENSE, r.type)
+        assertNull(r.debtId)
+        assertEquals(cat("Transporte"), r.categoryId)
+        val r2 = pd("paguei a gasolina da moto 50")
+        assertNull(r2.debtId)
+        assertEquals(cat("Transporte"), r2.categoryId)
+        assertEquals(5_000L, r2.amount)
+        // compra parcelada no cartão continua sendo compra no cartão
+        val r3 = pd("comprei uma tv em 10 parcelas no cartão 2000")
+        assertNull(r3.debtId)
+        assertEquals(1L, r3.cardId)
+        assertEquals(10, r3.installments)
+        // com uma só dívida, "paguei a parcela" vai para ela, mas não se a frase fala de outra coisa
+        val one = debts.take(1)
+        assertEquals(1L, pd("paguei a parcela 450", one).debtId)
+        assertNull(pd("paguei a parcela do curso de inglês 300", one).debtId)
+    }
+
+    @Test fun dividaArquivadaNaoEntra() {
+        val r = pd("paguei a parcela da moto", debts.map { it.copy(archived = true) })
+        assertNull(r.debtId)
     }
 }

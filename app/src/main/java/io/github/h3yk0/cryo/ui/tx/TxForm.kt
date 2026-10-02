@@ -38,6 +38,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
+import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.FinanceRepository
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.Tx
@@ -78,6 +79,7 @@ class TxDraft(
     note: String = "",
     investmentId: Long? = null,
     goalId: Long? = null,
+    debtId: Long? = null,
     val original: Tx? = null,
 ) {
     var type by mutableStateOf(type)
@@ -91,6 +93,7 @@ class TxDraft(
     var note by mutableStateOf(note)
     var investmentId by mutableStateOf(investmentId)
     var goalId by mutableStateOf(goalId)
+    var debtId by mutableStateOf(debtId)
 
     val isEditing get() = original != null
 
@@ -103,8 +106,10 @@ class TxDraft(
         type == TxType.TRANSFER && (source as? Source.Acc)?.id == toAccountId -> "As contas precisam ser diferentes"
         (type == TxType.INVEST_IN || type == TxType.INVEST_OUT) && investmentId == null -> "Escolha o investimento"
         (type == TxType.GOAL_IN || type == TxType.GOAL_OUT) && goalId == null -> "Escolha a meta"
+        type == TxType.DEBT_IN && debtId == null -> "Escolha a dívida"
+        type == TxType.EXPENSE && debtId != null && source !is Source.Acc -> "Pagamentos de dívidas saem de uma conta"
         (type == TxType.INVEST_IN || type == TxType.INVEST_OUT || type == TxType.GOAL_IN || type == TxType.GOAL_OUT ||
-            type == TxType.CARD_PAYMENT) && source !is Source.Acc -> "Escolha a conta"
+            type == TxType.CARD_PAYMENT || type == TxType.DEBT_IN) && source !is Source.Acc -> "Escolha a conta"
         else -> null
     }
 
@@ -113,14 +118,14 @@ class TxDraft(
             type = p.type, amount = p.amount ?: 0, description = p.description, categoryId = p.categoryId,
             source = p.cardId?.let { Source.Card(it) } ?: p.accountId?.let { Source.Acc(it) },
             toAccountId = p.toAccountId, installments = p.installments, date = p.date,
-            investmentId = p.investmentId, goalId = p.goalId,
+            investmentId = p.investmentId, goalId = p.goalId, debtId = p.debtId,
         )
 
         fun fromTx(t: Tx) = TxDraft(
             type = t.type, amount = t.amount, description = t.description, categoryId = t.categoryId,
             source = if (t.type == TxType.EXPENSE && t.cardId != null) Source.Card(t.cardId) else t.accountId?.let { Source.Acc(it) },
             toAccountId = t.toAccountId, installments = 1, date = t.date, note = t.note,
-            investmentId = t.investmentId, goalId = t.goalId, original = t,
+            investmentId = t.investmentId, goalId = t.goalId, debtId = t.debtId, original = t,
         )
     }
 }
@@ -140,6 +145,11 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
         cardId = if (d.type == TxType.CARD_PAYMENT) o?.cardId else null,
         investmentId = if (d.type == TxType.INVEST_IN || d.type == TxType.INVEST_OUT) d.investmentId else null,
         goalId = if (d.type == TxType.GOAL_IN || d.type == TxType.GOAL_OUT) d.goalId else null,
+        debtId = when {
+            d.type == TxType.DEBT_IN -> d.debtId
+            d.type == TxType.EXPENSE && d.source is Source.Acc -> d.debtId
+            else -> null
+        },
     )
     val saved: Tx
     if (d.type == TxType.EXPENSE && cardId != null) {
@@ -183,7 +193,12 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
         TxType.INCOME -> "Receita"
         else -> typeLabel(d.type)
     }
-    val summary = if (o != null) "Alterações salvas" else "$what de ${Money.format(d.amount)} registrada"
+    val summary = when {
+        o != null -> "Alterações salvas"
+        saved.debtId != null && d.type == TxType.EXPENSE -> "Pagamento de ${Money.format(d.amount)} registrado na dívida"
+        d.type == TxType.DEBT_IN -> "${Money.format(d.amount)} somados à dívida"
+        else -> "$what de ${Money.format(d.amount)} registrada"
+    }
     return SaveResult(alert, undo, summary)
 }
 
@@ -259,10 +274,12 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
         when (d.type) {
             TxType.EXPENSE, TxType.INCOME -> {
                 CategorySection(d, l, compact)
+                val isDebtCategory = d.categoryId?.let { l.category[it]?.icon } == DefaultData.DEBT_ICON
+                if (d.type == TxType.EXPENSE && (d.debtId != null || isDebtCategory)) DebtPicker(d, l)
                 FieldLabel(if (d.type == TxType.EXPENSE) "Pago com" else "Recebido em")
                 SourceChips(
                     accounts = l.activeAccounts,
-                    cards = if (d.type == TxType.EXPENSE) l.activeCards else emptyList(),
+                    cards = if (d.type == TxType.EXPENSE && d.debtId == null) l.activeCards else emptyList(),
                     selected = d.source,
                     onSelect = { d.source = it },
                 )
@@ -318,6 +335,25 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                 FieldLabel(if (d.type == TxType.GOAL_IN) "Sai da conta" else "Volta para a conta")
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
             }
+            TxType.DEBT_IN -> {
+                FieldLabel("Dívida")
+                if (l.activeDebts.isEmpty()) {
+                    NoItemsText("Cadastre a dívida primeiro em Carteira › Dívidas. No cadastro dá para registrar o dinheiro que entrou.")
+                } else {
+                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        l.activeDebts.forEach { debt ->
+                            FilterChip(selected = d.debtId == debt.id, onClick = { d.debtId = debt.id }, label = { Text(debt.name) })
+                        }
+                    }
+                }
+                FieldLabel("Entrou na conta")
+                AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
+                Text(
+                    "Dinheiro emprestado não conta como receita: ele entra na conta e aumenta a dívida.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
             TxType.CARD_PAYMENT -> {
                 FieldLabel("Pago com a conta")
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
@@ -365,6 +401,37 @@ private fun CategorySection(d: TxDraft, l: Ledger, compact: Boolean) {
         }
     } else {
         FieldLabel("Categoria")
-        CategoryGrid(cats, d.categoryId, onSelect = { d.categoryId = it.id; if (compact) expanded = false })
+        CategoryGrid(cats, d.categoryId, onSelect = {
+            d.categoryId = it.id
+            if (it.icon != DefaultData.DEBT_ICON) d.debtId = null
+            if (compact) expanded = false
+        })
+    }
+}
+
+/** Liga o gasto a uma dívida: ele passa a diminuir quanto falta pagar. */
+@Composable
+private fun DebtPicker(d: TxDraft, l: Ledger) {
+    val debts = l.activeDebts.filter { !l.debtInfo(it).isPaidOff || it.id == d.debtId }
+    FieldLabel("Pagamento de qual dívida?")
+    if (debts.isEmpty()) {
+        NoItemsText("Nenhuma dívida em aberto. Cadastre em Carteira › Dívidas para acompanhar quanto falta pagar.")
+        return
+    }
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(selected = d.debtId == null, onClick = { d.debtId = null }, label = { Text("Nenhuma") })
+        debts.forEach { debt ->
+            FilterChip(
+                selected = d.debtId == debt.id,
+                onClick = {
+                    d.debtId = debt.id
+                    if (d.source !is Source.Acc) {
+                        (debt.accountId?.takeIf { id -> l.activeAccounts.any { it.id == id } } ?: l.activeAccounts.firstOrNull()?.id)
+                            ?.let { d.source = Source.Acc(it) }
+                    }
+                },
+                label = { Text(debt.name) },
+            )
+        }
     }
 }

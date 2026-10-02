@@ -28,11 +28,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.EventRepeat
 import androidx.compose.material.icons.rounded.Flag
+import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.PieChart
+import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
@@ -74,6 +77,8 @@ import io.github.h3yk0.cryo.domain.BillState
 import io.github.h3yk0.cryo.domain.BillStatus
 import io.github.h3yk0.cryo.domain.BudgetUsage
 import io.github.h3yk0.cryo.domain.Dates
+import io.github.h3yk0.cryo.domain.DebtInfo
+import io.github.h3yk0.cryo.domain.DebtMath
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.key
@@ -298,8 +303,10 @@ private fun BillsTab(l: Ledger) {
     val statuses = l.billStatuses(ym)
     val pay = statuses.filter { it.bill.kind == CategoryKind.EXPENSE }
     val receive = statuses.filter { it.bill.kind == CategoryKind.INCOME }
+    val installments = l.activeDebts.mapNotNull { DebtMath.installmentIn(l.debtInfo(it), ym) }.sortedBy { it.due }
     var paying by remember { mutableStateOf<BillStatus?>(null) }
     var undoing by remember { mutableStateOf<BillStatus?>(null) }
+    var payingDebt by remember { mutableStateOf<DebtInfo?>(null) }
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
@@ -307,7 +314,7 @@ private fun BillsTab(l: Ledger) {
                 Dates.monthYear(ym, l.today), { ymKey = ym.minusMonths(1).key() }, { ymKey = ym.plusMonths(1).key() },
             )
         }
-        if (statuses.isEmpty()) {
+        if (statuses.isEmpty() && installments.isEmpty()) {
             item {
                 EmptyState(
                     Icons.Rounded.EventRepeat, "Nenhuma conta fixa",
@@ -322,6 +329,15 @@ private fun BillsTab(l: Ledger) {
                 SummaryLine("A pagar", "${paid.size} de ${pay.size} pagas", total, hide)
             }
             items(pay, key = { "p${it.bill.id}" }) { s -> BillRow(s, l, hide, onPay = { paying = s }, onUndo = { undoing = s }) }
+        }
+        if (installments.isNotEmpty()) {
+            item {
+                SummaryLine(
+                    "Parcelas de dívidas", "${installments.count { it.paid }} de ${installments.size} pagas",
+                    installments.sumOf { it.info.debt.installmentAmount }, hide,
+                )
+            }
+            items(installments, key = { "d${it.info.debt.id}" }) { m -> DebtInstallmentRow(m, l, hide, onPay = { payingDebt = m.info }) }
         }
         if (receive.isNotEmpty()) {
             item {
@@ -370,6 +386,57 @@ private fun BillsTab(l: Ledger) {
             onConfirm = { undoing = null; c.launch { c.repo.unmarkBillPaid(s.bill, s.ym) } },
             onDismiss = { undoing = null },
         )
+    }
+    payingDebt?.let { info -> DebtPaySheet(info, l, payoff = false, onDismiss = { payingDebt = null }) }
+}
+
+/** Parcela de uma dívida no mês escolhido (vem da área de Dívidas, não é uma conta fixa). */
+@Composable
+private fun DebtInstallmentRow(m: DebtMath.MonthInstallment, l: Ledger, hide: Boolean, onPay: () -> Unit) {
+    val nav = LocalNav.current
+    val info = m.info
+    val d = info.debt
+    val amount = if (m.payable) info.nextAmount else d.installmentAmount
+    val (status, statusColor) = when {
+        m.paid -> "paga" to CryoTheme.colors.income
+        m.due.isBefore(l.today) -> "venceu ${Dates.relative(m.due, l.today)}" to CryoTheme.colors.expense
+        ChronoUnit.DAYS.between(l.today, m.due) <= 3 -> "vence ${Dates.relative(m.due, l.today)}" to CryoTheme.colors.warning
+        else -> "vence dia ${m.due.dayOfMonth}" to MaterialTheme.colorScheme.onSurfaceVariant
+    }
+    CryoCard(onClick = { nav.go(Routes.debt(d.id)) }) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            IconBadge(debtKindIcon(d.kind), Color(d.color))
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(d.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    "${if (hide) Money.HIDDEN else Money.format(amount)} · parcela ${m.number} de ${info.installmentsTotal}",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Text(status, style = MaterialTheme.typography.bodySmall, color = statusColor)
+            }
+            Spacer(Modifier.width(8.dp))
+            when {
+                m.paid -> Row(
+                    Modifier.padding(horizontal = 12.dp).semantics { contentDescription = "Parcela paga" },
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(Icons.Rounded.CheckCircle, null, Modifier.size(20.dp), tint = CryoTheme.colors.income)
+                    Spacer(Modifier.width(6.dp))
+                    Text("Paga", style = MaterialTheme.typography.labelLarge, color = CryoTheme.colors.income)
+                }
+                m.payable -> FilledTonalButton(onClick = onPay, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
+                    Text("Paguei")
+                }
+            }
+        }
+        if (!m.paid && !m.payable) {
+            Text(
+                "Antes desta, falta pagar a parcela ${info.installmentsPaid + 1}.",
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+        }
     }
 }
 
@@ -507,86 +574,209 @@ private fun GoalsTab(l: Ledger) {
     val nav = LocalNav.current
     val c = LocalContainer.current
     val hide = LocalSettings.current.hideValues
+    val archived = l.s.goals.filter { it.archived }
+    val archivedSaved = archived.sumOf { l.goalSaved(it.id) }
     var action by remember { mutableStateOf<Pair<Goal, Boolean>?>(null) } // meta, guardar?
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (l.activeGoals.isEmpty()) {
             item {
-                EmptyState(
-                    Icons.Rounded.Flag, "Crie sua primeira meta",
-                    "Viagem, reserva de emergência, celular novo... Defina o valor e o prazo, e o Cryo mostra quanto guardar por mês.",
-                )
+                if (archived.isEmpty()) {
+                    EmptyState(
+                        Icons.Rounded.Flag, "Crie sua primeira meta",
+                        "Viagem, reserva de emergência, celular novo... Defina o valor e o prazo, e o Cryo mostra quanto guardar por mês.",
+                    )
+                } else {
+                    EmptyState(
+                        Icons.Rounded.Flag, "Nenhuma meta ativa",
+                        "Suas metas arquivadas continuam guardadas no arquivo, logo abaixo. Crie uma nova meta quando quiser.",
+                    )
+                }
             }
         } else {
             item {
                 CryoCard(color = MaterialTheme.colorScheme.secondaryContainer) {
                     Text("Guardado em metas", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                    MoneyText(l.totalGoals, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    MoneyText(
+                        l.activeGoals.sumOf { l.goalSaved(it.id) }, style = MaterialTheme.typography.headlineSmall,
+                        color = MaterialTheme.colorScheme.onSecondaryContainer,
+                    )
+                    if (archivedSaved > 0) {
+                        Text(
+                            "e mais ${if (hide) Money.HIDDEN else Money.format(archivedSaved)} em metas arquivadas",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer,
+                        )
+                    }
                 }
             }
         }
         items(l.activeGoals, key = { it.id }) { g ->
-            val saved = l.goalSaved(g.id)
-            val ratio = saved.toFloat() / g.target.coerceAtLeast(1)
-            CryoCard(onClick = { nav.go(Routes.goalEdit(g.id)) }) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    io.github.h3yk0.cryo.ui.components.EmojiBadge(g.emoji, Color(g.color), 48.dp)
-                    Spacer(Modifier.width(12.dp))
-                    Column(Modifier.weight(1f)) {
-                        Text(g.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                        Text(
-                            "${if (hide) Money.HIDDEN else Money.format(saved)} de ${if (hide) Money.HIDDEN else Money.format(g.target)}",
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Text("${(ratio * 100).toInt().coerceAtLeast(0)}%", style = MaterialTheme.typography.titleMedium)
-                }
-                Spacer(Modifier.height(10.dp))
-                UsageBar(ratio, baseColor = Color(g.color), height = 12.dp, warn = false)
-                val need = l.goalMonthlyNeeded(g)
-                val info = when {
-                    saved >= g.target -> "Meta alcançada! 🎉"
-                    need != null && g.deadline != null -> {
-                        val months = ChronoUnit.MONTHS.between(l.today.ym(), g.deadline.ym()) + 1
-                        "Guarde ${if (hide) Money.HIDDEN else Money.format(need)} por mês para chegar lá em ${Dates.monthYear(g.deadline.ym(), l.today).lowercase()} ($months ${if (months == 1L) "mês" else "meses"})"
-                    }
-                    else -> "Faltam ${if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved))}"
-                }
-                Text(info, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
-                Row(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            GoalCard(
+                g, l, hide,
+                onClick = { nav.go(Routes.goalEdit(g.id)) },
+                actions = { saved ->
                     FilledTonalButton(onClick = { action = g to true }) { Text("Guardar") }
                     OutlinedButton(onClick = { action = g to false }, enabled = saved > 0) { Text("Retirar") }
-                }
-            }
+                    if (saved >= g.target) {
+                        TextButton(onClick = { archiveGoal(c, g) }) {
+                            Icon(Icons.Rounded.Archive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Arquivar")
+                        }
+                    }
+                },
+            )
         }
         item {
             Button(onClick = { nav.go(Routes.goalEdit()) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text("Nova meta")
             }
         }
-    }
-    action?.let { (g, deposit) ->
-        val need = l.goalMonthlyNeeded(g)
-        MoneyActionSheet(
-            title = if (deposit) "Guardar em ${g.name}" else "Retirar de ${g.name}",
-            subtitle = if (deposit) "O dinheiro sai da conta escolhida e fica separado na meta" else "O dinheiro volta para a conta escolhida",
-            initialAmount = if (deposit) need ?: 0 else 0, l = l,
-            accountLabel = if (deposit) "Sai da conta" else "Volta para a conta",
-            initialAccount = LocalSettings.current.defaultAccountId, confirmLabel = if (deposit) "Guardar" else "Retirar",
-            onDismiss = { action = null },
-            onConfirm = { amount, acc, date ->
-                action = null
-                c.launch {
-                    c.repo.saveTx(
-                        Tx(
-                            type = if (deposit) TxType.GOAL_IN else TxType.GOAL_OUT, amount = amount, date = date,
-                            description = if (deposit) "Guardado: ${g.name}" else "Retirado: ${g.name}", accountId = acc, goalId = g.id,
-                        ),
-                    )
-                    c.message(if (deposit) "${Money.format(amount)} guardados em ${g.name}" else "${Money.format(amount)} retirados de ${g.name}")
+        if (archived.isNotEmpty()) {
+            item {
+                OutlinedButton(onClick = { nav.go(Routes.GOALS_ARCHIVE) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                    Icon(Icons.Rounded.Inventory2, null); Spacer(Modifier.width(8.dp)); Text("Metas arquivadas (${archived.size})")
                 }
-            },
-        )
+            }
+        }
     }
+    action?.let { (g, deposit) -> GoalMoneySheet(g, deposit, l, onDismiss = { action = null }) }
+}
+
+private fun archiveGoal(c: io.github.h3yk0.cryo.AppContainer, g: Goal) {
+    c.launch {
+        c.repo.saveGoal(g.copy(archived = true))
+        c.message("Meta arquivada. Ela fica em Metas arquivadas.", "Desfazer") { c.repo.saveGoal(g.copy(archived = false)) }
+    }
+}
+
+/** Cartão de uma meta, com barra de progresso e quanto guardar por mês. */
+@Composable
+private fun GoalCard(
+    g: Goal,
+    l: Ledger,
+    hide: Boolean,
+    onClick: () -> Unit,
+    faded: Boolean = false,
+    actions: @Composable androidx.compose.foundation.layout.FlowRowScope.(saved: Long) -> Unit,
+) {
+    val saved = l.goalSaved(g.id)
+    val ratio = saved.toFloat() / g.target.coerceAtLeast(1)
+    CryoCard(
+        onClick = onClick,
+        color = if (faded) MaterialTheme.colorScheme.surfaceContainerLowest else MaterialTheme.colorScheme.surfaceContainerLow,
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            io.github.h3yk0.cryo.ui.components.EmojiBadge(g.emoji, Color(g.color), 48.dp)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(g.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    "${if (hide) Money.HIDDEN else Money.format(saved)} de ${if (hide) Money.HIDDEN else Money.format(g.target)}",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text("${(ratio * 100).toInt().coerceAtLeast(0)}%", style = MaterialTheme.typography.titleMedium)
+        }
+        Spacer(Modifier.height(10.dp))
+        UsageBar(ratio, baseColor = Color(g.color), height = 12.dp, warn = false)
+        val need = l.goalMonthlyNeeded(g)
+        val info = when {
+            saved >= g.target -> "Meta alcançada! 🎉"
+            g.archived && saved <= 0 -> "Arquivada sem dinheiro guardado nela"
+            g.archived -> "Arquivada · faltavam ${if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved))}"
+            need != null && g.deadline != null -> {
+                val months = ChronoUnit.MONTHS.between(l.today.ym(), g.deadline.ym()) + 1
+                "Guarde ${if (hide) Money.HIDDEN else Money.format(need)} por mês para chegar lá em ${Dates.monthYear(g.deadline.ym(), l.today).lowercase()} ($months ${if (months == 1L) "mês" else "meses"})"
+            }
+            else -> "Faltam ${if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved))}"
+        }
+        Text(info, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
+        FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { actions(saved) }
+    }
+}
+
+/** Guardar dinheiro numa meta ou retirar dela. */
+@Composable
+private fun GoalMoneySheet(g: Goal, deposit: Boolean, l: Ledger, onDismiss: () -> Unit) {
+    val c = LocalContainer.current
+    MoneyActionSheet(
+        title = if (deposit) "Guardar em ${g.name}" else "Retirar de ${g.name}",
+        subtitle = if (deposit) "O dinheiro sai da conta escolhida e fica separado na meta" else "O dinheiro volta para a conta escolhida",
+        initialAmount = when {
+            deposit -> l.goalMonthlyNeeded(g) ?: 0
+            g.archived -> l.goalSaved(g.id).coerceAtLeast(0)
+            else -> 0
+        },
+        l = l,
+        accountLabel = if (deposit) "Sai da conta" else "Volta para a conta",
+        initialAccount = LocalSettings.current.defaultAccountId, confirmLabel = if (deposit) "Guardar" else "Retirar",
+        onDismiss = onDismiss,
+        onConfirm = { amount, acc, date ->
+            onDismiss()
+            c.launch {
+                c.repo.saveTx(
+                    Tx(
+                        type = if (deposit) TxType.GOAL_IN else TxType.GOAL_OUT, amount = amount, date = date,
+                        description = if (deposit) "Guardado: ${g.name}" else "Retirado: ${g.name}", accountId = acc, goalId = g.id,
+                    ),
+                )
+                c.message(if (deposit) "${Money.format(amount)} guardados em ${g.name}" else "${Money.format(amount)} retirados de ${g.name}")
+            }
+        },
+    )
+}
+
+/* ============================ Metas arquivadas ============================ */
+
+@Composable
+fun GoalsArchiveScreen() {
+    val l = rememberLedger() ?: return LoadingBox()
+    val nav = LocalNav.current
+    val c = LocalContainer.current
+    val hide = LocalSettings.current.hideValues
+    val archived = l.s.goals.filter { it.archived }.sortedBy { it.name.lowercase() }
+    val stillSaved = archived.sumOf { l.goalSaved(it.id).coerceAtLeast(0) }
+    var withdrawing by remember { mutableStateOf<Goal?>(null) }
+
+    Scaffold(topBar = { CryoTopBar("Metas arquivadas", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+        LazyColumn(
+            Modifier.fillMaxSize().padding(pad),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            if (archived.isEmpty()) {
+                item {
+                    EmptyState(
+                        Icons.Rounded.Inventory2, "Nenhuma meta arquivada",
+                        "Quando você arquivar uma meta, ela sai da lista de Metas e fica guardada aqui. Dá para restaurar quando quiser.",
+                    )
+                }
+            } else {
+                item {
+                    Text(
+                        if (stillSaved > 0) {
+                            "Ainda há ${if (hide) Money.HIDDEN else Money.format(stillSaved)} guardados nestas metas. " +
+                                "Esse dinheiro continua no seu patrimônio. Use “Retirar” para devolvê-lo a uma conta."
+                        } else {
+                            "Metas arquivadas não aparecem em Planejar nem no Início. Toque em “Restaurar” para trazer uma de volta."
+                        },
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
+                    )
+                }
+            }
+            items(archived, key = { it.id }) { g ->
+                GoalCard(g, l, hide, faded = true, onClick = { nav.go(Routes.goalEdit(g.id)) }) { saved ->
+                    FilledTonalButton(onClick = {
+                        c.launch {
+                            c.repo.saveGoal(g.copy(archived = false))
+                            c.message("${g.name} voltou para Metas", "Desfazer") { c.repo.saveGoal(g.copy(archived = true)) }
+                        }
+                    }) { Icon(Icons.Rounded.Unarchive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Restaurar") }
+                    if (saved > 0) OutlinedButton(onClick = { withdrawing = g }) { Text("Retirar") }
+                }
+            }
+        }
+    }
+    withdrawing?.let { g -> GoalMoneySheet(g, deposit = false, l = l, onDismiss = { withdrawing = null }) }
 }
 
 @Composable
@@ -605,7 +795,11 @@ fun GoalEditorScreen(id: Long?) {
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
 
     EditorScaffold(
-        title = if (existing == null) "Nova meta" else "Editar meta",
+        title = when {
+            existing == null -> "Nova meta"
+            existing.archived -> "Meta arquivada"
+            else -> "Editar meta"
+        },
         canSave = name.isNotBlank() && target > 0,
         onSave = {
             val g = (existing ?: Goal(name = name, target = target, color = color)).copy(
@@ -622,6 +816,13 @@ fun GoalEditorScreen(id: Long?) {
         },
         onDelete = existing?.let { { confirmDelete = true } },
     ) {
+        if (existing?.archived == true) {
+            io.github.h3yk0.cryo.ui.components.Banner(
+                Icons.Rounded.Inventory2, "Esta meta está arquivada. Ela não aparece em Planejar nem no Início.",
+                MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
+                Modifier.padding(bottom = 12.dp),
+            )
+        }
         OutlinedTextField(
             name, { name = it }, label = { Text("Nome da meta") }, singleLine = true, placeholder = { Text("Ex.: Viagem, Reserva de emergência") },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
@@ -646,8 +847,26 @@ fun GoalEditorScreen(id: Long?) {
         FieldLabel("Cor")
         ColorChooser(color) { color = it }
         if (existing != null) {
-            Spacer(Modifier.height(8.dp))
-            SwitchRow("Arquivar meta", existing.archived, { v -> c.launch { c.repo.saveGoal(existing.copy(archived = v)) } }, "Para metas concluídas")
+            Spacer(Modifier.height(20.dp))
+            if (existing.archived) {
+                OutlinedButton(
+                    onClick = {
+                        c.launch { c.repo.saveGoal(existing.copy(archived = false)); c.message("${existing.name} voltou para Metas") }
+                        nav.back()
+                    },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                ) { Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text("Restaurar meta") }
+            } else {
+                OutlinedButton(
+                    onClick = { archiveGoal(c, existing); nav.back() },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                ) { Icon(Icons.Rounded.Archive, null); Spacer(Modifier.width(8.dp)); Text("Arquivar meta") }
+                Text(
+                    "Para metas concluídas ou que você deixou de lado. Ela vai para Planejar › Metas › Metas arquivadas, e você pode restaurar depois.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.padding(top = 6.dp),
+                )
+            }
         }
     }
     if (pickDate) {

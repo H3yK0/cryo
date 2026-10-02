@@ -70,7 +70,6 @@ import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
-import io.github.h3yk0.cryo.domain.Snapshot
 import io.github.h3yk0.cryo.notify.Reminders
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
@@ -106,7 +105,7 @@ fun SettingsScreen() {
     val ctx = LocalContext.current
     val l = rememberLedger() ?: return LoadingBox()
     var editName by rememberSaveable { mutableStateOf(false) }
-    var pendingImport by remember { mutableStateOf<Snapshot?>(null) }
+    var pendingImport by remember { mutableStateOf<Backup.Restored?>(null) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
 
     val exportJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
@@ -262,14 +261,18 @@ fun SettingsScreen() {
             dismissButton = { TextButton(onClick = { editName = false }) { Text("Cancelar") } },
         )
     }
-    pendingImport?.let { snap ->
+    pendingImport?.let { restored ->
+        val snap = restored.snapshot
         ConfirmDialog(
             "Restaurar backup?",
             "O arquivo tem ${snap.txs.size} movimentações e ${snap.accounts.size} contas. Os dados atuais deste celular serão substituídos.",
             "Restaurar",
             onConfirm = {
                 pendingImport = null
-                c.launch { c.repo.replaceAll(snap); c.message("Backup restaurado") }
+                c.launch {
+                    c.repo.replaceAll(snap, fromOldVersion = restored.version < Backup.VERSION)
+                    c.message("Backup restaurado")
+                }
             },
             onDismiss = { pendingImport = null },
         )

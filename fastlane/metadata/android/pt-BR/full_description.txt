@@ -1,4 +1,4 @@
-Cryo é um app de organização financeira simples de usar e completo. Ele registra entradas, saídas, cartões, investimentos e metas, e mostra tudo numa visão geral clara.
+Cryo é um app de organização financeira simples de usar e completo. Ele registra entradas, saídas, cartões, dívidas, investimentos e metas, e mostra tudo numa visão geral clara.
 
 <b>Registre do jeito que você fala</b>
 Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cryo entende o valor, a categoria, a conta, a data e até as parcelas. Você só confere e salva. Ele também aprende com as suas correções.
@@ -10,9 +10,10 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <li>Calendário de calor: cada dia ganha uma cor conforme o quanto você gastou</li>
 <li>Fluxo do dinheiro: de onde o dinheiro veio e para onde foi</li>
 <li>Cartões de crédito: faturas, limite disponível e compras parceladas</li>
+<li>Dívidas: empréstimos, financiamentos, acordos e dinheiro que você deve a alguém, com parcelas, atrasos, quanto falta e quando você fica livre</li>
 <li>Contas fixas: aluguel, internet, salário, com lembrete antes do vencimento</li>
 <li>Orçamento por categoria, com aviso aos 80% e quando estourar</li>
-<li>Metas e caixinhas: mostra quanto guardar por mês para chegar lá</li>
+<li>Metas e caixinhas: mostra quanto guardar por mês para chegar lá, e as concluídas vão para o arquivo</li>
 <li>Investimentos: aportes, resgates e rendimento</li>
 <li>Transferências entre contas</li>
 </ul>

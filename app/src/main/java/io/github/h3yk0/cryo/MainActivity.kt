@@ -43,7 +43,8 @@ class MainActivity : FragmentActivity() {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         val container = (application as CryoApp).container
-        val openOnStart = intent?.getStringExtra(Reminders.EXTRA_OPEN)
+        // Só na primeira abertura: ao girar a tela, a navegação já está restaurada.
+        val openOnStart = if (savedInstanceState == null) intent?.getStringExtra(Reminders.EXTRA_OPEN) else null
         if (savedInstanceState == null) {
             // Leitura rápida para não mostrar nada antes do bloqueio.
             locked = runBlocking { container.settings.current().lockEnabled }
