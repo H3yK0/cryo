@@ -24,6 +24,7 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <li>Sem cadastro, sem anúncios e sem rastreamento</li>
 <li>Bloqueio com digital, rosto ou senha do celular</li>
 <li>Modo para esconder os valores da tela</li>
+<li>Backup automático numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras): quem envia o arquivo é o app da nuvem</li>
 <li>Backup em arquivo e exportação para planilha (CSV)</li>
 </ul>
 

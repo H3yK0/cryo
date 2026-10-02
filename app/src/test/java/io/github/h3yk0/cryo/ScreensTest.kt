@@ -3,6 +3,7 @@
 package io.github.h3yk0.cryo
 
 import android.app.Application
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -18,6 +19,10 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import io.github.h3yk0.cryo.data.AppSettings
+import io.github.h3yk0.cryo.data.Backup
+import io.github.h3yk0.cryo.data.BackupTarget
+import io.github.h3yk0.cryo.data.FolderMode
+import io.github.h3yk0.cryo.data.FoundBackup
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.data.db.Account
@@ -42,7 +47,9 @@ import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Navigator
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
+import io.github.h3yk0.cryo.ui.screens.AutoBackupScreen
 import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
+import io.github.h3yk0.cryo.ui.screens.ExistingBackupContent
 import io.github.h3yk0.cryo.ui.screens.DebtDetailScreen
 import io.github.h3yk0.cryo.ui.screens.DebtEditorScreen
 import io.github.h3yk0.cryo.ui.screens.DebtsScreen
@@ -83,7 +90,10 @@ class ScreensTest {
     @Before
     fun setUp() {
         c = AppContainer(ApplicationProvider.getApplicationContext())
-        runBlocking { seed(c, today) }
+        runBlocking {
+            seed(c, today)
+            c.autoBackup.clear()
+        }
         val deadline = System.currentTimeMillis() + 10_000
         while ((c.repo.snapshot.value?.txs?.size ?: 0) < 50 && System.currentTimeMillis() < deadline) Thread.sleep(50)
     }
@@ -170,6 +180,52 @@ class ScreensTest {
 
     @Config(qualifiers = "w393dp-h1400dp-xxhdpi")
     @Test fun debtDetailPaidOff() = shot("26_divida_quitada") { DebtDetailScreen(4) }
+
+    @Config(qualifiers = "w393dp-h1500dp-xxhdpi")
+    @Test fun autoBackupEmpty() = shot("29_backup_automatico") { AutoBackupScreen() }
+
+    @Config(qualifiers = "w393dp-h1900dp-xxhdpi")
+    @Test fun autoBackupConfigured() {
+        val hour = 3_600_000L
+        val now = System.currentTimeMillis()
+        runBlocking {
+            val b = c.autoBackup
+            b.setTarget(BackupTarget.FOLDER, "content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FCryo", "Documents/Cryo · no celular")
+            b.recordWritten(BackupTarget.FOLDER, now - 26 * hour, "a", 120)
+            b.recordUnchanged(BackupTarget.FOLDER, now - 2 * hour)
+            b.setTarget(BackupTarget.CLOUD, "content://com.google.android.apps.docs.storage/document/x", "cryo-backup.json · Google Drive")
+            b.recordWritten(BackupTarget.CLOUD, now - 50 * hour, "a", 120)
+            b.recordFailure(BackupTarget.CLOUD, now - 2 * hour, "Não consegui gravar (sem espaço ou a nuvem não respondeu). Vou tentar de novo mais tarde.")
+            b.setEnabled(true)
+        }
+        shot("30_backup_automatico_configurado") { AutoBackupScreen() }
+    }
+
+    @Config(qualifiers = "w393dp-h1700dp-xxhdpi")
+    @Test fun autoBackupDark() {
+        runBlocking {
+            c.autoBackup.setTarget(BackupTarget.FOLDER, "content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FCryo", "Documents/Cryo · no celular")
+            c.autoBackup.setFolderMode(FolderMode.REPLACE)
+            c.autoBackup.recordWritten(BackupTarget.FOLDER, System.currentTimeMillis() - 3_600_000L, "a", 120)
+            c.autoBackup.setEnabled(true)
+        }
+        shot("31_backup_automatico_escuro", dark = true) { AutoBackupScreen() }
+    }
+
+    @Config(qualifiers = "w393dp-h900dp-xxhdpi")
+    @Test fun existingBackupRestore() = shot("32_backup_encontrado_restaurar") {
+        val snap = c.repo.snapshot.value!!
+        val found = FoundBackup(Backup.Restored(snap, Backup.VERSION, System.currentTimeMillis() - 30 * 3_600_000L), currentTxs = 0, currentAccounts = 1)
+        Box(Modifier.padding(24.dp)) { ExistingBackupContent(found, BackupTarget.CLOUD, overwrites = true, replaceMode = false, {}, {}, {}) }
+    }
+
+    @Config(qualifiers = "w393dp-h900dp-xxhdpi")
+    @Test fun existingBackupKeep() = shot("33_backup_encontrado_continuar", dark = true) {
+        val snap = c.repo.snapshot.value!!
+        val old = snap.copy(txs = snap.txs.take(40), accounts = snap.accounts.take(2))
+        val found = FoundBackup(Backup.Restored(old, Backup.VERSION, System.currentTimeMillis() - 400 * 3_600_000L), currentTxs = snap.txs.size, currentAccounts = snap.accounts.size)
+        Box(Modifier.padding(24.dp)) { ExistingBackupContent(found, BackupTarget.FOLDER, overwrites = false, replaceMode = false, {}, {}, {}) }
+    }
 }
 
 /** Dados de exemplo realistas: 4 meses de vida financeira. */

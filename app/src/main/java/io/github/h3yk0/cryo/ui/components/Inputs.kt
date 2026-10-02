@@ -36,6 +36,7 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilledTonalIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
@@ -402,3 +403,23 @@ fun FieldLabel(text: String) {
 }
 
 fun defaultColor(seed: Int) = Palette.pick(seed)
+
+/** Opção de escolha única com título e explicação (botão redondo à esquerda). */
+@Composable
+fun ChoiceRow(title: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(MaterialTheme.shapes.medium)
+            .selectable(selected = selected, role = Role.RadioButton, onClick = onClick)
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        RadioButton(selected = selected, onClick = null)
+        Spacer(Modifier.width(10.dp))
+        Column {
+            Text(title, style = MaterialTheme.typography.bodyLarge)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}

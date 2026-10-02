@@ -121,10 +121,13 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     ) { p1, p2, adj -> Snapshot(p1.a, p1.c, p1.cat, p1.t, p1.i, p2.y, p2.g, p2.b, p2.bu, p2.d, adj) }
         .stateIn(scope, SharingStarted.Eagerly, null)
 
-    suspend fun loadOnce(): Snapshot = Snapshot(
-        dao.accountsOnce(), dao.cardsOnce(), dao.categoriesOnce(), dao.txsOnce(), dao.investmentsOnce(),
-        dao.yieldsOnce(), dao.goalsOnce(), dao.billsOnce(), dao.budgetsOnce(), dao.debtsOnce(), dao.debtAdjustmentsOnce(),
-    )
+    /** Fotografia de todos os dados, lida de uma vez só (numa transação, para não pegar nada pela metade). */
+    suspend fun loadOnce(): Snapshot = db.withTransaction {
+        Snapshot(
+            dao.accountsOnce(), dao.cardsOnce(), dao.categoriesOnce(), dao.txsOnce(), dao.investmentsOnce(),
+            dao.yieldsOnce(), dao.goalsOnce(), dao.billsOnce(), dao.budgetsOnce(), dao.debtsOnce(), dao.debtAdjustmentsOnce(),
+        )
+    }
 
     suspend fun ensureSeeded() {
         if (dao.categoryCount() == 0) dao.putCategories(DefaultData.categories())

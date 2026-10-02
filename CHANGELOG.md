@@ -1,5 +1,16 @@
 # Novidades
 
+## 1.2 — backup automático
+
+- **Backup automático** (Ajustes › Backup automático): o Cryo salva seus dados sozinho, todo dia, toda semana ou todo mês
+- Numa pasta do celular: substituir sempre o mesmo arquivo ou guardar várias cópias (5, 10, 30 ou todas); só as cópias automáticas mais antigas são apagadas, os outros arquivos da pasta nunca são mexidos
+- Na nuvem: um arquivo no Google Drive, OneDrive, Nextcloud ou outra nuvem instalada no celular, atualizado a cada backup. Quem envia o arquivo é o app da nuvem: o Cryo continua sem permissão de internet
+- Pasta e nuvem podem ser usadas juntas, e o botão "Fazer backup agora" salva na hora
+- Se nada mudou desde o último backup, nenhuma cópia igual é gravada
+- Proteções: o backup automático só substitui ou apaga arquivos que este celular gravou; ao escolher um lugar que já tem outro backup, o Cryo mostra os dois e pergunta (e dá para restaurar dali mesmo, útil ao trocar de celular); se outro celular alterar o arquivo, ou se muitas movimentações sumirem de repente, o backup pausa e avisa
+- Notificação quando um backup não pode ser salvo
+- Em Ajustes, "Fazer backup" agora se chama "Salvar uma cópia agora"
+
 ## 1.1 — dívidas e arquivo
 
 - Nova área de **Dívidas**: empréstimos, financiamentos, acordos, cartão/cheque especial e dinheiro devido a pessoas

@@ -24,6 +24,7 @@ Type or say a phrase like "almoço 32,50 no débito" (lunch 32.50 on debit) or "
 <li>No account, no ads, no tracking</li>
 <li>Lock with fingerprint, face or your device PIN</li>
 <li>Option to hide amounts on screen</li>
+<li>Automatic backup to a folder on your phone or to your cloud (Google Drive, Nextcloud and others): the cloud app does the uploading</li>
 <li>File backup and spreadsheet (CSV) export</li>
 </ul>
 

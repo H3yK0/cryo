@@ -42,6 +42,7 @@ import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.screens.AccountDetailScreen
 import io.github.h3yk0.cryo.ui.screens.AccountEditorScreen
+import io.github.h3yk0.cryo.ui.screens.AutoBackupScreen
 import io.github.h3yk0.cryo.ui.screens.BillEditorScreen
 import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
 import io.github.h3yk0.cryo.ui.screens.CardEditorScreen
@@ -85,6 +86,7 @@ object Routes {
     const val DEBT_EDIT = "debt/edit/{id}"
     const val WALLET_ARCHIVE = "wallet/archive"
     const val SETTINGS = "settings"
+    const val AUTO_BACKUP = "settings/backup"
     const val CATEGORIES = "categories"
     const val CATEGORY_EDIT = "category/edit/{id}?kind={kind}"
 
@@ -161,6 +163,7 @@ fun CryoRoot(openOnStart: String?) {
         when (openOnStart) {
             "bills" -> navigator.open(Routes.plan(1))
             "debts" -> navigator.go(Routes.DEBTS)
+            "backup" -> navigator.go(Routes.AUTO_BACKUP)
         }
     }
 
@@ -265,6 +268,7 @@ fun CryoRoot(openOnStart: String?) {
                 }
                 composable(Routes.WALLET_ARCHIVE) { WalletArchiveScreen() }
                 composable(Routes.SETTINGS) { SettingsScreen() }
+                composable(Routes.AUTO_BACKUP) { AutoBackupScreen() }
                 composable(Routes.CATEGORIES) { CategoriesScreen() }
                 composable(
                     Routes.CATEGORY_EDIT,

@@ -1,0 +1,1 @@
+Automatic backup: Cryo saves your data by itself to a folder on your phone, to your cloud (Google Drive, OneDrive, Nextcloud...) or both. Choose how often (daily, weekly or monthly) and, for the folder, whether to always replace the same file or keep several copies. The app still has no internet access. If the place you pick already has a backup, you can restore it right there.

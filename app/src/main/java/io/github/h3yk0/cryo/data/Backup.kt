@@ -36,11 +36,12 @@ object Backup {
     private fun <T> List<T>.toJson(f: (T) -> JSONObject) = JSONArray().also { arr -> forEach { arr.put(f(it)) } }
     private fun Any?.orNull(): Any = this ?: JSONObject.NULL
 
-    fun export(s: Snapshot): String {
+    /** [exportedAt] fixo (ex.: 0) gera sempre o mesmo texto para os mesmos dados: serve para saber se algo mudou. */
+    fun export(s: Snapshot, exportedAt: Long = System.currentTimeMillis()): String {
         val root = JSONObject()
         root.put("app", "Cryo")
         root.put("version", VERSION)
-        root.put("exportedAt", System.currentTimeMillis())
+        root.put("exportedAt", exportedAt)
         root.put("accounts", s.accounts.toJson {
             JSONObject().put("id", it.id).put("name", it.name).put("type", it.type.name)
                 .put("initialBalance", it.initialBalance).put("color", it.color).put("includeInTotal", it.includeInTotal)
@@ -104,7 +105,8 @@ object Backup {
         return root.toString(1)
     }
 
-    data class Restored(val snapshot: Snapshot, val version: Int)
+    /** [exportedAt]: quando o backup foi salvo (nulo se o arquivo não disser). */
+    data class Restored(val snapshot: Snapshot, val version: Int, val exportedAt: Long? = null)
 
     /** Lê um backup (de qualquer versão do Cryo). Lança exceção com mensagem amigável se o arquivo não for do Cryo. */
     fun import(json: String): Restored {
@@ -199,7 +201,7 @@ object Backup {
                 )
             }.orEmpty(),
         )
-        return Restored(snapshot, version)
+        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 })
     }
 
     /** CSV com ";" (abre direto no Excel/Planilhas em português). */

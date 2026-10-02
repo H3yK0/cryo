@@ -31,6 +31,7 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 - Os dados ficam só no celular. **O app não tem permissão de internet.**
 - Sem cadastro, sem anúncios e sem rastreamento.
 - Bloqueio com digital, rosto ou senha do aparelho.
+- **Backup automático** numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras), todo dia, toda semana ou todo mês. O Cryo grava o arquivo pelo seletor de arquivos do Android, e quem envia para a internet é o app da nuvem.
 - Backup em arquivo `.json` e exportação para planilha `.csv`, quando você quiser.
 
 O registro por voz usa o reconhecimento de fala que já está instalado no celular. Digitar a frase funciona sempre.

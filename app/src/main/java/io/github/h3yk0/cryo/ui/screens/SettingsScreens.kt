@@ -29,6 +29,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Gavel
@@ -49,6 +50,7 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +69,7 @@ import io.github.h3yk0.cryo.BuildConfig
 import io.github.h3yk0.cryo.data.Backup
 import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.Palette
+import io.github.h3yk0.cryo.data.SafFiles
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
@@ -107,6 +110,7 @@ fun SettingsScreen() {
     var editName by rememberSaveable { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<Backup.Restored?>(null) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
+    val autoBackup by c.autoBackup.flow.collectAsState(initial = null)
 
     val exportJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) c.launch {
@@ -204,11 +208,16 @@ fun SettingsScreen() {
             item { Header("Seus dados") }
             item {
                 Text(
-                    "Tudo fica guardado só neste celular. Faça backups de vez em quando e guarde o arquivo no Drive ou no computador.",
+                    "Tudo fica guardado só neste celular. Ligue o backup automático para não perder nada se o celular quebrar ou for trocado.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 4.dp),
                 )
-                SettingLink(Icons.Rounded.FileDownload, "Fazer backup", "Salva um arquivo .json com tudo") {
+                SettingLink(
+                    Icons.Rounded.Backup, "Backup automático",
+                    autoBackup?.let { autoBackupSummary(it) } ?: "Numa pasta do celular ou na sua nuvem",
+                    warning = autoBackup?.hasProblem == true,
+                ) { nav.go(Routes.AUTO_BACKUP) }
+                SettingLink(Icons.Rounded.FileDownload, "Salvar uma cópia agora", "Um arquivo .json com tudo, onde você escolher") {
                     exportJson.launch("cryo-backup-${LocalDate.now()}.json")
                 }
                 SettingLink(Icons.Rounded.FileUpload, "Restaurar backup", "Substitui os dados atuais pelos do arquivo") {
@@ -305,11 +314,7 @@ fun openLink(ctx: Context, url: String) {
 }
 
 private suspend fun writeText(ctx: Context, uri: Uri, text: String): Boolean = withContext(Dispatchers.IO) {
-    try {
-        ctx.contentResolver.openOutputStream(uri, "wt")?.use { it.write(text.toByteArray(Charsets.UTF_8)) } != null
-    } catch (_: Exception) {
-        false
-    }
+    runCatching { SafFiles.write(ctx.contentResolver, uri, text) }.isSuccess
 }
 
 @Composable
@@ -321,10 +326,17 @@ private fun Header(text: String) {
 }
 
 @Composable
-private fun SettingLink(icon: ImageVector, title: String, subtitle: String, danger: Boolean = false, onClick: () -> Unit) {
+private fun SettingLink(
+    icon: ImageVector,
+    title: String,
+    subtitle: String,
+    danger: Boolean = false,
+    warning: Boolean = false,
+    onClick: () -> Unit,
+) {
     ListItem(
         headlineContent = { Text(title, color = if (danger) MaterialTheme.colorScheme.error else Color.Unspecified) },
-        supportingContent = { Text(subtitle) },
+        supportingContent = { Text(subtitle, color = if (warning) MaterialTheme.colorScheme.error else Color.Unspecified) },
         leadingContent = { Icon(icon, null, tint = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) },
         trailingContent = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null) },
         modifier = Modifier.clickable(onClick = onClick),
