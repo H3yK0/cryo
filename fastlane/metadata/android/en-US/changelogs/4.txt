@@ -1,0 +1,1 @@
+Import bank statements: OFX, CSV, XLSX spreadsheets and PDF. You review the list before anything is added, with suggested categories; entries already in Cryo come unchecked and credit card bill payments are recognized. Developer mode with separate test data. Fix: the app lock now also shows when Android closes the app in the background.

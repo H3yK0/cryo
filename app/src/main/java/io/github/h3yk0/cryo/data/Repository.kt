@@ -59,7 +59,12 @@ data class AppSettings(
 
 private val Context.dataStore by preferencesDataStore("settings")
 
-class SettingsRepository(private val context: Context) {
+/** Ajustes do modo de teste (modo desenvolvedor): separados dos de verdade. */
+private val Context.testDataStore by preferencesDataStore("settings_test")
+
+class SettingsRepository(context: Context, sandbox: Boolean = false) {
+    private val store = if (sandbox) context.testDataStore else context.dataStore
+
     private object K {
         val theme = stringPreferencesKey("theme")
         val dynamic = booleanPreferencesKey("dynamic")
@@ -71,7 +76,7 @@ class SettingsRepository(private val context: Context) {
         val reminders = booleanPreferencesKey("reminders")
     }
 
-    val flow: Flow<AppSettings> = context.dataStore.data.map { p ->
+    val flow: Flow<AppSettings> = store.data.map { p ->
         AppSettings(
             themeMode = p[K.theme]?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() } ?: ThemeMode.SYSTEM,
             dynamicColor = p[K.dynamic] ?: true,
@@ -85,14 +90,17 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun current(): AppSettings = flow.first()
-    suspend fun setTheme(m: ThemeMode) = context.dataStore.edit { it[K.theme] = m.name }
-    suspend fun setDynamic(v: Boolean) = context.dataStore.edit { it[K.dynamic] = v }
-    suspend fun setLock(v: Boolean) = context.dataStore.edit { it[K.lock] = v }
-    suspend fun setHideValues(v: Boolean) = context.dataStore.edit { it[K.hide] = v }
-    suspend fun setOnboardingDone(v: Boolean) = context.dataStore.edit { it[K.onboarding] = v }
-    suspend fun setName(v: String) = context.dataStore.edit { it[K.name] = v.trim() }
-    suspend fun setReminders(v: Boolean) = context.dataStore.edit { it[K.reminders] = v }
-    suspend fun setDefaultAccount(id: Long?) = context.dataStore.edit {
+    suspend fun setTheme(m: ThemeMode) = store.edit { it[K.theme] = m.name }
+    suspend fun setDynamic(v: Boolean) = store.edit { it[K.dynamic] = v }
+    suspend fun setLock(v: Boolean) = store.edit { it[K.lock] = v }
+    suspend fun setHideValues(v: Boolean) = store.edit { it[K.hide] = v }
+    suspend fun setOnboardingDone(v: Boolean) = store.edit { it[K.onboarding] = v }
+    suspend fun setName(v: String) = store.edit { it[K.name] = v.trim() }
+    suspend fun setReminders(v: Boolean) = store.edit { it[K.reminders] = v }
+    /** Volta todos os ajustes ao padrão. */
+    suspend fun clear() = store.edit { it.clear() }
+
+    suspend fun setDefaultAccount(id: Long?) = store.edit {
         if (id == null) it.remove(K.defaultAccount) else it[K.defaultAccount] = id
     }
 }
@@ -129,7 +137,8 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         )
     }
 
-    suspend fun ensureSeeded() {
+    /** Categorias padrão na primeira vez. Numa transação: nunca cria as categorias em dobro, mesmo junto com outra gravação. */
+    suspend fun ensureSeeded() = db.withTransaction {
         if (dao.categoryCount() == 0) dao.putCategories(DefaultData.categories())
     }
 
@@ -164,6 +173,15 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     suspend fun deleteTx(tx: Tx, wholeGroup: Boolean = false) {
         if (wholeGroup && tx.installmentGroup != null) dao.deleteTxGroup(tx.installmentGroup) else dao.deleteTx(tx.id)
     }
+
+    /** Várias gravações que entram juntas ou não entram (se algo falhar no meio, nada muda). */
+    suspend fun <T> inTransaction(block: suspend () -> T): T = db.withTransaction(block)
+
+    /** Grava as movimentações de um extrato importado, todas de uma vez. Devolve os ids (para desfazer). */
+    suspend fun importTxs(txs: List<Tx>): List<Long> = db.withTransaction { txs.map { dao.putTx(it) } }
+
+    /** Desfaz uma importação. */
+    suspend fun undoImport(ids: List<Long>) = db.withTransaction { ids.chunked(500).forEach { dao.deleteTxs(it) } }
 
     /** Recoloca uma movimentação apagada (botão "Desfazer"). */
     suspend fun restore(txs: List<Tx>) = dao.putTxs(txs)

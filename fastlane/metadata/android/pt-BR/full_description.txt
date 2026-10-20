@@ -9,6 +9,7 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <li>Previsão do fim do mês: quanto deve sobrar no ritmo atual e quanto dá para gastar por dia</li>
 <li>Calendário de calor: cada dia ganha uma cor conforme o quanto você gastou</li>
 <li>Fluxo do dinheiro: de onde o dinheiro veio e para onde foi</li>
+<li>Importar extrato do banco (OFX, CSV, planilha XLSX ou PDF): você confere a lista antes de entrar, e o que já está no app fica de fora</li>
 <li>Cartões de crédito: faturas, limite disponível e compras parceladas</li>
 <li>Dívidas: empréstimos, financiamentos, acordos e dinheiro que você deve a alguém, com parcelas, atrasos, quanto falta e quando você fica livre</li>
 <li>Contas fixas: aluguel, internet, salário, com lembrete antes do vencimento</li>

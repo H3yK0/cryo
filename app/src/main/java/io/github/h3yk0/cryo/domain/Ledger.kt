@@ -379,7 +379,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
             val norm = t.description.normalized().trim()
             if (norm.isEmpty()) continue
             m.putIfAbsent(norm, t.categoryId)
-            norm.split(Regex("[^a-z0-9]+")).firstOrNull { it.length >= 3 && it !in PhraseParser.STOP_WORDS }
+            norm.split(Regex("[^a-z0-9]+")).firstOrNull { it.length >= 3 && it !in PhraseParser.STOP_WORDS && it !in BANK_WORDS }
                 ?.let { m.putIfAbsent(it, t.categoryId) }
         }
         m
@@ -389,6 +389,18 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
     fun recentDescriptions(type: TxType, limit: Int = 30): List<Tx> =
         s.txs.asSequence().filter { it.type == type && it.description.isNotBlank() && it.debtId == null && !it.description.contains(" · ") }
             .distinctBy { it.description.normalized() }.take(limit).toList()
+
+    private companion object {
+        /**
+         * Palavras que os bancos põem no começo de quase tudo ("PIX ENVIADO MARIA", "COMPRA DEBITO PADARIA"): não
+         * dizem nada da categoria, então o Cryo aprende pela próxima palavra.
+         */
+        val BANK_WORDS = setOf(
+            "pix", "ted", "doc", "tef", "enviado", "enviada", "recebida", "debito", "credito", "boleto", "tarifa", "saque",
+            "deposito", "pagto", "pgto", "transf", "compras", "estorno", "parcela", "automatico", "cartao", "elo", "visa",
+            "master", "mastercard",
+        )
+    }
 
     fun accountName(id: Long?): String = id?.let { account[it]?.name } ?: "—"
     fun cardName(id: Long?): String = id?.let { card[it]?.name } ?: "—"

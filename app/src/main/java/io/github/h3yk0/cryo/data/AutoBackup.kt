@@ -355,8 +355,9 @@ object SafFiles {
      * "wt" apaga o conteúdo anterior antes de gravar. Nem toda nuvem aceita esse modo (e cada uma recusa de um
      * jeito), então tenta "w" em seguida; se "w" também falhar, o erro dele é o que vale.
      */
-    fun write(resolver: ContentResolver, uri: Uri, text: String) {
-        val bytes = text.toByteArray(Charsets.UTF_8)
+    fun write(resolver: ContentResolver, uri: Uri, text: String) = writeBytes(resolver, uri, text.toByteArray(Charsets.UTF_8))
+
+    fun writeBytes(resolver: ContentResolver, uri: Uri, bytes: ByteArray) {
         val out = try {
             resolver.openOutputStream(uri, "wt")
         } catch (e: Exception) {
@@ -367,6 +368,32 @@ object SafFiles {
 
     fun read(resolver: ContentResolver, uri: Uri): String? =
         resolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+
+    /** O arquivo inteiro, ou null se for maior que [max] bytes (não lê o resto: um arquivo enorme não estoura a memória). */
+    fun readBytes(resolver: ContentResolver, uri: Uri, max: Int): ByteArray? {
+        val input = resolver.openInputStream(uri) ?: throw FileNotFoundException("Não foi possível abrir o arquivo")
+        return input.use {
+            val out = java.io.ByteArrayOutputStream()
+            val buf = ByteArray(64 * 1024)
+            var total = 0
+            while (true) {
+                val n = it.read(buf)
+                if (n < 0) break
+                total += n
+                if (total > max) return null
+                out.write(buf, 0, n)
+            }
+            out.toByteArray()
+        }
+    }
+
+    /** Nome do arquivo, como o seletor mostra (ou null se o provedor não disser). */
+    fun displayName(resolver: ContentResolver, uri: Uri): String? = runCatching {
+        resolver.query(uri, arrayOf(OpenableColumns.DISPLAY_NAME), null as Bundle?, null)?.use { c ->
+            val col = c.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+            if (col >= 0 && c.moveToFirst()) c.getString(col) else null
+        }
+    }.getOrNull()
 
     fun readStart(resolver: ContentResolver, uri: Uri, max: Int = 512): String? =
         resolver.openInputStream(uri)?.use { input ->
@@ -474,6 +501,8 @@ class AutoBackupRunner(
     private val storage: BackupStorage,
     private val clock: () -> Long = System::currentTimeMillis,
     private val zone: () -> ZoneId = ZoneId::systemDefault,
+    /** Falso no modo de teste: os dados de exemplo nunca vão para os lugares de backup de verdade. */
+    val enabled: Boolean = true,
 ) {
     private val mutex = Mutex()
 
@@ -482,8 +511,9 @@ class AutoBackupRunner(
      * Nunca substitui um arquivo que não é deste celular: isso só depois que a pessoa confere o lugar ([adopt]).
      * [only]: só um destino.
      */
-    suspend fun run(force: Boolean, only: BackupTarget? = null): List<BackupOutcome> = mutex.withLock {
-        withContext(Dispatchers.IO) { runLocked(force, only) }
+    suspend fun run(force: Boolean, only: BackupTarget? = null): List<BackupOutcome> {
+        if (!enabled) return emptyList()
+        return mutex.withLock { withContext(Dispatchers.IO) { runLocked(force, only) } }
     }
 
     /**
@@ -662,7 +692,8 @@ class AutoBackupRunner(
     }
 
     private fun parse(text: String): Parsed = try {
-        Parsed.Ok(Backup.import(text))
+        // Uma cópia dos dados de teste (modo desenvolvedor) nunca é oferecida para restaurar nem é substituída sozinha.
+        Backup.import(text).let { if (it.testMode) Parsed.NotCryo else Parsed.Ok(it) }
     } catch (e: Exception) {
         when {
             // O começo do arquivo diz que é do Cryo: é um backup, só que não deu para ler.

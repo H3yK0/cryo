@@ -81,6 +81,7 @@ interface CryoDao {
 
     // ---------- exclusão ----------
     @Query("DELETE FROM transactions WHERE id = :id") suspend fun deleteTx(id: Long)
+    @Query("DELETE FROM transactions WHERE id IN (:ids)") suspend fun deleteTxs(ids: List<Long>)
     @Query("DELETE FROM transactions WHERE installmentGroup = :group") suspend fun deleteTxGroup(group: String)
     @Query("DELETE FROM transactions WHERE billId = :billId AND billYm = :ym") suspend fun deleteBillPayment(billId: Long, ym: Int)
     @Query("DELETE FROM accounts WHERE id = :id") suspend fun deleteAccount(id: Long)
@@ -166,16 +167,25 @@ object DebtCategorySeed {
         Account::class, CreditCard::class, Category::class, Tx::class, Investment::class,
         InvestmentYield::class, Goal::class, Bill::class, Budget::class, Debt::class, DebtAdjustment::class,
     ],
-    version = 2,
+    version = 3,
     exportSchema = true,
-    autoMigrations = [AutoMigration(from = 1, to = 2, spec = Migration1To2::class)],
+    autoMigrations = [
+        AutoMigration(from = 1, to = 2, spec = Migration1To2::class),
+        // Versão 2 → 3 (Cryo 1.3): coluna importKey nas movimentações (importação de extratos).
+        AutoMigration(from = 2, to = 3),
+    ],
 )
 @TypeConverters(Converters::class)
 abstract class CryoDatabase : RoomDatabase() {
     abstract fun dao(): CryoDao
 
     companion object {
-        fun build(context: Context): CryoDatabase =
-            Room.databaseBuilder(context, CryoDatabase::class.java, "cryo.db").build()
+        const val NAME = "cryo.db"
+
+        /** Banco do modo de teste (modo desenvolvedor): fica separado dos dados de verdade. */
+        const val TEST_NAME = "cryo-teste.db"
+
+        fun build(context: Context, name: String = NAME): CryoDatabase =
+            Room.databaseBuilder(context, CryoDatabase::class.java, name).build()
     }
 }

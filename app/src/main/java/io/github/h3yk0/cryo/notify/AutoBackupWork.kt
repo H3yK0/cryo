@@ -86,7 +86,8 @@ object AutoBackupWork {
 
 class AutoBackupWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
-        val c = (applicationContext as CryoApp).container
+        // Sempre os dados de verdade, mesmo com as telas no modo de teste.
+        val c = (applicationContext as CryoApp).real
         val before = c.autoBackup.current()
         val outcomes = c.backupRunner.run(force = false)
         // Avisa só quando um destino passa a ter problema; se continuar assim, não repete o aviso a cada tentativa.

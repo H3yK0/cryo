@@ -1,0 +1,1 @@
+Importar extrato do banco: OFX, CSV, planilha XLSX e PDF. Você confere a lista antes de entrar, com categorias sugeridas; o que já está no Cryo fica desmarcado e o pagamento da fatura do cartão é reconhecido. Modo desenvolvedor com dados de teste separados. Correção: o bloqueio aparece também quando o Android fecha o app em segundo plano.

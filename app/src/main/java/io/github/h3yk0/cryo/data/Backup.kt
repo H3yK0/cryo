@@ -36,12 +36,16 @@ object Backup {
     private fun <T> List<T>.toJson(f: (T) -> JSONObject) = JSONArray().also { arr -> forEach { arr.put(f(it)) } }
     private fun Any?.orNull(): Any = this ?: JSONObject.NULL
 
-    /** [exportedAt] fixo (ex.: 0) gera sempre o mesmo texto para os mesmos dados: serve para saber se algo mudou. */
-    fun export(s: Snapshot, exportedAt: Long = System.currentTimeMillis()): String {
+    /**
+     * [exportedAt] fixo (ex.: 0) gera sempre o mesmo texto para os mesmos dados: serve para saber se algo mudou.
+     * [testMode]: cópia dos dados de teste (modo desenvolvedor); ela nunca substitui os dados de verdade.
+     */
+    fun export(s: Snapshot, exportedAt: Long = System.currentTimeMillis(), testMode: Boolean = false): String {
         val root = JSONObject()
         root.put("app", "Cryo")
         root.put("version", VERSION)
         root.put("exportedAt", exportedAt)
+        if (testMode) root.put("testMode", true)
         root.put("accounts", s.accounts.toJson {
             JSONObject().put("id", it.id).put("name", it.name).put("type", it.type.name)
                 .put("initialBalance", it.initialBalance).put("color", it.color).put("includeInTotal", it.includeInTotal)
@@ -66,6 +70,8 @@ object Backup {
                 .put("investmentId", it.investmentId.orNull()).put("goalId", it.goalId.orNull())
                 .put("billId", it.billId.orNull()).put("billYm", it.billYm.orNull()).put("note", it.note)
                 .put("createdAt", it.createdAt).put("debtId", it.debtId.orNull())
+                // Só aparece em movimentações importadas: o backup de quem não importa nada não muda.
+                .apply { it.importKey?.let { k -> put("importKey", k) } }
         })
         root.put("investments", s.investments.toJson {
             JSONObject().put("id", it.id).put("name", it.name).put("kind", it.kind.name).put("color", it.color)
@@ -105,8 +111,8 @@ object Backup {
         return root.toString(1)
     }
 
-    /** [exportedAt]: quando o backup foi salvo (nulo se o arquivo não disser). */
-    data class Restored(val snapshot: Snapshot, val version: Int, val exportedAt: Long? = null)
+    /** [exportedAt]: quando o backup foi salvo (nulo se o arquivo não disser). [testMode]: cópia dos dados de teste. */
+    data class Restored(val snapshot: Snapshot, val version: Int, val exportedAt: Long? = null, val testMode: Boolean = false)
 
     /** Lê um backup (de qualquer versão do Cryo). Lança exceção com mensagem amigável se o arquivo não for do Cryo. */
     fun import(json: String): Restored {
@@ -148,6 +154,7 @@ object Backup {
                     investmentId = it.optLongOrNull("investmentId"), goalId = it.optLongOrNull("goalId"),
                     billId = it.optLongOrNull("billId"), billYm = it.optIntOrNull("billYm"), note = it.optString("note"),
                     createdAt = it.optLong("createdAt"), debtId = it.optLongOrNull("debtId"),
+                    importKey = it.optStr("importKey"),
                 )
             },
             investments = root.getJSONArray("investments").mapObj {
@@ -201,7 +208,7 @@ object Backup {
                 )
             }.orEmpty(),
         )
-        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 })
+        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 }, root.optBoolean("testMode", false))
     }
 
     /** CSV com ";" (abre direto no Excel/Planilhas em português). */

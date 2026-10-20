@@ -1,5 +1,19 @@
 # Novidades
 
+## 1.3 — importar extrato e modo desenvolvedor
+
+- **Importar extrato do banco** (Ajustes › Seus dados, ou o botão ↥ na tela de uma conta ou de um cartão): OFX, CSV, planilha XLSX (e o ".xls" que muitos bancos geram) e PDF, lidos no próprio celular
+- Antes de importar, você confere a lista: categoria sugerida em cada linha (pelas palavras-chave e pelo que você já lançou), e dá para mudar a descrição, a categoria ou deixar a linha de fora
+- O que já está no Cryo fica desmarcado: movimentações importadas antes e as que parecem com algo que já está lá (mesmo valor, até 3 dias de diferença), inclusive o pagamento da fatura que já entrou pelo extrato do cartão
+- Fatura do cartão: escolha em qual fatura as compras entram (ou pela data de cada compra); se o banco exporta as compras como valores positivos, o Cryo vira os sinais sozinho e avisa
+- Pagamento de fatura no extrato da conta vira pagamento do cartão (o gasto não conta duas vezes); estornos entram como crédito na fatura
+- CSV e planilha: o Cryo acha as colunas sozinho, mesmo com o nome do banco antes da tabela; quando não tem certeza, pergunta. PDF com senha também funciona (a senha não é guardada)
+- Depois de importar: comparação com o saldo informado pelo banco e botão para desfazer tudo
+- **Modo desenvolvedor** (7 toques na versão, em Ajustes › Sobre): modo de teste com um banco de dados separado e dados de exemplo, extratos de exemplo em todos os formatos, JSON de teste e relatório da leitura com versão anônima para pedir ajuda sem mostrar os seus dados. Nada do modo de teste chega aos dados de verdade
+- Lembretes e backup automático continuam cuidando dos dados de verdade mesmo no modo de teste
+- Correção: o bloqueio com digital ou senha agora também aparece quando o Android fecha o app em segundo plano e a tela volta sozinha
+- Depois de desbloquear, o app volta exatamente para a tela em que você estava (antes voltava para o Início)
+
 ## 1.2 — backup automático
 
 - **Backup automático** (Ajustes › Backup automático): o Cryo salva seus dados sozinho, todo dia, toda semana ou todo mês

@@ -33,6 +33,7 @@ import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Schedule
+import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.SettingsBackupRestore
 import androidx.compose.material.icons.rounded.Smartphone
 import androidx.compose.material3.BasicAlertDialog
@@ -79,6 +80,7 @@ import io.github.h3yk0.cryo.ui.components.ChoiceRow
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
 import io.github.h3yk0.cryo.ui.components.CryoCard
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
+import io.github.h3yk0.cryo.ui.components.EmptyState
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.LocalContainer
@@ -88,6 +90,7 @@ import io.github.h3yk0.cryo.ui.components.SwitchRow
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
 
@@ -146,6 +149,7 @@ fun AutoBackupScreen() {
     val c = LocalContainer.current
     val nav = LocalNav.current
     val ctx = LocalContext.current
+    if (c.sandbox) return TestModeBackupNotice(onBack = nav::back)
     val state by c.autoBackup.flow.collectAsState(initial = null)
     val s = state ?: return LoadingBox()
     var running by remember { mutableStateOf(false) }
@@ -637,5 +641,25 @@ private fun remove(c: AppContainer, ctx: Context, t: BackupTarget, uri: String?)
         val left = c.autoBackup.current()
         runCatching { AutoBackupWork.sync(ctx, left.enabled && left.hasTarget) }
         c.message(if (t == BackupTarget.FOLDER) "A pasta não será mais usada. Os arquivos que já estão lá continuam." else "A nuvem não será mais usada. O arquivo que já está lá continua.")
+    }
+}
+
+/** No modo de teste (modo desenvolvedor), os ajustes do backup ficam fora de alcance: ele cuida dos dados de verdade. */
+@Composable
+private fun TestModeBackupNotice(onBack: () -> Unit) {
+    val ctx = LocalContext.current
+    var leaving by remember { mutableStateOf(false) }
+    Scaffold(topBar = { CryoTopBar("Backup automático", onBack = onBack) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+        Column(Modifier.fillMaxSize().padding(pad)) {
+            EmptyState(
+                Icons.Rounded.Science, "Você está no modo de teste",
+                "O backup automático continua salvando os seus dados de verdade, como sempre. Para ver ou mudar os ajustes " +
+                    "do backup, saia do modo de teste.",
+            ) {
+                Button(onClick = { leaving = true; switchTestMode(ctx, false) { leaving = false } }, enabled = !leaving) {
+                    Text("Sair do modo de teste")
+                }
+            }
+        }
     }
 }

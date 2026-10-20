@@ -12,6 +12,7 @@ import androidx.compose.ui.test.onRoot
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performTextInput
 import com.github.takahirom.roborazzi.captureRoboImage
+import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Rule
 import org.junit.Test
@@ -31,6 +32,8 @@ class AppFlowTest {
         rule.waitUntil(ms) { rule.onAllNodesWithText(t, substring = true).fetchSemanticsNodes().isNotEmpty() }
 
     @Test fun primeiroUsoERegistroRapido() {
+        // Os ajustes ficam num DataStore que o Robolectric não zera entre testes: começa do zero de propósito.
+        runBlocking { (rule.activity.application as CryoApp).real.settings.clear() }
         waitText("Bem-vindo ao Cryo")
         rule.onNodeWithText("Começar").performClick()
         waitText("Sua conta principal")

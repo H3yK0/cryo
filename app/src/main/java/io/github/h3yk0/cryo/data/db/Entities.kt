@@ -79,6 +79,7 @@ data class Category(
     indices = [
         Index("date"), Index("accountId"), Index("cardId"), Index("categoryId"),
         Index("installmentGroup"), Index("billId"), Index("investmentId"), Index("goalId"), Index("debtId"),
+        Index("importKey"),
     ],
 )
 data class Tx(
@@ -105,6 +106,8 @@ data class Tx(
     val createdAt: Long = System.currentTimeMillis(),
     /** Dívida ligada a este lançamento (pagamento ou dinheiro emprestado). */
     val debtId: Long? = null,
+    /** Marca de quem veio de um extrato importado (para não importar a mesma movimentação duas vezes). */
+    val importKey: String? = null,
 )
 
 @Entity(tableName = "investments")

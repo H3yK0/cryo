@@ -11,5 +11,10 @@
         <include domain="file" path="." />
         <!-- As permissões das pastas e nuvens do backup automático não passam para o celular novo: lá ele é escolhido de novo. -->
         <exclude domain="file" path="datastore/auto_backup.preferences_pb" />
+        <!-- O modo de teste (modo desenvolvedor) fica só neste celular. -->
+        <exclude domain="database" path="cryo-teste.db" />
+        <exclude domain="database" path="cryo-teste.db-wal" />
+        <exclude domain="database" path="cryo-teste.db-shm" />
+        <exclude domain="file" path="datastore/settings_test.preferences_pb" />
     </device-transfer>
 </data-extraction-rules>

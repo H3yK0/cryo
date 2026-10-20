@@ -35,6 +35,19 @@ class LedgerTest {
         assertEquals(120000L, Money.parse("1200"))
     }
 
+    @Test fun aprendeComAPalavraQueImportaNaoComOPix() {
+        val txs = listOf(
+            Tx(id = 1, type = TxType.EXPENSE, amount = 5000, date = today, description = "PIX ENVIADO MARIA SILVA", categoryId = 7, accountId = 1),
+            Tx(id = 2, type = TxType.EXPENSE, amount = 1000, date = today, description = "Padaria", categoryId = 3, accountId = 1),
+        )
+        val learned = Ledger(Snapshot(txs = txs), today).learnedCategories
+        assertEquals(7L, learned["maria"])
+        assertEquals(null, learned["pix"])
+        assertEquals(null, learned["enviado"])
+        assertEquals(7L, learned["pix enviado maria silva"])
+        assertEquals(3L, learned["padaria"])
+    }
+
     @Test fun faturaPorDataDeCompra() {
         val c = CreditCard(id = 1, name = "C", limitAmount = 0, closingDay = 3, dueDay = 10, color = 0)
         assertEquals(YearMonth.of(2026, 9), CardMath.invoiceFor(c, LocalDate.of(2026, 9, 2)))

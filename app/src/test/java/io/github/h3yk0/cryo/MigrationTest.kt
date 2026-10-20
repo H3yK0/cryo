@@ -24,13 +24,67 @@ import java.io.File
 import java.time.LocalDate
 
 /**
- * Quem atualiza da 1.0 para a 1.1 não pode perder nada: monta um banco exatamente como o da 1.0
- * (a partir do esquema salvo em app/schemas/.../1.json) e abre com a versão atual.
+ * Quem atualiza não pode perder nada: monta um banco exatamente como o de uma versão antiga
+ * (a partir do esquema salvo em app/schemas/...) e abre com a versão atual.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [35], application = TestApp::class)
 class MigrationTest {
     private val ctx = ApplicationProvider.getApplicationContext<Context>()
+
+    /** Cria um banco vazio exatamente como o da [version] (pelo esquema salvo em app/schemas). */
+    private fun createSchema(file: File, version: Int): SQLiteDatabase {
+        val schema = JSONObject(File("schemas/io.github.h3yk0.cryo.data.db.CryoDatabase/$version.json").readText()).getJSONObject("database")
+        assertEquals(version, schema.getInt("version"))
+        file.parentFile?.mkdirs()
+        val db = SQLiteDatabase.openOrCreateDatabase(file, null)
+        val entities = schema.getJSONArray("entities")
+        for (i in 0 until entities.length()) {
+            val e = entities.getJSONObject(i)
+            val table = e.getString("tableName")
+            db.execSQL(e.getString("createSql").replace("\${TABLE_NAME}", table))
+            val idx = e.optJSONArray("indices") ?: continue
+            for (j in 0 until idx.length()) db.execSQL(idx.getJSONObject(j).getString("createSql").replace("\${TABLE_NAME}", table))
+        }
+        val setup = schema.getJSONArray("setupQueries")
+        for (i in 0 until setup.length()) db.execSQL(setup.getString(i))
+        return db
+    }
+
+    @Test fun atualizaDa11Para13SemPerderNada() = runBlocking {
+        val file = ctx.getDatabasePath("cryo.db")
+        file.delete()
+        val db = createSchema(file, 2)
+        DefaultData.categories().forEach { c ->
+            db.insert(
+                "categories", null,
+                ContentValues().apply {
+                    put("name", c.name); put("kind", c.kind.name); put("icon", c.icon); put("color", c.color)
+                    put("keywords", c.keywords); put("archived", 0); put("sortOrder", c.sortOrder)
+                },
+            )
+        }
+        db.insert(
+            "transactions", null,
+            ContentValues().apply {
+                put("type", "EXPENSE"); put("amount", 4_200); put("date", LocalDate.of(2026, 10, 1).toEpochDay())
+                put("description", "Mercado"); put("installmentNumber", 0); put("installmentTotal", 0)
+                put("note", ""); put("createdAt", 0)
+            },
+        )
+        db.version = 2
+        db.close()
+
+        val room = CryoDatabase.build(ctx)
+        val dao = room.dao()
+        val tx = dao.txById(1)!!
+        assertEquals(4_200L, tx.amount)
+        assertNull(tx.importKey)
+        // a coluna nova funciona
+        val id = dao.putTx(tx.copy(id = 0, importKey = "id:XYZ"))
+        assertEquals("id:XYZ", dao.txById(id)!!.importKey)
+        room.close()
+    }
 
     private fun createVersion1(file: File) {
         val schema = JSONObject(File("schemas/io.github.h3yk0.cryo.data.db.CryoDatabase/1.json").readText()).getJSONObject("database")

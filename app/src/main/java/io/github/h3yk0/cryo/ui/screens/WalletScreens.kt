@@ -27,6 +27,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Savings
@@ -458,6 +459,7 @@ fun AccountDetailScreen(id: Long) {
     Scaffold(
         topBar = {
             CryoTopBar(a.name, onBack = nav::back, actions = {
+                IconButton(onClick = { nav.go(Routes.import(account = id)) }) { Icon(Icons.Rounded.UploadFile, "Importar extrato desta conta") }
                 IconButton(onClick = { nav.go(Routes.accountEdit(id)) }) { Icon(Icons.Rounded.Edit, "Editar conta") }
             })
         },
@@ -614,6 +616,7 @@ fun CardDetailScreen(id: Long) {
     Scaffold(
         topBar = {
             CryoTopBar("Cartão ${card.name}", onBack = nav::back, actions = {
+                IconButton(onClick = { nav.go(Routes.import(card = id)) }) { Icon(Icons.Rounded.UploadFile, "Importar fatura deste cartão") }
                 IconButton(onClick = { nav.go(Routes.cardEdit(id)) }) { Icon(Icons.Rounded.Edit, "Editar cartão") }
             })
         },

@@ -20,6 +20,7 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 - **Registro por frase ou voz.** Escreva ou fale "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cryo entende o valor, a categoria, a conta, a data e as parcelas. Você só confere e salva.
 - **Previsão do fim do mês.** Mostra quanto deve sobrar no ritmo atual e quanto dá para gastar por dia.
 - **Calendário de calor e fluxo do dinheiro.** Veja em quais dias você mais gasta, de onde o dinheiro veio e para onde foi.
+- **Importar extrato do banco.** OFX, CSV, planilha (XLSX) ou PDF: você confere a lista antes de entrar, com categorias sugeridas, o que já está no Cryo desmarcado e o pagamento da fatura do cartão reconhecido. Detalhes em [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
 - **Cartões de crédito.** Faturas, limite disponível e compras parceladas, cada parcela na fatura certa.
 - **Dívidas.** Empréstimos, financiamentos, acordos e dinheiro que você deve a alguém, separados do resto: quanto falta, parcelas atrasadas, quanto da renda vai para parcelas e quando você fica livre.
 - **Planejamento.** Contas fixas com lembrete, orçamento por categoria e metas com valor mensal sugerido (as concluídas vão para o arquivo).
@@ -38,7 +39,7 @@ O registro por voz usa o reconhecimento de fala que já está instalado no celul
 
 ## Instalação
 
-- **F-Droid:** em breve.
+- **F-Droid:** [f-droid.org/packages/io.github.h3yk0.cryo](https://f-droid.org/packages/io.github.h3yk0.cryo/)
 - **GitHub:** baixe o `Cryo-<versão>.apk` na página de [Releases](https://github.com/H3yK0/cryo/releases).
 
 Os dois são o mesmo arquivo, assinado pela mesma chave: o F-Droid compila o código de novo e só publica se o resultado for idêntico ao APK daqui (compilação reproduzível). Por isso dá para atualizar por qualquer um dos dois sem desinstalar.
@@ -65,7 +66,8 @@ Para gerar de novo as imagens da página do F-Droid (pasta `fastlane/`):
 | Pasta | Conteúdo |
 |---|---|
 | `domain/` | Regras sem Android: saldos, faturas e parcelas, dívidas, previsão, fluxo do dinheiro e o interpretador de frases (`PhraseParser.kt`) |
-| `data/` | Banco de dados (Room), ajustes, backup e categorias padrão |
+| `importer/` | Leitura de extratos (OFX, CSV, XLSX, PDF e o JSON de teste) e a conferência antes de importar |
+| `data/` | Banco de dados (Room), ajustes, backup, categorias padrão e dados de exemplo |
 | `ui/` | Telas em Jetpack Compose com Material 3 |
 | `notify/` | Lembretes de contas fixas e parcelas de dívidas (WorkManager) |
 
@@ -73,9 +75,11 @@ Para gerar de novo as imagens da página do F-Droid (pasta `fastlane/`):
 
 Sugestões e relatos de problemas são bem-vindos na aba [Issues](https://github.com/H3yK0/cryo/issues).
 
+O app tem um **modo desenvolvedor** (7 toques na versão, em Ajustes › Sobre) com um modo de teste que usa um banco de dados separado e dados de exemplo, extratos de exemplo em todos os formatos e um relatório de leitura que pode ser compartilhado em versão anônima. Se o extrato do seu banco não for lido direito, veja como ajudar sem mandar os seus dados em [docs/IMPORTACAO.md](docs/IMPORTACAO.md#ajudar-a-melhorar-a-leitura).
+
 ## English
 
-Cryo is a simple yet complete personal finance app for Android: log expenses by typing or speaking a phrase, see an end-of-month forecast, a spending heatmap and a money-flow chart, and manage credit cards with installments, debts, recurring bills, budgets, savings goals and investments. Everything stays on the device: the app has no internet permission, no ads and no tracking. The interface is currently in Brazilian Portuguese only.
+Cryo is a simple yet complete personal finance app for Android: log expenses by typing or speaking a phrase, import bank statements (OFX, CSV, XLSX or PDF) after reviewing them, see an end-of-month forecast, a spending heatmap and a money-flow chart, and manage credit cards with installments, debts, recurring bills, budgets, savings goals and investments. Everything stays on the device: the app has no internet permission, no ads and no tracking. The interface is currently in Brazilian Portuguese only.
 
 ## Licença
 

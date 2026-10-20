@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -36,7 +37,9 @@ import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.FileUpload
+import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.TableChart
+import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -57,6 +60,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -111,10 +115,14 @@ fun SettingsScreen() {
     var pendingImport by remember { mutableStateOf<Backup.Restored?>(null) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
     val autoBackup by c.autoBackup.flow.collectAsState(initial = null)
+    // O bloqueio vale para o app inteiro (no modo de teste, vem dos ajustes de verdade).
+    val lock by c.lockSettings.flow.collectAsState(initial = null)
+    val devMode by c.dev.enabledFlow.collectAsState(initial = c.dev.enabled)
+    var versionTaps by remember { mutableIntStateOf(0) }
 
     val exportJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) c.launch {
-            val ok = writeText(ctx, uri, Backup.export(c.repo.loadOnce()))
+            val ok = writeText(ctx, uri, Backup.export(c.repo.loadOnce(), testMode = c.sandbox))
             c.message(if (ok) "Backup salvo" else "Não foi possível salvar o arquivo")
         }
     }
@@ -129,7 +137,11 @@ fun SettingsScreen() {
             try {
                 val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
                     ?: throw IllegalArgumentException("Não consegui ler o arquivo.")
-                pendingImport = Backup.import(text)
+                val restored = Backup.import(text)
+                if (restored.testMode && !c.sandbox) {
+                    throw IllegalArgumentException("Este backup é do modo de teste (dados de exemplo) e não pode substituir os seus dados de verdade.")
+                }
+                pendingImport = restored
             } catch (e: Exception) {
                 c.message(e.message ?: "Arquivo inválido")
             }
@@ -170,12 +182,12 @@ fun SettingsScreen() {
             item { Header("Privacidade e segurança") }
             item {
                 SwitchRow(
-                    "Bloquear com digital ou senha", s.lockEnabled,
+                    "Bloquear com digital ou senha", lock?.lockEnabled ?: s.lockEnabled,
                     { v ->
                         if (v && !canUseDeviceLock(ctx)) {
                             c.message("Cadastre uma digital, rosto ou senha de tela no Android primeiro")
                         } else {
-                            c.launch { c.settings.setLock(v) }
+                            c.launch { c.lockSettings.setLock(v) }
                         }
                     },
                     "Pede o desbloqueio ao abrir o app",
@@ -184,7 +196,9 @@ fun SettingsScreen() {
             }
 
             item { Header("Lembretes") }
-            item {
+            if (c.sandbox) {
+                item { TestModeNote("No modo de teste, os lembretes continuam avisando das suas contas de verdade.") }
+            } else item {
                 SwitchRow(
                     "Avisar contas a vencer", s.remindersEnabled,
                     { v ->
@@ -207,18 +221,27 @@ fun SettingsScreen() {
 
             item { Header("Seus dados") }
             item {
-                Text(
-                    "Tudo fica guardado só neste celular. Ligue o backup automático para não perder nada se o celular quebrar ou for trocado.",
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 4.dp),
-                )
-                SettingLink(
-                    Icons.Rounded.Backup, "Backup automático",
-                    autoBackup?.let { autoBackupSummary(it) } ?: "Numa pasta do celular ou na sua nuvem",
-                    warning = autoBackup?.hasProblem == true,
-                ) { nav.go(Routes.AUTO_BACKUP) }
+                if (c.sandbox) {
+                    TestModeNote(
+                        "Modo de teste: os dados abaixo são de exemplo. O backup automático continua salvando os seus dados de verdade.",
+                    )
+                } else {
+                    Text(
+                        "Tudo fica guardado só neste celular. Ligue o backup automático para não perder nada se o celular quebrar ou for trocado.",
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 4.dp),
+                    )
+                    SettingLink(
+                        Icons.Rounded.Backup, "Backup automático",
+                        autoBackup?.let { autoBackupSummary(it) } ?: "Numa pasta do celular ou na sua nuvem",
+                        warning = autoBackup?.hasProblem == true,
+                    ) { nav.go(Routes.AUTO_BACKUP) }
+                }
+                SettingLink(Icons.Rounded.UploadFile, "Importar extrato do banco", "OFX, CSV, planilha ou PDF · você confere antes de entrar") {
+                    nav.go(Routes.import())
+                }
                 SettingLink(Icons.Rounded.FileDownload, "Salvar uma cópia agora", "Um arquivo .json com tudo, onde você escolher") {
-                    exportJson.launch("cryo-backup-${LocalDate.now()}.json")
+                    exportJson.launch(if (c.sandbox) "cryo-teste-backup-${LocalDate.now()}.json" else "cryo-backup-${LocalDate.now()}.json")
                 }
                 SettingLink(Icons.Rounded.FileUpload, "Restaurar backup", "Substitui os dados atuais pelos do arquivo") {
                     importJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
@@ -229,6 +252,16 @@ fun SettingsScreen() {
                 SettingLink(Icons.Rounded.DeleteForever, "Apagar todos os dados", "Começar do zero", danger = true) { confirmErase = true }
             }
 
+            if (devMode) {
+                item { Header("Desenvolvedor") }
+                item {
+                    SettingLink(
+                        Icons.Rounded.Science, "Modo desenvolvedor",
+                        if (c.sandbox) "Usando dados de teste · arquivos de exemplo e relatórios" else "Dados de teste, arquivos de exemplo e relatórios",
+                    ) { nav.go(Routes.DEV) }
+                }
+            }
+
             item { Header("Sobre") }
             item {
                 SettingLink(Icons.Rounded.Code, "Código-fonte", "github.com/H3yK0/cryo · sugestões e problemas são bem-vindos") {
@@ -237,8 +270,29 @@ fun SettingsScreen() {
                 SettingLink(Icons.Rounded.Gavel, "Licença", "GNU GPL v3 ou posterior · software livre") {
                     openLink(ctx, "$SOURCE_URL/blob/main/LICENSE")
                 }
-                CryoCard(Modifier.padding(top = 12.dp)) {
+                // 7 toques na versão ligam o modo desenvolvedor (como no Android).
+                CryoCard(
+                    Modifier.padding(top = 12.dp),
+                    onClick = {
+                        if (devMode) {
+                            c.message("O modo desenvolvedor já está ligado")
+                        } else {
+                            versionTaps++
+                            if (versionTaps >= DEV_TAPS) {
+                                versionTaps = 0
+                                c.dev.enabled = true
+                                c.message("Modo desenvolvedor ligado")
+                            }
+                        }
+                    },
+                ) {
                     Text("Cryo ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleSmall)
+                    if (!devMode && versionTaps >= 3) {
+                        Text(
+                            (DEV_TAPS - versionTaps).let { n -> if (n == 1) "Mais 1 toque para o modo desenvolvedor" else "Mais $n toques para o modo desenvolvedor" },
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
                     Text(
                         "Organização financeira com registro por voz, previsão do mês e fluxo do dinheiro. " +
                             "Funciona sem internet, sem anúncios e sem rastreamento.",
@@ -304,6 +358,18 @@ fun SettingsScreen() {
 }
 
 const val SOURCE_URL = "https://github.com/H3yK0/cryo"
+
+/** Toques na versão do app para ligar o modo desenvolvedor. */
+private const val DEV_TAPS = 7
+
+@Composable
+private fun TestModeNote(text: String) {
+    Row(Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+        Icon(Icons.Rounded.Science, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.tertiary)
+        Spacer(Modifier.width(10.dp))
+        Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
 
 /** Abre um link no navegador (o Cryo não tem permissão de internet: quem abre é o navegador). */
 fun openLink(ctx: Context, url: String) {

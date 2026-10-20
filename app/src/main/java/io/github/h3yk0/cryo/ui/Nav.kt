@@ -6,6 +6,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
@@ -51,6 +52,10 @@ import io.github.h3yk0.cryo.ui.screens.CategoryEditorScreen
 import io.github.h3yk0.cryo.ui.screens.DebtDetailScreen
 import io.github.h3yk0.cryo.ui.screens.DebtEditorScreen
 import io.github.h3yk0.cryo.ui.screens.DebtsScreen
+import io.github.h3yk0.cryo.ui.screens.DevScreen
+import io.github.h3yk0.cryo.ui.screens.ImportReportScreen
+import io.github.h3yk0.cryo.ui.screens.ImportScreen
+import io.github.h3yk0.cryo.ui.screens.TestModeStrip
 import io.github.h3yk0.cryo.ui.screens.GoalEditorScreen
 import io.github.h3yk0.cryo.ui.screens.GoalsArchiveScreen
 import io.github.h3yk0.cryo.ui.screens.WalletArchiveScreen
@@ -87,6 +92,9 @@ object Routes {
     const val WALLET_ARCHIVE = "wallet/archive"
     const val SETTINGS = "settings"
     const val AUTO_BACKUP = "settings/backup"
+    const val IMPORT = "import?account={account}&card={card}"
+    const val IMPORT_REPORT = "import/report"
+    const val DEV = "settings/dev"
     const val CATEGORIES = "categories"
     const val CATEGORY_EDIT = "category/edit/{id}?kind={kind}"
 
@@ -105,6 +113,7 @@ object Routes {
     fun debt(id: Long) = "debt/$id"
     fun debtEdit(id: Long = 0) = "debt/edit/$id"
     fun categoryEdit(id: Long = 0, kind: CategoryKind = CategoryKind.EXPENSE) = "category/edit/$id?kind=${kind.name}"
+    fun import(account: Long = 0, card: Long = 0) = "import?account=$account&card=$card"
 }
 
 class Navigator(private val nav: NavHostController) {
@@ -172,14 +181,18 @@ fun CryoRoot(openOnStart: String?) {
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
                 if (showBar) {
-                    NavigationBar {
-                        tabs.forEach { t ->
-                            NavigationBarItem(
-                                selected = currentPattern == t.pattern,
-                                onClick = { navigator.tab(t.route) },
-                                icon = { Icon(t.icon, null) },
-                                label = { Text(t.label, maxLines = 1) },
-                            )
+                    Column {
+                        // Modo de teste (modo desenvolvedor): sempre à vista nas abas, para ninguém confundir com os dados de verdade.
+                        if (c.sandbox) TestModeStrip()
+                        NavigationBar {
+                            tabs.forEach { t ->
+                                NavigationBarItem(
+                                    selected = currentPattern == t.pattern,
+                                    onClick = { navigator.tab(t.route) },
+                                    icon = { Icon(t.icon, null) },
+                                    label = { Text(t.label, maxLines = 1) },
+                                )
+                            }
                         }
                     }
                 }
@@ -269,6 +282,20 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.WALLET_ARCHIVE) { WalletArchiveScreen() }
                 composable(Routes.SETTINGS) { SettingsScreen() }
                 composable(Routes.AUTO_BACKUP) { AutoBackupScreen() }
+                composable(
+                    Routes.IMPORT,
+                    arguments = listOf(
+                        navArgument("account") { type = NavType.LongType; defaultValue = 0L },
+                        navArgument("card") { type = NavType.LongType; defaultValue = 0L },
+                    ),
+                ) { e ->
+                    ImportScreen(
+                        presetAccountId = e.arguments?.getLong("account")?.takeIf { it > 0 },
+                        presetCardId = e.arguments?.getLong("card")?.takeIf { it > 0 },
+                    )
+                }
+                composable(Routes.IMPORT_REPORT) { ImportReportScreen() }
+                composable(Routes.DEV) { DevScreen() }
                 composable(Routes.CATEGORIES) { CategoriesScreen() }
                 composable(
                     Routes.CATEGORY_EDIT,

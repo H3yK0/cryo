@@ -100,7 +100,8 @@ fun debtReminderText(r: DebtReminder): String =
 class BillReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val app = applicationContext as CryoApp
-        val c = app.container
+        // Sempre os dados de verdade, mesmo com as telas no modo de teste.
+        val c = app.real
         if (!c.settings.current().remindersEnabled || !Reminders.canNotify(applicationContext)) return Result.success()
         val today = LocalDate.now()
         val ledger = Ledger(c.repo.loadOnce(), today)
