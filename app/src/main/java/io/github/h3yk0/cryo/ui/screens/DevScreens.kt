@@ -5,12 +5,14 @@ package io.github.h3yk0.cryo.ui.screens
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
+import android.content.ClipDescription
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.os.PersistableBundle
 import android.provider.DocumentsContract
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -394,6 +396,7 @@ fun ImportReportScreen() {
     val report by c.lastImport.collectAsState()
     var anonymous by remember { mutableStateOf(true) }
     var confirmShare by remember { mutableStateOf(false) }
+    var confirmCopy by remember { mutableStateOf(false) }
     // Limite de tamanho: o texto passa pelo Android para copiar e compartilhar, e lá há um teto.
     val text = remember(report, anonymous) {
         report?.text(anonymous, BuildConfig.VERSION_NAME)?.let { t ->
@@ -412,6 +415,18 @@ fun ImportReportScreen() {
         } catch (_: Exception) {
             c.message("Não consegui compartilhar o relatório")
         }
+    }
+
+    /** [sensitive]: o relatório completo. No Android 13 ou mais novo, ele não aparece na prévia do que foi copiado. */
+    fun copy(t: String, sensitive: Boolean) {
+        val copied = runCatching {
+            val clip = ClipData.newPlainText("Relatório do Cryo", t)
+            if (sensitive && Build.VERSION.SDK_INT >= 33) {
+                clip.description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
+            }
+            ctx.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(clip)
+        }.isSuccess
+        if (!copied) c.message("Não consegui copiar o relatório") else if (Build.VERSION.SDK_INT < 33) c.message("Relatório copiado")
     }
 
     Scaffold(topBar = { CryoTopBar("Relatório da leitura", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
@@ -443,12 +458,7 @@ fun ImportReportScreen() {
             }
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = {
-                    val copied = runCatching {
-                        ctx.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("Relatório do Cryo", text))
-                    }.isSuccess
-                    if (!copied) c.message("Não consegui copiar o relatório") else if (Build.VERSION.SDK_INT < 33) c.message("Relatório copiado")
-                }) {
+                OutlinedButton(onClick = { if (anonymous) copy(text, sensitive = false) else confirmCopy = true }) {
                     Icon(Icons.Rounded.ContentCopy, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Copiar")
                 }
                 OutlinedButton(onClick = { if (anonymous) share(text) else confirmShare = true }) {
@@ -477,6 +487,16 @@ fun ImportReportScreen() {
             "Compartilhar mesmo assim",
             onConfirm = { confirmShare = false; share(text) },
             onDismiss = { confirmShare = false },
+        )
+    }
+    if (confirmCopy && text != null) {
+        ConfirmDialog(
+            "Copiar o relatório completo?",
+            "Ele tem as suas movimentações de verdade (descrições e valores), e o app em que você colar vai ver tudo. " +
+                "Para pedir ajuda, use a versão anônima.",
+            "Copiar mesmo assim",
+            onConfirm = { confirmCopy = false; copy(text, sensitive = true) },
+            onDismiss = { confirmCopy = false },
         )
     }
 }

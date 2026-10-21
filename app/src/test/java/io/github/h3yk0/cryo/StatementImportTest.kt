@@ -596,6 +596,27 @@ class StatementImportTest {
         assertFalse(st.isCard)
     }
 
+    @Test fun pdfQueMarcaSoAsEntradasTrataOResto() {
+        // Banco que põe "+" (ou "C") só nas entradas: o que vem sem sinal é saída, mesmo sem palavra de compra.
+        val plus = """
+            Extrato de conta - Outubro de 2026
+            01/10 SALARIO EMPRESA X +3.000,00
+            02/10 PADARIA PAO 12,50
+            03/10 TED JOAO +200,00
+            04/10 MERCADO BOM 80,00
+        """.trimIndent()
+        val st = PdfStatement.parse(listOf(plus), today)
+        assertEquals(listOf(300000L, -1250L, 20000L, -8000L), st.lines.map { it.amount })
+        assertTrue(st.notes.contains("Só as entradas têm sinal no PDF (o resto é saída)"))
+
+        val credit = "Extrato de conta\n01/10/2026 SALARIO EMPRESA X 3.000,00 C\n02/10/2026 PADARIA PAO 12,50"
+        assertEquals(listOf(300000L, -1250L), PdfStatement.parse(listOf(credit), today).lines.map { it.amount })
+
+        // Com saídas marcadas no mesmo PDF, continua valendo a regra de antes: sem sinal é entrada.
+        val both = "Extrato de conta\n01/10/2026 PIX ENVIADO MARIA -150,00\n02/10/2026 TED JOAO +200,00\n03/10/2026 REEMBOLSO LOJA 30,00"
+        assertEquals(listOf(-15000L, 20000L, 3000L), PdfStatement.parse(listOf(both), today).lines.map { it.amount })
+    }
+
     @Test fun xlsQueNaVerdadeEPaginaComTabela() {
         val html = """
             <html><head><meta charset="utf-8"><style>td { font-size: 10px }</style></head><body>

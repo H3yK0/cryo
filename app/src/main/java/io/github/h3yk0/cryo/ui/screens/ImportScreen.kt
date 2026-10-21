@@ -652,6 +652,16 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
                     )
                 }
             }
+            val unpaired = vm.selectedUnpairedPayments
+            if (unpaired > 0) {
+                item {
+                    Banner(
+                        Icons.Rounded.CreditCard, unpairedText(unpaired, t.isCard),
+                        CryoTheme.colors.warningContainer, CryoTheme.colors.onWarningContainer,
+                        Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                    )
+                }
+            }
             val flagged = rows.count { it.flag != RowFlag.NONE && !it.selected }
             if (flagged > 0) {
                 item {
@@ -691,6 +701,18 @@ private fun flaggedText(rows: List<ImportRow>): String {
             ?.let { if (it == 1) "1 pagamento de fatura" else "$it pagamentos de fatura" },
     )
     return "Ficaram desmarcadas: ${parts.joinToString(", ")}. Toque numa linha para conferir."
+}
+
+/** Pagamentos de fatura marcados sem o outro lado: o que vai acontecer e como resolver (se for o caso). */
+private fun unpairedText(n: Int, card: Boolean): String = when {
+    card && n == 1 -> "1 pagamento da fatura marcado vai entrar como crédito no cartão, sem sair de nenhuma conta. " +
+        "Se ele saiu de uma conta sua, toque na linha e escolha a conta."
+    card -> "$n pagamentos da fatura marcados vão entrar como crédito no cartão, sem sair de nenhuma conta. " +
+        "Se eles saíram de uma conta sua, toque em cada linha e escolha a conta."
+    n == 1 -> "1 pagamento de fatura marcado vai entrar como gasto comum. Se as compras desse cartão já estão no Cryo, " +
+        "o gasto conta duas vezes: toque na linha e escolha o cartão."
+    else -> "$n pagamentos de fatura marcados vão entrar como gasto comum. Se as compras desses cartões já estão no Cryo, " +
+        "o gasto conta duas vezes: toque em cada linha e escolha o cartão."
 }
 
 @Composable

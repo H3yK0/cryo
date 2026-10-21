@@ -23,6 +23,7 @@ import androidx.compose.ui.test.hasSetTextAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
 import androidx.compose.ui.test.performScrollTo
@@ -248,6 +249,36 @@ class ImportFlowTest {
         val card = runBlocking { c.repo.loadOnce().cards.single() }
         assertEquals(ImportPlanner.paidInvoice(card, today.minusDays(15)), payment.invoiceYm)
         assertEquals(null, payment.categoryId)
+    }
+
+    @Test fun marcarTodasAvisaPagamentoDeFaturaSemCartao() {
+        show()
+        pick(SampleFiles.ofx(today))
+        assertEquals(0, vm.selectedUnpairedPayments)
+        rule.onNodeWithContentDescription("Mais opções").performClick()
+        rule.onNodeWithText("Marcar todas").performClick()
+        waitFor(5_000) { vm.selectedCount == 13 }
+        // Sem o cartão escolhido, o pagamento entraria como gasto comum: o Cryo avisa.
+        assertEquals(1, vm.selectedUnpairedPayments)
+        assertTrue(exists("1 pagamento de fatura marcado vai entrar como gasto comum"))
+
+        // Escolhendo o cartão, ele vira pagamento do cartão e o aviso some.
+        rule.onNode(hasScrollAction()).performScrollToNode(hasText("Pagamento Fatura Cartão"))
+        rule.onNodeWithText("Pagamento Fatura Cartão").performClick()
+        waitFor(5_000) { exists("É o pagamento de qual cartão?") }
+        rule.onNodeWithText("Roxo").performClick()
+        rule.onNodeWithText("Pronto").performScrollTo().performClick()
+        waitFor(5_000) { vm.selectedUnpairedPayments == 0 }
+        assertEquals(13, vm.selectedCount)
+    }
+
+    @Test fun marcarTodasNaFaturaAvisaPagamentoSemConta() {
+        show()
+        pick(SampleFiles.csvCard(today))
+        rule.onNodeWithContentDescription("Mais opções").performClick()
+        rule.onNodeWithText("Marcar todas").performClick()
+        waitFor(5_000) { vm.selectedUnpairedPayments == 1 }
+        assertTrue(exists("1 pagamento da fatura marcado vai entrar como crédito no cartão, sem sair de nenhuma conta"))
     }
 
     @Test fun colunasQueOCryoNaoEntendeuAPessoaEscolhe() {

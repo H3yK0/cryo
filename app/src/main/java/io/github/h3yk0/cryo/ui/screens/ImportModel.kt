@@ -373,6 +373,12 @@ class ImportModel(
     /** Marcadas que parecem já estar no Cryo (vão ficar duplicadas se entrarem). */
     val selectedDuplicates: Int get() = rows.count { it.selected && (it.flag == RowFlag.IMPORTED_BEFORE || it.flag == RowFlag.LOOKS_DUPLICATE) }
 
+    /**
+     * Marcadas que parecem pagamento de fatura, mas sem o outro lado escolhido (ex.: depois de "Marcar todas"): entram
+     * como gasto comum na conta (ou crédito no cartão, sem sair de conta nenhuma), e a fatura pode contar duas vezes.
+     */
+    val selectedUnpairedPayments: Int get() = rows.count { it.selected && it.canBeInvoicePayment && it.pairedId == null }
+
     val selectedCount: Int get() = rows.count { it.selected }
 
     /* ------------------------------------- importar ------------------------------------ */

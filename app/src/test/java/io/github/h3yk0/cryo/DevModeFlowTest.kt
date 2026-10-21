@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo
 
+import android.content.ClipDescription
+import android.content.ClipboardManager
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -26,6 +28,7 @@ import io.github.h3yk0.cryo.importer.StatementReader
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -129,6 +132,19 @@ class DevModeFlowTest {
         assertFalse(exists("Maria Silva"))
         assertTrue(exists("arquivo.csv"))
         rule.onRoot().captureRoboImage("screenshots/45_relatorio_anonimo.png")
+
+        // A versão completa tem os dados de verdade: copiar também pede confirmação, e a cópia vai marcada como sensível.
+        val clipboard = app.getSystemService(ClipboardManager::class.java)
+        rule.onNodeWithText("Completo").performClick()
+        waitText("Esta versão tem as suas movimentações de verdade")
+        rule.onNodeWithText("Copiar").performClick()
+        waitText("Copiar o relatório completo?")
+        assertNull(clipboard.primaryClip)
+        rule.onNodeWithText("Copiar mesmo assim").performClick()
+        waitFor { clipboard.primaryClip != null }
+        val clip = clipboard.primaryClip!!
+        assertTrue(clip.getItemAt(0).text.contains("Maria Silva", ignoreCase = true))
+        assertTrue(clip.description.extras?.getBoolean(ClipDescription.EXTRA_IS_SENSITIVE) == true)
         app.real.dev.enabled = false
         runBlocking { app.real.settings.clear() }
     }

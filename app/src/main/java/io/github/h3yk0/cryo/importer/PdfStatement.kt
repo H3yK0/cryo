@@ -53,10 +53,11 @@ object PdfStatement {
             throw StatementException("Não encontrei texto nesse PDF. Se ele for uma foto ou digitalização, o Cryo não consegue ler.")
         }
         val reference = Values.reference(FULL_DATE.findAll(text.normalized()).mapNotNull { Values.date(it.value) }, today)
-        // O PDF marca as saídas com sinal (- ou D)? Então o que não tem sinal é entrada.
-        val docHasSigns = rawLines.any { line ->
-            MONEY.findAll(line).any { m -> m.groupValues[1].isNotBlank() || m.groupValues[3].isNotBlank() || m.groupValues[5].isNotBlank() || m.groupValues[6].isNotBlank() }
-        }
+        // O PDF marca as saídas com sinal (- ou D)? Então o que não tem sinal é entrada. Se marca só as entradas
+        // (+ ou C), é o contrário: o que não tem sinal é saída.
+        val marks = rawLines.flatMap { MONEY.findAll(it).toList() }
+        val docMarksOut = marks.any(::marksOut)
+        val docMarksIn = !docMarksOut && marks.any(::marksIn)
 
         val lines = ArrayList<StatementLine>()
         val skipped = ArrayList<SkippedLine>()
@@ -101,13 +102,12 @@ object PdfStatement {
             val token = first.value
             var cents = Values.amount(token.replace("−", "-"), decimalComma = true)
             if (cents == null) { skipped += SkippedLine(line, "valor ilegível"); continue }
-            val explicit = first.groupValues[1].isNotBlank() || first.groupValues[3].isNotBlank() ||
-                first.groupValues[5].isNotBlank() || first.groupValues[6].isNotBlank()
-            if (!explicit) {
+            if (!marksOut(first) && !marksIn(first)) {
                 val d = description.normalized()
                 cents = when {
                     section != 0 -> section * abs(cents)
-                    docHasSigns -> abs(cents)
+                    docMarksOut -> abs(cents)
+                    docMarksIn -> -abs(cents)
                     longest(IN_WORDS, d) > longest(OUT_WORDS, d) -> abs(cents)
                     else -> -abs(cents) // fatura de cartão: tudo positivo, e quase tudo é compra
                 }
@@ -122,10 +122,23 @@ object PdfStatement {
             "${pages.size} página(s), ${rawLines.size} linhas de texto",
             "Datas sem ano: ano tirado de \"${reference.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))}\"",
             if (isCard) "Parece fatura de cartão" else "Parece extrato de conta",
-            if (docHasSigns) "As saídas têm sinal no PDF (o resto é entrada)" else "Sem sinais no PDF: entradas e saídas pelas palavras",
+            when {
+                docMarksOut -> "As saídas têm sinal no PDF (o resto é entrada)"
+                docMarksIn -> "Só as entradas têm sinal no PDF (o resto é saída)"
+                else -> "Sem sinais no PDF: entradas e saídas pelas palavras"
+            },
         )
         return Statement(StatementFormat.PDF, lines, skipped, isCard = isCard, notes = notes)
     }
+
+    /** Valor marcado como saída: "-12,50", "R$ -12,50", "12,50-", "12,50 D". */
+    private fun marksOut(m: MatchResult): Boolean {
+        val g = m.groupValues
+        return g[1].trim().let { it.startsWith("-") || it.startsWith("−") } || g[3].isNotBlank() || g[5].isNotBlank() || g[6].trim() == "D"
+    }
+
+    /** Valor marcado como entrada: "+12,50", "12,50 C". */
+    private fun marksIn(m: MatchResult): Boolean = m.groupValues[1].trim().startsWith("+") || m.groupValues[6].trim() == "C"
 
     private fun isSummary(description: String): Boolean {
         val n = description.normalized()
