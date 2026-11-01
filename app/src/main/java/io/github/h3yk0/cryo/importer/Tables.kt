@@ -28,6 +28,8 @@ data class ColumnMap(
     val id: Int? = null,
     /** Outras colunas de texto que completam a descrição (ex.: "Lançamento" + "Detalhes"). */
     val extra: List<Int> = emptyList(),
+    /** Coluna "Parcela" ("2/3") das faturas que guardam a parcela à parte da descrição. */
+    val installment: Int? = null,
 ) {
     val isValid: Boolean get() = date >= 0 && description >= 0 && (amount != null || credit != null || debit != null)
 }
@@ -81,7 +83,7 @@ object Csv {
 /* ================================ colunas e linhas ================================ */
 
 object Columns {
-    private enum class Role { DATE, DESCRIPTION, AMOUNT, CREDIT, DEBIT, BALANCE, KIND, ID }
+    private enum class Role { DATE, DESCRIPTION, AMOUNT, CREDIT, DEBIT, BALANCE, KIND, ID, INSTALLMENT }
 
     private val NAMES: List<Pair<Role, List<String>>> = listOf(
         Role.DATE to listOf("data", "date", "dt", "data lancamento", "data de lancamento", "data da transacao", "data mov",
@@ -95,12 +97,21 @@ object Columns {
         Role.BALANCE to listOf("saldo", "balance", "saldo (r$)", "saldo do dia"),
         Role.KIND to listOf("c/d", "d/c", "tipo", "natureza", "cd", "dc"),
         Role.ID to listOf("identificador", "id", "fitid", "codigo da transacao"),
+        Role.INSTALLMENT to listOf("parcela", "parcelas", "parcelamento", "numero da parcela", "n parcela"),
     )
+
+    /**
+     * Colunas que não são a descrição nem o valor em reais, mesmo começando com "valor" ou "nome": o valor em dólar e a
+     * cotação (faturas com compras internacionais) e o nome ou o final do cartão de quem fez a compra.
+     */
+    private val IGNORED = Regex("""us\$|u\$|\busd\b|dolar|cotacao|nome (?:no|do) cartao|final do cartao|titular|portador""")
+
+    private val INSTALLMENT_TEXT = Regex("""^(\d{1,3})\s*(?:/|de)\s*(\d{1,3})$""")
 
     private fun roleOf(header: String): Role? {
         val n = header.normalized().replace(Regex("\\s+"), " ").trim().trimEnd(':')
         // "Data: 03/10/2026", "Créditos: R$ 5.230,00": é um resumo com valores, não o nome de uma coluna.
-        if (n.isEmpty() || n.any { it.isDigit() }) return null
+        if (n.isEmpty() || n.any { it.isDigit() } || IGNORED.containsMatchIn(n)) return null
         NAMES.firstOrNull { (_, names) -> n in names }?.let { return it.first }
         return NAMES.firstOrNull { (_, names) -> names.any { it.length >= 4 && n.startsWith(it) } }?.first
     }
@@ -123,6 +134,7 @@ object Columns {
                 kind = roles.indexOf(Role.KIND).takeIf { it >= 0 && it != description && isKindColumn(rows.drop(r + 1).take(60), it) },
                 id = roles.indexOf(Role.ID).takeIf { it >= 0 },
                 extra = texts.drop(1),
+                installment = roles.indexOf(Role.INSTALLMENT).takeIf { it >= 0 },
             )
         }
         return byContent(rows)
@@ -221,7 +233,7 @@ object Columns {
             }
             if (cents == 0L) { skipped += SkippedLine(source, "valor zero"); continue }
             val id = map.id?.let { row.getOrNull(it)?.text?.trim() }?.takeIf { it.isNotEmpty() }
-            lines += StatementLine(date, Values.prettify(description.ifBlank { "Movimentação" }), cents!!, id, source)
+            lines += StatementLine(date, Values.prettify(description.ifBlank { "Movimentação" }) + installment(row, map, description), cents!!, id, source)
         }
 
         val headers = headers(rows, map)
@@ -231,9 +243,21 @@ object Columns {
             "Data: ${name(map.date)}", "Descrição: " + (listOf(map.description) + map.extra).joinToString(" + ") { name(it).orEmpty() },
             map.amount?.let { "Valor: ${name(it)}" }, map.credit?.let { "Entradas: ${name(it)}" }, map.debit?.let { "Saídas: ${name(it)}" },
             map.kind?.let { "Crédito/débito: ${name(it)}" }, map.id?.let { "Identificador: ${name(it)}" },
+            map.installment?.let { "Parcela: ${name(it)}" },
             when (decimalComma) { true -> "Centavos depois da vírgula"; false -> "Centavos depois do ponto"; null -> null },
         )
         return Statement(format, lines, skipped, isCard = looksLikeCard(rows, map), notes = notes + colNotes)
+    }
+
+    /**
+     * " - Parcela 2/3" quando a parcela vem numa coluna própria. Sem isso, a parcela 3/3 de uma compra (mesma data da
+     * compra, mesma descrição, mesmo valor da 2/3) pareceria a mesma linha do mês anterior.
+     */
+    private fun installment(row: List<Cell>, map: ColumnMap, description: String): String {
+        val m = map.installment?.let { row.getOrNull(it)?.text?.trim() }?.let { INSTALLMENT_TEXT.find(it.normalized()) } ?: return ""
+        val (n, of) = m.groupValues[1].toInt() to m.groupValues[2].toInt()
+        if (of <= 1 || description.normalized().contains("parc")) return ""
+        return " - Parcela $n/$of"
     }
 
     /** Faturas de cartão costumam ter "title"/"estabelecimento" e nenhuma coluna de saldo. */

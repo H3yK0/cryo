@@ -50,6 +50,10 @@ object Ofx {
                 name.contains(memo, ignoreCase = true) -> name
                 else -> "$name $memo"
             }.ifBlank { m["TRNTYPE"] ?: "Movimentação" }
+            // Como nos outros formatos: alguns bancos põem o saldo como se fosse uma movimentação ("SALDO ANTERIOR",
+            // "S A L D O"), às vezes com o valor do saldo; isso não é dinheiro entrando nem saindo.
+            if (cents == 0L) { skipped += SkippedLine(source, "valor zero"); return }
+            if (Values.isBalanceOrTotal(description)) { skipped += SkippedLine(source, "linha de saldo ou total"); return }
             lines += StatementLine(date, Values.prettify(description), cents, m["FITID"]?.trim()?.takeIf { it.isNotEmpty() }, source)
         }
 

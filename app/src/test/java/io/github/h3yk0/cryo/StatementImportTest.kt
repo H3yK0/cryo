@@ -366,7 +366,7 @@ class StatementImportTest {
             // lançado à mão um dia depois: parece repetida
             Tx(id = 50, type = TxType.EXPENSE, amount = 2590, date = d(2), description = "padaria", accountId = 1),
             // já importada antes (mesmo identificador do banco)
-            Tx(id = 51, type = TxType.INCOME, amount = 350000, date = d(2), description = "Salário", accountId = 1, importKey = "a1|id:A2"),
+            Tx(id = 51, type = TxType.INCOME, amount = 350000, date = d(2), description = "Salário", accountId = 1, importKey = "a1|ofx.id:A2"),
         )
         val snap = Snapshot(accounts = listOf(account), categories = categories, txs = existing)
         val rows = ImportPlanner.plan(st, ImportTarget(accountId = 1), snap, emptyMap(), invert = false)
@@ -376,12 +376,12 @@ class StatementImportTest {
         assertEquals(catId("Alimentação"), rows[0].categoryId)
         assertEquals(catId("Salário"), rows[1].categoryId)
         assertEquals(listOf(TxType.EXPENSE, TxType.INCOME, TxType.EXPENSE), rows.map { it.type })
-        assertEquals("a1|id:A3", rows[2].key)
+        assertEquals("a1|ofx.id:A3", rows[2].key)
 
         val tx = ImportPlanner.toTx(rows[2], ImportTarget(accountId = 1), null, now = 0)
         assertEquals(1L, tx.accountId)
         assertEquals(15000L, tx.amount)
-        assertEquals("a1|id:A3", tx.importKey)
+        assertEquals("a1|ofx.id:A3", tx.importKey)
     }
 
     @Test fun faturaNoCartao() {
@@ -507,9 +507,9 @@ class StatementImportTest {
         val st = ok(read(csv))
         val rows = ImportPlanner.plan(st, ImportTarget(accountId = 1), Snapshot(categories = categories), emptyMap(), false)
         // o banco repetiu o identificador: as duas linhas continuam sendo duas
-        assertEquals(listOf("a1|id:000000", "a1|id:000000#1"), rows.map { it.key })
+        assertEquals(listOf("a1|csv.id:000000", "a1|csv.id:000000#1"), rows.map { it.key })
         // o mesmo identificador em outra conta não é "já importada"
-        val other = Tx(id = 70, type = TxType.EXPENSE, amount = 99900, date = d(20, 8), description = "Outra coisa", accountId = 2, importKey = "a2|id:000000")
+        val other = Tx(id = 70, type = TxType.EXPENSE, amount = 99900, date = d(20, 8), description = "Outra coisa", accountId = 2, importKey = "a2|csv.id:000000")
         val again = ImportPlanner.plan(st, ImportTarget(accountId = 1), Snapshot(categories = categories, txs = listOf(other)), emptyMap(), false)
         assertEquals(listOf(RowFlag.NONE, RowFlag.NONE), again.map { it.flag })
         // na mesma conta, sim (as duas, cada uma pela sua chave)
@@ -656,5 +656,93 @@ class StatementImportTest {
         val other = ok(read("Data;Descrição;Valor\n01/10/2026;ABC XYZ 123;-40,00\n"))
         val unknown = ImportPlanner.plan(other, ImportTarget(accountId = 1), Snapshot(categories = categories), emptyMap(), invert = false)
         assertEquals(catId("Outros gastos"), unknown.single().categoryId)
+    }
+
+    /* --------------------------- revisão final (antes do APK de teste) --------------------------- */
+
+    @Test fun pdfComSaldoNegativoNaColunaAoLado() {
+        // Conta no cheque especial: o "-" do saldo (coluna ao lado) não é do valor da movimentação.
+        val text = """
+            Extrato de conta - Outubro de 2026
+            Data Histórico Valor Saldo
+            01/10 SALDO ANTERIOR -1.200,00
+            05/10 PIX RECEBIDO ANA 50,00 -1.150,00
+            06/10 PADARIA -12,50 -1.162,50
+            07/10 TARIFA PACOTE 9,90- -1.172,40
+        """.trimIndent()
+        val st = PdfStatement.parse(listOf(text), today)
+        assertEquals(listOf(5000L, -1250L, -990L), st.lines.map { it.amount })
+    }
+
+    @Test fun pdfSemSinaisComSaldoNegativoContinuaPelasPalavras() {
+        // Só o saldo anterior e o total têm sinal: as movimentações continuam sem sinal, decididas pelas palavras.
+        val text = """
+            Extrato do período
+            01/10/2026 SALDO ANTERIOR -350,00
+            02/10/2026 PAGAMENTO DE FATURA CARTAO 1.250,00
+            03/10/2026 COMPRA CREDITO LOJA 100,00
+            04/10/2026 PIX RECEBIDO ANA 50,00
+            Total de saídas -1.350,00
+        """.trimIndent()
+        val st = PdfStatement.parse(listOf(text), today)
+        assertEquals(listOf(-125000L, -10000L, 5000L), st.lines.map { it.amount })
+        assertTrue(st.notes.contains("Sem sinais no PDF: entradas e saídas pelas palavras"))
+    }
+
+    @Test fun faturaComValorEmDolarNomeDoTitularEParcelaEmColunas() {
+        // Fatura no jeito do C6: valor em dólar antes do valor em reais, nome de quem tem o cartão e a parcela à parte.
+        val csv = "Data de Compra;Nome no Cartão;Final do Cartão;Categoria;Descrição;Parcela;Valor (em US$);Cotação (em R$);Valor (em R$)\n" +
+            "15/08/2026;MARIA S SOUZA;1234;Departamento;LOJA X;2/3;0;0;100,00\n" +
+            "20/09/2026;MARIA S SOUZA;1234;Restaurante;PADARIA;Única;0;0;12,50\n" +
+            "21/09/2026;MARIA S SOUZA;1234;Serviços;NETFLIX.COM;Única;7,99;5,60;44,74\n"
+        val st = ok(read(csv))
+        assertEquals(listOf(10000L, 1250L, 4474L), st.lines.map { it.amount })
+        assertEquals(listOf("Loja X - Parcela 2/3", "Padaria", "Netflix.com"), st.lines.map { it.description })
+    }
+
+    @Test fun mesmaLinhaEmOutraFaturaEOutraParcela() {
+        // Banco que repete a data, a descrição e o valor da compra original em cada parcela (sem o número da parcela).
+        val st = ok(read("date,title,amount\n2026-08-15,Loja X,100.00\n"))
+        val snap = Snapshot(cards = listOf(card), categories = categories)
+        val oct = ImportTarget(cardId = 7, invoiceYm = 202610)
+        val first = ImportPlanner.plan(st, oct, snap, emptyMap(), invert = true).single()
+        val withSaved = snap.copy(txs = listOf(ImportPlanner.toTx(first, oct, card, now = 0).copy(id = 300)))
+        // A mesma fatura de novo: já importada.
+        assertEquals(RowFlag.IMPORTED_BEFORE, ImportPlanner.plan(st, oct, withSaved, emptyMap(), invert = true).single().flag)
+        // A fatura de novembro com a linha igual: é a parcela seguinte, e entra marcada.
+        val nov = ImportPlanner.plan(st, oct.copy(invoiceYm = 202611), withSaved, emptyMap(), invert = true).single()
+        assertEquals(RowFlag.NONE, nov.flag)
+        assertTrue(nov.selected)
+    }
+
+    @Test fun pdfEDepoisPlanilhaDoMesmoPeriodoPareceRepetido() {
+        val target = ImportTarget(accountId = 1)
+        val pdf = PdfStatement.parse(listOf("Extrato de conta\n05/10/2026 PIX ENVIADO MARIA -150,00\n06/10/2026 PADARIA PAO -12,50"), today)
+        val saved = ImportPlanner.plan(pdf, target, Snapshot(categories = categories), emptyMap(), false)
+            .mapIndexed { i, r -> ImportPlanner.toTx(r, target, null, now = 0).copy(id = 400L + i) }
+        // O mesmo período em CSV, com as descrições escritas de outro jeito: não entra de novo sem aviso.
+        val csv = ok(read("Data;Lançamento;Detalhes;Valor\n05/10/2026;Pix enviado;Maria;-150,00\n06/10/2026;Compra no débito;Padaria Pão;-12,50\n"))
+        val rows = ImportPlanner.plan(csv, target, Snapshot(categories = categories, txs = saved), emptyMap(), false)
+        assertEquals(listOf(RowFlag.LOOKS_DUPLICATE, RowFlag.LOOKS_DUPLICATE), rows.map { it.flag })
+        assertEquals(listOf(400L, 401L), rows.map { it.match?.id })
+    }
+
+    @Test fun faturaDeVerdadeComOsMesmosLugaresDosExemplosNaoEExemplo() {
+        // Um mês de pouco uso, só com lugares que também aparecem nos exemplos, mas com os valores de verdade.
+        val csv = "date,title,amount\n2026-09-02,Spotify,21.90\n2026-09-05,Netflix.Com,55.90\n2026-09-08,iFood,38.40\n" +
+            "2026-09-10,Uber *Trip,17.35\n2026-09-12,Uber *Trip,22.10\n2026-09-25,Pagamento recebido,-900.00\n"
+        assertFalse(SampleFiles.isSample(ok(read(csv))))
+    }
+
+    @Test fun ofxPulaLinhasDeSaldoEValorZero() {
+        val trn = { type: String, amt: String, id: String, memo: String ->
+            "<STMTTRN><TRNTYPE>$type<DTPOSTED>20261001<TRNAMT>$amt<FITID>$id<MEMO>$memo</STMTTRN>"
+        }
+        val ofx = "OFXHEADER:100\n<OFX><BANKMSGSRSV1><STMTTRNRS><STMTRS><BANKTRANLIST>" +
+            trn("OTHER", "0.00", "S0", "SALDO ANTERIOR") + trn("DEBIT", "-12.50", "P1", "PADARIA") + trn("OTHER", "1500.00", "S1", "S A L D O") +
+            "</BANKTRANLIST></STMTRS></STMTTRNRS></BANKMSGSRSV1></OFX>"
+        val st = ok(read(ofx))
+        assertEquals(listOf(-1250L), st.lines.map { it.amount })
+        assertEquals(2, st.skipped.size)
     }
 }

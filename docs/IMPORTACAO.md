@@ -15,9 +15,9 @@ Se algo der errado, a tela final tem **Desfazer importação**, que tira tudo o 
 | Formato | Como o Cryo lê |
 |---|---|
 | **OFX** (recomendado) | É o formato feito para isso: datas e valores exatos, e cada movimentação tem um identificador do banco, então o Cryo sabe o que já foi importado. Lê o OFX antigo (SGML) e o novo (XML), em UTF-8 ou Windows-1252. |
-| **CSV** | Descobre o separador (`;` `,` tabulação `\|`), a codificação e as colunas pelo cabeçalho, mesmo que ele venha depois de algumas linhas com o nome do banco e o período. Entende valor com sinal, colunas separadas de entrada e saída e coluna "C/D". Se não tiver certeza, pergunta quais são as colunas. |
+| **CSV** | Descobre o separador (`;` `,` tabulação `\|`), a codificação e as colunas pelo cabeçalho, mesmo que ele venha depois de algumas linhas com o nome do banco e o período. Entende valor com sinal, colunas separadas de entrada e saída, coluna "C/D" e coluna "Parcela" (vira "- Parcela 2/3" na descrição). Ignora o valor em dólar, a cotação e o nome de quem tem o cartão (faturas com compras internacionais). Se não tiver certeza, pergunta quais são as colunas. |
 | **Planilha (XLSX)** | Igual ao CSV, usando as datas e os números de verdade da planilha. Muitos bancos chamam de "Excel (.xls)" um arquivo que por dentro é uma página com uma tabela: esse também é lido. O `.xls` antigo de verdade (binário) não é: abra e salve como `.xlsx`. |
-| **PDF** | Lido pelo texto do arquivo, procurando data, descrição e valor em cada linha. Cada banco desenha o PDF de um jeito, então confira com atenção. PDF com senha: o Cryo pergunta a senha e não guarda. PDF que é foto ou digitalização não tem texto e não dá para ler. Precisa do Android 15, ou do 12 ao 14 com a atualização do leitor de PDF do sistema. |
+| **PDF** | Lido pelo texto do arquivo, procurando data, descrição e valor em cada linha. Quando o banco marca só as saídas (com "-" ou "D"), o que vem sem sinal é entrada; quando marca só as entradas ("+" ou "C"), o que vem sem sinal é saída; sem sinal nenhum, decidem as palavras ("compra", "pix recebido"...). Saldos e totais não entram nessa conta. Cada banco desenha o PDF de um jeito, então confira com atenção. PDF com senha: o Cryo pergunta a senha e não guarda. PDF que é foto ou digitalização não tem texto e não dá para ler. Precisa do Android 15, ou do 12 ao 14 com a atualização do leitor de PDF do sistema. |
 
 Linhas de saldo ("Saldo anterior", "Saldo do dia") e de totais ficam de fora sozinhas. Datas sem ano ("05/12") ganham o ano da data completa mais recente do arquivo: numa fatura que vence em janeiro, "05/12" é dezembro do ano anterior.
 
@@ -25,9 +25,9 @@ Linhas de saldo ("Saldo anterior", "Saldo do dia") e de totais ficam de fora soz
 
 Cada linha vem marcada ou desmarcada, com a categoria sugerida (pelas suas palavras-chave e pelo que você já lançou antes). Toque numa linha para mudar a descrição, a categoria ou se ela entra. Ficam **desmarcadas** de início:
 
-- **Já importada**: veio numa importação anterior para a mesma conta ou cartão (mesmo identificador do banco, ou mesma data, valor e descrição).
-- **Parece repetida**: já existe no Cryo algo com o mesmo valor, na mesma conta ou cartão, até 3 dias de diferença: algo que você lançou à mão, o pagamento da fatura que já entrou pelo extrato do cartão, ou o mesmo período importado antes em outro formato (OFX e depois CSV). Movimentações iguais de dias diferentes que vieram do mesmo extrato, como o café de todo dia, não contam como repetidas.
-- **Pagamento de fatura**: no extrato da conta, o pagamento do cartão. Se ele entrasse como gasto, as compras contariam duas vezes (no cartão e na conta). Toque na linha e escolha o cartão: ele vira um pagamento de fatura, como em **Cartão › Pagar fatura**.
+- **Já importada**: veio numa importação anterior para a mesma conta ou cartão, no mesmo formato (mesmo identificador do banco, ou mesma data, valor e descrição). No cartão, só conta como já importada se estiver na mesma fatura: a parcela de novembro de uma compra antiga pode vir com a mesma data, descrição e valor da parcela de outubro, e é outra parcela.
+- **Parece repetida**: já existe no Cryo algo com o mesmo valor, na mesma conta ou cartão, até 3 dias de diferença: algo que você lançou à mão, o pagamento da fatura que já entrou pelo extrato do cartão, ou o mesmo período importado antes em outro formato (OFX e depois CSV, PDF e depois planilha). Movimentações iguais de dias diferentes que vieram do mesmo extrato, como o café de todo dia, não contam como repetidas.
+- **Pagamento de fatura**: no extrato da conta, o pagamento do cartão. Se ele entrasse como gasto, as compras contariam duas vezes (no cartão e na conta). Toque na linha e escolha o cartão: ele vira um pagamento de fatura, como em **Cartão › Pagar fatura**. Se ele for marcado sem o cartão (por exemplo, com **Marcar todas**), um aviso explica que vai entrar como gasto comum.
 - **Pagamento da fatura** no extrato do cartão: é o mesmo pagamento, visto do lado do cartão. Diga de qual conta saiu, ou deixe de fora se ele já entrou pelo extrato da conta.
 
 Estornos, reembolsos e créditos na fatura entram marcados e diminuem o valor da fatura.
@@ -125,7 +125,7 @@ Linhas com problema (sem data, sem valor, valor zero) ficam de fora e aparecem n
 | `ui/screens/ImportModel.kt`, `ImportScreen.kt` | O passo a passo na tela |
 | `ui/screens/DevScreens.kt`, `data/Dev.kt`, `data/SampleData.kt` | Modo desenvolvedor e modo de teste |
 
-Cada movimentação importada guarda uma chave (`importKey`) com a conta ou o cartão de destino e a linha: `a3|id:<identificador do banco>` quando o arquivo tem um, ou `c7|h:<hash de data, valor e descrição>`, com `#1`, `#2`... quando a mesma linha se repete no arquivo. É ela que reconhece o que já foi importado.
+Cada movimentação importada guarda uma chave (`importKey`) com a conta ou o cartão de destino, o formato do arquivo e a linha: `a3|ofx.id:<identificador do banco>` quando o arquivo tem um, ou `c7|csv.h:<hash de data, valor e descrição>`, com `#1`, `#2`... quando a mesma linha se repete no arquivo. É ela que reconhece o que já foi importado. Uma importação anterior com a mesma conta ou cartão e o mesmo formato e tipo de chave só é "a mesma linha" se a chave for igual (o café de todo dia não vira repetido); de outro formato, ela passa pela busca de repetidas (mesmo valor, até 3 dias).
 
 Testes: `StatementImportTest` (leitores e conferência), `ImportFlowTest` (a tela, de ponta a ponta) e `DevModeFlowTest` (modo desenvolvedor, modo de teste e bloqueio).
 

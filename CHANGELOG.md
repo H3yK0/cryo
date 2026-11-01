@@ -7,12 +7,13 @@
 - O que já está no Cryo fica desmarcado: movimentações importadas antes e as que parecem com algo que já está lá (mesmo valor, até 3 dias de diferença), inclusive o pagamento da fatura que já entrou pelo extrato do cartão
 - Fatura do cartão: escolha em qual fatura as compras entram (ou pela data de cada compra); se o banco exporta as compras como valores positivos, o Cryo vira os sinais sozinho e avisa
 - Pagamento de fatura no extrato da conta vira pagamento do cartão (o gasto não conta duas vezes); estornos entram como crédito na fatura
-- CSV e planilha: o Cryo acha as colunas sozinho, mesmo com o nome do banco antes da tabela; quando não tem certeza, pergunta. PDF com senha também funciona (a senha não é guardada)
+- CSV e planilha: o Cryo acha as colunas sozinho, mesmo com o nome do banco antes da tabela; quando não tem certeza, pergunta. Faturas com a parcela numa coluna própria ou com compras em dólar (como a do C6) também. PDF com senha também funciona (a senha não é guardada)
 - Depois de importar: comparação com o saldo informado pelo banco e botão para desfazer tudo
 - **Modo desenvolvedor** (7 toques na versão, em Ajustes › Sobre): modo de teste com um banco de dados separado e dados de exemplo, extratos de exemplo em todos os formatos, JSON de teste e relatório da leitura com versão anônima para pedir ajuda sem mostrar os seus dados. Nada do modo de teste chega aos dados de verdade
 - Lembretes e backup automático continuam cuidando dos dados de verdade mesmo no modo de teste
 - Correção: o bloqueio com digital ou senha agora também aparece quando o Android fecha o app em segundo plano e a tela volta sozinha
 - Depois de desbloquear, o app volta exatamente para a tela em que você estava (antes voltava para o Início)
+- Com o bloqueio ligado, nada do app aparece por trás da tela de bloqueio (nem uma janela que estava aberta), e a miniatura do Cryo em Recentes não mostra os seus dados (Android 13 ou mais novo)
 
 ## 1.2 — backup automático
 

@@ -12,7 +12,9 @@ import kotlin.math.abs
  * Por isso a tela de conferência é tão importante para PDF.
  */
 object PdfStatement {
-    private val MONEY = Regex("""(?<![\d,.])([-−+]\s*)?(R\$\s*)?([-−]\s*)?(\d{1,3}(?:\.\d{3})*,\d{2})(\s*[-−])?(\s*[DC](?![A-Za-z]))?""")
+    // O "-" depois do valor ("12,50-") é dele; um "-" separado por espaço e colado no número seguinte é do próximo valor
+    // (o saldo negativo da coluna ao lado: "PIX RECEBIDO 50,00 -1.150,00").
+    private val MONEY = Regex("""(?<![\d,.])([-−+]\s*)?(R\$\s*)?([-−]\s*)?(\d{1,3}(?:\.\d{3})*,\d{2})([-−](?!\d)|\s+[-−](?!\s*(?:R\$\s*)?\d))?(\s*[DC](?![A-Za-z]))?""")
     private val LEAD_DATE = Regex(
         """^(\d{1,2}[/.-]\d{1,2}(?:[/.-]\d{2,4})?|\d{1,2}\s+(?:de\s+)?(?:jan|fev|mar|abr|mai|jun|jul|ago|set|out|nov|dez)[a-zç]*\.?(?:\s+(?:de\s+)?\d{4})?)(?=\s|$)""",
         RegexOption.IGNORE_CASE,
@@ -53,13 +55,10 @@ object PdfStatement {
             throw StatementException("Não encontrei texto nesse PDF. Se ele for uma foto ou digitalização, o Cryo não consegue ler.")
         }
         val reference = Values.reference(FULL_DATE.findAll(text.normalized()).mapNotNull { Values.date(it.value) }, today)
-        // O PDF marca as saídas com sinal (- ou D)? Então o que não tem sinal é entrada. Se marca só as entradas
-        // (+ ou C), é o contrário: o que não tem sinal é saída.
-        val marks = rawLines.flatMap { MONEY.findAll(it).toList() }
-        val docMarksOut = marks.any(::marksOut)
-        val docMarksIn = !docMarksOut && marks.any(::marksIn)
 
-        val lines = ArrayList<StatementLine>()
+        // 1ª passada: as linhas que viram movimentação, ainda sem decidir o sinal de quem não tem.
+        class Found(val line: String, val date: LocalDate, val description: String, val value: MatchResult, val cents: Long, val section: Int)
+        val found = ArrayList<Found>()
         val skipped = ArrayList<SkippedLine>()
         var currentDate: LocalDate? = null
         var section = 0 // 1 = entradas, -1 = saídas (extratos que agrupam assim)
@@ -99,22 +98,32 @@ object PdfStatement {
                     skipped += SkippedLine(line, "linha de saldo, total ou resumo"); pending.clear(); continue
                 }
             }
-            val token = first.value
-            var cents = Values.amount(token.replace("−", "-"), decimalComma = true)
+            val cents = Values.amount(first.value.replace("−", "-"), decimalComma = true)
             if (cents == null) { skipped += SkippedLine(line, "valor ilegível"); continue }
-            if (!marksOut(first) && !marksIn(first)) {
-                val d = description.normalized()
-                cents = when {
-                    section != 0 -> section * abs(cents)
-                    docMarksOut -> abs(cents)
-                    docMarksIn -> -abs(cents)
-                    longest(IN_WORDS, d) > longest(OUT_WORDS, d) -> abs(cents)
-                    else -> -abs(cents) // fatura de cartão: tudo positivo, e quase tudo é compra
+            if (cents == 0L) { skipped += SkippedLine(line, "valor zero"); continue }
+            found += Found(line, date!!, description, first, cents, section)
+            pending.clear()
+        }
+
+        // O PDF marca as saídas com sinal (- ou D)? Então o que não tem sinal é entrada. Se marca só as entradas
+        // (+ ou C), é o contrário: o que não tem sinal é saída. Conta só o valor de cada movimentação: um saldo negativo
+        // (cheque especial) ou um "Total de saídas -3.000,00" não dizem como o banco marca as movimentações.
+        val docMarksOut = found.any { marksOut(it.value) }
+        val docMarksIn = !docMarksOut && found.any { marksIn(it.value) }
+
+        // 2ª passada: o sinal de quem não tem.
+        val lines = found.map { f ->
+            val cents = if (marksOut(f.value) || marksIn(f.value)) f.cents else {
+                val d = f.description.normalized()
+                when {
+                    f.section != 0 -> f.section * abs(f.cents)
+                    docMarksOut -> abs(f.cents)
+                    docMarksIn -> -abs(f.cents)
+                    longest(IN_WORDS, d) > longest(OUT_WORDS, d) -> abs(f.cents)
+                    else -> -abs(f.cents) // fatura de cartão: tudo positivo, e quase tudo é compra
                 }
             }
-            if (cents == 0L) { skipped += SkippedLine(line, "valor zero"); continue }
-            lines += StatementLine(date!!, Values.prettify(description), cents, null, line)
-            pending.clear()
+            StatementLine(f.date, Values.prettify(f.description), cents, null, f.line)
         }
 
         val isCard = looksLikeCard(text.normalized())

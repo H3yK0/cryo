@@ -5,7 +5,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **19/10/2026**.
+Situação descrita aqui: **01/11/2026**.
 
 ---
 
@@ -41,7 +41,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.0 | 1 | Publicada (GitHub, tag `v1.0`) |
 | 1.1 | 2 | Publicada (GitHub) |
 | 1.2 | 3 | **Publicada no GitHub e no F-Droid** (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). É o que está em `main`. |
-| 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada.** Falta: revisão final, APK de teste para o Hanry, aprovação dele, publicar. |
+| 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada.** Revisão final feita; APK de teste entregue ao Hanry em 01/11/2026. Falta: o teste e a aprovação dele, publicar. |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -54,20 +54,21 @@ compilação reproduzível com a chave do Hanry e atualização automática por 
 - **Modo desenvolvedor** (7 toques na versão em Ajustes › Sobre): modo de teste com banco separado (`cryo-teste.db`) e dados de
   exemplo, extratos de exemplo de todos os formatos, JSON de teste, relatório da leitura (com versão anônima).
 - **Correção de segurança**: o bloqueio agora aparece também quando o Android mata o app em segundo plano e restaura a tela
-  (antes passava direto). E o bloqueio virou uma camada por cima do app: ao desbloquear, a pessoa volta para onde estava.
+  (antes passava direto). Bloqueado, o app sai da tela com o estado guardado: ao desbloquear, a pessoa volta para onde estava.
+  Com o bloqueio ligado, a miniatura em Recentes não mostra os dados (Android 13+).
 - Lembretes e backup automático sempre usam os dados de verdade (mesmo com as telas no modo de teste).
 - Banco de dados versão 3 (coluna `importKey` em `transactions`).
 
-Uma revisão independente encontrou 15 problemas na 1.3; **todos foram corrigidos e testados**, mas a **verificação dessas
-correções por uma segunda revisão ainda não foi feita** (a revisão foi interrompida por limite de uso). Fazer antes de publicar.
+Uma revisão independente encontrou 15 problemas na 1.3, todos corrigidos. A **revisão final** (20/10 a 01/11/2026) confirmou as 15
+correções no código e achou outros 17 problemas (lista na seção 13), **todos corrigidos**; os de dinheiro, dados e bloqueio têm testes que falham no
+código anterior. Todos os testes passam.
 
 ### Próximos passos imediatos
 
-1. Rodar todos os testes (`./gradlew testDebugUnitTest`) e revisar o diff de `versao-1.3` contra `main`, com atenção às
-   correções da revisão (lista na seção 13).
-2. Gerar o APK 1.3 assinado a partir de um **clone limpo** do branch (seção 11) e entregar ao Hanry para testar no celular dele,
-   com os extratos reais do banco dele (ele ainda não disse quais bancos usa: perguntar).
-3. Só depois da aprovação dele: merge em `main`, push, Release `v1.3` com `Cryo-1.3.apk`. O F-Droid pega a versão nova sozinho.
+1. O Hanry testa o APK 1.3 no celular dele, com os extratos reais do banco dele (ele ainda não disse quais bancos usa: perguntar).
+   Se algo mudar depois do teste, gerar o APK de novo (mesmo versionCode 4, de um clone limpo) e entregar outra vez.
+2. Só depois da aprovação dele: push do branch, merge em `main`, push, Release `v1.3` com `Cryo-1.3.apk`. O F-Droid pega a versão
+   nova sozinho.
 
 ---
 
@@ -158,7 +159,9 @@ app/src/main/java/io/github/h3yk0/cryo/
 - `CryoApp.real` = dados de verdade (lembretes e backup **sempre** usam este). `CryoApp.container` = o que as telas mostram
   (o de teste quando o modo de teste está ligado). Trocar = `switchData()` + recriar a Activity (`switchTestMode()` em `DevScreens.kt`).
 - O bloqueio (`lockSettings`) vem sempre dos ajustes de verdade. `CryoApp.unlocked` vale por processo; volta a bloquear depois
-  de 60 s em segundo plano ou quando o Android mata o processo.
+  de 60 s em segundo plano ou quando o Android mata o processo. Bloqueado, o conteúdo **não é composto** (fica num
+  `SaveableStateHolder` em `MainActivity`): diálogos, menus e folhas são janelas próprias e ficariam por cima de qualquer camada.
+- Um aviso de conta ou dívida (dados de verdade) tocado com o modo de teste ligado sai do modo de teste antes de abrir a tela.
 - Navegação: rotas em `ui/Nav.kt` (`Routes`), `LocalNav` com `go()`, `back()`, `tab()`, `open()`.
 - Abas: Início, Extrato, Planejar (Orçamentos / Contas fixas / Metas), Carteira, Análises. Ajustes pela engrenagem do Início.
 
@@ -188,8 +191,8 @@ sumirem de repente, pausa e avisa; se nada mudou, não grava cópia igual.
 **Ajustes**: DataStore `settings` (tema, cores do papel de parede, bloqueio, esconder valores, nome, lembretes, conta principal,
 apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPreferences `cryo_dev` (modo desenvolvedor).
 
-**Importação**: cada movimentação importada guarda `importKey` = `a<conta>|id:<FITID>` ou `c<cartão>|h:<hash>` (+ `#n` para
-linhas repetidas). Detalhes em `docs/IMPORTACAO.md`.
+**Importação**: cada movimentação importada guarda `importKey` = `a<conta>|<formato>.id:<FITID>` ou `c<cartão>|<formato>.h:<hash>`
+(ex.: `a3|ofx.id:123`, `c7|csv.h:9f3a…`; + `#n` para linhas repetidas). Detalhes em `docs/IMPORTACAO.md`.
 
 ## 9. Funcionalidades (onde estão)
 
@@ -212,7 +215,7 @@ linhas repetidas). Detalhes em `docs/IMPORTACAO.md`.
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 170 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 180 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -232,6 +235,11 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
 - Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor.
+- O `BiometricPrompt` não roda no Robolectric: desbloquear com `MainActivity.unlock()` (`@VisibleForTesting`). Para simular
+  mais de 1 minuto em segundo plano: `scenario.moveToState(CREATED)`, `ShadowSystemClock.advanceBy(...)`, `moveToState(RESUMED)`
+  (veja `DevModeFlowTest.bloqueioTiraOAppDaTelaEVoltaParaOndeEstava`).
+- Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos). Um init script local em
+  `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google resolve; ele fica fora do projeto e não muda o APK.
 
 ## 11. Publicar uma versão
 
@@ -279,15 +287,27 @@ Detalhes de cada uma em `CHANGELOG.md`.
   anteriores entram na busca de repetidas quando vieram de outro extrato (ex.: o pagamento da fatura importado pelo cartão
   aparece depois no extrato da conta) ou do mesmo extrato em outro formato (OFX e depois CSV).
 - **Datas sem ano** ("05/12") ganham o ano da data completa mais recente do arquivo, voltando um ano se cairiam mais de 31 dias depois.
-- **Bloqueio como camada** por cima do app (conteúdo sem semântica para leitores de tela e sem receber toques enquanto bloqueado).
+- **Bloqueio tira o app da tela** (e não uma camada por cima): uma camada deixava diálogos, menus e folhas por cima do bloqueio e o
+  Voltar e o teclado chegando ao app escondido. O estado fica guardado (`SaveableStateHolder`), como ao girar a tela.
+- **Chave de importação com o formato** e, no cartão, "já importada" só na mesma fatura: o mesmo período em outro formato passa
+  pela busca de repetidas, e a parcela seguinte (mesma data, descrição e valor) não é escondida.
+- **Exemplos reconhecidos por descrição e valor**: só a descrição pegava faturas de verdade (Uber, Spotify, iFood).
 - **Sem perfil de inicialização (ART profile)** no APK: quebra a reprodutibilidade.
 
-Correções da revisão da 1.3 (todas feitas; falta a verificação independente): pagamento de fatura importado duas vezes; chaves
+Correções da primeira revisão da 1.3 (todas feitas e conferidas na revisão final): pagamento de fatura importado duas vezes; chaves
 globais escondendo movimentações; ano errado em datas sem ano; vazamentos no relatório anônimo (cabeçalhos, nome do arquivo);
 exemplos e backups de teste chegando aos dados de verdade; marcação de linha que sobrevivia à troca de conta; sinais e tipo de
 extrato errados em PDF sem sinal; erro ao recriar dados de exemplo duas vezes; categoria de despesa salva em linha de receita;
 toques seguidos recalculando a partir de estado velho; desfazer sem tratamento de erro; relatório grande demais para compartilhar;
 bloqueio que jogava a pessoa de volta ao Início; falta de aviso de modo de teste fora das abas; textos ("1 toque", "Entrou").
+
+Correções da revisão final (01/11/2026): diálogos e menus abertos por cima do
+bloqueio; Voltar e teclado chegando ao app bloqueado; miniatura de Recentes com os dados; "Marcar todas" marcando pagamento de
+fatura sem cartão (agora avisa); PDF que marca só as entradas; "-" do saldo negativo colado no valor do PDF; saldo negativo
+decidindo os sinais de um PDF sem sinais; mesmo período em outro formato entrando em dobro; parcela seguinte escondida como já
+importada; fatura com valor em dólar e nome do titular (C6); OFX com linhas de saldo e valor zero; fatura real tomada por
+exemplo; aviso de conta abrindo os dados de teste; troca de dados com a tela fora de vista; cópia do relatório completo sem
+confirmação; caixa de marcar da conferência sem descrição para leitores de tela; plural de "arquivos de exemplo salvos".
 
 ## 14. Roadmap (prioridades do Hanry)
 

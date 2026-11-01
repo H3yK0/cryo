@@ -145,14 +145,18 @@ object ImportPlanner {
     }
 
     /**
-     * Chave que reconhece a mesma linha numa próxima importação: "a3|id:123", "c7|h:9f3a...", e "#1", "#2"...
+     * Chave que reconhece a mesma linha numa próxima importação: "a3|ofx.id:123", "c7|csv.h:9f3a...", e "#1", "#2"...
      * quando a mesma linha aparece mais de uma vez no arquivo (duas compras iguais no mesmo dia continuam sendo duas,
-     * e bancos que repetem o identificador não escondem movimentações novas).
+     * e bancos que repetem o identificador não escondem movimentações novas). O formato vem junto porque o mesmo
+     * período em outro formato (PDF e depois CSV) traz as descrições escritas de outro jeito: a chave muda, e então
+     * essas linhas passam pela busca de repetidas (veja [comparable]) em vez de entrar de novo sem aviso.
      */
-    fun keyOf(line: StatementLine, occurrence: Int, target: ImportTarget): String =
-        "${scopeOf(target)}|${baseKeyOf(line)}" + if (occurrence > 0) "#$occurrence" else ""
+    fun keyOf(line: StatementLine, occurrence: Int, target: ImportTarget, format: StatementFormat): String =
+        "${scopeOf(target)}|${format.name.lowercase()}.${baseKeyOf(line)}" + if (occurrence > 0) "#$occurrence" else ""
 
     private fun scopeOfKey(key: String): String = if (key.contains('|')) key.substringBefore('|') else ""
+
+    /** Formato e tipo da chave ("ofx.id", "csv.h"). */
     private fun kindOfKey(key: String): String = key.substringAfter('|').substringBefore(':')
 
     /** Efeito de uma movimentação já existente no saldo do destino (para achar repetidas). */
@@ -180,22 +184,27 @@ object ImportPlanner {
         invert: Boolean,
     ): List<ImportRow> {
         val guesser = CategoryGuesser(snapshot.categories, learned)
-        val imported = snapshot.txs.filter { it.importKey != null }.associateBy { it.importKey!! }
+        val imported = snapshot.txs.filter { it.importKey != null }.groupBy { it.importKey!! }
         val candidates = snapshot.txs.mapNotNull { t -> effect(t, target)?.let { t to it } }
         val scope = scopeOf(target)
+        val card = target.cardId?.let { id -> snapshot.cards.firstOrNull { it.id == id } }
         val used = HashSet<Long>()
         val seen = HashMap<String, Int>()
 
         return st.lines.mapIndexed { i, line ->
             val base = baseKeyOf(line)
             val occurrence = seen.merge(base, 1, Int::plus)!! - 1
-            val key = keyOf(line, occurrence, target)
+            val key = keyOf(line, occurrence, target, st.format)
             val lineKind = kindOfKey(key)
             val signed = if (invert) -line.amount else line.amount
             val type = if (signed < 0) TxType.EXPENSE else TxType.INCOME
             val category = guesser.guess(if (type == TxType.EXPENSE) CategoryKind.EXPENSE else CategoryKind.INCOME, line.description)
 
-            val before = imported[key]
+            // No cartão, a mesma linha numa fatura diferente é outra cobrança: muitos bancos repetem a data, a descrição e
+            // o valor da compra original em cada parcela. O pagamento da fatura fica fora disso (ele vai para a fatura
+            // que pagou, não para a escolhida).
+            val invoice = card?.let { target.invoiceYm ?: CardMath.invoiceFor(it, line.date).key() }
+            val before = imported[key]?.firstOrNull { invoice == null || it.type == TxType.CARD_PAYMENT || it.invoiceYm == invoice }
             val similar = if (before != null) null else candidates
                 .filter { (t, eff) ->
                     t.id !in used && eff == signed && comparable(t, scope, lineKind) && (
@@ -220,7 +229,7 @@ object ImportPlanner {
     /**
      * Uma movimentação que já existe entra na busca por repetidas quando foi lançada à mão, quando veio do extrato de
      * outra conta ou cartão (o pagamento da fatura importado pela fatura do cartão aparece de novo no extrato da conta),
-     * ou quando veio deste mesmo extrato num formato diferente (OFX e depois CSV do mesmo período). Já uma importação
+     * ou quando veio deste mesmo extrato num formato diferente (OFX e depois CSV, ou PDF e depois planilha). Já uma importação
      * anterior do mesmo extrato e no mesmo formato tem a chave da linha: se a chave é outra, a movimentação é outra
      * (o cafezinho de todo dia não vira "repetida" do de ontem).
      */

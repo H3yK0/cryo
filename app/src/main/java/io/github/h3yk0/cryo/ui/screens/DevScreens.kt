@@ -161,7 +161,13 @@ fun DevScreen() {
     val saveFolder = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
         if (uri != null) c.launch {
             val n = withContext(Dispatchers.IO) { saveSamples(ctx, uri, today) }
-            c.message(if (n > 0) "$n arquivos de exemplo salvos na pasta" else "Não consegui salvar os arquivos nessa pasta")
+            c.message(
+                when {
+                    n == 1 -> "1 arquivo de exemplo salvo na pasta"
+                    n > 1 -> "$n arquivos de exemplo salvos na pasta"
+                    else -> "Não consegui salvar os arquivos nessa pasta"
+                },
+            )
         }
     }
 

@@ -53,7 +53,11 @@ object SampleFiles {
     private const val OPENING = 123456L
 
     private fun plain(s: String) = s.normalized().replace(Regex("[^a-z0-9]+"), " ").trim()
-    private val SAMPLE_TEXTS: Set<String> by lazy { (ACCOUNT + CARD).map { plain(it.description) }.toSet() }
+    /**
+     * Descrição e valor de cada exemplo. Só a descrição não basta: "Uber *Trip", "Spotify" e "iFood" também aparecem
+     * nas faturas de verdade, e um mês com quase só isso seria tomado por exemplo (e recusado).
+     */
+    private val SAMPLE_KEYS: Set<Pair<String, Long>> by lazy { (ACCOUNT + CARD).map { plain(it.description) to abs(it.cents) }.toSet() }
 
     /**
      * O extrato é um dos exemplos inventados? (Eles só podem ser importados no modo de teste: assim, um exemplo salvo
@@ -61,7 +65,7 @@ object SampleFiles {
      */
     fun isSample(st: Statement): Boolean {
         if (st.lines.size < 5) return false
-        return st.lines.count { plain(it.description) in SAMPLE_TEXTS } >= st.lines.size * 0.8
+        return st.lines.count { (plain(it.description) to abs(it.amount)) in SAMPLE_KEYS } >= st.lines.size * 0.8
     }
 
     private val BR = DateTimeFormatter.ofPattern("dd/MM/yyyy")

@@ -4,6 +4,12 @@ package io.github.h3yk0.cryo
 
 import android.content.ClipDescription
 import android.content.ClipboardManager
+import android.content.Intent
+import androidx.lifecycle.Lifecycle
+import androidx.test.core.app.ActivityScenario
+import io.github.h3yk0.cryo.notify.Reminders
+import org.robolectric.shadows.ShadowSystemClock
+import java.time.Duration
 import androidx.compose.ui.test.hasScrollAction
 import androidx.compose.ui.test.hasText
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
@@ -161,6 +167,85 @@ class DevModeFlowTest {
             assertFalse(exists("Saldo em contas"))
         } finally {
             runBlocking { app.real.settings.clear() }
+        }
+    }
+
+    /** Entra no modo de teste (dados de exemplo) e espera a tela recriada. */
+    private fun testMode() {
+        app.real.dev.enabled = true
+        runBlocking { app.prepareTestData() }
+        app.switchData(true)
+        rule.activityRule.scenario.recreate()
+        waitFor(20_000) { app.container.sandbox && exists("Saldo em contas") }
+    }
+
+    private fun cleanUp() {
+        runBlocking { app.real.settings.clear(); SettingsRepository(app, sandbox = true).clear() }
+        app.real.dev.enabled = false // também sai do modo de teste
+    }
+
+    @Test fun bloqueioTiraOAppDaTelaEVoltaParaOndeEstava() {
+        realData()
+        testMode()
+        runBlocking { app.real.settings.setLock(true) }
+        app.unlocked = true
+        try {
+            // Um extrato de exemplo na conferência, com o diálogo "Sair da conferência?" aberto.
+            app.container.pendingSample.value = SampleFiles.ofx(LocalDate.now())
+            rule.onNodeWithContentDescription("Ajustes").performClick()
+            rule.onNode(hasScrollAction()).performScrollToNode(hasText("Importar extrato do banco"))
+            rule.onNodeWithText("Importar extrato do banco").performClick()
+            waitText("Conferir extrato")
+            rule.onNodeWithContentDescription("Voltar").performClick()
+            waitText("Sair da conferência?")
+
+            // Mais de 1 minuto em segundo plano: bloqueia.
+            rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+            ShadowSystemClock.advanceBy(Duration.ofSeconds(61))
+            rule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+            waitText("Cryo bloqueado")
+            // Nada do app fica à vista, nem o diálogo (ele fica numa janela própria, que ficaria por cima do bloqueio).
+            assertFalse(exists("Sair da conferência?"))
+            assertFalse(exists("Conferir extrato"))
+
+            // Desbloqueado: de volta à conferência, com o mesmo extrato.
+            rule.runOnUiThread { rule.activity.unlock() }
+            waitText("Conferir extrato")
+            assertTrue(exists(SampleFiles.ofx(LocalDate.now()).name))
+            assertFalse(exists("Cryo bloqueado"))
+        } finally {
+            cleanUp()
+        }
+    }
+
+    @Test fun avisoDeContaComOModoDeTesteLigadoAbreOsDadosDeVerdade() {
+        realData()
+        testMode()
+        try {
+            // Toque no aviso "Aluguel vence amanhã" (dados de verdade) com o modo de teste ligado.
+            val open = Intent(app, MainActivity::class.java).putExtra(Reminders.EXTRA_OPEN, "bills")
+            ActivityScenario.launch<MainActivity>(open).use {
+                assertFalse(app.container.sandbox)
+                assertTrue(app.real.dev.enabled) // só saiu do modo de teste
+            }
+        } finally {
+            cleanUp()
+        }
+    }
+
+    @Test fun trocaDeDadosComATelaForaDeVistaRecriaATela() {
+        realData()
+        app.real.dev.enabled = true
+        runBlocking { app.prepareTestData() }
+        waitText("Saldo em contas")
+        try {
+            // Como se a tela tivesse girado no meio da preparação: o modo de teste ligou, mas a tela à vista é a antiga.
+            app.switchData(true)
+            rule.activityRule.scenario.moveToState(Lifecycle.State.CREATED)
+            rule.activityRule.scenario.moveToState(Lifecycle.State.RESUMED)
+            waitFor(20_000) { exists("Modo de teste: dados de exemplo") }
+        } finally {
+            cleanUp()
         }
     }
 

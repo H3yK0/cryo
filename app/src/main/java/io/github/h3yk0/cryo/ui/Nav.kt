@@ -26,7 +26,10 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -168,7 +171,12 @@ fun CryoRoot(openOnStart: String?) {
             if (r == SnackbarResult.ActionPerformed) m.action?.let { c.launch { it() } }
         }
     }
+    // Uma vez só: o app sai da tela enquanto está bloqueado e, ao desbloquear, volta para onde a pessoa estava, e não
+    // de novo para a tela do aviso.
+    var opened by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(openOnStart) {
+        if (opened) return@LaunchedEffect
+        opened = true
         when (openOnStart) {
             "bills" -> navigator.open(Routes.plan(1))
             "debts" -> navigator.go(Routes.DEBTS)

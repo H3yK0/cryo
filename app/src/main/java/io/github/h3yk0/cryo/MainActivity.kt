@@ -3,8 +3,10 @@
 package io.github.h3yk0.cryo
 
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.os.SystemClock
+import androidx.annotation.VisibleForTesting
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
 import androidx.biometric.BiometricManager.Authenticators.BIOMETRIC_WEAK
@@ -24,11 +26,11 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
-import androidx.compose.ui.semantics.clearAndSetSemantics
 import androidx.activity.compose.setContent
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
@@ -51,25 +53,34 @@ class MainActivity : FragmentActivity() {
     private var lockOn = false
     private var authenticating = false
     private val app get() = application as CryoApp
+    /** Os dados que esta tela mostra (de verdade ou de teste). */
+    private lateinit var shown: AppContainer
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
-        val container = app.container
         // Só na primeira abertura: ao girar a tela, a navegação já está restaurada.
         val openOnStart = if (savedInstanceState == null) intent?.getStringExtra(Reminders.EXTRA_OPEN) else null
+        // Os avisos de contas e de dívidas falam dos dados de verdade: tocar num deles com o modo de teste ligado abre
+        // os dados de verdade (senão o pagamento seria registrado nos dados de exemplo).
+        if ((openOnStart == "bills" || openOnStart == "debts") && app.container.sandbox) app.switchData(false)
+        val container = app.container
+        shown = container
         // Pede o desbloqueio sempre que o app abre do zero, inclusive quando o Android fechou o app em segundo plano e
         // a tela volta sozinha (aí a tela antiga vem "restaurada"). Girar a tela ou trocar para o modo de teste não pede
         // de novo. Leitura rápida, para não mostrar nada antes do bloqueio.
         lockOn = runBlocking { container.lockSettings.current().lockEnabled }
         if (!lockOn) app.unlocked = true
         locked = lockOn && !app.unlocked
+        hideFromRecents(lockOn)
 
         setContent {
             val settings by container.settings.flow.collectAsStateWithLifecycle(initialValue = null)
             val lockSettings by container.lockSettings.flow.collectAsStateWithLifecycle(initialValue = null)
             val lockNow = lockSettings?.lockEnabled ?: lockOn
+            val appState = rememberSaveableStateHolder()
             SideEffect {
+                if (lockOn != lockNow) hideFromRecents(lockNow)
                 lockOn = lockNow
                 // Sem bloqueio, a sessão conta como desbloqueada: ligar o bloqueio agora não tranca quem já está dentro.
                 if (!lockNow) app.unlocked = true
@@ -97,11 +108,14 @@ class MainActivity : FragmentActivity() {
                                     keyboard?.hide()
                                 }
                             }
-                            Box(Modifier.fillMaxSize()) {
-                                // O app continua montado por baixo do bloqueio: ao desbloquear, a pessoa volta exatamente
-                                // para onde estava (inclusive no meio de uma importação). Enquanto isso, nada dele aparece,
-                                // recebe toque ou fica legível para leitores de tela.
-                                Box(Modifier.fillMaxSize().then(if (showLock) Modifier.clearAndSetSemantics {} else Modifier)) {
+                            // Bloqueado, o app sai da tela de verdade: um app só escondido por baixo ainda mostraria diálogos,
+                            // menus e folhas (cada um fica numa janela própria, por cima de tudo) e receberia o Voltar e o
+                            // teclado. O estado fica guardado, como ao girar a tela: ao desbloquear, a pessoa volta exatamente
+                            // para onde estava (inclusive no meio de uma importação).
+                            if (showLock) {
+                                LockScreen(onUnlock = ::authenticate)
+                            } else {
+                                appState.SaveableStateProvider("app") {
                                     when {
                                         !s.onboardingDone && container.sandbox -> Column(Modifier.fillMaxSize()) {
                                             TestModeStrip(insetTop = true)
@@ -109,12 +123,6 @@ class MainActivity : FragmentActivity() {
                                         }
                                         !s.onboardingDone -> OnboardingScreen()
                                         else -> CryoRoot(openOnStart)
-                                    }
-                                }
-                                if (showLock) {
-                                    // Surface bloqueia os toques: nada chega ao app por baixo.
-                                    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) {
-                                        LockScreen(onUnlock = ::authenticate)
                                     }
                                 }
                             }
@@ -138,6 +146,10 @@ class MainActivity : FragmentActivity() {
             locked = true
         }
         app.lastStop = 0
+        // A troca entre os dados de verdade e os de teste aconteceu enquanto esta tela não estava à vista (por exemplo,
+        // a tela girou no meio da preparação dos dados de exemplo): recria para mostrar os dados certos. Depois do
+        // bloqueio: a tela nova também pede o desbloqueio, se for o caso.
+        if (app.container !== shown) recreate()
     }
 
     private fun authenticate() {
@@ -148,8 +160,7 @@ class MainActivity : FragmentActivity() {
             object : BiometricPrompt.AuthenticationCallback() {
                 override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
                     authenticating = false
-                    app.unlocked = true
-                    locked = false
+                    unlock()
                 }
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
@@ -157,10 +168,7 @@ class MainActivity : FragmentActivity() {
                     // Sem nenhuma trava configurada no aparelho: libera para não prender a pessoa fora do app.
                     if (errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL || errorCode == BiometricPrompt.ERROR_HW_NOT_PRESENT ||
                         errorCode == BiometricPrompt.ERROR_HW_UNAVAILABLE
-                    ) {
-                        app.unlocked = true
-                        locked = false
-                    }
+                    ) unlock()
                 }
             },
         )
@@ -170,6 +178,21 @@ class MainActivity : FragmentActivity() {
             .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
             .build()
         prompt.authenticate(info)
+    }
+
+    /** Desbloqueado (digital, rosto ou senha do celular): vale até o app ficar 1 minuto em segundo plano. */
+    @VisibleForTesting
+    internal fun unlock() {
+        app.unlocked = true
+        locked = false
+    }
+
+    /**
+     * Com o bloqueio ligado, a miniatura do app em Recentes (que mostra a última tela, com saldos e movimentações)
+     * não é guardada (Android 13 ou mais novo).
+     */
+    private fun hideFromRecents(lock: Boolean) {
+        if (Build.VERSION.SDK_INT >= 33) runCatching { setRecentsScreenshotEnabled(!lock) }
     }
 
     private companion object {

@@ -79,6 +79,7 @@ import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.selection.toggleable
@@ -808,7 +809,11 @@ private fun ReviewRow(r: ImportRow, l: Ledger, t: ImportTarget, onToggle: () -> 
         Modifier.fillMaxWidth().clickable(onClick = onClick).padding(start = 4.dp, end = 16.dp, top = 4.dp, bottom = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Checkbox(checked = r.selected, onCheckedChange = { onToggle() })
+        // A caixa é um toque à parte da linha (que abre a conferência): o leitor de tela precisa saber de qual linha ela é.
+        Checkbox(
+            checked = r.selected, onCheckedChange = { onToggle() },
+            modifier = Modifier.semantics { contentDescription = "Importar ${r.line.description}" },
+        )
         Row(Modifier.weight(1f).alpha(if (r.selected) 1f else 0.6f), verticalAlignment = Alignment.CenterVertically) {
             when {
                 paired -> IconBadge(Icons.Rounded.CreditCard, MaterialTheme.colorScheme.primary)
