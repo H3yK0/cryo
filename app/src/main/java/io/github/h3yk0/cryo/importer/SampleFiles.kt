@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.graphics.Paint
 import android.graphics.Typeface
 import android.graphics.pdf.PdfDocument
@@ -107,7 +109,7 @@ object SampleFiles {
             append("</BANKTRANLIST>\r\n<LEDGERBAL><BALAMT>${dot(balance)}")
             append("<DTASOF>${today.format(OFX_DATE)}</LEDGERBAL>\r\n</STMTRS></STMTTRNRS></BANKMSGSRSV1>\r\n</OFX>\r\n")
         }
-        return Sample("cryo-exemplo-conta.ofx", "application/octet-stream", "OFX de conta", text.toByteArray(charset("windows-1252")))
+        return Sample("cryo-exemplo-conta.ofx", "application/octet-stream", Res.s(R.string.sample_ofx_conta), text.toByteArray(charset("windows-1252")))
     }
 
     /** CSV de conta no jeito do Nubank: vírgula separando colunas e ponto nos centavos. */
@@ -118,7 +120,7 @@ object SampleFiles {
                 append("${today.minusDays(m.daysAgo).format(BR)},${dot(m.cents)},ex-${i + 1},\"${m.description.lowercase().replaceFirstChar { it.titlecase() }}\"\n")
             }
         }
-        return Sample("cryo-exemplo-conta.csv", "text/csv", "CSV de conta", text.toByteArray(Charsets.UTF_8))
+        return Sample("cryo-exemplo-conta.csv", "text/csv", Res.s(R.string.sample_csv_conta), text.toByteArray(Charsets.UTF_8))
     }
 
     /** CSV de fatura no jeito do Nubank: compras positivas, pagamento e estorno negativos. */
@@ -129,7 +131,7 @@ object SampleFiles {
                 append("${today.minusDays(m.daysAgo)},${m.description},${dot(m.cents)}\n")
             }
         }
-        return Sample("cryo-exemplo-fatura.csv", "text/csv", "CSV de fatura", text.toByteArray(Charsets.UTF_8))
+        return Sample("cryo-exemplo-fatura.csv", "text/csv", Res.s(R.string.sample_csv_fatura), text.toByteArray(Charsets.UTF_8))
     }
 
     /** Planilha com o nome do banco e o período antes da tabela, e linhas de saldo no meio (como muitos bancos fazem). */
@@ -149,7 +151,7 @@ object SampleFiles {
         }
         rows += listOf(today, "Saldo do dia", null, null, balance / 100.0)
         return Sample(
-            "cryo-exemplo-planilha.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", "Planilha XLSX",
+            "cryo-exemplo-planilha.xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", Res.s(R.string.format_xlsx),
             Xlsx.write(rows),
         )
     }
@@ -160,7 +162,7 @@ object SampleFiles {
             StatementLine(today.minusDays(m.daysAgo), m.description, m.cents, "json-${i + 1}")
         }
         val text = JsonStatement.write(lines, account = "Banco de teste", card = false)
-        return Sample("cryo-exemplo-teste.json", "application/json", "JSON de teste", text.toByteArray(Charsets.UTF_8))
+        return Sample("cryo-exemplo-teste.json", "application/json", Res.s(R.string.import_json_teste), text.toByteArray(Charsets.UTF_8))
     }
 
     /** PDF de extrato com texto de verdade (como o que o banco gera), para testar a leitura de PDF. */
@@ -178,7 +180,7 @@ object SampleFiles {
             doc.finishPage(page)
             val out = ByteArrayOutputStream()
             doc.writeTo(out)
-            return Sample("cryo-exemplo-extrato.pdf", "application/pdf", "PDF de conta", out.toByteArray())
+            return Sample("cryo-exemplo-extrato.pdf", "application/pdf", Res.s(R.string.sample_pdf_conta), out.toByteArray())
         } finally {
             doc.close()
         }

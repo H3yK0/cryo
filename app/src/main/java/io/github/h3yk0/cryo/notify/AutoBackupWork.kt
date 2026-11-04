@@ -20,6 +20,7 @@ import androidx.work.WorkerParameters
 import io.github.h3yk0.cryo.CryoApp
 import io.github.h3yk0.cryo.MainActivity
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.data.BackupOutcome
 import io.github.h3yk0.cryo.data.BackupStatus
 import io.github.h3yk0.cryo.data.BackupTarget
@@ -34,7 +35,7 @@ object AutoBackupWork {
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
             val ch = NotificationChannel(CHANNEL, "Backup automático", NotificationManager.IMPORTANCE_DEFAULT)
-            ch.description = "Avisa quando o backup automático não consegue salvar ou precisa de você"
+            ch.description = Res.s(R.string.backup_avisa_quando_backup_automatico)
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
         }
     }
@@ -67,8 +68,8 @@ object AutoBackupWork {
             .putExtra(Reminders.EXTRA_OPEN, "backup")
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pi = PendingIntent.getActivity(context, 2, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        val where = if (outcome.target == BackupTarget.FOLDER) "na pasta" else "na nuvem"
-        val title = if (outcome.status == BackupStatus.HELD) "O Cryo protegeu seu backup $where" else "O backup automático $where falhou"
+        val where = if (outcome.target == BackupTarget.FOLDER) Res.s(R.string.backup_pasta) else Res.s(R.string.backup_nuvem)
+        val title = if (outcome.status == BackupStatus.HELD) Res.s(R.string.backup_cryo_protegeu_seu_backup, where) else Res.s(R.string.backup_backup_automatico_falhou, where)
         val n = NotificationCompat.Builder(context, CHANNEL)
             .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(title)

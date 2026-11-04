@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -35,24 +37,24 @@ object JsonStatement {
             } else {
                 root = JSONObject(trimmed)
                 if (root.optString("app") == "Cryo") {
-                    throw StatementException("Este arquivo é um backup do Cryo. Para usar, vá em Ajustes › Restaurar backup.")
+                    throw StatementException(Res.s(R.string.importer_este_arquivo_backup_cryo))
                 }
                 items = root.optJSONArray("transactions")
-                    ?: throw StatementException("O JSON precisa ter a lista \"transactions\".")
+                    ?: throw StatementException(Res.s(R.string.importer_json_precisa_ter_lista))
             }
         } catch (e: StatementException) {
             throw e
         } catch (e: Exception) {
-            throw StatementException("Esse JSON não está no formato de testes do Cryo.")
+            throw StatementException(Res.s(R.string.importer_esse_json_nao_esta))
         }
         val version = root?.optInt("cryoImport", VERSION) ?: VERSION
-        if (version > VERSION) throw StatementException("Esse JSON é de uma versão mais nova do formato de testes.")
+        if (version > VERSION) throw StatementException(Res.s(R.string.importer_esse_json_versao_mais))
 
         val lines = ArrayList<StatementLine>()
         val skipped = ArrayList<SkippedLine>()
         for (i in 0 until items.length()) {
             val o = items.optJSONObject(i)
-            if (o == null) { skipped += SkippedLine(items.opt(i).toString(), "não é um objeto"); continue }
+            if (o == null) { skipped += SkippedLine(items.opt(i).toString(), Res.s(R.string.importer_nao_objeto)); continue }
             val source = o.toString()
             val date = o.optString("date").let { Values.date(it) }
             val raw = o.opt("amount")
@@ -62,11 +64,11 @@ object JsonStatement {
                 else -> null
             }
             when {
-                date == null -> skipped += SkippedLine(source, "\"date\" ausente ou inválida (use 2026-10-01)")
-                cents == null -> skipped += SkippedLine(source, "\"amount\" ausente ou inválido")
-                cents == 0L -> skipped += SkippedLine(source, "valor zero")
+                date == null -> skipped += SkippedLine(source, Res.s(R.string.importer_date_ausente_ou_invalida))
+                cents == null -> skipped += SkippedLine(source, Res.s(R.string.importer_amount_ausente_ou_invalido))
+                cents == 0L -> skipped += SkippedLine(source, Res.s(R.string.importer_valor_zero))
                 else -> lines += StatementLine(
-                    date, o.optString("description").trim().ifBlank { "Movimentação" }, cents,
+                    date, o.optString("description").trim().ifBlank { Res.s(R.string.importer_movimentacao) }, cents,
                     o.optString("id").trim().takeIf { it.isNotEmpty() }, source,
                 )
             }
@@ -75,7 +77,7 @@ object JsonStatement {
             StatementFormat.JSON, lines, skipped,
             isCard = root?.optBoolean("card", false) ?: false,
             accountHint = root?.optString("account")?.takeIf { it.isNotBlank() },
-            notes = listOf("Formato de testes do Cryo, versão $version"),
+            notes = listOf(Res.s(R.string.importer_formato_testes_cryo_versao, version)),
         )
     }
 

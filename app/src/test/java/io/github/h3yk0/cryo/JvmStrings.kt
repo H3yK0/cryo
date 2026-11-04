@@ -42,12 +42,15 @@ object JvmStrings {
 
     fun install() {
         AppLocale.reset()
-        Res.text = { id, args -> String.format(AppLocale.locale, strings.getValue(nameOf(R.string::class.java, id)), *args) }
+        Res.text = { id, args ->
+            val v = strings.getValue(nameOf(R.string::class.java, id))
+            if (args.isEmpty()) v else String.format(AppLocale.locale, v, *args)
+        }
         Res.plural = { id, n, args ->
             val forms = plurals.getValue(nameOf(R.plurals::class.java, id))
             // Português: "one" para 0 e 1 (CLDR).
             val form = if (n in 0..1) forms["one"] ?: forms.getValue("other") else forms.getValue("other")
-            String.format(AppLocale.locale, form, *args)
+            if (args.isEmpty()) form else String.format(AppLocale.locale, form, *args)
         }
     }
 }

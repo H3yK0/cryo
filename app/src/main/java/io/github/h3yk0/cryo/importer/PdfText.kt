@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.content.Context
 import android.graphics.pdf.LoadParams
 import android.graphics.pdf.PdfRenderer
@@ -21,8 +23,8 @@ object PdfText {
     /** O PDF tem senha e ela não foi informada (ou está errada). */
     class PasswordNeeded : Exception()
 
-    private const val TOO_OLD =
-        "Para ler PDF, o Cryo precisa de um Android mais novo. Peça ao banco o extrato em OFX, CSV ou planilha (XLSX)."
+    /** Na língua do app, na hora de mostrar. */
+    private val TOO_OLD: String get() = Res.s(R.string.importer_para_ler_pdf_cryo)
 
     fun isSupported(): Boolean = Build.VERSION.SDK_INT >= 35 ||
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && SdkExtensions.getExtensionVersion(Build.VERSION_CODES.S) >= 13
@@ -49,7 +51,7 @@ object PdfText {
         } catch (e: StatementException) {
             throw e
         } catch (e: Exception) {
-            throw StatementException("Não consegui abrir esse PDF. Ele pode estar estragado.")
+            throw StatementException(Res.s(R.string.importer_nao_consegui_abrir_esse))
         } finally {
             tmp.delete()
         }

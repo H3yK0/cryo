@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.domain
 
+import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.Category
@@ -83,8 +84,7 @@ class PhraseParser(private val ctx: ParseContext) {
 
         // Dívidas: "paguei a parcela da moto", "paguei 200 pro joão", "peguei 300 emprestado com o joão"
         val borrowVerb = has(
-            "\\b(peguei|pedi|tomei|recebi|consegui) (?:\\S+ ){0,3}emprestad[oa]s?\\b|\\bme emprest(?:ou|aram|ou)\\b|" +
-                "\\b(?:peguei|fiz|tomei|contratei) (?:um |o )?emprestimo\\b",
+            "\\b(peguei|pedi|tomei|recebi|consegui) (?:\\S+ ){0,3}emprestad[oa]s?\\b|\\bme emprest(?:ou|aram|ou)\\b|\\b(?:peguei|fiz|tomei|contratei) (?:um |o )?emprestimo\\b",
         )
         val installmentWord = Regex("\\b(parcelas?|prestacao|prestacoes)\\b").findAll(text).any { free(it.range) }
         val debtNoun = installmentWord ||
@@ -100,8 +100,7 @@ class PhraseParser(private val ctx: ParseContext) {
         val incomeVerb = has("\\b(recebi|ganhei|entrou|caiu|vendi|receber|recebido|recebimento)\\b")
         val expenseVerb = has("\\b(gastei|paguei|comprei|gasto|pago|gastar|comprar)\\b")
         val incomeNoun = has(
-            "\\b(salario|freela|freelance|bico|rendimento|rendimentos|reembolso|estorno|dividendos|cashback|" +
-                "bonus|comissao|mesada|13o|decimo terceiro|plr|adiantamento|venda|vendas|deposito)\\b",
+            "\\b(salario|freela|freelance|bico|rendimento|rendimentos|reembolso|estorno|dividendos|cashback|bonus|comissao|mesada|13o|decimo terceiro|plr|adiantamento|venda|vendas|deposito)\\b",
         )
 
         // Sem o nome da dívida na frase: a única que existe, ou a única do tipo citado ("o financiamento").
@@ -269,21 +268,21 @@ class PhraseParser(private val ctx: ParseContext) {
         val debt = activeDebts.firstOrNull { it.id == debtId }
         if (debt != null) {
             description = when {
-                type == TxType.DEBT_IN -> "Empréstimo · ${debt.name}"
-                debt.installmentAmount > 0 -> "Parcela · ${debt.name}"
-                else -> "Pagamento · ${debt.name}"
+                type == TxType.DEBT_IN -> Res.s(R.string.phrase_emprestimo, debt.name)
+                debt.installmentAmount > 0 -> Res.s(R.string.phrase_parcela, debt.name)
+                else -> Res.s(R.string.phrase_pagamento, debt.name)
             }
         }
         if (description.isEmpty()) {
             description = when (type) {
                 TxType.EXPENSE, TxType.INCOME -> ctx.categories.firstOrNull { it.id == categoryId }?.name ?: ""
-                TxType.TRANSFER -> "Transferência"
-                TxType.CARD_PAYMENT -> "Pagamento de fatura"
-                TxType.INVEST_IN -> "Aporte"
-                TxType.INVEST_OUT -> "Resgate"
-                TxType.GOAL_IN -> "Dinheiro guardado"
-                TxType.GOAL_OUT -> "Dinheiro retirado"
-                TxType.DEBT_IN -> "Empréstimo recebido"
+                TxType.TRANSFER -> Res.s(R.string.common_transferencia)
+                TxType.CARD_PAYMENT -> Res.s(R.string.common_pagamento_fatura)
+                TxType.INVEST_IN -> Res.s(R.string.wallet_aporte)
+                TxType.INVEST_OUT -> Res.s(R.string.wallet_resgate)
+                TxType.GOAL_IN -> Res.s(R.string.phrase_dinheiro_guardado)
+                TxType.GOAL_OUT -> Res.s(R.string.phrase_dinheiro_retirado)
+                TxType.DEBT_IN -> Res.s(R.string.common_emprestimo_recebido)
             }
         }
 

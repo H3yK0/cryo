@@ -80,8 +80,8 @@ object LocaleSettings {
         val e = effective(base, systemLocale(base))
         AppLocale.set(e.language, e.locale, e.currency)
         val ctx = wrap(base)
-        Res.text = { id, args -> ctx.getString(id, *args) }
-        Res.plural = { id, n, args -> ctx.resources.getQuantityString(id, n, *args) }
+        Res.text = { id, args -> if (args.isEmpty()) ctx.getString(id) else ctx.getString(id, *args) }
+        Res.plural = { id, n, args -> if (args.isEmpty()) ctx.resources.getQuantityString(id, n) else ctx.resources.getQuantityString(id, n, *args) }
         AppLocale.datePattern = { skeleton, locale -> DateFormat.getBestDateTimePattern(locale, skeleton) }
         return ctx
     }

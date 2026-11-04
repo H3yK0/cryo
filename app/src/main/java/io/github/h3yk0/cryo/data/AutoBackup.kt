@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.data
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.content.ContentResolver
 import android.content.Context
 import android.content.Intent
@@ -53,10 +55,13 @@ import java.time.format.DateTimeFormatter
  *   fechado), a próxima conferência grava de novo em vez de achar que "nada mudou".
  */
 
-enum class BackupFrequency(val days: Long, val label: String) {
-    DAILY(1, "Todo dia"),
-    WEEKLY(7, "Toda semana"),
-    MONTHLY(30, "Todo mês"),
+enum class BackupFrequency(val days: Long, private val labelRes: Int) {
+    DAILY(1, R.string.backup_freq_daily),
+    WEEKLY(7, R.string.backup_freq_weekly),
+    MONTHLY(30, R.string.backup_freq_monthly);
+
+    /** Na língua do app, na hora de mostrar. */
+    val label: String get() = Res.s(labelRes)
 }
 
 /** Na pasta: sempre o mesmo arquivo, ou um arquivo novo a cada backup. */
@@ -313,7 +318,7 @@ object BackupPolicy {
         lastAt == null || now - lastAt >= frequency.days * DAY - HOUR
 
     fun hash(text: String): String =
-        MessageDigest.getInstance("SHA-256").digest(text.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
+        MessageDigest.getInstance(Res.s(R.string.backup_sha_256)).digest(text.toByteArray(Charsets.UTF_8)).joinToString("") { "%02x".format(it) }
 
     /** Impressão digital só dos dados (sem a hora do backup). */
     fun dataHash(s: Snapshot): String = hash(Backup.export(s, exportedAt = 0))
@@ -362,7 +367,7 @@ object SafFiles {
             resolver.openOutputStream(uri, "wt")
         } catch (e: Exception) {
             null
-        } ?: resolver.openOutputStream(uri, "w") ?: throw IOException("Não foi possível abrir o arquivo")
+        } ?: resolver.openOutputStream(uri, "w") ?: throw IOException(Res.s(R.string.backup_nao_foi_possivel_abrir))
         out.use { it.write(bytes); it.flush() }
     }
 
@@ -371,7 +376,7 @@ object SafFiles {
 
     /** O arquivo inteiro, ou null se for maior que [max] bytes (não lê o resto: um arquivo enorme não estoura a memória). */
     fun readBytes(resolver: ContentResolver, uri: Uri, max: Int): ByteArray? {
-        val input = resolver.openInputStream(uri) ?: throw FileNotFoundException("Não foi possível abrir o arquivo")
+        val input = resolver.openInputStream(uri) ?: throw FileNotFoundException(Res.s(R.string.backup_nao_foi_possivel_abrir))
         return input.use {
             val out = java.io.ByteArrayOutputStream()
             val buf = ByteArray(64 * 1024)
@@ -417,13 +422,13 @@ class SafBackupStorage(private val context: Context) : BackupStorage {
         val childrenUri = DocumentsContract.buildChildDocumentsUriUsingTree(treeUri, parentId)
         val cols = arrayOf(Document.COLUMN_DOCUMENT_ID, Document.COLUMN_DISPLAY_NAME, Document.COLUMN_LAST_MODIFIED)
         // Forma de consulta com Bundle: é a que os provedores de documentos (pasta, nuvem) entendem.
-        val cursor = resolver.query(childrenUri, cols, null as Bundle?, null) ?: throw FileNotFoundException("Pasta indisponível")
+        val cursor = resolver.query(childrenUri, cols, null as Bundle?, null) ?: throw FileNotFoundException(Res.s(R.string.backup_pasta_indisponivel))
         return cursor.use { c ->
             // Busca as colunas pelo nome: alguns provedores devolvem mais colunas, ou em outra ordem.
             val idCol = c.getColumnIndex(Document.COLUMN_DOCUMENT_ID)
             val nameCol = c.getColumnIndex(Document.COLUMN_DISPLAY_NAME)
             val modCol = c.getColumnIndex(Document.COLUMN_LAST_MODIFIED)
-            if (idCol < 0 || nameCol < 0) throw IOException("A pasta não informou os arquivos")
+            if (idCol < 0 || nameCol < 0) throw IOException(Res.s(R.string.backup_pasta_nao_informou_arquivos))
             buildList {
                 while (c.moveToNext()) {
                     val id = c.getString(idCol) ?: continue
@@ -438,7 +443,7 @@ class SafBackupStorage(private val context: Context) : BackupStorage {
     override fun create(treeUri: Uri, name: String, json: String): Uri {
         val parent = DocumentsContract.buildDocumentUriUsingTree(treeUri, DocumentsContract.getTreeDocumentId(treeUri))
         val doc = DocumentsContract.createDocument(resolver, parent, "application/json", name)
-            ?: throw IOException("Não foi possível criar o arquivo")
+            ?: throw IOException(Res.s(R.string.backup_nao_foi_possivel_criar))
         try {
             SafFiles.write(resolver, doc, json)
         } catch (e: Exception) {
@@ -451,7 +456,7 @@ class SafBackupStorage(private val context: Context) : BackupStorage {
     override fun overwrite(uri: Uri, json: String) = SafFiles.write(resolver, uri, json)
 
     override fun delete(uri: Uri) {
-        if (!DocumentsContract.deleteDocument(resolver, uri)) throw IOException("Não foi possível apagar")
+        if (!DocumentsContract.deleteDocument(resolver, uri)) throw IOException(Res.s(R.string.backup_nao_foi_possivel_apagar))
     }
 
     override fun read(uri: Uri): String? = SafFiles.read(resolver, uri)
@@ -705,46 +710,39 @@ class AutoBackupRunner(
 }
 
 object BackupErrors {
-    const val FOREIGN = "Esta pasta já tem um arquivo cryo-backup.json que não foi feito por este celular. Para não apagar " +
-        "esse arquivo, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer, " +
-        "ou escolha Guardar várias cópias."
-    const val CHANGED_FOLDER = "O arquivo cryo-backup.json da pasta foi alterado por outro celular ou app depois do último " +
-        "backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta " +
-        "para decidir o que fazer."
-    const val CHANGED_CLOUD = "O arquivo na nuvem foi alterado por outro celular ou app depois do último backup. Para não " +
-        "apagar essa versão, o Cryo não o substituiu. Toque em Trocar e escolha o mesmo arquivo para decidir o que fazer."
+    const val FOREIGN = "Esta pasta já tem um arquivo cryo-backup.json que não foi feito por este celular. Para não apagar esse arquivo, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer, ou escolha Guardar várias cópias."
+    const val CHANGED_FOLDER = "O arquivo cryo-backup.json da pasta foi alterado por outro celular ou app depois do último backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer."
+    const val CHANGED_CLOUD = "O arquivo na nuvem foi alterado por outro celular ou app depois do último backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar e escolha o mesmo arquivo para decidir o que fazer."
     const val CANT_READ = "Não consegui ler o backup que já está nesse lugar (a nuvem pode estar sem conexão)."
     const val NEWER = "O backup que já está nesse lugar é de uma versão mais nova do Cryo."
     const val DAMAGED = "O backup que já está nesse lugar parece estar danificado."
     const val NOT_CRYO = "Esta pasta já tem um arquivo cryo-backup.json que não é um backup do Cryo."
     const val CANT_OPEN_FOLDER = "Não consegui abrir essa pasta. Tente de novo ou escolha outra."
     const val READ_DATA = "Não consegui ler os dados do Cryo agora. Vou tentar de novo mais tarde."
-    const val CANT_CHECK = "Não consegui abrir o arquivo para conferir antes de gravar (a nuvem pode estar sem conexão, " +
-        "ou ele foi apagado). Vou tentar de novo mais tarde; se continuar assim, escolha o lugar de novo."
+    const val CANT_CHECK = "Não consegui abrir o arquivo para conferir antes de gravar (a nuvem pode estar sem conexão, ou ele foi apagado). Vou tentar de novo mais tarde; se continuar assim, escolha o lugar de novo."
 
     fun message(e: Throwable, t: BackupTarget): String {
-        val where = if (t == BackupTarget.FOLDER) "a pasta" else "o arquivo"
+        val where = if (t == BackupTarget.FOLDER) Res.s(R.string.backup_pasta_3) else Res.s(R.string.backup_arquivo)
         return when {
-            e is SecurityException || e.cause is SecurityException -> "O Cryo perdeu a permissão para usar $where. Escolha de novo."
+            e is SecurityException || e.cause is SecurityException -> Res.s(R.string.backup_cryo_perdeu_permissao_para, where)
             e is AutoBackupRunner.CheckFailed -> CANT_CHECK
             e is FileNotFoundException || e is IllegalArgumentException ->
-                if (t == BackupTarget.FOLDER) "A pasta não existe mais. Escolha outra." else "O arquivo não existe mais. Escolha de novo."
-            else -> "Não consegui gravar (sem espaço ou a nuvem não respondeu). Vou tentar de novo mais tarde."
+                if (t == BackupTarget.FOLDER) Res.s(R.string.backup_pasta_nao_existe_mais) else Res.s(R.string.backup_arquivo_nao_existe_mais)
+            else -> Res.s(R.string.backup_nao_consegui_gravar_sem)
         }
     }
 
     fun shrank(before: Int, now: Int): String =
-        "As movimentações caíram de $before para $now desde o último backup. Para proteger os backups que você já tem, " +
-            "o backup automático ficou pausado. Se foi de propósito, toque em Fazer backup agora."
+        Res.s(R.string.backup_movimentacoes_cairam_para_desde, before, now)
 }
 
 /* ============================== Nomes e permissões ============================== */
 
 object BackupPlaces {
     private val known = mapOf(
-        "com.android.externalstorage.documents" to "no celular",
-        "com.android.providers.downloads.documents" to "Downloads",
-        "com.google.android.apps.docs.storage" to "Google Drive",
+        "com.android.externalstorage.documents" to Res.s(R.string.backup_celular_3),
+        "com.android.providers.downloads.documents" to Res.s(R.string.backup_downloads),
+        "com.google.android.apps.docs.storage" to Res.s(R.string.backup_google_drive),
         "com.microsoft.skydrive.content.StorageAccessProvider" to "OneDrive",
         "org.nextcloud.documents" to "Nextcloud",
         "com.owncloud.android.providers" to "ownCloud",
@@ -757,9 +755,9 @@ object BackupPlaces {
         if (treeUri.authority == "com.android.externalstorage.documents" && docId != null) {
             val volume = docId.substringBefore(':')
             val path = docId.substringAfter(':', "").ifBlank { "pasta principal" }
-            return if (volume == "primary") "$path · no celular" else "$path · cartão de memória"
+            return if (volume == "primary") Res.s(R.string.backup_celular_2, path) else Res.s(R.string.backup_cartao_memoria, path)
         }
-        val name = docId?.let { queryName(context, DocumentsContract.buildDocumentUriUsingTree(treeUri, it)) } ?: "Pasta"
+        val name = docId?.let { queryName(context, DocumentsContract.buildDocumentUriUsingTree(treeUri, it)) } ?: Res.s(R.string.backup_pasta_2)
         return "$name · ${providerName(context, treeUri)}"
     }
 

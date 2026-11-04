@@ -21,6 +21,7 @@ import androidx.work.WorkerParameters
 import io.github.h3yk0.cryo.CryoApp
 import io.github.h3yk0.cryo.MainActivity
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.domain.BillState
 import io.github.h3yk0.cryo.domain.Dates
@@ -41,7 +42,7 @@ object Reminders {
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
             val ch = NotificationChannel(CHANNEL, "Lembretes de contas", NotificationManager.IMPORTANCE_DEFAULT)
-            ch.description = "Avisos de contas fixas e parcelas de dívidas perto do vencimento"
+            ch.description = Res.s(R.string.reminder_avisos_contas_fixas_parcelas)
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
         }
     }
@@ -75,10 +76,10 @@ fun reminderTitle(s: io.github.h3yk0.cryo.domain.BillStatus, today: LocalDate): 
     "${s.bill.name} ${whenText(s.daysUntil, s.due, today)}"
 
 private fun whenText(daysUntil: Long, due: LocalDate, today: LocalDate) = when {
-    daysUntil < 0 -> "venceu ontem"
-    daysUntil == 0L -> "vence hoje"
-    daysUntil == 1L -> "vence amanhã"
-    else -> "vence ${Dates.relative(due, today)}"
+    daysUntil < 0 -> Res.s(R.string.reminder_venceu_ontem)
+    daysUntil == 0L -> Res.s(R.string.reminder_vence_hoje)
+    daysUntil == 1L -> Res.s(R.string.reminder_vence_amanha)
+    else -> Res.s(R.string.bill_due, Dates.relative(due, today))
 }
 
 /** Parcela de dívida que deve gerar aviso hoje. */
@@ -92,10 +93,10 @@ fun debtReminders(l: Ledger): List<DebtReminder> =
         .filter { it.daysUntil == it.info.debt.remindDaysBefore.toLong() || it.daysUntil == 0L || it.daysUntil == -1L }
 
 fun debtReminderTitle(r: DebtReminder, today: LocalDate): String =
-    "Parcela de ${r.info.debt.name} ${whenText(r.daysUntil, r.due, today)}"
+    Res.s(R.string.reminder_parcela, r.info.debt.name, whenText(r.daysUntil, r.due, today))
 
 fun debtReminderText(r: DebtReminder): String =
-    "${Money.format(r.info.nextAmount)} · parcela ${r.info.installmentsPaid + 1} de ${r.info.installmentsTotal} · toque para registrar"
+    Res.s(R.string.reminder_parcela_toque_para_registrar, Money.format(r.info.nextAmount), r.info.installmentsPaid + 1, r.info.installmentsTotal)
 
 class BillReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
@@ -117,7 +118,7 @@ class BillReminderWorker(context: Context, params: WorkerParameters) : Coroutine
             val n = NotificationCompat.Builder(applicationContext, Reminders.CHANNEL)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(reminderTitle(s, today))
-                .setContentText("${Money.format(s.bill.amount)} · toque para marcar como paga")
+                .setContentText(Res.s(R.string.reminder_toque_para_marcar_como, Money.format(s.bill.amount)))
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .build()

@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import org.xmlpull.v1.XmlPullParser
 import org.xmlpull.v1.XmlPullParserFactory
 import java.io.ByteArrayInputStream
@@ -27,7 +29,7 @@ object Xlsx {
     fun read(bytes: ByteArray): Table {
         val files = unzip(bytes)
         val sheets = sheetPaths(files)
-        if (sheets.isEmpty()) throw StatementException("Essa planilha não tem abas que o Cryo consiga ler.")
+        if (sheets.isEmpty()) throw StatementException(Res.s(R.string.importer_essa_planilha_nao_tem))
         val strings = files["xl/sharedStrings.xml"]?.let(::sharedStrings) ?: emptyList()
         val dates = files["xl/styles.xml"]?.let(::dateStyles) ?: emptySet()
         // A primeira aba com conteúdo de verdade (algumas planilhas têm uma capa antes).
@@ -55,7 +57,7 @@ object Xlsx {
                         val n = zip.read(chunk)
                         if (n < 0) break
                         size += n; total += n
-                        if (size > MAX_ENTRY || total > MAX_TOTAL) throw StatementException("Essa planilha é grande demais.")
+                        if (size > MAX_ENTRY || total > MAX_TOTAL) throw StatementException(Res.s(R.string.importer_essa_planilha_grande_demais))
                         buf.write(chunk, 0, n)
                     }
                     out[e.name] = buf.toByteArray()
@@ -64,7 +66,7 @@ object Xlsx {
         } catch (e: StatementException) {
             throw e
         } catch (e: Exception) {
-            throw StatementException("Não consegui abrir essa planilha. Ela pode estar estragada.")
+            throw StatementException(Res.s(R.string.importer_nao_consegui_abrir_essa))
         }
         return out
     }

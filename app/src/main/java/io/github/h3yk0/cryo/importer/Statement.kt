@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import java.time.LocalDate
 
 /*
@@ -12,13 +14,16 @@ import java.time.LocalDate
  * Nada sai do celular: o arquivo é lido aqui mesmo.
  */
 
-enum class StatementFormat(val label: String) {
-    OFX("OFX"),
-    CSV("CSV"),
-    XLSX("Planilha XLSX"),
-    HTML("Planilha do banco (HTML)"),
-    PDF("PDF"),
-    JSON("JSON de teste"),
+/** O nome vem na hora de mostrar, na língua do app (OFX, CSV e PDF são iguais em todas). */
+enum class StatementFormat(private val labelRes: Int?, private val fixed: String = "") {
+    OFX(null, "OFX"),
+    CSV(null, "CSV"),
+    XLSX(R.string.format_xlsx),
+    HTML(R.string.format_html),
+    PDF(null, "PDF"),
+    JSON(R.string.format_json);
+
+    val label: String get() = labelRes?.let { Res.s(it) } ?: fixed
 }
 
 /**

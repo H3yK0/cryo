@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import java.time.LocalDate
 
 /** Descobre o formato do arquivo pelo conteúdo (não pelo nome) e lê as movimentações. */
@@ -33,26 +35,25 @@ object StatementReader {
         pdfPages: (ByteArray, String?) -> List<String>,
     ): Result = try {
         when {
-            bytes.isEmpty() -> Result.Failed("O arquivo está vazio.")
-            bytes.size > MAX_BYTES -> Result.Failed("O arquivo é grande demais (mais de 20 MB).")
+            bytes.isEmpty() -> Result.Failed(Res.s(R.string.importer_arquivo_esta_vazio))
+            bytes.size > MAX_BYTES -> Result.Failed(Res.s(R.string.importer_arquivo_grande_demais_mais))
             isPdf(bytes) -> try {
                 Result.Ok(PdfStatement.parse(pdfPages(bytes, password), today))
             } catch (e: PdfText.PasswordNeeded) {
                 Result.NeedsPassword
             }
-            Xlsx.looksLike(bytes) -> table(Xlsx.read(bytes), StatementFormat.XLSX, listOf("Planilha XLSX"), columns, today)
+            Xlsx.looksLike(bytes) -> table(Xlsx.read(bytes), StatementFormat.XLSX, listOf(Res.s(R.string.format_xlsx)), columns, today)
             isOldExcel(bytes) -> Result.Failed(
-                "Planilhas no formato antigo (.xls) ainda não são lidas. Abra no Excel ou no Planilhas Google e salve como .xlsx, " +
-                    "ou peça ao banco o extrato em OFX ou CSV.",
+                Res.s(R.string.importer_planilhas_formato_antigo_xls),
             )
             else -> text(bytes, today, allowJson, columns)
         }
     } catch (e: StatementException) {
-        Result.Failed(e.message ?: "Não consegui ler esse arquivo.")
+        Result.Failed(e.message ?: Res.s(R.string.importer_nao_consegui_ler_esse))
     } catch (e: OutOfMemoryError) {
-        Result.Failed("O arquivo é grande demais para este celular.")
+        Result.Failed(Res.s(R.string.importer_arquivo_grande_demais_para))
     } catch (e: Exception) {
-        Result.Failed("Não consegui ler esse arquivo.")
+        Result.Failed(Res.s(R.string.importer_nao_consegui_ler_esse))
     }
 
     private fun isPdf(bytes: ByteArray): Boolean = String(bytes, 0, minOf(bytes.size, 1024), Charsets.ISO_8859_1).contains("%PDF-")
@@ -62,29 +63,29 @@ object StatementReader {
 
     private fun text(bytes: ByteArray, today: LocalDate, allowJson: Boolean, columns: ColumnMap?): Result {
         val (text, encoding) = Values.decode(bytes)
-        if (text.isBlank()) return Result.Failed("O arquivo está vazio.")
+        if (text.isBlank()) return Result.Failed(Res.s(R.string.importer_arquivo_esta_vazio))
         if (Ofx.looksLike(text)) return Result.Ok(Ofx.parse(text, encoding))
         if (JsonStatement.looksLike(text)) {
             if (text.contains("\"app\"") && text.contains("\"Cryo\"")) {
-                return Result.Failed("Este arquivo é um backup do Cryo. Para usar, vá em Ajustes › Restaurar backup.")
+                return Result.Failed(Res.s(R.string.importer_este_arquivo_backup_cryo))
             }
             return if (allowJson) Result.Ok(JsonStatement.parse(text))
-            else Result.Failed("Esse arquivo não parece um extrato. Use OFX, CSV, planilha (XLSX) ou PDF do banco.")
+            else Result.Failed(Res.s(R.string.importer_esse_arquivo_nao_parece))
         }
         if (HtmlTable.hasTable(text)) {
             // O ".xls" de muitos bancos é, por dentro, uma página com uma tabela.
-            return table(HtmlTable.read(text), StatementFormat.HTML, listOf("Tabela em HTML (o \"Excel\" de muitos bancos)", "Codificação: $encoding"), columns, today)
+            return table(HtmlTable.read(text), StatementFormat.HTML, listOf(Res.s(R.string.importer_tabela_html_excel_muitos), Res.s(R.string.importer_codificacao, encoding)), columns, today)
         }
         if (text.trimStart().startsWith("<")) {
-            return Result.Failed("Esse arquivo é uma página da internet sem tabela de movimentações. Peça ao banco o extrato em OFX, CSV ou XLSX.")
+            return Result.Failed(Res.s(R.string.importer_esse_arquivo_pagina_internet))
         }
         val (table, sep) = Csv.read(text)
-        val sepName = when (sep) { ';' -> "ponto e vírgula"; ',' -> "vírgula"; '\t' -> "tabulação"; else -> "\"$sep\"" }
-        return table(table, StatementFormat.CSV, listOf("CSV separado por $sepName", "Codificação: $encoding"), columns, today)
+        val sepName = when (sep) { ';' -> Res.s(R.string.importer_ponto_virgula); ',' -> Res.s(R.string.importer_virgula); '\t' -> Res.s(R.string.importer_tabulacao); else -> "\"$sep\"" }
+        return table(table, StatementFormat.CSV, listOf(Res.s(R.string.importer_csv_separado_por, sepName), Res.s(R.string.importer_codificacao, encoding)), columns, today)
     }
 
     private fun table(table: Table, format: StatementFormat, notes: List<String>, columns: ColumnMap?, today: LocalDate): Result {
-        if (table.none { row -> row.count { !it.isBlank } >= 2 }) return Result.Failed("Não encontrei uma tabela de movimentações nesse arquivo.")
+        if (table.none { row -> row.count { !it.isBlank } >= 2 }) return Result.Failed(Res.s(R.string.importer_nao_encontrei_tabela_movimentacoes))
         val map = columns ?: Columns.detect(table)
         if (map == null || !map.isValid) return Result.NeedsColumns(table, format, map, notes)
         val st = Columns.build(table, map, format, today, notes)

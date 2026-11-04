@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.data
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.Bill
@@ -220,13 +222,13 @@ object Backup {
             return (if (c < 0) "-" else "") + "${a / 100},${(a % 100).toString().padStart(2, '0')}"
         }
         val typeName = mapOf(
-            TxType.EXPENSE to "Despesa", TxType.INCOME to "Receita", TxType.TRANSFER to "Transferência",
-            TxType.CARD_PAYMENT to "Pagamento de fatura", TxType.INVEST_IN to "Aporte", TxType.INVEST_OUT to "Resgate",
-            TxType.GOAL_IN to "Guardado em meta", TxType.GOAL_OUT to "Retirado de meta",
-            TxType.DEBT_IN to "Empréstimo recebido",
+            TxType.EXPENSE to Res.s(R.string.wallet_despesa), TxType.INCOME to Res.s(R.string.wallet_receita), TxType.TRANSFER to Res.s(R.string.common_transferencia),
+            TxType.CARD_PAYMENT to Res.s(R.string.common_pagamento_fatura), TxType.INVEST_IN to Res.s(R.string.wallet_aporte), TxType.INVEST_OUT to Res.s(R.string.wallet_resgate),
+            TxType.GOAL_IN to Res.s(R.string.common_guardado_meta), TxType.GOAL_OUT to Res.s(R.string.common_retirado_meta),
+            TxType.DEBT_IN to Res.s(R.string.common_emprestimo_recebido),
         )
         val sb = StringBuilder("﻿")
-        sb.append("Data;Tipo;Descrição;Categoria;Conta;Destino;Cartão;Parcela;Valor;Observação;Dívida\n")
+        sb.append(Res.s(R.string.backup_data_tipo_descricao_categoria))
         for (t in s.txs.sortedBy { it.date }) {
             val signed = when (t.type) {
                 TxType.EXPENSE, TxType.CARD_PAYMENT, TxType.INVEST_IN, TxType.GOAL_IN -> -t.amount

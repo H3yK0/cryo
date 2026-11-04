@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.normalized
 import java.time.LocalDateTime
@@ -39,41 +41,41 @@ data class ImportReport(
         // As notas são do Cryo, mas citam entre aspas o que veio do arquivo (nomes de colunas): isso também é trocado.
         fun note(s: String) = if (anonymous) QUOTED.replace(s) { m -> "\"" + anonymize(m.groupValues[1]) + "\"" } else s
 
-        appendLine("Relatório de leitura de extrato · Cryo $appVersion")
-        appendLine("Gerado em ${at.format(STAMP)}")
-        if (anonymous) appendLine("Versão anônima: letras viram x e números viram 9; o formato de cada linha continua igual.")
+        appendLine(Res.s(R.string.report_relatorio_leitura_extrato_cryo, appVersion))
+        appendLine(Res.s(R.string.report_gerado, at.format(STAMP)))
+        if (anonymous) appendLine(Res.s(R.string.report_versao_anonima_letras_viram))
         appendLine()
-        appendLine("Arquivo: ${if (anonymous) anonymousName(fileName) else fileName} (${sizeText(size)})")
+        appendLine(Res.s(R.string.report_arquivo_2, if (anonymous) anonymousName(fileName) else fileName, sizeText(size)))
         val st = statement
         if (st != null) {
-            appendLine("Formato: ${st.format.label}")
-            appendLine("Tipo: " + if (st.isCard) "fatura de cartão" else "extrato de conta")
-            st.accountHint?.let { appendLine("Conta escrita no arquivo: ${a(it)}") }
-            st.balance?.let { appendLine("Saldo no fim do extrato: ${money(it)}") }
+            appendLine(Res.s(R.string.report_formato, st.format.label))
+            appendLine(Res.s(R.string.report_tipo) + if (st.isCard) Res.s(R.string.report_fatura_cartao) else Res.s(R.string.report_extrato_conta))
+            st.accountHint?.let { appendLine(Res.s(R.string.report_conta_escrita_arquivo, a(it))) }
+            st.balance?.let { appendLine(Res.s(R.string.report_saldo_fim_extrato, money(it))) }
             if (st.notes.isNotEmpty()) {
-                appendLine("Como foi lido:")
+                appendLine(Res.s(R.string.report_como_foi_lido))
                 st.notes.forEach { appendLine("  · ${note(it)}") }
             }
             appendLine()
-            appendLine("Movimentações encontradas: $totalLines")
+            appendLine(Res.s(R.string.report_movimentacoes_encontradas, totalLines))
             st.lines.take(MAX_LINES).forEachIndexed { i, l ->
-                val id = l.id?.let { " · id ${a(it.take(MAX_FIELD))}" }.orEmpty()
+                val id = l.id?.let { Res.s(R.string.report_id, a(it.take(MAX_FIELD))) }.orEmpty()
                 appendLine("${i + 1}. ${a(l.date.toString())} · ${money(l.amount)} · ${a(l.description.take(MAX_FIELD))}$id")
-                if (l.source.isNotBlank()) appendLine("   veio de: ${a(l.source.take(MAX_SOURCE))}")
+                if (l.source.isNotBlank()) appendLine(Res.s(R.string.report_veio, a(l.source.take(MAX_SOURCE))))
             }
-            if (totalLines > MAX_LINES) appendLine("... e mais ${totalLines - MAX_LINES}")
+            if (totalLines > MAX_LINES) appendLine(Res.s(R.string.report_mais, totalLines - MAX_LINES))
             appendLine()
-            appendLine("Linhas que ficaram de fora: $totalSkipped")
+            appendLine(Res.s(R.string.report_linhas_que_ficaram_fora, totalSkipped))
             st.skipped.take(MAX_LINES).forEach { appendLine("  · ${it.reason}: ${a(it.source.take(MAX_SOURCE))}") }
-            if (totalSkipped > MAX_LINES) appendLine("... e mais ${totalSkipped - MAX_LINES}")
+            if (totalSkipped > MAX_LINES) appendLine(Res.s(R.string.report_mais, totalSkipped - MAX_LINES))
         }
         message?.let {
             appendLine()
-            appendLine("Resultado: $it")
+            appendLine(Res.s(R.string.report_resultado, it))
         }
         imported?.let {
             appendLine()
-            appendLine("Importadas depois da conferência: $it")
+            appendLine(Res.s(R.string.report_importadas_depois_conferencia, it))
         }
     }
 
@@ -138,7 +140,7 @@ data class ImportReport(
         /** O nome do arquivo pode ter o nome da pessoa: fica só a extensão. */
         fun anonymousName(name: String): String {
             val ext = name.substringAfterLast('.', "").lowercase().takeIf { it in EXTENSIONS }
-            return if (ext != null) "arquivo.$ext" else "arquivo"
+            return if (ext != null) Res.s(R.string.report_arquivo, ext) else "arquivo"
         }
 
         fun sizeText(bytes: Long): String = when {

@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.domain
 
+import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.TxType
 import java.time.YearMonth
@@ -151,24 +152,24 @@ data class MoneyFlow(val sources: List<FlowNode>, val destinations: List<FlowNod
 fun Ledger.moneyFlow(ym: YearMonth, maxDestinations: Int = 6): MoneyFlow {
     val until = if (ym == today.ym()) today.dayOfMonth else null
     val sources = byCategory(ym, CategoryKind.INCOME, until).map {
-        FlowNode(it.category?.name ?: "Sem categoria", it.total, it.category?.color ?: 0xFF8A9296.toInt())
+        FlowNode(it.category?.name ?: Res.s(R.string.insights_sem_categoria), it.total, it.category?.color ?: 0xFF8A9296.toInt())
     }.toMutableList()
     val expenses = byCategory(ym, CategoryKind.EXPENSE, until)
     val dest = expenses.take(maxDestinations).map {
-        FlowNode(it.category?.name ?: "Sem categoria", it.total, it.category?.color ?: 0xFF8A9296.toInt())
+        FlowNode(it.category?.name ?: Res.s(R.string.insights_sem_categoria), it.total, it.category?.color ?: 0xFF8A9296.toInt())
     }.toMutableList()
     val others = expenses.drop(maxDestinations).sumOf { it.total }
-    if (others > 0) dest += FlowNode("Outras categorias", others, 0xFF9E9E9E.toInt(), FlowKind.OTHERS)
+    if (others > 0) dest += FlowNode(Res.s(R.string.analytics_outras_categorias), others, 0xFF9E9E9E.toInt(), FlowKind.OTHERS)
 
     val summary = monthSummary(ym, until)
-    if (summary.borrowed > 0) sources += FlowNode("Dinheiro emprestado", summary.borrowed, 0xFFB23A48.toInt(), FlowKind.BORROWED)
-    if (summary.invested > 0) dest += FlowNode("Investimentos", summary.invested, 0xFF3F51B5.toInt(), FlowKind.INVEST)
-    if (summary.saved > 0) dest += FlowNode("Metas e caixinhas", summary.saved, 0xFF00897B.toInt(), FlowKind.GOALS)
+    if (summary.borrowed > 0) sources += FlowNode(Res.s(R.string.analytics_dinheiro_emprestado), summary.borrowed, 0xFFB23A48.toInt(), FlowKind.BORROWED)
+    if (summary.invested > 0) dest += FlowNode(Res.s(R.string.home_investments), summary.invested, 0xFF3F51B5.toInt(), FlowKind.INVEST)
+    if (summary.saved > 0) dest += FlowNode(Res.s(R.string.home_goals), summary.saved, 0xFF00897B.toInt(), FlowKind.GOALS)
 
     val totalIn = sources.sumOf { it.value }
     val totalOut = dest.sumOf { it.value }
-    if (totalIn > totalOut) dest += FlowNode("Sobrou", totalIn - totalOut, 0xFF2E7D32.toInt(), FlowKind.SURPLUS)
-    if (totalOut > totalIn) sources += FlowNode("Saldo que você já tinha", totalOut - totalIn, 0xFF78909C.toInt(), FlowKind.FROM_BALANCE)
+    if (totalIn > totalOut) dest += FlowNode(Res.s(R.string.insights_sobrou), totalIn - totalOut, 0xFF2E7D32.toInt(), FlowKind.SURPLUS)
+    if (totalOut > totalIn) sources += FlowNode(Res.s(R.string.analytics_saldo_que_voce_ja), totalOut - totalIn, 0xFF78909C.toInt(), FlowKind.FROM_BALANCE)
     return MoneyFlow(sources, dest)
 }
 
@@ -199,8 +200,8 @@ fun Ledger.insights(): List<Insight> {
     if (before.expense > 0 && now.expense > 0) {
         val pct = ((now.expense - before.expense) * 100.0 / before.expense).roundToLong()
         if (abs(pct) >= 5) {
-            out += if (pct < 0) Insight("Até hoje você gastou ${abs(pct)}% menos que no mesmo período de ${Dates.monthInSentence(prev)}.", true)
-            else Insight("Até hoje você gastou $pct% mais que no mesmo período de ${Dates.monthInSentence(prev)}.", false)
+            out += if (pct < 0) Insight(Res.s(R.string.analytics_ate_hoje_voce_gastou_2, Num.percent(abs(pct).toInt()), Dates.monthInSentence(prev)), true)
+            else Insight(Res.s(R.string.analytics_ate_hoje_voce_gastou, Num.percent(pct.toInt()), Dates.monthInSentence(prev)), false)
         }
     }
 
@@ -209,7 +210,7 @@ fun Ledger.insights(): List<Insight> {
     cats.firstOrNull()?.let { top ->
         if (top.total > 0 && now.expense > 0) {
             val share = (top.total * 100.0 / now.expense).roundToLong()
-            out += Insight("Seu maior gasto do mês é ${top.category?.name ?: "sem categoria"}: $share% do total.", null)
+            out += Insight(Res.s(R.string.analytics_seu_maior_gasto_mes, top.category?.name ?: Res.s(R.string.analytics_sem_categoria), Num.percent(share.toInt())), null)
         }
     }
     cats.mapNotNull { c ->
@@ -218,29 +219,29 @@ fun Ledger.insights(): List<Insight> {
         val pct = ((c.total - p) * 100.0 / p).roundToLong()
         if (pct >= 30) c to pct else null
     }.maxByOrNull { it.second }?.let { (c, pct) ->
-        out += Insight("${c.category?.name ?: "Uma categoria"} subiu $pct% em relação ao mesmo período do mês passado.", false)
+        out += Insight(Res.s(R.string.analytics_subiu_relacao_ao_mesmo, c.category?.name ?: Res.s(R.string.analytics_categoria), Num.percent(pct.toInt())), false)
     }
 
     budgetUsages(ym).firstOrNull { it.ratio >= 1f }?.let {
-        out += Insight("O orçamento de ${it.category.name} já passou do limite em ${Money.format(-it.remaining)}.", false)
+        out += Insight(Res.s(R.string.analytics_orcamento_ja_passou_limite, it.category.name, Money.format(-it.remaining)), false)
     }
     val overdue = billStatuses(ym).count { it.state == BillState.OVERDUE }
-    if (overdue > 0) out += Insight(if (overdue == 1) "Há 1 conta fixa vencida." else "Há $overdue contas fixas vencidas.", false)
+    if (overdue > 0) out += Insight(Res.p(R.plurals.insight_bills_overdue, overdue, overdue), false)
 
     val debts = debtOverview
     if (debts.overdueCount > 0) {
         out += Insight(
-            if (debts.overdueCount == 1) "Há 1 parcela de dívida atrasada." else "Há ${debts.overdueCount} parcelas de dívidas atrasadas.",
+            Res.p(R.plurals.insight_debts_overdue, debts.overdueCount, debts.overdueCount),
             false,
         )
     }
     activeDebts.map { debtInfo(it) }
         .firstOrNull { it.isPaidOff && it.lastPayment?.ym() == ym }
-        ?.let { out += Insight("Você quitou ${it.debt.name} neste mês. Parabéns! 🎉", true) }
+        ?.let { out += Insight(Res.s(R.string.analytics_voce_quitou_neste_mes, it.debt.name), true) }
 
     if (now.income > 0 && now.expense < now.income && d >= 15) {
         val pct = ((now.income - now.expense) * 100.0 / now.income).roundToLong()
-        if (pct >= 10) out += Insight("Você está guardando $pct% do que entrou neste mês. Continue assim!", true)
+        if (pct >= 10) out += Insight(Res.s(R.string.analytics_voce_esta_guardando_que, Num.percent(pct.toInt())), true)
     }
     return out
 }

@@ -1185,4 +1185,323 @@
     <!-- ImportScreen.kt -->
     <string name="import_cartao_2">\u0020no cartão %1$s</string>
     <string name="import_sem_descricao">sem descrição</string>
+
+    <!-- Formatos e frequências -->
+    <string name="format_xlsx">Planilha XLSX</string>
+    <string name="format_html">Planilha do banco (HTML)</string>
+    <string name="format_json">JSON de teste</string>
+    <string name="backup_freq_daily">Todo dia</string>
+    <string name="backup_freq_weekly">Toda semana</string>
+    <string name="backup_freq_monthly">Todo mês</string>
+
+    <!-- Análises: plurais -->
+    <plurals name="insight_bills_overdue">
+        <item quantity="one">Há %d conta fixa vencida.</item>
+        <item quantity="other">Há %d contas fixas vencidas.</item>
+    </plurals>
+    <plurals name="insight_debts_overdue">
+        <item quantity="one">Há %d parcela de dívida atrasada.</item>
+        <item quantity="other">Há %d parcelas de dívidas atrasadas.</item>
+    </plurals>
+
+    <!-- Analytics.kt -->
+    <string name="analytics_outras_categorias">Outras categorias</string>
+    <string name="analytics_dinheiro_emprestado">Dinheiro emprestado</string>
+    <string name="analytics_saldo_que_voce_ja">Saldo que você já tinha</string>
+    <string name="analytics_ate_hoje_voce_gastou_2">Até hoje você gastou %1$s menos que no mesmo período de %2$s.</string>
+    <string name="analytics_ate_hoje_voce_gastou">Até hoje você gastou %1$s mais que no mesmo período de %2$s.</string>
+    <string name="analytics_seu_maior_gasto_mes">Seu maior gasto do mês é %1$s: %2$s do total.</string>
+    <string name="analytics_subiu_relacao_ao_mesmo">%1$s subiu %2$s em relação ao mesmo período do mês passado.</string>
+    <string name="analytics_orcamento_ja_passou_limite">O orçamento de %1$s já passou do limite em %2$s.</string>
+    <string name="analytics_voce_quitou_neste_mes">Você quitou %1$s neste mês. Parabéns! 🎉</string>
+    <string name="analytics_voce_esta_guardando_que">Você está guardando %1$s do que entrou neste mês. Continue assim!</string>
+
+    <!-- Analytics.kt -->
+    <string name="analytics_sem_categoria">sem categoria</string>
+    <string name="analytics_categoria">Uma categoria</string>
+
+    <!-- PhraseParser.kt -->
+    <string name="phrase_emprestimo">Empréstimo · %1$s</string>
+    <string name="phrase_parcela">Parcela · %1$s</string>
+    <string name="phrase_pagamento">Pagamento · %1$s</string>
+    <string name="phrase_dinheiro_guardado">Dinheiro guardado</string>
+    <string name="phrase_dinheiro_retirado">Dinheiro retirado</string>
+
+    <!-- Reminders.kt -->
+    <string name="reminder_avisos_contas_fixas_parcelas">Avisos de contas fixas e parcelas de dívidas perto do vencimento</string>
+    <string name="reminder_venceu_ontem">venceu ontem</string>
+    <string name="reminder_vence_hoje">vence hoje</string>
+    <string name="reminder_vence_amanha">vence amanhã</string>
+    <string name="reminder_parcela">Parcela de %1$s %2$s</string>
+    <string name="reminder_parcela_toque_para_registrar">%1$s · parcela %2$s de %3$s · toque para registrar</string>
+    <string name="reminder_toque_para_marcar_como">%1$s · toque para marcar como paga</string>
+
+    <!-- AutoBackupWork.kt -->
+    <string name="backup_avisa_quando_backup_automatico">Avisa quando o backup automático não consegue salvar ou precisa de você</string>
+    <string name="backup_backup_automatico_falhou">O backup automático %1$s falhou</string>
+    <string name="backup_cryo_protegeu_seu_backup">O Cryo protegeu seu backup %1$s</string>
+
+    <!-- AutoBackup.kt -->
+    <string name="backup_sha_256">SHA-256</string>
+    <string name="backup_nao_foi_possivel_abrir">Não foi possível abrir o arquivo</string>
+    <string name="backup_pasta_indisponivel">Pasta indisponível</string>
+    <string name="backup_pasta_nao_informou_arquivos">A pasta não informou os arquivos</string>
+    <string name="backup_nao_foi_possivel_criar">Não foi possível criar o arquivo</string>
+    <string name="backup_nao_foi_possivel_apagar">Não foi possível apagar</string>
+    <string name="backup_arquivo">o arquivo</string>
+    <string name="backup_pasta_3">a pasta</string>
+    <string name="backup_cryo_perdeu_permissao_para">O Cryo perdeu a permissão para usar %1$s. Escolha de novo.</string>
+    <string name="backup_arquivo_nao_existe_mais">O arquivo não existe mais. Escolha de novo.</string>
+    <string name="backup_pasta_nao_existe_mais">A pasta não existe mais. Escolha outra.</string>
+    <string name="backup_nao_consegui_gravar_sem">Não consegui gravar (sem espaço ou a nuvem não respondeu). Vou tentar de novo mais tarde.</string>
+    <string name="backup_movimentacoes_cairam_para_desde">As movimentações caíram de %1$s para %2$s desde o último backup. Para proteger os backups que você já tem, o backup automático ficou pausado. Se foi de propósito, toque em Fazer backup agora.</string>
+    <string name="backup_celular_3">no celular</string>
+    <string name="backup_downloads">Downloads</string>
+    <string name="backup_google_drive">Google Drive</string>
+    <string name="backup_cartao_memoria">%1$s · cartão de memória</string>
+    <string name="backup_celular_2">%1$s · no celular</string>
+    <string name="backup_pasta_2">Pasta</string>
+
+    <!-- Backup.kt -->
+    <string name="backup_data_tipo_descricao_categoria">Data;Tipo;Descrição;Categoria;Conta;Destino;Cartão;Parcela;Valor;Observação;Dívida\n</string>
+
+    <!-- Repository.kt -->
+    <string name="repo_orcamento_estourado">Orçamento de %1$s estourado: %2$s de %3$s</string>
+    <string name="repo_atencao_voce_ja_usou">Atenção: você já usou %1$s%% do orçamento de %2$s</string>
+    <string name="repo_fatura">Fatura %1$s</string>
+    <string name="repo_pagamento">Pagamento ·\u0020</string>
+    <string name="repo_parcela">Parcela ·\u0020</string>
+    <string name="repo_juros_multa">Juros/multa · %1$s</string>
+    <string name="repo_desconto_quitacao">Desconto na quitação</string>
+
+    <!-- StatementReader.kt -->
+    <string name="importer_arquivo_grande_demais_mais">O arquivo é grande demais (mais de 20 MB).</string>
+    <string name="importer_planilhas_formato_antigo_xls">Planilhas no formato antigo (.xls) ainda não são lidas. Abra no Excel ou no Planilhas Google e salve como .xlsx, ou peça ao banco o extrato em OFX ou CSV.</string>
+    <string name="importer_arquivo_grande_demais_para">O arquivo é grande demais para este celular.</string>
+    <string name="importer_nao_consegui_ler_esse">Não consegui ler esse arquivo.</string>
+    <string name="importer_arquivo_esta_vazio">O arquivo está vazio.</string>
+    <string name="importer_este_arquivo_backup_cryo">Este arquivo é um backup do Cryo. Para usar, vá em Ajustes › Restaurar backup.</string>
+    <string name="importer_esse_arquivo_nao_parece">Esse arquivo não parece um extrato. Use OFX, CSV, planilha (XLSX) ou PDF do banco.</string>
+    <string name="importer_tabela_html_excel_muitos">Tabela em HTML (o \"Excel\" de muitos bancos)</string>
+    <string name="importer_esse_arquivo_pagina_internet">Esse arquivo é uma página da internet sem tabela de movimentações. Peça ao banco o extrato em OFX, CSV ou XLSX.</string>
+    <string name="importer_tabulacao">tabulação</string>
+    <string name="importer_virgula">vírgula</string>
+    <string name="importer_ponto_virgula">ponto e vírgula</string>
+    <string name="importer_codificacao">Codificação: %1$s</string>
+    <string name="importer_csv_separado_por">CSV separado por %1$s</string>
+    <string name="importer_nao_encontrei_tabela_movimentacoes">Não encontrei uma tabela de movimentações nesse arquivo.</string>
+
+    <!-- Ofx.kt -->
+    <string name="importer_sem_valor">sem valor</string>
+    <string name="importer_sem_data">sem data</string>
+    <string name="importer_movimentacao">Movimentação</string>
+    <string name="importer_valor_zero">valor zero</string>
+    <string name="importer_linha_saldo_ou_total">linha de saldo ou total</string>
+    <string name="importer_banco">Banco %1$s</string>
+    <string name="importer_conta">conta %1$s</string>
+    <string name="importer_formato_ofx">Formato OFX\u0020</string>
+    <string name="importer_extrato_conta">Extrato de conta</string>
+    <string name="importer_extrato_cartao_credito">Extrato de cartão de crédito</string>
+
+    <!-- PdfText.kt -->
+    <string name="importer_para_ler_pdf_cryo">Para ler PDF, o Cryo precisa de um Android mais novo. Peça ao banco o extrato em OFX, CSV ou planilha (XLSX).</string>
+    <string name="importer_nao_consegui_abrir_esse">Não consegui abrir esse PDF. Ele pode estar estragado.</string>
+
+    <!-- Xlsx.kt -->
+    <string name="importer_essa_planilha_nao_tem">Essa planilha não tem abas que o Cryo consiga ler.</string>
+    <string name="importer_essa_planilha_grande_demais">Essa planilha é grande demais.</string>
+    <string name="importer_nao_consegui_abrir_essa">Não consegui abrir essa planilha. Ela pode estar estragada.</string>
+
+    <!-- JsonStatement.kt -->
+    <string name="importer_json_precisa_ter_lista">O JSON precisa ter a lista \"transactions\".</string>
+    <string name="importer_esse_json_nao_esta">Esse JSON não está no formato de testes do Cryo.</string>
+    <string name="importer_esse_json_versao_mais">Esse JSON é de uma versão mais nova do formato de testes.</string>
+    <string name="importer_nao_objeto">não é um objeto</string>
+    <string name="importer_date_ausente_ou_invalida">\"date\" ausente ou inválida (use 2026-10-01)</string>
+    <string name="importer_amount_ausente_ou_invalido">\"amount\" ausente ou inválido</string>
+    <string name="importer_formato_testes_cryo_versao">Formato de testes do Cryo, versão %1$s</string>
+
+    <!-- PdfStatement.kt -->
+    <string name="importer_nao_encontrei_texto_nesse">Não encontrei texto nesse PDF. Se ele for uma foto ou digitalização, o Cryo não consegue ler.</string>
+    <string name="importer_sem_data_antes">sem data antes</string>
+    <string name="importer_valor_sem_descricao">valor sem descrição</string>
+    <string name="importer_linha_saldo_total_ou">linha de saldo, total ou resumo</string>
+    <string name="importer_valor_ilegivel">valor ilegível</string>
+    <string name="importer_pagina_linhas_texto">%1$s página(s), %2$s linhas de texto</string>
+    <string name="importer_datas_sem_ano_ano">Datas sem ano: ano tirado de \"%1$s\"</string>
+    <string name="importer_parece_extrato_conta">Parece extrato de conta</string>
+    <string name="importer_parece_fatura_cartao">Parece fatura de cartão</string>
+    <string name="importer_saidas_tem_sinal_pdf">As saídas têm sinal no PDF (o resto é entrada)</string>
+    <string name="importer_so_entradas_tem_sinal">Só as entradas têm sinal no PDF (o resto é saída)</string>
+    <string name="importer_sem_sinais_pdf_entradas">Sem sinais no PDF: entradas e saídas pelas palavras</string>
+
+    <!-- Tables.kt -->
+    <string name="importer_coluna">Coluna %1$s</string>
+    <string name="importer_sem_cabecalho_colunas_pelo">Sem cabeçalho (colunas pelo conteúdo)</string>
+    <string name="importer_cabecalho_linha">Cabeçalho na linha %1$s</string>
+    <string name="importer_descricao">Descrição:\u0020</string>
+    <string name="importer_data">Data: %1$s</string>
+    <string name="importer_saidas">Saídas: %1$s</string>
+    <string name="importer_entradas">Entradas: %1$s</string>
+    <string name="importer_valor">Valor: %1$s</string>
+    <string name="importer_identificador">Identificador: %1$s</string>
+    <string name="importer_credito_debito">Crédito/débito: %1$s</string>
+    <string name="importer_parcela_2">Parcela: %1$s</string>
+    <string name="importer_centavos_depois_ponto">Centavos depois do ponto</string>
+    <string name="importer_centavos_depois_virgula">Centavos depois da vírgula</string>
+    <string name="importer_parcela">\u0020- Parcela %1$s/%2$s</string>
+
+    <!-- ImportReport.kt -->
+    <string name="report_relatorio_leitura_extrato_cryo">Relatório de leitura de extrato · Cryo %1$s</string>
+    <string name="report_gerado">Gerado em %1$s</string>
+    <string name="report_versao_anonima_letras_viram">Versão anônima: letras viram x e números viram 9; o formato de cada linha continua igual.</string>
+    <string name="report_arquivo_2">Arquivo: %1$s (%2$s)</string>
+    <string name="report_formato">Formato: %1$s</string>
+    <string name="report_extrato_conta">extrato de conta</string>
+    <string name="report_fatura_cartao">fatura de cartão</string>
+    <string name="report_tipo">Tipo:\u0020</string>
+    <string name="report_conta_escrita_arquivo">Conta escrita no arquivo: %1$s</string>
+    <string name="report_saldo_fim_extrato">Saldo no fim do extrato: %1$s</string>
+    <string name="report_como_foi_lido">Como foi lido:</string>
+    <string name="report_movimentacoes_encontradas">Movimentações encontradas: %1$s</string>
+    <string name="report_id">\u0020· id %1$s</string>
+    <string name="report_veio">\u0020  veio de: %1$s</string>
+    <string name="report_linhas_que_ficaram_fora">Linhas que ficaram de fora: %1$s</string>
+    <string name="report_mais">... e mais %1$s</string>
+    <string name="report_resultado">Resultado: %1$s</string>
+    <string name="report_importadas_depois_conferencia">Importadas depois da conferência: %1$s</string>
+    <string name="report_arquivo">arquivo.%1$s</string>
+
+    <!-- Categorias padrão: nomes (data/DefaultData.kt). Criadas na língua de quem instala (RF-LNG-06) -->
+    <string name="cat_restaurant_name">Alimentação</string>
+    <string name="cat_cart_name">Mercado</string>
+    <string name="cat_car_name">Transporte</string>
+    <string name="cat_home_name">Moradia</string>
+    <string name="cat_bolt_name">Contas da casa</string>
+    <string name="cat_health_name">Saúde</string>
+    <string name="cat_school_name">Educação</string>
+    <string name="cat_movie_name">Lazer</string>
+    <string name="cat_shopping_name">Compras</string>
+    <string name="cat_subscriptions_name">Assinaturas</string>
+    <string name="cat_spa_name">Cuidados pessoais</string>
+    <string name="cat_pets_name">Pets</string>
+    <string name="cat_volunteer_name">Dízimo e doações</string>
+    <string name="cat_gift_name">Presentes</string>
+    <string name="cat_flight_name">Viagem</string>
+    <string name="cat_receipt_name">Impostos e taxas</string>
+    <string name="cat_more_expense_name">Outros gastos</string>
+    <string name="cat_work_name">Salário</string>
+    <string name="cat_laptop_name">Extras e freelas</string>
+    <string name="cat_sell_name">Vendas</string>
+    <string name="cat_trending_name">Rendimentos</string>
+    <string name="cat_undo_name">Reembolsos</string>
+    <string name="cat_redeem_name">Presentes recebidos</string>
+    <string name="cat_more_income_name">Outras entradas</string>
+    <string name="cat_debt_name">Dívidas e empréstimos</string>
+
+    <!-- Categorias padrão: palavras-chave do registro rápido, separadas por vírgula, sem acento e em minúsculas (a mesma língua das frases) -->
+    <string name="cat_restaurant_keywords">almoco,almocei,jantar,janta,lanche,lanchei,restaurante,ifood,i food,pizza,hamburguer,burger,cafe,padaria,comida,marmita,acai,sorvete,lanchonete,salgado,pastel,churrasco,sushi,delivery,refeicao,cafeteria,doce,bolo,pao,coxinha,espetinho,self service</string>
+    <string name="cat_cart_keywords">mercado,supermercado,feira,hortifruti,atacadao,assai,carrefour,acougue,sacolao,compras do mes,mercadinho,quitanda,atacarejo</string>
+    <string name="cat_car_keywords">uber,99,taxi,onibus,metro,trem,gasolina,combustivel,etanol,alcool,diesel,posto,estacionamento,pedagio,oficina,mecanico,ipva,licenciamento,passagem,bilhete,brt,mototaxi,lava jato,lavagem,pneu,seguro do carro,troca de oleo</string>
+    <string name="cat_home_keywords">aluguel,condominio,iptu,reforma,moveis,movel,manutencao,diarista,faxina,pedreiro,encanador,eletricista</string>
+    <string name="cat_bolt_keywords">luz,energia,agua,internet,gas,botijao,telefone,conta de luz,conta de agua,wifi,claro,vivo,tim,saneamento,enel,equatorial,saneago,sabesp,cemig,copel,celesc</string>
+    <string name="cat_health_keywords">farmacia,remedio,remedios,medicamento,medico,consulta,exame,dentista,plano de saude,hospital,psicologo,terapia,drogaria,academia,vacina,oculos,fisioterapia,suplemento</string>
+    <string name="cat_school_keywords">curso,faculdade,escola,livro,livros,material escolar,mensalidade,apostila,udemy,alura,matricula,ingles,aula</string>
+    <string name="cat_movie_keywords">cinema,show,jogo,game,steam,playstation,xbox,passeio,festa,ingresso,balada,parque,teatro,bar,cerveja,boliche,clube,role</string>
+    <string name="cat_shopping_keywords">roupa,roupas,tenis,sapato,shopping,loja,amazon,mercado livre,shopee,shein,aliexpress,eletronico,celular,fone,tv,televisao,notebook,computador,camiseta,calca,relogio,mochila,bolsa</string>
+    <string name="cat_subscriptions_keywords">netflix,spotify,youtube,youtube premium,prime,prime video,disney,hbo,max,globoplay,icloud,google one,assinatura,chatgpt,claude,deezer,crunchyroll,paramount,apple music,game pass,microsoft 365,office</string>
+    <string name="cat_spa_keywords">cabelo,barbeiro,barbearia,salao,cosmetico,perfume,manicure,unha,creme,shampoo,maquiagem,depilacao,corte</string>
+    <string name="cat_pets_keywords">racao,veterinario,pet,petshop,pet shop,banho e tosa,areia,cachorro,gato</string>
+    <string name="cat_volunteer_keywords">dizimo,oferta,doacao,doei,igreja,caridade,vaquinha,contribuicao</string>
+    <string name="cat_gift_keywords">presente,presentes,aniversario,lembrancinha,amigo secreto</string>
+    <string name="cat_flight_keywords">viagem,hotel,passagem aerea,hospedagem,airbnb,pousada,aviao,rodoviaria,excursao</string>
+    <string name="cat_receipt_keywords">imposto,taxa,tarifa,juros,multa,iof,anuidade,cartorio,das,darf,inss,irpf</string>
+    <string name="cat_more_expense_keywords"></string>
+    <string name="cat_work_keywords">salario,holerite,contracheque,adiantamento,13o,decimo terceiro,ferias,plr,pagamento do mes</string>
+    <string name="cat_laptop_keywords">freela,freelance,bico,extra,servico,job,trabalho extra,comissao,bonus,gorjeta,hora extra</string>
+    <string name="cat_sell_keywords">vendi,venda,vendas</string>
+    <string name="cat_trending_keywords">rendimento,rendimentos,juros recebidos,dividendos,cashback</string>
+    <string name="cat_undo_keywords">reembolso,estorno,devolucao,ressarcimento</string>
+    <string name="cat_redeem_keywords">presente,mesada,ganhei de presente</string>
+    <string name="cat_more_income_keywords"></string>
+    <string name="cat_debt_keywords">divida,dividas,emprestimo,emprestimos,financiamento,consignado,crediario,carne,prestacao,acordo,agiota</string>
+
+    <!-- Ícones das categorias: descrição para leitores de tela -->
+    <string name="icon_restaurant">Comida</string>
+    <string name="icon_cart">Mercado</string>
+    <string name="icon_car">Carro</string>
+    <string name="icon_bus">Ônibus</string>
+    <string name="icon_home">Casa</string>
+    <string name="icon_bolt">Energia</string>
+    <string name="icon_water">Água</string>
+    <string name="icon_wifi">Internet</string>
+    <string name="icon_phone">Celular</string>
+    <string name="icon_health">Saúde</string>
+    <string name="icon_fitness">Academia</string>
+    <string name="icon_school">Estudos</string>
+    <string name="icon_movie">Lazer</string>
+    <string name="icon_game">Jogos</string>
+    <string name="icon_shopping">Compras</string>
+    <string name="icon_subscriptions">Assinaturas</string>
+    <string name="icon_spa">Beleza</string>
+    <string name="icon_pets">Pets</string>
+    <string name="icon_volunteer">Doações</string>
+    <string name="icon_gift">Presente</string>
+    <string name="icon_flight">Viagem</string>
+    <string name="icon_receipt">Taxas</string>
+    <string name="icon_coffee">Café</string>
+    <string name="icon_gas">Combustível</string>
+    <string name="icon_baby">Bebê</string>
+    <string name="icon_build">Reforma</string>
+    <string name="icon_work">Trabalho</string>
+    <string name="icon_laptop">Freela</string>
+    <string name="icon_sell">Vendas</string>
+    <string name="icon_trending">Rendimentos</string>
+    <string name="icon_undo">Reembolso</string>
+    <string name="icon_redeem">Presentes</string>
+    <string name="icon_savings">Poupança</string>
+    <string name="icon_debt">Dívidas</string>
+    <string name="icon_money">Dinheiro</string>
+    <string name="icon_star">Favorito</string>
+    <string name="icon_more">Outros</string>
+
+    <!-- SampleData.kt -->
+    <string name="sample_roxo">Roxo</string>
+    <string name="sample_tesouro_selic_2029">Tesouro Selic 2029</string>
+    <string name="sample_cdb_110_cdi" formatted="false">CDB 110% do CDI</string>
+    <string name="sample_viagem_para_praia">Viagem para a praia</string>
+    <string name="sample_reserva_emergencia">Reserva de emergência</string>
+    <string name="sample_aluguel">Aluguel</string>
+    <string name="sample_streaming">Streaming</string>
+    <string name="sample_padaria">Padaria</string>
+    <string name="sample_almoco">Almoço</string>
+    <string name="sample_corrida_app">Corrida de app</string>
+    <string name="sample_farmacia">Farmácia</string>
+    <string name="sample_gasolina">Gasolina</string>
+    <string name="sample_cinema">Cinema</string>
+    <string name="sample_delivery">Delivery</string>
+    <string name="sample_roupa">Roupa</string>
+    <string name="sample_acai">Açaí</string>
+    <string name="sample_conta_luz">Conta de luz</string>
+    <string name="sample_freela_design">Freela de design</string>
+    <string name="sample_dizimo">Dízimo</string>
+    <string name="sample_celular_novo">Celular novo</string>
+    <string name="sample_show_rock">Show de rock</string>
+    <string name="sample_guardado">Guardado</string>
+    <string name="sample_notebook_novo">Notebook novo</string>
+    <string name="sample_retirado">Retirado</string>
+    <string name="sample_conta_antiga">Conta antiga</string>
+    <string name="sample_financiamento_moto">Financiamento da moto</string>
+    <string name="sample_banco">Banco</string>
+    <string name="sample_emprestimo_pessoal">Empréstimo pessoal</string>
+    <string name="sample_ana">Ana</string>
+    <string name="sample_devo_ana">Devo à Ana</string>
+    <string name="sample_loja">Loja</string>
+    <string name="sample_carne_loja">Carnê da loja</string>
+
+    <!-- SampleFiles.kt -->
+    <string name="sample_ofx_conta">OFX de conta</string>
+    <string name="sample_csv_conta">CSV de conta</string>
+    <string name="sample_csv_fatura">CSV de fatura</string>
+    <string name="sample_pdf_conta">PDF de conta</string>
 </resources>

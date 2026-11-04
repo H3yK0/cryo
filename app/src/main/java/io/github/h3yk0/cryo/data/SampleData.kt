@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.data
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.Bill
@@ -32,45 +34,45 @@ object SampleData {
         fun cat(n: String) = cats.first { it.name == n }.id
         val rnd = Random(42)
 
-        val principal = r.saveAccount(Account(name = "Conta principal", type = AccountType.CHECKING, initialBalance = 150000, color = Palette.pick(3)))
-        val carteira = r.saveAccount(Account(name = "Carteira", type = AccountType.CASH, initialBalance = 15000, color = Palette.pick(9), sortOrder = 1))
-        r.saveAccount(Account(name = "Poupança", type = AccountType.SAVINGS, initialBalance = 120000, color = Palette.pick(5), sortOrder = 2))
-        r.saveCard(CreditCard(name = "Roxo", limitAmount = 350000, closingDay = 3, dueDay = 10, color = Palette.pick(2), payAccountId = principal))
+        val principal = r.saveAccount(Account(name = Res.s(R.string.wallet_conta_principal), type = AccountType.CHECKING, initialBalance = 150000, color = Palette.pick(3)))
+        val carteira = r.saveAccount(Account(name = Res.s(R.string.wallet_carteira), type = AccountType.CASH, initialBalance = 15000, color = Palette.pick(9), sortOrder = 1))
+        r.saveAccount(Account(name = Res.s(R.string.wallet_poupanca), type = AccountType.SAVINGS, initialBalance = 120000, color = Palette.pick(5), sortOrder = 2))
+        r.saveCard(CreditCard(name = Res.s(R.string.sample_roxo), limitAmount = 350000, closingDay = 3, dueDay = 10, color = Palette.pick(2), payAccountId = principal))
         val card = r.loadOnce().cards.first()
 
-        val tesouro = r.saveInvestment(Investment(name = "Tesouro Selic 2029", kind = InvestmentKind.TREASURY, color = Palette.pick(4)))
-        r.saveTx(Tx(type = TxType.INVEST_IN, amount = 200000, date = today.minusMonths(4), description = "Saldo inicial", investmentId = tesouro))
-        r.saveTx(Tx(type = TxType.INVEST_IN, amount = 30000, date = today.minusDays(20), description = "Aporte", accountId = principal, investmentId = tesouro))
-        val cdb = r.saveInvestment(Investment(name = "CDB 110% do CDI", kind = InvestmentKind.FIXED_INCOME, color = Palette.pick(14)))
-        r.saveTx(Tx(type = TxType.INVEST_IN, amount = 100000, date = today.minusMonths(3), description = "Saldo inicial", investmentId = cdb))
+        val tesouro = r.saveInvestment(Investment(name = Res.s(R.string.sample_tesouro_selic_2029), kind = InvestmentKind.TREASURY, color = Palette.pick(4)))
+        r.saveTx(Tx(type = TxType.INVEST_IN, amount = 200000, date = today.minusMonths(4), description = Res.s(R.string.wallet_saldo_inicial), investmentId = tesouro))
+        r.saveTx(Tx(type = TxType.INVEST_IN, amount = 30000, date = today.minusDays(20), description = Res.s(R.string.wallet_aporte), accountId = principal, investmentId = tesouro))
+        val cdb = r.saveInvestment(Investment(name = Res.s(R.string.sample_cdb_110_cdi), kind = InvestmentKind.FIXED_INCOME, color = Palette.pick(14)))
+        r.saveTx(Tx(type = TxType.INVEST_IN, amount = 100000, date = today.minusMonths(3), description = Res.s(R.string.wallet_saldo_inicial), investmentId = cdb))
         val invs = r.loadOnce().investments
         r.updateInvestmentValue(invs.first { it.id == tesouro }, 230000, 238530, today.minusDays(3))
         r.updateInvestmentValue(invs.first { it.id == cdb }, 100000, 101240, today.minusDays(3))
 
-        val viagem = r.saveGoal(Goal(name = "Viagem para a praia", target = 400000, deadline = today.plusMonths(8), emoji = "🏖️", color = Palette.pick(7)))
-        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 125000, date = today.minusMonths(2), description = "Guardado", accountId = principal, goalId = viagem))
-        val reserva = r.saveGoal(Goal(name = "Reserva de emergência", target = 1000000, emoji = "🛡️", color = Palette.pick(8)))
-        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 320000, date = today.minusMonths(3), description = "Saldo inicial", goalId = reserva))
+        val viagem = r.saveGoal(Goal(name = Res.s(R.string.sample_viagem_para_praia), target = 400000, deadline = today.plusMonths(8), emoji = "🏖️", color = Palette.pick(7)))
+        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 125000, date = today.minusMonths(2), description = Res.s(R.string.sample_guardado), accountId = principal, goalId = viagem))
+        val reserva = r.saveGoal(Goal(name = Res.s(R.string.sample_reserva_emergencia), target = 1000000, emoji = "🛡️", color = Palette.pick(8)))
+        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 320000, date = today.minusMonths(3), description = Res.s(R.string.wallet_saldo_inicial), goalId = reserva))
 
         val start = today.ym().minusMonths(3).key()
         val ids = listOf(
-            Bill(name = "Salário", amount = 420000, dueDay = 5, kind = CategoryKind.INCOME, categoryId = cat("Salário"), accountId = principal, remind = false, startYm = start),
-            Bill(name = "Aluguel", amount = 90000, dueDay = 5, categoryId = cat("Moradia"), accountId = principal, startYm = start),
-            Bill(name = "Conta de luz", amount = 18000, dueDay = 10, categoryId = cat("Contas da casa"), accountId = principal, startYm = start),
-            Bill(name = "Internet", amount = 9990, dueDay = 15, categoryId = cat("Contas da casa"), accountId = principal, startYm = start),
-            Bill(name = "Streaming", amount = 3990, dueDay = 20, categoryId = cat("Assinaturas"), cardId = card.id, startYm = start),
-            Bill(name = "Academia", amount = 8990, dueDay = 28, categoryId = cat("Saúde"), accountId = principal, startYm = start),
-            Bill(name = "Celular", amount = 4990, dueDay = 3, categoryId = cat("Contas da casa"), accountId = principal, startYm = start),
+            Bill(name = Res.s(R.string.cat_work_name), amount = 420000, dueDay = 5, kind = CategoryKind.INCOME, categoryId = cat(Res.s(R.string.cat_work_name)), accountId = principal, remind = false, startYm = start),
+            Bill(name = Res.s(R.string.sample_aluguel), amount = 90000, dueDay = 5, categoryId = cat(Res.s(R.string.cat_home_name)), accountId = principal, startYm = start),
+            Bill(name = Res.s(R.string.sample_conta_luz), amount = 18000, dueDay = 10, categoryId = cat(Res.s(R.string.cat_bolt_name)), accountId = principal, startYm = start),
+            Bill(name = Res.s(R.string.icon_wifi), amount = 9990, dueDay = 15, categoryId = cat(Res.s(R.string.cat_bolt_name)), accountId = principal, startYm = start),
+            Bill(name = Res.s(R.string.sample_streaming), amount = 3990, dueDay = 20, categoryId = cat(Res.s(R.string.cat_subscriptions_name)), cardId = card.id, startYm = start),
+            Bill(name = Res.s(R.string.icon_fitness), amount = 8990, dueDay = 28, categoryId = cat(Res.s(R.string.cat_health_name)), accountId = principal, startYm = start),
+            Bill(name = Res.s(R.string.icon_phone), amount = 4990, dueDay = 3, categoryId = cat(Res.s(R.string.cat_bolt_name)), accountId = principal, startYm = start),
         ).map { it to r.saveBill(it) }
         val bills = ids.map { (b, id) -> b.copy(id = id) }
 
         data class T(val desc: String, val cat: String, val min: Int, val max: Int, val cash: Boolean = false, val onCard: Boolean = false)
         val templates = listOf(
-            T("Almoço", "Alimentação", 1800, 3500), T("Padaria", "Alimentação", 600, 1800, cash = true),
-            T("Mercado", "Mercado", 6000, 22000), T("Corrida de app", "Transporte", 1200, 3200, onCard = true),
-            T("Gasolina", "Transporte", 8000, 15000), T("Farmácia", "Saúde", 1500, 6000),
-            T("Delivery", "Alimentação", 3500, 7000, onCard = true), T("Cinema", "Lazer", 3000, 6000, onCard = true),
-            T("Açaí", "Alimentação", 1200, 2500, cash = true), T("Roupa", "Compras", 8000, 18000, onCard = true),
+            T(Res.s(R.string.sample_almoco), Res.s(R.string.cat_restaurant_name), 1800, 3500), T(Res.s(R.string.sample_padaria), Res.s(R.string.cat_restaurant_name), 600, 1800, cash = true),
+            T(Res.s(R.string.cat_cart_name), Res.s(R.string.cat_cart_name), 6000, 22000), T(Res.s(R.string.sample_corrida_app), Res.s(R.string.cat_car_name), 1200, 3200, onCard = true),
+            T(Res.s(R.string.sample_gasolina), Res.s(R.string.cat_car_name), 8000, 15000), T(Res.s(R.string.sample_farmacia), Res.s(R.string.cat_health_name), 1500, 6000),
+            T(Res.s(R.string.sample_delivery), Res.s(R.string.cat_restaurant_name), 3500, 7000, onCard = true), T(Res.s(R.string.sample_cinema), Res.s(R.string.cat_movie_name), 3000, 6000, onCard = true),
+            T(Res.s(R.string.sample_acai), Res.s(R.string.cat_restaurant_name), 1200, 2500, cash = true), T(Res.s(R.string.sample_roupa), Res.s(R.string.cat_shopping_name), 8000, 18000, onCard = true),
         )
 
         for (back in 3 downTo 0) {
@@ -78,8 +80,8 @@ object SampleData {
             val lastDay = if (back == 0) today.dayOfMonth else ym.lengthOfMonth()
             for (b in bills) {
                 if (b.dueDay > lastDay) continue
-                if (back == 0 && b.name == "Academia") continue // fica vencida, para mostrar o alerta
-                val amount = if (b.name == "Conta de luz") 15000L + rnd.nextInt(6000) else b.amount
+                if (back == 0 && b.name == Res.s(R.string.icon_fitness)) continue // fica vencida, para mostrar o alerta
+                val amount = if (b.name == Res.s(R.string.sample_conta_luz)) 15000L + rnd.nextInt(6000) else b.amount
                 r.markBillPaid(b, ym, amount, ym.atDay(b.dueDay), b.accountId, if (b.cardId != null) card else null)
             }
             for (d in 1..lastDay) {
@@ -92,19 +94,19 @@ object SampleData {
                     if (t.onCard) r.saveCardPurchase(base, card, 1) else r.saveTx(base)
                 }
             }
-            if (back % 2 == 1) r.saveTx(Tx(type = TxType.INCOME, amount = 60000, date = ym.atDay(18), description = "Freela de design", categoryId = cat("Extras e freelas"), accountId = principal))
-            r.saveTx(Tx(type = TxType.EXPENSE, amount = 32000, date = ym.atDay(minOf(lastDay, 7)), description = "Dízimo", categoryId = cat("Dízimo e doações"), accountId = principal))
+            if (back % 2 == 1) r.saveTx(Tx(type = TxType.INCOME, amount = 60000, date = ym.atDay(18), description = Res.s(R.string.sample_freela_design), categoryId = cat(Res.s(R.string.cat_laptop_name)), accountId = principal))
+            r.saveTx(Tx(type = TxType.EXPENSE, amount = 32000, date = ym.atDay(minOf(lastDay, 7)), description = Res.s(R.string.sample_dizimo), categoryId = cat(Res.s(R.string.cat_volunteer_name)), accountId = principal))
         }
         r.saveCardPurchase(
-            Tx(type = TxType.EXPENSE, amount = 180000, date = today.minusMonths(2).withDayOfMonth(12), description = "Celular novo", categoryId = cat("Compras")),
+            Tx(type = TxType.EXPENSE, amount = 180000, date = today.minusMonths(2).withDayOfMonth(12), description = Res.s(R.string.sample_celular_novo), categoryId = cat(Res.s(R.string.cat_shopping_name))),
             card, 10,
         )
-        r.saveTx(Tx(type = TxType.TRANSFER, amount = 20000, date = today.minusDays(4), description = "Transferência", accountId = principal, toAccountId = carteira))
+        r.saveTx(Tx(type = TxType.TRANSFER, amount = 20000, date = today.minusDays(4), description = Res.s(R.string.common_transferencia), accountId = principal, toAccountId = carteira))
 
-        r.saveBudget(cat("Alimentação"), 60000)
-        r.saveBudget(cat("Mercado"), 80000)
-        r.saveBudget(cat("Transporte"), 30000)
-        r.saveBudget(cat("Lazer"), 20000)
+        r.saveBudget(cat(Res.s(R.string.cat_restaurant_name)), 60000)
+        r.saveBudget(cat(Res.s(R.string.cat_cart_name)), 80000)
+        r.saveBudget(cat(Res.s(R.string.cat_car_name)), 30000)
+        r.saveBudget(cat(Res.s(R.string.cat_movie_name)), 20000)
 
         // paga as faturas que já venceram
         val l = Ledger(r.loadOnce(), today)
@@ -116,12 +118,12 @@ object SampleData {
         fillDebts(r, today, principal)
 
         // Arquivados: uma meta concluída (com o dinheiro ainda guardado), uma já usada e uma conta antiga
-        val show = r.saveGoal(Goal(name = "Show de rock", target = 80000, emoji = "🎸", color = Palette.pick(11), archived = true))
-        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 80000, date = today.minusMonths(3), description = "Guardado", accountId = principal, goalId = show))
-        val note = r.saveGoal(Goal(name = "Notebook novo", target = 350000, emoji = "💻", color = Palette.pick(6), archived = true))
-        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 350000, date = today.minusMonths(4), description = "Saldo inicial", goalId = note))
-        r.saveTx(Tx(type = TxType.GOAL_OUT, amount = 350000, date = today.minusMonths(3), description = "Retirado", accountId = principal, goalId = note))
-        r.saveAccount(Account(name = "Conta antiga", type = AccountType.CHECKING, initialBalance = 0, color = Palette.pick(12), sortOrder = 3, archived = true))
+        val show = r.saveGoal(Goal(name = Res.s(R.string.sample_show_rock), target = 80000, emoji = "🎸", color = Palette.pick(11), archived = true))
+        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 80000, date = today.minusMonths(3), description = Res.s(R.string.sample_guardado), accountId = principal, goalId = show))
+        val note = r.saveGoal(Goal(name = Res.s(R.string.sample_notebook_novo), target = 350000, emoji = "💻", color = Palette.pick(6), archived = true))
+        r.saveTx(Tx(type = TxType.GOAL_IN, amount = 350000, date = today.minusMonths(4), description = Res.s(R.string.wallet_saldo_inicial), goalId = note))
+        r.saveTx(Tx(type = TxType.GOAL_OUT, amount = 350000, date = today.minusMonths(3), description = Res.s(R.string.sample_retirado), accountId = principal, goalId = note))
+        r.saveAccount(Account(name = Res.s(R.string.sample_conta_antiga), type = AccountType.CHECKING, initialBalance = 0, color = Palette.pick(12), sortOrder = 3, archived = true))
     }
 
     /** Dívidas de exemplo: financiamento, empréstimo (com o dinheiro que entrou), dívida com pessoa e uma já quitada. */
@@ -133,7 +135,7 @@ object SampleData {
         // 36 parcelas de R$ 380; 26 já pagas antes de começar a usar o Cryo.
         val moto = create(
             Debt(
-                name = "Financiamento da moto", creditor = "Banco", kind = DebtKind.FINANCING, color = Palette.pick(1),
+                name = Res.s(R.string.sample_financiamento_moto), creditor = Res.s(R.string.sample_banco), kind = DebtKind.FINANCING, color = Palette.pick(1),
                 initialBalance = 10L * 38_000, installmentAmount = 38_000, installmentCount = 36, paidBefore = 26, dueDay = 15,
                 startYm = ym0.minusMonths(3).key(), accountId = account,
             ),
@@ -146,7 +148,7 @@ object SampleData {
         // Pegou R$ 1.900 e vai devolver 12 × R$ 180 (R$ 2.160): a diferença são os juros.
         val loan = create(
             Debt(
-                name = "Empréstimo pessoal", creditor = "Banco", kind = DebtKind.LOAN, color = Palette.pick(10),
+                name = Res.s(R.string.sample_emprestimo_pessoal), creditor = Res.s(R.string.sample_banco), kind = DebtKind.LOAN, color = Palette.pick(10),
                 initialBalance = 216_000 - 190_000, installmentAmount = 18_000, installmentCount = 12, dueDay = 5,
                 startYm = ym0.minusMonths(1).key(), accountId = account,
             ),
@@ -159,7 +161,7 @@ object SampleData {
 
         val ana = create(
             Debt(
-                name = "Devo à Ana", creditor = "Ana", kind = DebtKind.PERSON, color = Palette.pick(13), initialBalance = 60_000,
+                name = Res.s(R.string.sample_devo_ana), creditor = Res.s(R.string.sample_ana), kind = DebtKind.PERSON, color = Palette.pick(13), initialBalance = 60_000,
                 startYm = ym0.minusMonths(2).key(), deadline = today.plusMonths(3), accountId = account,
             ),
             at = today.minusMonths(2),
@@ -168,7 +170,7 @@ object SampleData {
 
         val carne = create(
             Debt(
-                name = "Carnê da loja", creditor = "Loja", kind = DebtKind.OTHER, color = Palette.pick(0), initialBalance = 30_000,
+                name = Res.s(R.string.sample_carne_loja), creditor = Res.s(R.string.sample_loja), kind = DebtKind.OTHER, color = Palette.pick(0), initialBalance = 30_000,
                 installmentAmount = 15_000, installmentCount = 6, paidBefore = 4, dueDay = 20, startYm = ym0.minusMonths(2).key(),
                 accountId = account,
             ),

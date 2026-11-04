@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.data
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
@@ -201,9 +203,9 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         val beforeRatio = before.toDouble() / budget.limitAmount
         return when {
             beforeRatio < 1.0 && ratio >= 1.0 ->
-                "Orçamento de ${cat.name} estourado: ${Money.format(spent)} de ${Money.format(budget.limitAmount)}"
+                Res.s(R.string.repo_orcamento_estourado, cat.name, Money.format(spent), Money.format(budget.limitAmount))
             beforeRatio < 0.8 && ratio >= 0.8 ->
-                "Atenção: você já usou ${(ratio * 100).roundToInt()}% do orçamento de ${cat.name}"
+                Res.s(R.string.repo_atencao_voce_ja_usou, (ratio * 100).roundToInt(), cat.name)
             else -> null
         }
     }
@@ -232,7 +234,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     suspend fun payInvoice(card: CreditCard, ym: YearMonth, amount: Long, accountId: Long, date: LocalDate) {
         dao.putTx(
             Tx(
-                type = TxType.CARD_PAYMENT, amount = amount, date = date, description = "Fatura ${card.name}",
+                type = TxType.CARD_PAYMENT, amount = amount, date = date, description = Res.s(R.string.repo_fatura, card.name),
                 accountId = accountId, cardId = card.id, invoiceYm = ym.key(),
             ),
         )
@@ -310,7 +312,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         if (received > 0 && accountId != null) {
             dao.putTx(
                 Tx(
-                    type = TxType.DEBT_IN, amount = received, date = date, description = "Empréstimo · ${d.name}",
+                    type = TxType.DEBT_IN, amount = received, date = date, description = Res.s(R.string.phrase_emprestimo, d.name),
                     accountId = accountId, debtId = id,
                 ),
             )
@@ -349,20 +351,20 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
             if (amount > 0) {
                 val t = Tx(
                     type = TxType.EXPENSE, amount = amount, date = date,
-                    description = (if (installment) "Parcela · " else "Pagamento · ") + debt.name,
+                    description = (if (installment) Res.s(R.string.repo_parcela) else Res.s(R.string.repo_pagamento)) + debt.name,
                     categoryId = cat, accountId = accountId, debtId = debt.id,
                 )
                 txs += t.copy(id = dao.putTx(t))
             }
             if (extra > 0) {
                 val t = Tx(
-                    type = TxType.EXPENSE, amount = extra, date = date, description = "Juros/multa · ${debt.name}",
+                    type = TxType.EXPENSE, amount = extra, date = date, description = Res.s(R.string.repo_juros_multa, debt.name),
                     categoryId = cat, accountId = accountId,
                 )
                 txs += t.copy(id = dao.putTx(t))
             }
             if (discount > 0) {
-                val a = DebtAdjustment(debtId = debt.id, date = date, amount = -discount, note = "Desconto na quitação")
+                val a = DebtAdjustment(debtId = debt.id, date = date, amount = -discount, note = Res.s(R.string.repo_desconto_quitacao))
                 adjs += a.copy(id = dao.putDebtAdjustment(a))
             }
         }
@@ -372,7 +374,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     /** Pegou mais dinheiro emprestado: entra na conta e aumenta a dívida. */
     suspend fun borrowMore(debt: Debt, amount: Long, accountId: Long, date: LocalDate): Undo {
         val t = Tx(
-            type = TxType.DEBT_IN, amount = amount, date = date, description = "Empréstimo · ${debt.name}",
+            type = TxType.DEBT_IN, amount = amount, date = date, description = Res.s(R.string.phrase_emprestimo, debt.name),
             accountId = accountId, debtId = debt.id,
         )
         return Undo(txs = listOf(t.copy(id = dao.putTx(t))))

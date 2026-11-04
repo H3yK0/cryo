@@ -68,7 +68,12 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.LocalDate
 
-private enum class TxFilter(val label: String) { ALL(Res.s(R.string.txs_tudo)), OUT(Res.s(R.string.txs_saidas)), IN(Res.s(R.string.txs_entradas)), OTHER(Res.s(R.string.txs_transferencias_outros)) }
+/** O nome vem na hora de mostrar (não na criação do enum), para acompanhar a troca de idioma. */
+private enum class TxFilter(private val labelRes: Int) {
+    ALL(R.string.txs_tudo), OUT(R.string.txs_saidas), IN(R.string.txs_entradas), OTHER(R.string.txs_transferencias_outros);
+
+    val label: String get() = Res.s(labelRes)
+}
 
 @Composable
 fun TransactionsScreen(categoryFilter: Long?) {

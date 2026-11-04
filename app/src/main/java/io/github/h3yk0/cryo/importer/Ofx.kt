@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import kotlin.math.abs
 
 /**
@@ -33,7 +35,7 @@ object Ofx {
             val raw = m["TRNAMT"]
             var cents = Values.amount(raw, decimalComma = raw?.contains(',') == true && raw.contains('.').not())
             if (date == null || cents == null) {
-                skipped += SkippedLine(source, if (date == null) "sem data" else "sem valor")
+                skipped += SkippedLine(source, if (date == null) Res.s(R.string.importer_sem_data) else Res.s(R.string.importer_sem_valor))
                 return
             }
             // O sinal do valor manda; só corrige quando o tipo é claramente débito ou crédito.
@@ -49,11 +51,11 @@ object Ofx {
                 memo.contains(name, ignoreCase = true) -> memo
                 name.contains(memo, ignoreCase = true) -> name
                 else -> "$name $memo"
-            }.ifBlank { m["TRNTYPE"] ?: "Movimentação" }
+            }.ifBlank { m["TRNTYPE"] ?: Res.s(R.string.importer_movimentacao) }
             // Como nos outros formatos: alguns bancos põem o saldo como se fosse uma movimentação ("SALDO ANTERIOR",
             // "S A L D O"), às vezes com o valor do saldo; isso não é dinheiro entrando nem saindo.
-            if (cents == 0L) { skipped += SkippedLine(source, "valor zero"); return }
-            if (Values.isBalanceOrTotal(description)) { skipped += SkippedLine(source, "linha de saldo ou total"); return }
+            if (cents == 0L) { skipped += SkippedLine(source, Res.s(R.string.importer_valor_zero)); return }
+            if (Values.isBalanceOrTotal(description)) { skipped += SkippedLine(source, Res.s(R.string.importer_linha_saldo_ou_total)); return }
             lines += StatementLine(date, Values.prettify(description), cents, m["FITID"]?.trim()?.takeIf { it.isNotEmpty() }, source)
         }
 
@@ -81,13 +83,13 @@ object Ofx {
         current?.let(::emit)
 
         val hint = listOfNotNull(
-            org?.takeIf { it.isNotBlank() } ?: bankId?.let { "Banco $it" },
-            acctId?.let { "conta $it" },
+            org?.takeIf { it.isNotBlank() } ?: bankId?.let { Res.s(R.string.importer_banco, it) },
+            acctId?.let { Res.s(R.string.importer_conta, it) },
         ).joinToString(" · ").ifBlank { null }
         val notes = listOfNotNull(
-            "Formato OFX " + if (text.contains("<?xml", ignoreCase = true) || text.contains("</NAME>", ignoreCase = true)) "(XML)" else "(SGML)",
-            encodingNote?.let { "Codificação: $it" },
-            if (isCard) "Extrato de cartão de crédito" else "Extrato de conta",
+            Res.s(R.string.importer_formato_ofx) + if (text.contains("<?xml", ignoreCase = true) || text.contains("</NAME>", ignoreCase = true)) "(XML)" else "(SGML)",
+            encodingNote?.let { Res.s(R.string.importer_codificacao, it) },
+            if (isCard) Res.s(R.string.importer_extrato_cartao_credito) else Res.s(R.string.importer_extrato_conta),
         )
         return Statement(StatementFormat.OFX, lines, skipped, isCard, hint, balance, notes)
     }

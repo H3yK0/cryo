@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.normalized
 import java.time.LocalDate
 import kotlin.math.abs
@@ -187,7 +189,7 @@ object Columns {
     fun headers(rows: Table, map: ColumnMap?): List<String> {
         val width = rows.maxOfOrNull { it.size } ?: 0
         val header = map?.headerRow?.takeIf { it >= 0 }?.let { rows.getOrNull(it) }
-        return (0 until width).map { c -> header?.getOrNull(c)?.text?.takeIf { it.isNotBlank() } ?: "Coluna ${c + 1}" }
+        return (0 until width).map { c -> header?.getOrNull(c)?.text?.takeIf { it.isNotBlank() } ?: Res.s(R.string.importer_coluna, c + 1) }
     }
 
     /** Monta as movimentações a partir das colunas escolhidas. */
@@ -214,8 +216,8 @@ object Columns {
             val description = (listOf(map.description) + map.extra).mapNotNull { row.getOrNull(it)?.text?.trim()?.takeIf { t -> t.isNotEmpty() } }
                 .joinToString(" ")
                 .ifBlank { row.withIndex().filter { it.index !in amountCols && it.index != map.date && it.value.text.any(Char::isLetter) }.joinToString(" ") { it.value.text.trim() } }
-            if (date == null) { skipped += SkippedLine(source, "sem data"); continue }
-            if (Values.isBalanceOrTotal(description)) { skipped += SkippedLine(source, "linha de saldo ou total"); continue }
+            if (date == null) { skipped += SkippedLine(source, Res.s(R.string.importer_sem_data)); continue }
+            if (Values.isBalanceOrTotal(description)) { skipped += SkippedLine(source, Res.s(R.string.importer_linha_saldo_ou_total)); continue }
             var cents: Long? = when {
                 map.amount != null -> money(row.getOrNull(map.amount))
                 else -> {
@@ -224,27 +226,27 @@ object Columns {
                     if (credit == null && debit == null) null else abs(credit ?: 0) - abs(debit ?: 0)
                 }
             }
-            if (cents == null) { skipped += SkippedLine(source, "sem valor"); continue }
+            if (cents == null) { skipped += SkippedLine(source, Res.s(R.string.importer_sem_valor)); continue }
             map.kind?.let { k ->
                 when (kindSign(row.getOrNull(k)?.text.orEmpty())) {
                     -1 -> cents = -abs(cents!!)
                     1 -> cents = abs(cents!!)
                 }
             }
-            if (cents == 0L) { skipped += SkippedLine(source, "valor zero"); continue }
+            if (cents == 0L) { skipped += SkippedLine(source, Res.s(R.string.importer_valor_zero)); continue }
             val id = map.id?.let { row.getOrNull(it)?.text?.trim() }?.takeIf { it.isNotEmpty() }
-            lines += StatementLine(date, Values.prettify(description.ifBlank { "Movimentação" }) + installment(row, map, description), cents!!, id, source)
+            lines += StatementLine(date, Values.prettify(description.ifBlank { Res.s(R.string.importer_movimentacao) }) + installment(row, map, description), cents!!, id, source)
         }
 
         val headers = headers(rows, map)
         fun name(i: Int?) = i?.let { "\"${headers.getOrNull(it)}\"" }
         val colNotes = listOfNotNull(
-            if (map.headerRow >= 0) "Cabeçalho na linha ${map.headerRow + 1}" else "Sem cabeçalho (colunas pelo conteúdo)",
-            "Data: ${name(map.date)}", "Descrição: " + (listOf(map.description) + map.extra).joinToString(" + ") { name(it).orEmpty() },
-            map.amount?.let { "Valor: ${name(it)}" }, map.credit?.let { "Entradas: ${name(it)}" }, map.debit?.let { "Saídas: ${name(it)}" },
-            map.kind?.let { "Crédito/débito: ${name(it)}" }, map.id?.let { "Identificador: ${name(it)}" },
-            map.installment?.let { "Parcela: ${name(it)}" },
-            when (decimalComma) { true -> "Centavos depois da vírgula"; false -> "Centavos depois do ponto"; null -> null },
+            if (map.headerRow >= 0) Res.s(R.string.importer_cabecalho_linha, map.headerRow + 1) else Res.s(R.string.importer_sem_cabecalho_colunas_pelo),
+            Res.s(R.string.importer_data, name(map.date)), Res.s(R.string.importer_descricao) + (listOf(map.description) + map.extra).joinToString(" + ") { name(it).orEmpty() },
+            map.amount?.let { Res.s(R.string.importer_valor, name(it)) }, map.credit?.let { Res.s(R.string.importer_entradas, name(it)) }, map.debit?.let { Res.s(R.string.importer_saidas, name(it)) },
+            map.kind?.let { Res.s(R.string.importer_credito_debito, name(it)) }, map.id?.let { Res.s(R.string.importer_identificador, name(it)) },
+            map.installment?.let { Res.s(R.string.importer_parcela_2, name(it)) },
+            when (decimalComma) { true -> Res.s(R.string.importer_centavos_depois_virgula); false -> Res.s(R.string.importer_centavos_depois_ponto); null -> null },
         )
         return Statement(format, lines, skipped, isCard = looksLikeCard(rows, map), notes = notes + colNotes)
     }
@@ -257,7 +259,7 @@ object Columns {
         val m = map.installment?.let { row.getOrNull(it)?.text?.trim() }?.let { INSTALLMENT_TEXT.find(it.normalized()) } ?: return ""
         val (n, of) = m.groupValues[1].toInt() to m.groupValues[2].toInt()
         if (of <= 1 || description.normalized().contains("parc")) return ""
-        return " - Parcela $n/$of"
+        return Res.s(R.string.importer_parcela, n, of)
     }
 
     /** Faturas de cartão costumam ter "title"/"estabelecimento" e nenhuma coluna de saldo. */

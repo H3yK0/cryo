@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.normalized
 import java.time.LocalDate
 import kotlin.math.abs
@@ -52,7 +54,7 @@ object PdfStatement {
         val text = pages.joinToString("\n")
         val rawLines = text.lines().map { it.replace(' ', ' ').replace(Regex("[ \\t]+"), " ").trim() }.filter { it.isNotEmpty() }
         if (rawLines.isEmpty()) {
-            throw StatementException("Não encontrei texto nesse PDF. Se ele for uma foto ou digitalização, o Cryo não consegue ler.")
+            throw StatementException(Res.s(R.string.importer_nao_encontrei_texto_nesse))
         }
         val reference = Values.reference(FULL_DATE.findAll(text.normalized()).mapNotNull { Values.date(it.value) }, today)
 
@@ -92,15 +94,15 @@ object PdfStatement {
             if (description.isEmpty()) description = pending.joinToString(" ").trim()
             val date = currentDate
             when {
-                date == null -> { skipped += SkippedLine(line, "sem data antes"); continue }
-                description.isEmpty() -> { skipped += SkippedLine(line, "valor sem descrição"); continue }
+                date == null -> { skipped += SkippedLine(line, Res.s(R.string.importer_sem_data_antes)); continue }
+                description.isEmpty() -> { skipped += SkippedLine(line, Res.s(R.string.importer_valor_sem_descricao)); continue }
                 Values.isBalanceOrTotal(description) || isSummary(description) -> {
-                    skipped += SkippedLine(line, "linha de saldo, total ou resumo"); pending.clear(); continue
+                    skipped += SkippedLine(line, Res.s(R.string.importer_linha_saldo_total_ou)); pending.clear(); continue
                 }
             }
             val cents = Values.amount(first.value.replace("−", "-"), decimalComma = true)
-            if (cents == null) { skipped += SkippedLine(line, "valor ilegível"); continue }
-            if (cents == 0L) { skipped += SkippedLine(line, "valor zero"); continue }
+            if (cents == null) { skipped += SkippedLine(line, Res.s(R.string.importer_valor_ilegivel)); continue }
+            if (cents == 0L) { skipped += SkippedLine(line, Res.s(R.string.importer_valor_zero)); continue }
             found += Found(line, date!!, description, first, cents, section)
             pending.clear()
         }
@@ -128,13 +130,13 @@ object PdfStatement {
 
         val isCard = looksLikeCard(text.normalized())
         val notes = listOf(
-            "${pages.size} página(s), ${rawLines.size} linhas de texto",
-            "Datas sem ano: ano tirado de \"${reference.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))}\"",
-            if (isCard) "Parece fatura de cartão" else "Parece extrato de conta",
+            Res.s(R.string.importer_pagina_linhas_texto, pages.size, rawLines.size),
+            Res.s(R.string.importer_datas_sem_ano_ano, reference.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"))),
+            if (isCard) Res.s(R.string.importer_parece_fatura_cartao) else Res.s(R.string.importer_parece_extrato_conta),
             when {
-                docMarksOut -> "As saídas têm sinal no PDF (o resto é entrada)"
-                docMarksIn -> "Só as entradas têm sinal no PDF (o resto é saída)"
-                else -> "Sem sinais no PDF: entradas e saídas pelas palavras"
+                docMarksOut -> Res.s(R.string.importer_saidas_tem_sinal_pdf)
+                docMarksIn -> Res.s(R.string.importer_so_entradas_tem_sinal)
+                else -> Res.s(R.string.importer_sem_sinais_pdf_entradas)
             },
         )
         return Statement(StatementFormat.PDF, lines, skipped, isCard = isCard, notes = notes)

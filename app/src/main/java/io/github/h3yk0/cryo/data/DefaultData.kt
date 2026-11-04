@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.data
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 
@@ -24,8 +26,8 @@ object DefaultData {
 
     /** Categoria usada nos pagamentos de dívidas (também criada na atualização para a versão 1.1). */
     fun debtCategory() = c(
-        "Dívidas e empréstimos", CategoryKind.EXPENSE, DEBT_ICON, 0xFFB23A48,
-        "divida,dividas,emprestimo,emprestimos,financiamento,consignado,crediario,carne,prestacao,acordo,agiota",
+        Res.s(R.string.cat_debt_name), CategoryKind.EXPENSE, DEBT_ICON, 0xFFB23A48,
+        Res.s(R.string.cat_debt_keywords),
         16,
     )
 
@@ -33,46 +35,46 @@ object DefaultData {
         val e = CategoryKind.EXPENSE
         val i = CategoryKind.INCOME
         return listOf(
-            c("Alimentação", e, "restaurant", 0xFFF4511E, "almoco,almocei,jantar,janta,lanche,lanchei,restaurante,ifood,i food,pizza,hamburguer,burger,cafe,padaria,comida,marmita,acai,sorvete,lanchonete,salgado,pastel,churrasco,sushi,delivery,refeicao,cafeteria,doce,bolo,pao,coxinha,espetinho,self service", 0),
-            c("Mercado", e, "cart", 0xFF43A047, "mercado,supermercado,feira,hortifruti,atacadao,assai,carrefour,acougue,sacolao,compras do mes,mercadinho,quitanda,atacarejo", 1),
-            c("Transporte", e, "car", 0xFF1E88E5, "uber,99,taxi,onibus,metro,trem,gasolina,combustivel,etanol,alcool,diesel,posto,estacionamento,pedagio,oficina,mecanico,ipva,licenciamento,passagem,bilhete,brt,mototaxi,lava jato,lavagem,pneu,seguro do carro,troca de oleo", 2),
-            c("Moradia", e, "home", 0xFF6D4C41, "aluguel,condominio,iptu,reforma,moveis,movel,manutencao,diarista,faxina,pedreiro,encanador,eletricista", 3),
-            c("Contas da casa", e, "bolt", 0xFFFFB300, "luz,energia,agua,internet,gas,botijao,telefone,conta de luz,conta de agua,wifi,claro,vivo,tim,saneamento,enel,equatorial,saneago,sabesp,cemig,copel,celesc", 4),
-            c("Saúde", e, "health", 0xFFE53935, "farmacia,remedio,remedios,medicamento,medico,consulta,exame,dentista,plano de saude,hospital,psicologo,terapia,drogaria,academia,vacina,oculos,fisioterapia,suplemento", 5),
-            c("Educação", e, "school", 0xFF3949AB, "curso,faculdade,escola,livro,livros,material escolar,mensalidade,apostila,udemy,alura,matricula,ingles,aula", 6),
-            c("Lazer", e, "movie", 0xFF8E24AA, "cinema,show,jogo,game,steam,playstation,xbox,passeio,festa,ingresso,balada,parque,teatro,bar,cerveja,boliche,clube,role", 7),
-            c("Compras", e, "shopping", 0xFFD81B60, "roupa,roupas,tenis,sapato,shopping,loja,amazon,mercado livre,shopee,shein,aliexpress,eletronico,celular,fone,tv,televisao,notebook,computador,camiseta,calca,relogio,mochila,bolsa", 8),
-            c("Assinaturas", e, "subscriptions", 0xFF5E35B1, "netflix,spotify,youtube,youtube premium,prime,prime video,disney,hbo,max,globoplay,icloud,google one,assinatura,chatgpt,claude,deezer,crunchyroll,paramount,apple music,game pass,microsoft 365,office", 9),
-            c("Cuidados pessoais", e, "spa", 0xFFEC407A, "cabelo,barbeiro,barbearia,salao,cosmetico,perfume,manicure,unha,creme,shampoo,maquiagem,depilacao,corte", 10),
-            c("Pets", e, "pets", 0xFF7CB342, "racao,veterinario,pet,petshop,pet shop,banho e tosa,areia,cachorro,gato", 11),
-            c("Dízimo e doações", e, "volunteer", 0xFF00897B, "dizimo,oferta,doacao,doei,igreja,caridade,vaquinha,contribuicao", 12),
-            c("Presentes", e, "gift", 0xFFFB8C00, "presente,presentes,aniversario,lembrancinha,amigo secreto", 13),
-            c("Viagem", e, "flight", 0xFF039BE5, "viagem,hotel,passagem aerea,hospedagem,airbnb,pousada,aviao,rodoviaria,excursao", 14),
-            c("Impostos e taxas", e, "receipt", 0xFF546E7A, "imposto,taxa,tarifa,juros,multa,iof,anuidade,cartorio,das,darf,inss,irpf", 15),
+            c(Res.s(R.string.cat_restaurant_name), e, "restaurant", 0xFFF4511E, Res.s(R.string.cat_restaurant_keywords), 0),
+            c(Res.s(R.string.cat_cart_name), e, "cart", 0xFF43A047, Res.s(R.string.cat_cart_keywords), 1),
+            c(Res.s(R.string.cat_car_name), e, "car", 0xFF1E88E5, Res.s(R.string.cat_car_keywords), 2),
+            c(Res.s(R.string.cat_home_name), e, "home", 0xFF6D4C41, Res.s(R.string.cat_home_keywords), 3),
+            c(Res.s(R.string.cat_bolt_name), e, "bolt", 0xFFFFB300, Res.s(R.string.cat_bolt_keywords), 4),
+            c(Res.s(R.string.cat_health_name), e, "health", 0xFFE53935, Res.s(R.string.cat_health_keywords), 5),
+            c(Res.s(R.string.cat_school_name), e, "school", 0xFF3949AB, Res.s(R.string.cat_school_keywords), 6),
+            c(Res.s(R.string.cat_movie_name), e, "movie", 0xFF8E24AA, Res.s(R.string.cat_movie_keywords), 7),
+            c(Res.s(R.string.cat_shopping_name), e, "shopping", 0xFFD81B60, Res.s(R.string.cat_shopping_keywords), 8),
+            c(Res.s(R.string.cat_subscriptions_name), e, "subscriptions", 0xFF5E35B1, Res.s(R.string.cat_subscriptions_keywords), 9),
+            c(Res.s(R.string.cat_spa_name), e, "spa", 0xFFEC407A, Res.s(R.string.cat_spa_keywords), 10),
+            c(Res.s(R.string.cat_pets_name), e, "pets", 0xFF7CB342, Res.s(R.string.cat_pets_keywords), 11),
+            c(Res.s(R.string.cat_volunteer_name), e, "volunteer", 0xFF00897B, Res.s(R.string.cat_volunteer_keywords), 12),
+            c(Res.s(R.string.cat_gift_name), e, "gift", 0xFFFB8C00, Res.s(R.string.cat_gift_keywords), 13),
+            c(Res.s(R.string.cat_flight_name), e, "flight", 0xFF039BE5, Res.s(R.string.cat_flight_keywords), 14),
+            c(Res.s(R.string.cat_receipt_name), e, "receipt", 0xFF546E7A, Res.s(R.string.cat_receipt_keywords), 15),
             debtCategory(),
-            c("Outros gastos", e, "more", 0xFF757575, "", 17),
+            c(Res.s(R.string.cat_more_expense_name), e, "more", 0xFF757575, Res.s(R.string.cat_more_expense_keywords), 17),
 
-            c("Salário", i, "work", 0xFF2E7D32, "salario,holerite,contracheque,adiantamento,13o,decimo terceiro,ferias,plr,pagamento do mes", 20),
-            c("Extras e freelas", i, "laptop", 0xFF00ACC1, "freela,freelance,bico,extra,servico,job,trabalho extra,comissao,bonus,gorjeta,hora extra", 21),
-            c("Vendas", i, "sell", 0xFFC0CA33, "vendi,venda,vendas", 22),
-            c("Rendimentos", i, "trending", 0xFF3949AB, "rendimento,rendimentos,juros recebidos,dividendos,cashback", 23),
-            c("Reembolsos", i, "undo", 0xFF8E24AA, "reembolso,estorno,devolucao,ressarcimento", 24),
-            c("Presentes recebidos", i, "redeem", 0xFFF4511E, "presente,mesada,ganhei de presente", 25),
-            c("Outras entradas", i, "more", 0xFF757575, "", 26),
+            c(Res.s(R.string.cat_work_name), i, "work", 0xFF2E7D32, Res.s(R.string.cat_work_keywords), 20),
+            c(Res.s(R.string.cat_laptop_name), i, "laptop", 0xFF00ACC1, Res.s(R.string.cat_laptop_keywords), 21),
+            c(Res.s(R.string.cat_sell_name), i, "sell", 0xFFC0CA33, Res.s(R.string.cat_sell_keywords), 22),
+            c(Res.s(R.string.cat_trending_name), i, "trending", 0xFF3949AB, Res.s(R.string.cat_trending_keywords), 23),
+            c(Res.s(R.string.cat_undo_name), i, "undo", 0xFF8E24AA, Res.s(R.string.cat_undo_keywords), 24),
+            c(Res.s(R.string.cat_redeem_name), i, "redeem", 0xFFF4511E, Res.s(R.string.cat_redeem_keywords), 25),
+            c(Res.s(R.string.cat_more_income_name), i, "more", 0xFF757575, Res.s(R.string.cat_more_income_keywords), 26),
         )
     }
 
     /** Ícones disponíveis para categorias (chave -> descrição para leitores de tela). */
-    val categoryIcons: List<Pair<String, String>> = listOf(
-        "restaurant" to "Comida", "cart" to "Mercado", "car" to "Carro", "bus" to "Ônibus", "home" to "Casa",
-        "bolt" to "Energia", "water" to "Água", "wifi" to "Internet", "phone" to "Celular", "health" to "Saúde",
-        "fitness" to "Academia", "school" to "Estudos", "movie" to "Lazer", "game" to "Jogos", "shopping" to "Compras",
-        "subscriptions" to "Assinaturas", "spa" to "Beleza", "pets" to "Pets", "volunteer" to "Doações",
-        "gift" to "Presente", "flight" to "Viagem", "receipt" to "Taxas", "coffee" to "Café", "gas" to "Combustível",
-        "baby" to "Bebê", "build" to "Reforma", "work" to "Trabalho", "laptop" to "Freela", "sell" to "Vendas",
-        "trending" to "Rendimentos", "undo" to "Reembolso", "redeem" to "Presentes", "savings" to "Poupança",
-        DEBT_ICON to "Dívidas",
-        "money" to "Dinheiro", "star" to "Favorito", "more" to "Outros",
+    val categoryIcons: List<Pair<String, String>> get() = listOf(
+        "restaurant" to Res.s(R.string.icon_restaurant), "cart" to Res.s(R.string.icon_cart), "car" to Res.s(R.string.icon_car), "bus" to Res.s(R.string.icon_bus), "home" to Res.s(R.string.icon_home),
+        "bolt" to Res.s(R.string.icon_bolt), "water" to Res.s(R.string.icon_water), "wifi" to Res.s(R.string.icon_wifi), "phone" to Res.s(R.string.icon_phone), "health" to Res.s(R.string.icon_health),
+        "fitness" to Res.s(R.string.icon_fitness), "school" to Res.s(R.string.icon_school), "movie" to Res.s(R.string.icon_movie), "game" to Res.s(R.string.icon_game), "shopping" to Res.s(R.string.icon_shopping),
+        "subscriptions" to Res.s(R.string.icon_subscriptions), "spa" to Res.s(R.string.icon_spa), "pets" to Res.s(R.string.icon_pets), "volunteer" to Res.s(R.string.icon_volunteer),
+        "gift" to Res.s(R.string.icon_gift), "flight" to Res.s(R.string.icon_flight), "receipt" to Res.s(R.string.icon_receipt), "coffee" to Res.s(R.string.icon_coffee), "gas" to Res.s(R.string.icon_gas),
+        "baby" to Res.s(R.string.icon_baby), "build" to Res.s(R.string.icon_build), "work" to Res.s(R.string.icon_work), "laptop" to Res.s(R.string.icon_laptop), "sell" to Res.s(R.string.icon_sell),
+        "trending" to Res.s(R.string.icon_trending), "undo" to Res.s(R.string.icon_undo), "redeem" to Res.s(R.string.icon_redeem), "savings" to Res.s(R.string.icon_savings),
+        DEBT_ICON to Res.s(R.string.icon_debt),
+        "money" to Res.s(R.string.icon_money), "star" to Res.s(R.string.icon_star), "more" to Res.s(R.string.icon_more),
     )
 
     val goalEmojis = listOf("🎯", "🏠", "✈️", "🚗", "🎓", "💍", "🛡️", "📱", "💻", "🎮", "🏖️", "👶", "🐶", "🎸", "🏍️", "💰", "🎁", "⛪", "🏋️", "📚")
