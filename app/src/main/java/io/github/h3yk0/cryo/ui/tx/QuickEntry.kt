@@ -57,6 +57,7 @@ import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.AppSettings
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.ParseContext
+import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.PhraseParser
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
@@ -98,8 +99,9 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
     fun listen() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, "pt-BR")
-            putExtra(RecognizerIntent.EXTRA_PROMPT, "Fale, por exemplo: mercado 120 no débito")
+            // A voz na língua do app (com o país do celular): "mercado 120 no débito", "groceries 120 on debit"...
+            putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLocale.locale.toLanguageTag())
+            putExtra(RecognizerIntent.EXTRA_PROMPT, Res.s(R.string.quick_fale_por_exemplo))
         }
         try {
             voice.launch(intent)

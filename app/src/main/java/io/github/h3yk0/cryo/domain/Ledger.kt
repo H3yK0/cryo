@@ -372,6 +372,8 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
     /** Palavra da descrição -> categoria usada por último. Faz o registro por frase "aprender" com você. */
     val learnedCategories: Map<String, Long> by lazy {
         val m = HashMap<String, Long>()
+        val stop = PhraseParser.STOP_WORDS
+        val bank = BANK_WORDS + PhraseParser.BANK_WORDS
         for (t in s.txs) {
             if ((t.type != TxType.EXPENSE && t.type != TxType.INCOME) || t.categoryId == null) continue
             // Descrições criadas pelo próprio app ("Parcela · Financiamento") não ensinam nada.
@@ -379,7 +381,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
             val norm = t.description.normalized().trim()
             if (norm.isEmpty()) continue
             m.putIfAbsent(norm, t.categoryId)
-            norm.split(Regex("[^a-z0-9]+")).firstOrNull { it.length >= 3 && it !in PhraseParser.STOP_WORDS && it !in BANK_WORDS }
+            PhraseParser.wordsOf(norm).firstOrNull { it.length >= PhraseParser.minLearned(it) && it !in stop && it !in bank }
                 ?.let { m.putIfAbsent(it, t.categoryId) }
         }
         m
@@ -393,7 +395,8 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
     private companion object {
         /**
          * Palavras que os bancos põem no começo de quase tudo ("PIX ENVIADO MARIA", "COMPRA DEBITO PADARIA"): não
-         * dizem nada da categoria, então o Cryo aprende pela próxima palavra.
+         * dizem nada da categoria, então o Cryo aprende pela próxima palavra. Estas são as dos extratos brasileiros
+         * (valem em qualquer língua do app, para quem importou extratos daqui); as de cada língua vêm de [PhraseLang].
          */
         val BANK_WORDS = setOf(
             "pix", "ted", "doc", "tef", "enviado", "enviada", "recebida", "debito", "credito", "boleto", "tarifa", "saque",

@@ -8,6 +8,7 @@ import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.CardMath
+import io.github.h3yk0.cryo.domain.PhraseLang
 import io.github.h3yk0.cryo.domain.PhraseParser
 import io.github.h3yk0.cryo.domain.Snapshot
 import io.github.h3yk0.cryo.domain.key
@@ -72,11 +73,11 @@ class CategoryGuesser(categories: List<Category>, private val learned: Map<Strin
     // Expressões montadas uma vez só (um extrato pode ter milhares de linhas).
     private val names = active.map { c ->
         val n = c.name.normalized()
-        NameRule(c, Regex("\\b${Regex.escape(n)}\\b"), 8.0 + n.length / 100.0)
+        NameRule(c, PhraseParser.wordRegex(n), 8.0 + n.length / 100.0)
     }
     private val keywords = active.flatMap { c ->
         c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }
-            .map { kw -> KeywordRule(c, kw, Regex("\\b${Regex.escape(kw)}(?:s|es)?\\b")) }
+            .map { kw -> KeywordRule(c, kw, PhraseParser.wordRegex(kw, PhraseLang.current.plural)) }
     }
 
     fun guess(kind: CategoryKind, description: String): Long? {
@@ -91,7 +92,8 @@ class CategoryGuesser(categories: List<Category>, private val learned: Map<Strin
         }
         if (text.isNotEmpty()) learned[description.normalized().trim()]?.let { offer(it, 10.0) }
         for (r in names) if (r.category.kind == kind && r.regex.containsMatchIn(text)) offer(r.category.id, r.score)
-        text.split(' ').filter { it.length >= 3 && it !in PhraseParser.STOP_WORDS }.forEach { w -> learned[w]?.let { offer(it, 6.0) } }
+        val stop = PhraseParser.STOP_WORDS
+        text.split(' ').filter { it.length >= PhraseParser.minLearned(it) && it !in stop }.forEach { w -> learned[w]?.let { offer(it, 6.0) } }
         for (r in keywords) {
             if (r.category.kind != kind) continue
             val kw = r.keyword
@@ -105,16 +107,30 @@ class CategoryGuesser(categories: List<Category>, private val learned: Map<Strin
     }
 
     private companion object {
-        val NOT_WORD = Regex("[^a-z0-9 ]")
+        val NOT_WORD = Regex("[^\\p{L}\\p{M}\\p{N} ]")
         val SPACES = Regex("\\s+")
     }
 }
 
 object ImportPlanner {
-    private val INVOICE_PAYMENT = Regex("""\b(pagamento|pagto|pgto|pag)\b.*\b(fatura|cartao)\b|\bfatura\b.*\b(pagamento|pagto|pgto|cartao)\b""")
+    /**
+     * Pagamento de fatura saindo da conta, nas línguas do app: "PAGAMENTO FATURA", "CHASE CREDIT CRD AUTOPAY",
+     * "PAGO TARJETA", "PAIEMENT CARTE", "KREDITKARTENABRECHNUNG", "カード代金", "카드대금", "信用卡还款"...
+     */
+    private val INVOICE_PAYMENT = Regex(
+        """\b(pagamento|pagto|pgto|pag)\b.*\b(fatura|cartao)\b|\bfatura\b.*\b(pagamento|pagto|pgto|cartao)\b|""" +
+            """\b(payment|pmt|autopay|epay|e-payment|epayment)\b.*\b(card|crd|credit|amex|visa|mastercard|discover)\b|""" +
+            """\b(card|crd|amex|discover|capital one)\b.*\b(payment|pmt|autopay|epay|e-payment|epayment)\b|""" +
+            """\bpago\b.*\b(tarjeta|tdc)\b|\btarjeta\b.*\bpago\b|\b(paiement|reglement)\b.*\bcarte\b|""" +
+            """kreditkartenabrechnung|kartenabrechnung|\bpagamento\b.*\bcarta\b|""" +
+            """カード代金|カード引落|カードご利用代金|クレジットカード支払|카드대금|카드결제대금|카드값|信用卡还款|还信用卡|""" +
+            """क्रेडिट कार्ड भुगतान|कार्ड बिल""",
+    )
 
     /** Crédito na fatura que é pagamento (e não estorno, cashback ou ajuste, que entram como crédito no cartão). */
-    private val CARD_PAYMENT = Regex("""\b(pagamento|pagto|pgto|pag)\b""")
+    private val CARD_PAYMENT = Regex(
+        """\b(pagamento|pagto|pgto|pag|payment|pmt|autopay|pago|paiement|reglement|zahlung|ausgleich)\b|お支払|入金|결제|입금|还款|भुगतान""",
+    )
 
     /** Faturas de cartão costumam listar as compras como valores positivos: aí o sinal precisa virar. */
     fun suggestInvert(st: Statement, target: ImportTarget): Boolean {

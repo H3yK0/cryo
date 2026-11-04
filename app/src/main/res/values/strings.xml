@@ -929,6 +929,7 @@
     <string name="quick_foi_isso_que_eu">Foi isso que eu entendi. Ajuste o que precisar e salve.</string>
     <string name="quick_escreva_ou_fale_seu">Escreva ou fale do seu jeito: “recebi 3000 de salário”, “tv 1200 em 10x no cartão”.</string>
     <string name="quick_falar">Falar</string>
+    <string name="quick_fale_por_exemplo">Fale, por exemplo: mercado 120 no débito</string>
 
     <!-- Common.kt -->
     <string name="common_valor_escondido">Valor escondido</string>
@@ -1348,6 +1349,7 @@
     <string name="importer_credito_debito">Crédito/débito: %1$s</string>
     <string name="importer_parcela_2">Parcela: %1$s</string>
     <string name="importer_centavos_depois_ponto">Centavos depois do ponto</string>
+    <string name="importer_mes_antes_do_dia">Datas com o mês antes do dia (como nos EUA)</string>
     <string name="importer_centavos_depois_virgula">Centavos depois da vírgula</string>
     <string name="importer_parcela">\u0020- Parcela %1$s/%2$s</string>
 

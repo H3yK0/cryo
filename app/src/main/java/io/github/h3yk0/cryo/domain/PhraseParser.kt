@@ -14,10 +14,13 @@ import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Investment
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.data.DefaultData
+import io.github.h3yk0.cryo.domain.PhraseLang.Writing
 import java.math.BigDecimal
 import java.math.RoundingMode
-import java.time.DayOfWeek
+import java.text.Normalizer
 import java.time.LocalDate
+import java.time.YearMonth
+import java.util.Locale
 import kotlin.math.max
 
 data class ParseContext(
@@ -31,6 +34,10 @@ data class ParseContext(
     val learned: Map<String, Long> = emptyMap(),
     val defaultAccountId: Long? = null,
     val debts: List<Debt> = emptyList(),
+    /** Língua das frases (a do app; nos testes, a de cada caso). */
+    val language: AppLanguage = AppLocale.language,
+    /** Para a ordem de "11/03" (dia/mês ou mês/dia): o locale do app. */
+    val locale: Locale = AppLocale.locale,
 )
 
 data class ParsedEntry(
@@ -50,18 +57,28 @@ data class ParsedEntry(
 
 /**
  * Entende frases do dia a dia, como "mercado 120 no débito", "recebi 3000 de salário",
- * "tv 1200 em 10x no cartão" ou "transferi 200 para a poupança".
+ * "tv 1200 em 10x no cartão" ou "transferi 200 para a poupança", nas 10 línguas do app (RF-REG-09):
+ * "lunch 25 on debit", "コーヒー 500円", "점심 만원 카드로", "चाय 20 रुपये नकद"...
  *
  * Funciona 100% no aparelho, sem internet: são regras + o que o app aprendeu com o seu histórico.
+ * As palavras de cada língua ficam em [PhraseLang]; aqui ficam as regras, iguais para todas.
  */
 class PhraseParser(private val ctx: ParseContext) {
 
-    private class Token(val orig: String, val norm: String, val start: Int, val end: Int) {
+    private class Token(val orig: String, val norm: String, val start: Int, val end: Int, val suffix: String = "") {
         var used = false
     }
 
     private data class Cand(val cents: Long, val score: Int, val pos: Int, val range: IntRange)
     private data class EMatch(val id: Long, val score: Int, val pos: Int, val ranges: List<IntRange>)
+
+    private val L = PhraseLang.forLanguage(ctx.language)
+
+    /** Línguas sem espaço e o coreano: procura por pedaço de palavra, sem exigir o fim da palavra. */
+    private val loose = L.writing != Writing.SPACED
+
+    /** Como juntar as palavras da descrição: sem espaço em japonês e chinês. */
+    private val joiner = if (L.writing == Writing.UNSPACED) "" else " "
 
     private lateinit var toks: List<Token>
     private lateinit var text: String
@@ -79,35 +96,30 @@ class PhraseParser(private val ctx: ParseContext) {
         val accMatches = matchNames(ctx.accounts.filter { !it.archived }.map { it.id to it.name })
         val cardMatches = matchNames(ctx.cards.filter { !it.archived }.map { it.id to it.name })
         val activeDebts = ctx.debts.filter { !it.archived }
-        val debtMatches = matchNames(activeDebts.map { it.id to "${it.name} ${it.creditor}" }, DEBT_GENERIC_WORDS)
+        val debtMatches = matchNames(activeDebts.map { it.id to "${it.name} ${it.creditor}" }, L.debtGenericN)
         val debtMatch = debtMatches.firstOrNull()
 
         // Dívidas: "paguei a parcela da moto", "paguei 200 pro joão", "peguei 300 emprestado com o joão"
-        val borrowVerb = has(
-            "\\b(peguei|pedi|tomei|recebi|consegui) (?:\\S+ ){0,3}emprestad[oa]s?\\b|\\bme emprest(?:ou|aram|ou)\\b|\\b(?:peguei|fiz|tomei|contratei) (?:um |o )?emprestimo\\b",
-        )
-        val installmentWord = Regex("\\b(parcelas?|prestacao|prestacoes)\\b").findAll(text).any { free(it.range) }
-        val debtNoun = installmentWord ||
-            has("\\b(divida|dividas|emprestimo|financiamento|acordo|carne|crediario|consignado)\\b")
+        val borrowVerb = has(L.borrow)
+        val installmentWord = re(words(L.installmentWord)).findAll(text).any { free(it.range) }
+        val debtNoun = installmentWord || has(L.debtNoun)
 
-        val goalWord = has("\\b(caixinha|cofrinho|meta)\\b")
-        val goalOutVerb = has("\\b(tirei|retirei|resgatei|saquei|usei|peguei)\\b")
-        val goalInVerb = has("\\b(guardei|separei|reservei|poupei|coloquei|depositei)\\b")
-        val investVerb = has("\\b(investi|apliquei|aportei|aporte|aplicacao|aplicar|investir)\\b")
-        val redeemVerb = has("\\b(resgatei|resgate|saquei|retirei)\\b")
-        val payVerb = has("\\b(paguei|pagar|pagamento|quitei|pago)\\b")
-        val transferVerb = has("\\b(transferi|transferencia|transferir|passei|movi|mandei)\\b")
-        val incomeVerb = has("\\b(recebi|ganhei|entrou|caiu|vendi|receber|recebido|recebimento)\\b")
-        val expenseVerb = has("\\b(gastei|paguei|comprei|gasto|pago|gastar|comprar)\\b")
-        val incomeNoun = has(
-            "\\b(salario|freela|freelance|bico|rendimento|rendimentos|reembolso|estorno|dividendos|cashback|bonus|comissao|mesada|13o|decimo terceiro|plr|adiantamento|venda|vendas|deposito)\\b",
-        )
+        val goalWord = has(L.goalWord)
+        val goalOutVerb = has(L.goalOut)
+        val goalInVerb = has(L.goalIn)
+        val investVerb = has(L.invest)
+        val redeemVerb = has(L.redeem)
+        val payVerb = has(L.pay)
+        val transferVerb = has(L.transfer)
+        val incomeVerb = has(L.income)
+        val expenseVerb = has(L.expense)
+        val incomeNoun = has(L.incomeNoun)
 
         // Sem o nome da dívida na frase: a única que existe, ou a única do tipo citado ("o financiamento").
         val kindHint = when {
-            has("\\bfinanciamento\\b") -> DebtKind.FINANCING
-            has("\\b(emprestimo|consignado)\\b") -> DebtKind.LOAN
-            has("\\bacordo\\b") -> DebtKind.AGREEMENT
+            has(L.financing) -> DebtKind.FINANCING
+            has(L.loan) -> DebtKind.LOAN
+            has(L.agreement) -> DebtKind.AGREEMENT
             else -> null
         }
         val guessedDebt = activeDebts.singleOrNull() ?: kindHint?.let { k -> activeDebts.singleOrNull { it.kind == k } }
@@ -127,7 +139,7 @@ class PhraseParser(private val ctx: ParseContext) {
                 if (goalOutVerb) TxType.GOAL_OUT else TxType.GOAL_IN
             invMatches.isNotEmpty() && (investVerb || redeemVerb) -> if (redeemVerb) TxType.INVEST_OUT else TxType.INVEST_IN
             investVerb -> TxType.INVEST_IN
-            has("\\bfatura\\b") && (payVerb || cardMatches.isNotEmpty()) -> TxType.CARD_PAYMENT
+            has(L.invoice) && (payVerb || cardMatches.isNotEmpty()) -> TxType.CARD_PAYMENT
             (transferVerb || goalInVerb) && accMatches.isNotEmpty() -> TxType.TRANSFER
             goalInVerb && ctx.goals.any { !it.archived } -> TxType.GOAL_IN
             borrowVerb -> TxType.DEBT_IN
@@ -138,13 +150,11 @@ class PhraseParser(private val ctx: ParseContext) {
             else -> TxType.EXPENSE
         }
 
-        // Forma de pagamento citada na frase
-        val wantsCredit = consumeFirst("\\b(?:n[oa] )?(credito|cartao)\\b")
-        val wantsDebit = consumeFirst("\\b(?:n[oa] )?(debito|pix)\\b|\\bna conta\\b")
-        val wantsCash = consumeFirst("\\b(?:em )?(dinheiro|especie|cash)\\b|\\bem maos\\b")
-        val wantsBenefit = consumeFirst(
-            "\\b(?:n[oa] )?(vale refeicao|vale alimentacao|vr|va|ticket|alelo|sodexo|pluxee|caju|vale)\\b",
-        )
+        // Forma de pagamento citada na frase. O débito vem antes: "debit card" e "cartão de débito" também têm "cartão".
+        val wantsDebit = consumeMethod(L.debit)
+        val wantsCredit = consumeMethod(L.credit)
+        val wantsCash = consumeMethod(L.cash)
+        val wantsBenefit = consumeMethod(L.benefit)
 
         var accountId: Long? = null
         var toAccountId: Long? = null
@@ -186,17 +196,15 @@ class PhraseParser(private val ctx: ParseContext) {
             }
             TxType.TRANSFER -> {
                 val ordered = accMatches.sortedBy { it.pos }.distinctBy { it.id }
-                val toWords = setOf("para", "pra", "pro", "na", "no", "em")
-                val fromWords = setOf("de", "da", "do", "dos", "das")
                 when (ordered.size) {
                     0 -> {}
                     1 -> {
                         val a = ordered[0]
-                        if (precededBy(a.pos, fromWords) && !precededBy(a.pos, toWords)) accountId = a.id else toAccountId = a.id
+                        if (isFrom(a) && !isTo(a)) accountId = a.id else toAccountId = a.id
                     }
                     else -> {
                         val a = ordered[0]; val b = ordered[1]
-                        if (precededBy(a.pos, toWords) && !precededBy(b.pos, toWords)) {
+                        if ((isTo(a) && !isTo(b)) || (L.postpositional && isFrom(b) && !isFrom(a))) {
                             toAccountId = a.id; accountId = b.id
                         } else {
                             accountId = a.id; toAccountId = b.id
@@ -234,7 +242,7 @@ class PhraseParser(private val ctx: ParseContext) {
                     }
                     c != null -> !wantsDebit
                     a != null -> false
-                    else -> wantsCredit || installments > 1
+                    else -> (wantsCredit && !wantsDebit) || installments > 1
                 }
                 if (useCard) {
                     cardId = c?.id ?: defaultCard()
@@ -254,8 +262,8 @@ class PhraseParser(private val ctx: ParseContext) {
         }
 
         // Categoria e descrição (com o que sobrou da frase)
-        val descTokens = toks.filter { !it.used && it.norm !in STOP_WORDS && it.norm.any(Char::isLetterOrDigit) }
-        val descNorm = descTokens.joinToString(" ") { it.norm }
+        val descTokens = toks.filter { !it.used && !isStop(it.norm) && it.norm.any(Char::isLetterOrDigit) }
+        val descNorm = descTokens.joinToString(joiner) { it.norm }
         val isDebtPayment = payDebt != null && type == TxType.EXPENSE
         val categoryId = when {
             isDebtPayment -> ctx.categories.debtCategory()?.id
@@ -264,7 +272,7 @@ class PhraseParser(private val ctx: ParseContext) {
             else -> null
         }
 
-        var description = descTokens.joinToString(" ") { cleanOrig(it.orig) }.trim()
+        var description = descTokens.joinToString(joiner) { cleanOrig(it.orig) }.trim()
         val debt = activeDebts.firstOrNull { it.id == debtId }
         if (debt != null) {
             description = when {
@@ -286,7 +294,7 @@ class PhraseParser(private val ctx: ParseContext) {
             }
         }
 
-        description = description.split(' ').joinToString(" ") { w -> if (w.normalized() in ACRONYMS) w.uppercase(LocaleBR) else w }
+        description = description.split(' ').joinToString(" ") { w -> if (w.normalized() in ACRONYMS) w.uppercase(Locale.ROOT) else w }
 
         return ParsedEntry(
             type = type,
@@ -304,23 +312,187 @@ class PhraseParser(private val ctx: ParseContext) {
         )
     }
 
-    /* ------------------------------------------------------------------ */
+    /* ------------------------------ palavras ---------------------------- */
+
+    /**
+     * Expressão regular com "\b" valendo para todas as escritas: no Android (ICU) e no Java o "\b" padrão trata letras
+     * fora do latim de jeitos diferentes, e as vogais do hindi (sinais combinantes) partiriam a palavra.
+     * Em coreano, japonês e chinês o fim da palavra não é exigido (as terminações vêm grudadas).
+     */
+    private fun re(p: String): Regex = Regex(p.replace("\\b", if (loose) "" else B))
+
+    /** Alternativas de uma lista, as mais longas primeiro (para "debit card" ganhar de "debit"). */
+    private fun alt(list: Collection<String>): String =
+        list.map { L.n(it) }.filter { it.isNotEmpty() }.distinct().sortedByDescending { it.length }.joinToString("|")
+
+    private fun words(list: Collection<String>): String = "\\b(?:${alt(list)})\\b"
+
+    private fun has(list: List<String>): Boolean = list.isNotEmpty() && re(words(list)).containsMatchIn(text)
+
+    private fun isStop(norm: String): Boolean {
+        if (norm in L.stopN || norm in STOP_SYMBOLS) return true
+        // Japonês, chinês e coreano: o verbo vem conjugado e grudado ("買いました", "샀어요").
+        return loose && L.verbs.any { norm.contains(it) }
+    }
+
+    /* ------------------------------ tokens ------------------------------ */
 
     private fun tokenize(input: String): List<Token> {
+        val raw = when (L.writing) {
+            Writing.SPACED -> spacedChunks(input)
+            Writing.AGGLUTINATIVE -> spacedChunks(input).flatMap { (o, n) -> splitDigits(o, n) }.map { particle(it) }
+            Writing.UNSPACED -> unspacedChunks(input)
+        }
         val out = ArrayList<Token>()
         var pos = 0
-        for (r in input.trim().split(Regex("\\s+"))) {
-            if (r.isEmpty()) continue
-            val n = normToken(r)
+        for (r in raw) {
+            val n = r.second
             if (n.isEmpty()) continue
-            out += Token(r, n, pos, pos + n.length)
+            out += Token(r.first, n, pos, pos + n.length, r.third)
             pos += n.length + 1
         }
         return out
     }
 
+    private fun spacedChunks(input: String): List<Triple<String, String, String>> =
+        input.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }.map { r ->
+            var orig = r
+            var n = normToken(r)
+            L.elision?.let { e ->
+                e.find(n)?.let { m -> n = n.substring(m.range.last + 1) }
+                e.find(orig.lowercase().replace('’', '\''))?.let { m -> orig = orig.substring(m.range.last + 1) }
+            }
+            Triple(orig, n, "")
+        }
+
+    /** Coreano: "5000원" → "5000" + "원", "3만5천원" → "3만5천" + "원". */
+    private fun splitDigits(orig: String, norm: String): List<Triple<String, String, String>> {
+        if (norm.none { it.isDigit() } || norm.all { it.isDigit() || it in ".,/-" }) return listOf(Triple(orig, norm, ""))
+        val o = if (orig.length == norm.length) orig else norm
+        return runs(norm).map { r -> Triple(o.substring(r.first, r.last + 1), norm.substring(r.first, r.last + 1), "") }
+    }
+
+    /** Partícula do fim da palavra, separada (para a descrição e para "de onde"/"para onde"). */
+    private fun particle(t: Triple<String, String, String>): Triple<String, String, String> {
+        val (orig, norm, _) = t
+        if (norm.any { it.isDigit() } || orig.length != norm.length) return t
+        for (p in L.particlesN) {
+            if (norm.length > p.length && norm.endsWith(p) && norm.length - p.length >= (if (p.length == 1) 2 else 1)) {
+                return Triple(orig.dropLast(p.length), norm.dropLast(p.length), p)
+            }
+        }
+        return t
+    }
+
+    /** Pedaços de números: dígitos (com . , / -) e as unidades grudadas depois deles (万, 千, 만, 천). */
+    private fun runs(s: String): List<IntRange> {
+        val out = ArrayList<IntRange>()
+        var i = 0
+        while (i < s.length) {
+            val start = i
+            if (s[i].isDigit()) {
+                while (i < s.length && (s[i].isDigit() || (s[i] in ".,/-" && i + 1 < s.length && s[i + 1].isDigit()) ||
+                        (s[i] in CJK_UNITS && i > start))
+                ) i++
+            } else {
+                while (i < s.length && !s[i].isDigit()) i++
+            }
+            out += start until i
+        }
+        return out
+    }
+
+    /**
+     * Japonês e chinês: sem espaços, a frase é separada pelas palavras que o app conhece (as da língua, os nomes das
+     * contas, cartões, metas e categorias e as palavras-chave), pelos números e pela troca de escrita (katakana, latim).
+     */
+    private fun unspacedChunks(input: String): List<Triple<String, String, String>> {
+        val dict = HashSet<String>(L.vocabulary)
+        fun add(s: String) { s.normalized().trim().takeIf { it.isNotEmpty() && it.length <= 24 }?.let { dict += it } }
+        ctx.accounts.forEach { add(it.name) }
+        ctx.cards.forEach { add(it.name) }
+        ctx.goals.forEach { add(it.name) }
+        ctx.investments.forEach { add(it.name) }
+        ctx.debts.forEach { add(it.name); add(it.creditor) }
+        ctx.categories.forEach { c -> add(c.name); c.keywords.split(',').forEach { add(it) } }
+        ctx.learned.keys.forEach { add(it) }
+        val maxLen = dict.maxOfOrNull { it.length } ?: 1
+
+        val text = Normalizer.normalize(input, Normalizer.Form.NFKC).replace(Regex("[。、，！？「」（）・]"), " ")
+        val out = ArrayList<Triple<String, String, String>>()
+        for (chunk in text.trim().split(Regex("\\s+")).filter { it.isNotEmpty() }) {
+            val low = String(CharArray(chunk.length) { Character.toLowerCase(chunk[it]) })
+            var pending = -1
+            fun flush(end: Int) {
+                if (pending >= 0 && end > pending) {
+                    val o = chunk.substring(pending, end)
+                    out += Triple(o, normToken(o), "")
+                }
+                pending = -1
+            }
+            var i = 0
+            while (i < low.length) {
+                val c = low[i]
+                if (c.isDigit()) {
+                    flush(i)
+                    val r = runs(low.substring(i)).first()
+                    val o = chunk.substring(i, i + r.last + 1)
+                    out += Triple(o, normToken(o), "")
+                    i += r.last + 1
+                    continue
+                }
+                var len = 0
+                for (n in minOf(maxLen, low.length - i) downTo 1) {
+                    val w = low.substring(i, i + n)
+                    if (w.normalized() !in dict) continue
+                    // Partícula de uma letra só separa depois de kanji/katakana ("スタバで"), não no meio de "おにぎり".
+                    if (n == 1 && !singleOk(low, i)) continue
+                    len = n; break
+                }
+                if (len > 0) {
+                    flush(i)
+                    val o = chunk.substring(i, i + len)
+                    out += Triple(o, normToken(o), "")
+                    i += len
+                    continue
+                }
+                if (pending >= 0 && script(low[i - 1]) != script(c)) flush(i)
+                if (pending < 0) pending = i
+                i++
+            }
+            flush(low.length)
+        }
+        return out
+    }
+
+    private fun singleOk(s: String, i: Int): Boolean = when (L.language) {
+        AppLanguage.JA -> i > 0 && !isHiragana(s[i - 1])
+        AppLanguage.ZH -> s[i] in ZH_SINGLE
+        else -> true
+    }
+
+    private fun isHiragana(c: Char) = c in 'ぁ'..'ゟ'
+
+    /** Escrita de cada letra, para separar "スタバ" de "コーヒー" mesmo sem as conhecer. */
+    private fun script(c: Char): Int = when {
+        c == 'ー' || c in '゠'..'ヿ' -> 1
+        c in '぀'..'ゟ' || Character.UnicodeScript.of(c.code) == Character.UnicodeScript.HAN -> 2
+        Character.UnicodeScript.of(c.code) == Character.UnicodeScript.HANGUL -> 3
+        c.isLetter() -> 4
+        else -> 5
+    }
+
     private fun normToken(r: String): String {
-        var t = r.normalized().trim('(', ')', '[', ']', '"', '\'', '!', '?', ';', ':', '“', '”', '-')
+        val digits = r.map { c ->
+            when {
+                c.isDigit() && c !in '0'..'9' -> ('0' + Character.digit(c, 10))
+                c == '’' || c == '‘' -> '\''
+                c == '，' -> ','
+                c == '．' -> '.'
+                else -> c
+            }
+        }.joinToString("")
+        var t = digits.normalized().trim('(', ')', '[', ']', '"', '\'', '!', '?', ';', ':', '“', '”', '-')
         while (t.isNotEmpty() && (t.last() == '.' || t.last() == ',')) t = t.dropLast(1)
         return t
     }
@@ -332,12 +504,19 @@ class PhraseParser(private val ctx: ParseContext) {
     private fun free(r: IntRange) = overlapping(r).none { it.used }
     private fun consume(r: IntRange) = overlapping(r).forEach { it.used = true }
     private fun consume(m: EMatch) = m.ranges.forEach { consume(it) }
-    private fun has(rx: String) = Regex(rx).containsMatchIn(text)
 
     private fun consumeFirst(rx: String): Boolean {
-        val m = Regex(rx).findAll(text).firstOrNull { free(it.range) } ?: return false
+        val m = re(rx).findAll(text).firstOrNull { free(it.range) } ?: return false
         consume(m.range)
         return true
+    }
+
+    /** Forma de pagamento, com a preposição ou posposição junto ("no débito", "カードで", "कार्ड से"). */
+    private fun consumeMethod(list: List<String>): Boolean {
+        if (list.isEmpty()) return false
+        val pre = if (L.methodPrep.isNotEmpty()) "(?:(?:${L.methodPrep}) )?" else ""
+        val post = if (L.methodPost.isNotEmpty()) "(?: ?(?:${L.methodPost}))?" else ""
+        return consumeFirst("\\b$pre(?:${alt(list)})$post\\b")
     }
 
     private fun precededBy(pos: Int, words: Set<String>): Boolean {
@@ -346,84 +525,164 @@ class PhraseParser(private val ctx: ParseContext) {
         return toks.subList(max(0, idx - 2), idx).any { it.norm in words }
     }
 
+    /** A palavra logo depois do nome ("楽天 から", "SBI से") ou a partícula grudada nele ("국민은행에서"). */
+    private fun followedBy(m: EMatch, words: Set<String>): Boolean {
+        val end = m.ranges.maxOf { it.last }
+        val idx = toks.indexOfFirst { it.start <= end && it.end > end }
+        if (idx < 0) return false
+        val t = toks[idx]
+        if (t.suffix.isNotEmpty()) return t.suffix in words
+        val rest = t.norm.substring((end - t.start + 1).coerceAtMost(t.norm.length))
+        if (rest.isNotEmpty()) return rest in words
+        return toks.getOrNull(idx + 1)?.norm?.let { it in words } == true
+    }
+
+    private fun isTo(m: EMatch) = if (L.postpositional) followedBy(m, L.toN) else precededBy(m.pos, L.toN)
+    private fun isFrom(m: EMatch) = if (L.postpositional) followedBy(m, L.fromN) else precededBy(m.pos, L.fromN)
+
     /* ------------------------------ datas ------------------------------ */
+
+    /**
+     * Modelo com partes ({D}, {M}, {NUM}...) virando uma expressão regular com grupos numerados. (Grupos com nome
+     * dependem de uma função que o Android só tem a partir da versão 13.) Cada parte que começa com "(" é um grupo.
+     */
+    private class Tpl(val rx: Regex, private val index: Map<String, Int>) {
+        fun get(m: MatchResult, key: String): String? = index[key]?.let { m.groups[it]?.value }
+    }
+
+    private fun tpl(template: String, parts: Map<String, String>): Tpl {
+        val sb = StringBuilder()
+        val index = HashMap<String, Int>()
+        var groups = 0
+        var last = 0
+        for (m in PLACEHOLDER.findAll(template)) {
+            val before = template.substring(last, m.range.first)
+            sb.append(before); groups += countGroups(before)
+            val key = m.groupValues[1]
+            val part = parts[key] ?: error("parte {$key} sem valor")
+            if (part.startsWith("(") && !part.startsWith("(?")) index[key] = groups + 1
+            sb.append(part); groups += countGroups(part)
+            last = m.range.last + 1
+        }
+        val tail = template.substring(last)
+        sb.append(tail)
+        return Tpl(re(sb.toString()), index)
+    }
+
+    private fun countGroups(s: String): Int {
+        var n = 0
+        var i = 0
+        while (i < s.length) {
+            when {
+                s[i] == '\\' -> i++
+                s[i] == '(' && (i + 1 >= s.length || s[i + 1] != '?') -> n++
+            }
+            i++
+        }
+        return n
+    }
 
     private fun parseDate(): LocalDate {
         val today = ctx.today
-        Regex("\\b(hoje|ontem|anteontem|amanha)\\b").find(text)?.let { m ->
-            consume(m.range)
-            return when (m.groupValues[1]) {
-                "ontem" -> today.minusDays(1)
-                "anteontem" -> today.minusDays(2)
-                "amanha" -> today.plusDays(1)
-                else -> today
+        if (L.relDaysN.isNotEmpty()) {
+            re(words(L.relDaysN.keys)).find(text)?.let { m ->
+                consume(m.range)
+                return today.plusDays((L.relDaysN[m.value] ?: 0).toLong())
             }
         }
-        Regex("\\b(?:(?:n[oa]|em) )?(?:dia )?(\\d{1,2})/(\\d{1,2})(?:/(\\d{2,4}))?\\b").find(text)?.let { m ->
-            val day = m.groupValues[1].toInt()
-            val month = m.groupValues[2].toInt()
-            val yearTxt = m.groupValues[3]
-            var year = when {
-                yearTxt.isEmpty() -> today.year
-                yearTxt.length == 2 -> 2000 + yearTxt.toInt()
-                else -> yearTxt.toInt()
-            }
-            val d = runCatching { LocalDate.of(year, month, day) }.getOrNull()
-            if (d != null) {
-                consume(m.range)
-                if (yearTxt.isEmpty() && d.isAfter(today.plusDays(31))) year -= 1
-                return LocalDate.of(year, month, day.coerceAtMost(java.time.YearMonth.of(year, month).lengthOfMonth()))
+        for (p in L.daysAgo) {
+            re("\\b$p\\b").find(text)?.let { m ->
+                val n = m.groupValues[1].toInt()
+                if (n in 0..366) {
+                    consume(m.range)
+                    return today.minusDays(n.toLong())
+                }
             }
         }
-        val months = listOf(
-            "janeiro", "fevereiro", "marco", "abril", "maio", "junho",
-            "julho", "agosto", "setembro", "outubro", "novembro", "dezembro",
-        )
-        Regex("\\b(?:(?:n[oa]|em) )?(?:dia )?(\\d{1,2}) de (${months.joinToString("|")})\\b").find(text)?.let { m ->
-            val day = m.groupValues[1].toInt()
-            val month = months.indexOf(m.groupValues[2]) + 1
-            var d = runCatching { LocalDate.of(today.year, month, day) }.getOrNull()
+        // 2026-11-03 (ou 2026/11/03): igual em toda língua.
+        re("\\b(\\d{4})[-/.](\\d{1,2})[-/.](\\d{1,2})\\b").find(text)?.let { m ->
+            val d = runCatching { LocalDate.of(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3].toInt()) }.getOrNull()
             if (d != null) {
                 consume(m.range)
-                if (d.isAfter(today.plusDays(31))) d = d.minusYears(1)
                 return d
             }
         }
-        Regex("\\b(?:(?:n[oa]|em) )?dia (\\d{1,2})\\b").find(text)?.let { m ->
-            val day = m.groupValues[1].toInt()
-            if (day in 1..31) {
-                consume(m.range)
-                val ym = if (day <= today.dayOfMonth) today.ym() else today.ym().minusMonths(1)
-                return ym.dayClamped(day)
+        val monthFirst = L.monthFirst(ctx.locale)
+        re("\\b${L.datePrefix}(\\d{1,2})/(\\d{1,2})(?:/(\\d{2,4}))?\\b").find(text)?.let { m ->
+            var a = m.groupValues[1].toInt()
+            var b = m.groupValues[2].toInt()
+            if (monthFirst) { val x = a; a = b; b = x }
+            // "25/12" num app em inglês dos EUA: só pode ser dia/mês.
+            if (b > 12 && a <= 12) { val x = a; a = b; b = x }
+            dated(a, b, m.groupValues[3])?.let { consume(m.range); return it }
+        }
+        if (!monthFirst) {
+            // 03.11.2026 (alemão e outros): com o ano, para não confundir com valor.
+            re("\\b(\\d{1,2})\\.(\\d{1,2})\\.(\\d{4})\\b").find(text)?.let { m ->
+                dated(m.groupValues[1].toInt(), m.groupValues[2].toInt(), m.groupValues[3])?.let { consume(m.range); return it }
             }
         }
-        val weekdays = mapOf(
-            "segunda" to DayOfWeek.MONDAY, "terca" to DayOfWeek.TUESDAY, "quarta" to DayOfWeek.WEDNESDAY,
-            "quinta" to DayOfWeek.THURSDAY, "sexta" to DayOfWeek.FRIDAY, "sabado" to DayOfWeek.SATURDAY,
-            "domingo" to DayOfWeek.SUNDAY,
-        )
-        Regex("\\b(?:n[oa] )?(segunda|terca|quarta|quinta|sexta|sabado|domingo)(?:-feira| feira)?( passad[oa])?\\b")
-            .find(text)?.let { m ->
+        val monthAlt = alt(L.monthIndex.keys)
+        for (pattern in L.monthPatterns) {
+            if (pattern.contains("{M}") && monthAlt.isEmpty()) continue
+            val t = tpl(
+                "\\b$pattern\\b",
+                mapOf("P" to L.datePrefix, "D" to "(\\d{1,2})", "MN" to "(\\d{1,2})", "M" to "($monthAlt)", "Y" to "(\\d{4})"),
+            )
+            for (m in t.rx.findAll(text)) {
+                if (!free(m.range)) continue
+                val day = t.get(m, "D")?.toIntOrNull() ?: continue
+                val month = t.get(m, "MN")?.toIntOrNull() ?: t.get(m, "M")?.let { L.monthIndex[it] } ?: continue
+                val year = t.get(m, "Y")
+                var d = runCatching { LocalDate.of(year?.toInt() ?: today.year, month, day) }.getOrNull() ?: continue
                 consume(m.range)
-                val target = weekdays.getValue(m.groupValues[1])
+                if (year == null && d.isAfter(today.plusDays(31))) d = d.minusYears(1)
+                return d
+            }
+        }
+        for (p in L.dayOnly) {
+            re("\\b$p\\b").find(text)?.let { m ->
+                val day = m.groupValues[1].toInt()
+                if (day in 1..31) {
+                    consume(m.range)
+                    val ym = if (day <= today.dayOfMonth) today.ym() else today.ym().minusMonths(1)
+                    return ym.dayClamped(day)
+                }
+            }
+        }
+        if (L.weekdayIndex.isNotEmpty()) {
+            val last = "(?:${alt(L.lastWords)})"
+            val t = tpl("\\b${L.weekdayPattern}\\b", mapOf("W" to "(${alt(L.weekdayIndex.keys)})", "LB" to "($last)", "LA" to "($last)"))
+            t.rx.find(text)?.let { m ->
+                val target = L.weekdayIndex[t.get(m, "W")] ?: return@let
+                consume(m.range)
                 var back = (today.dayOfWeek.value - target.value + 7) % 7
-                if (back == 0 && m.groupValues[2].isNotEmpty()) back = 7
+                if (back == 0 && (t.get(m, "LB") != null || t.get(m, "LA") != null)) back = 7
                 return today.minusDays(back.toLong())
             }
+        }
         return today
+    }
+
+    /** Dia e mês (e o ano, se veio). Sem ano, uma data mais de 31 dias no futuro é do ano passado. */
+    private fun dated(day: Int, month: Int, yearTxt: String): LocalDate? {
+        val today = ctx.today
+        var year = when {
+            yearTxt.isEmpty() -> today.year
+            yearTxt.length == 2 -> 2000 + yearTxt.toInt()
+            else -> yearTxt.toInt()
+        }
+        if (runCatching { LocalDate.of(year, month, day) }.getOrNull() == null) return null
+        if (yearTxt.isEmpty() && LocalDate.of(year, month, day).isAfter(today.plusDays(31))) year -= 1
+        return LocalDate.of(year, month, day.coerceAtMost(YearMonth.of(year, month).lengthOfMonth()))
     }
 
     /* ----------------------------- parcelas ---------------------------- */
 
     private fun parseInstallments(): Int {
-        consumeFirst("\\ba vista\\b")
-        val patterns = listOf(
-            "\\b(?:em )?(\\d{1,2}) ?(?:x|vezes)\\b",
-            "\\bparcelad[oa] (?:em )?(\\d{1,2})(?: ?(?:x|vezes|parcelas))?\\b",
-            "\\b(?:em )?(\\d{1,2}) parcelas\\b",
-        )
-        for (p in patterns) {
-            val m = Regex(p).findAll(text).firstOrNull { free(it.range) } ?: continue
+        if (L.upfront.isNotEmpty()) consumeFirst(words(L.upfront))
+        for (p in L.installments + UNIVERSAL_INSTALLMENTS) {
+            val m = re("\\b$p\\b").findAll(text).firstOrNull { free(it.range) } ?: continue
             val n = m.groupValues[1].toInt()
             if (n in 1..48) {
                 consume(m.range)
@@ -435,44 +694,60 @@ class PhraseParser(private val ctx: ParseContext) {
 
     /* ------------------------------- valor ----------------------------- */
 
-    private fun toCents(num: String, mil: Boolean): Long? {
-        val v: BigDecimal = when {
-            num.contains(',') -> num.replace(".", "").replace(',', '.').toBigDecimalOrNull()
-            Regex("\\d{1,3}(\\.\\d{3})+").matches(num) -> num.replace(".", "").toBigDecimalOrNull()
-            else -> num.toBigDecimalOrNull()
-        } ?: return null
-        val x = if (mil) v.multiply(BigDecimal(1000)) else v
-        return x.movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
-    }
-
     private fun parseAmount(): Long? {
         val cands = ArrayList<Cand>()
-        fun scan(rx: String, score: (MatchResult) -> Int, value: (MatchResult) -> Long?) {
-            Regex(rx).findAll(text).forEach { m ->
-                if (free(m.range)) value(m)?.let { cands += Cand(it, score(m), m.range.first, m.range) }
+        val currency = buildString {
+            append("(?:")
+            if (L.currencyWords.isNotEmpty()) append("(?:${alt(L.currencyWords)})\\b|")
+            append(SUFFIX_SYMBOLS)
+            append(")")
+        }
+        val parts = mapOf(
+            "NUM" to NUM,
+            "K" to if (L.multipliersN.isEmpty()) "(?!)" else "(${alt(L.multipliersN.keys)})",
+            "C" to "(\\d{1,2})",
+            "CUR" to currency,
+            "CJK" to "((?:\\d+(?:\\.\\d+)? ?[$CJK_UNITS] ?)+\\d*)",
+            "CURG" to "($currency)",
+            "U" to "([万萬만千천])",
+        )
+        fun scan(template: String, score: (Tpl, MatchResult) -> Int, value: (Tpl, MatchResult) -> Long?) {
+            val t = tpl(template, parts)
+            t.rx.findAll(text).forEach { m ->
+                if (free(m.range)) value(t, m)?.let { cands += Cand(it, score(t, m), m.range.first, m.range) }
             }
         }
-        // "50 reais e 50 centavos"
-        scan("\\b$NUM ?(?:reais|real)? e (\\d{1,2}) centavos\\b", { 6 }) { m ->
-            toCents(m.groupValues[1], false)?.plus(m.groupValues[2].toLong())
+        fun value(t: Tpl, m: MatchResult): Long? =
+            t.get(m, "NUM")?.let { toCents(it, t.get(m, "K")?.let { k -> L.multipliersN[k] } ?: 1L) }
+        val mult = "(?: ?{K}\\b)?"
+
+        // "50 reais e 50 centavos", "12 dollars and 50 cents"
+        for (c in L.cents) {
+            scan("\\b$c\\b", { _, _ -> 6 }) { t, m ->
+                t.get(m, "NUM")?.let { toCents(it, 1) }?.plus(t.get(m, "C")!!.toLong())
+            }
         }
-        // "R$ 32,50" / "R$ 2 mil"
-        scan("r\\$ ?$NUM( ?mil\\b)?", { 5 }) { m -> toCents(m.groupValues[1], m.groupValues[2].isNotBlank()) }
-        // "120 reais"
-        scan("\\b$NUM( ?mil)? ?(?:reais|real|conto|contos|pila|pilas)\\b", { 5 }) { m ->
-            toCents(m.groupValues[1], m.groupValues[2].isNotBlank())
+        // "R$ 32,50", "$25", "€ 2 mil", "₹500"
+        scan("(?:\\b(?:$ALPHA_SYMBOLS) ?|(?:$PREFIX_SYMBOLS) ?){NUM}$mult", { _, _ -> 5 }, ::value)
+        // "120 reais", "20 euros", "500 円", "20€"
+        scan("(?<![\\d.,$CJK_UNITS])\\b{NUM}(?: ?{K})? ?{CUR}", { _, _ -> 5 }, ::value)
+        // "gastei 50", "paid 50", "für 20"
+        if (L.amountVerbs.isNotEmpty()) {
+            val link = if (L.amountLink.isNotEmpty()) "(?: (?:${L.amountLink}))?" else ""
+            scan("\\b(?:${alt(L.amountVerbs)})$link ?{NUM}$mult(?![\\p{L}\\d$CJK_UNITS])", { _, _ -> 4 }, ::value)
         }
-        // "gastei 50", "por 80"
-        scan(
-            "\\b(?:gastei|paguei|recebi|ganhei|custou|deu|foi|por|valor|total|investi|apliquei|guardei|transferi|resgatei|separei)( de)? $NUM( ?mil\\b)?(?![\\p{L}\\d])",
-            { 4 },
-        ) { m -> toCents(m.groupValues[2], m.groupValues[3].isNotBlank()) }
+        // Japonês, chinês e coreano: "1万5千円", "3만 원", "2千"
+        if (L.writing != Writing.SPACED) {
+            scan("(?<![\\d.]){CJK}(?: ?{CURG})?", { t, m -> if (t.get(m, "CURG") != null) 5 else 3 }) { t, m -> cjkCents(t.get(m, "CJK")!!) }
+            scan("(?<![\\d]){U} ?{CUR}", { _, _ -> 4 }) { t, m -> cjkCents("1" + t.get(m, "U")) }
+        }
         // número solto
-        scan("(?<![\\d/])\\b$NUM( ?mil\\b)?(?![\\p{L}\\d/])", { m -> if (m.groupValues[1].contains(',') || Regex("\\.\\d{1,2}$").containsMatchIn(m.groupValues[1])) 2 else 1 }) { m ->
-            toCents(m.groupValues[1], m.groupValues[2].isNotBlank())
-        }
+        scan("(?<![\\d/$CJK_UNITS])\\b{NUM}$mult(?![\\p{L}\\d/])", { t, m ->
+            val n = t.get(m, "NUM").orEmpty()
+            if (n.contains(',') || Regex("\\.\\d{1,2}$").containsMatchIn(n)) 2 else 1
+        }, ::value)
         // "mil reais" sem número
-        scan("\\bmil\\b", { 0 }) { 100_000L }
+        if (L.bareThousand.isNotEmpty()) scan(words(L.bareThousand), { _, _ -> 0 }) { _, _ -> 100_000L }
 
         val best = cands.filter { it.cents in 1..99_999_999_999L }
             .maxWithOrNull(compareBy<Cand>({ it.score }, { it.pos })) ?: return null
@@ -482,11 +757,13 @@ class PhraseParser(private val ctx: ParseContext) {
 
     /* ---------------------------- entidades ---------------------------- */
 
+    private fun kw(k: String) = re("\\b${Regex.escape(k)}${L.plural}\\b")
+
     /** Alguma palavra-chave de categoria (fora da dívida) aparece na frase? Ex.: "gasolina da moto". */
     private fun keywordOutside(ranges: List<IntRange>): Boolean =
         ctx.categories.filter { it.kind == CategoryKind.EXPENSE && !it.archived && it.icon != DefaultData.DEBT_ICON }.any { c ->
-            c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }.any { kw ->
-                Regex("\\b${Regex.escape(kw)}(?:s|es)?\\b").findAll(text).any { m ->
+            c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }.any { k ->
+                kw(k).findAll(text).any { m ->
                     ranges.none { r -> r.first <= m.range.last && m.range.first <= r.last }
                 }
             }
@@ -494,14 +771,24 @@ class PhraseParser(private val ctx: ParseContext) {
 
     private fun matchNames(items: List<Pair<Long, String>>, extraGeneric: Set<String> = emptySet()): List<EMatch> = items.mapNotNull { (id, name) ->
         val norm = name.normalized().trim()
-        var words = norm.split(Regex("[^a-z0-9]+"))
-            .filter { it.length >= 2 && it !in GENERIC_NAME_WORDS && it !in extraGeneric && !it.all(Char::isDigit) }
+        var words = norm.split(NON_WORD)
+            .filter { it.length >= 2 && it !in L.genericNameN && it !in extraGeneric && !it.all(Char::isDigit) }
         if (words.isEmpty()) words = listOf(norm.trim()).filter { it.isNotEmpty() }
         val ranges = words.mapNotNull { w ->
-            Regex("\\b${Regex.escape(w)}\\b").findAll(text).firstOrNull { free(it.range) }?.range
+            re("\\b${Regex.escape(w)}\\b").findAll(text).firstOrNull { free(it.range) }?.range
+                ?: if (L.writing == Writing.UNSPACED) prefixOf(w) else null
         }
         if (ranges.isEmpty()) null else EMatch(id, ranges.size, ranges.minOf { it.first }, ranges)
     }.sortedWith(compareByDescending<EMatch> { it.score }.thenBy { it.pos })
+
+    /** Sem espaços, a pessoa costuma falar só o começo do nome ("楽天" para "楽天銀行"). */
+    private fun prefixOf(w: String): IntRange? {
+        for (n in w.length - 1 downTo 2) {
+            val m = Regex(Regex.escape(w.substring(0, n))).findAll(text).firstOrNull { free(it.range) } ?: continue
+            return m.range
+        }
+        return null
+    }
 
     private fun defaultAccount(): Long? {
         val active = ctx.accounts.filter { !it.archived }
@@ -528,52 +815,119 @@ class PhraseParser(private val ctx: ParseContext) {
         // 2. Nome da categoria escrito na frase
         for (c in cats) {
             val n = c.name.normalized()
-            val m = Regex("\\b${Regex.escape(n)}\\b").find(text)
+            if (n.isEmpty()) continue
+            val m = re("\\b${Regex.escape(n)}\\b").find(text)
             if (m != null && free(m.range)) offer(c.id, 8.0 + n.length / 100.0)
         }
         // 3. Palavra que você já usou antes com uma categoria
-        descTokens.forEach { t -> if (t.norm.length >= 3) ctx.learned[t.norm]?.let { offer(it, 6.0) } }
+        descTokens.forEach { t -> if (t.norm.length >= minLearned(t.norm)) ctx.learned[t.norm]?.let { offer(it, 6.0) } }
         // 4. Palavras-chave da categoria (as compostas são mais específicas)
         for (c in cats) {
-            for (kw in c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }) {
-                val m = Regex("\\b${Regex.escape(kw)}(?:s|es)?\\b").find(text) ?: continue
+            for (k in c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }) {
+                val m = kw(k).find(text) ?: continue
                 if (!free(m.range)) continue
-                offer(c.id, (if (kw.contains(' ')) 9.0 else 4.0) + kw.length / 100.0)
+                offer(c.id, (if (k.contains(' ')) 9.0 else 4.0) + k.length / 100.0)
             }
         }
         return bestId ?: cats.firstOrNull { it.icon == "more" }?.id
     }
 
     companion object {
-        private const val NUM = "(\\d{1,3}(?:\\.\\d{3})+(?:,\\d{1,2})?|\\d+(?:,\\d{1,2})?|\\d+\\.\\d{1,2})"
+        /** Valor: "1.234,56", "1,234.56", "1,23,456" (Índia), "12,50", "12.50", "1200". */
+        private const val NUM =
+            "(\\d{1,3}(?:[.,]\\d{3})+(?:[.,]\\d{1,2})?|\\d{1,2}(?:,\\d{2})+,\\d{3}(?:\\.\\d{1,2})?|\\d+(?:[.,]\\d{1,2})?)"
 
-        /** Palavras comuns em nomes de dívidas que não ajudam a diferenciar uma da outra. */
-        private val DEBT_GENERIC_WORDS = setOf(
-            "divida", "dividas", "emprestimo", "financiamento", "parcela", "parcelas", "acordo", "devo", "ao", "aos",
-            "com", "pro", "loja", "carne", "crediario", "consignado",
-        )
+        /** Fim de palavra que vale para todas as escritas (letras, sinais combinantes e números). */
+        private const val W = "[\\p{L}\\p{M}\\p{N}_]"
+        private const val B = "(?:(?<=$W)(?!$W)|(?<!$W)(?=$W))"
 
-        private val GENERIC_NAME_WORDS = setOf(
-            "conta", "cartao", "de", "do", "da", "dos", "das", "banco", "credito", "debito", "corrente",
-            "minha", "meu", "o", "a", "e", "para", "pra", "caixinha", "meta", "investimento", "em", "no", "na",
-        )
+        private val NON_WORD = Regex("[^\\p{L}\\p{M}\\p{N}]+")
+        private val PLACEHOLDER = Regex("(?<!\\\\p)\\{([A-Z]+)\\}") // não pega o "\\p{L}" das expressões
+
+        private const val CJK_UNITS = "億亿万萬만千천百백"
+        private val ZH_SINGLE = setOf('了', '的', '在', '给', '从', '我', '用', '和', '跟')
+
+        /** Símbolo antes do valor: "R$ 10", "$10", "€10", "₹10", "Rs. 10". */
+        private const val PREFIX_SYMBOLS = "r\\$|us\\$|u\\\$s|c\\$|a\\$|mx\\$|\\$|€|£|¥|￥|₩|₹"
+        private const val ALPHA_SYMBOLS = "rs\\.?|chf|eur|usd|inr|brl|gbp"
+        private const val SUFFIX_SYMBOLS = "€|\\$|£|¥|￥|₩|₹"
+        private val STOP_SYMBOLS = setOf("r$", "$", "us$", "€", "£", "¥", "￥", "₩", "₹")
+
+        /** "10x" em qualquer língua. */
+        private val UNIVERSAL_INSTALLMENTS = listOf("(\\d{1,2}) ?x")
 
         private val ACRONYMS = setOf(
             "tv", "ipva", "iptu", "iof", "das", "darf", "inss", "cdb", "lci", "lca", "fgts", "irpf", "cpf", "cnh",
-            "vr", "va", "pc", "dvd", "sus", "plr", "mei", "cdi", "fii", "fiis",
+            "vr", "va", "pc", "dvd", "sus", "plr", "mei", "cdi", "fii", "fiis", "atm", "usd", "eur", "emi", "upi", "sip",
+            "etf", "ira", "nisa", "kfc", "gps",
         )
 
-        val STOP_WORDS = setOf(
-            "gastei", "gasto", "gastos", "gastar", "paguei", "pago", "pagar", "pagamento", "comprei", "compra",
-            "comprar", "recebi", "receber", "recebido", "recebimento", "ganhei", "entrou", "caiu", "transferi",
-            "transferencia", "transferir", "passei", "movi", "mandei", "guardei", "separei", "reservei", "poupei",
-            "coloquei", "depositei", "investi", "apliquei", "aportei", "aporte", "aplicacao", "resgatei", "resgate",
-            "tirei", "retirei", "saquei", "usei", "peguei", "quitei", "com", "no", "na", "nos", "nas", "de", "do",
-            "da", "dos", "das", "em", "um", "uma", "uns", "umas", "o", "a", "os", "as", "e", "pra", "para", "pro",
-            "por", "pelo", "pela", "reais", "real", "r$", "conto", "contos", "pila", "pilas", "foi", "fiz", "deu",
-            "custou", "valor", "total", "hoje", "ontem", "anteontem", "amanha", "meu", "minha", "meus", "minhas",
-            "ao", "aos", "que", "via", "la", "aqui", "fatura", "caixinha", "cofrinho", "meta", "cartao", "conta",
-            "investimento", "eu", "agora", "tambem",
+        /** Palavras sem significado para a categoria, na língua do app (para o que o app aprende com o histórico). */
+        val STOP_WORDS: Set<String> get() = PhraseLang.current.stopN
+
+        /** Palavras de extrato que não dizem nada da categoria ("pix", "transfer", "virement"...), na língua do app. */
+        val BANK_WORDS: Set<String> get() = PhraseLang.current.bankN
+
+        /** Tamanho mínimo de uma palavra aprendida: 2 letras em japonês, chinês e coreano ("咖啡"), 3 nas outras. */
+        fun minLearned(word: String): Int = if (word.any { Character.UnicodeScript.of(it.code) in CJK_SCRIPTS }) 2 else 3
+
+        private val CJK_SCRIPTS = setOf(
+            Character.UnicodeScript.HAN, Character.UnicodeScript.HIRAGANA, Character.UnicodeScript.KATAKANA,
+            Character.UnicodeScript.HANGUL,
         )
+
+        /**
+         * Palavra inteira em qualquer escrita ("\\b" que vale igual no Android e no Java, também para o hindi); em
+         * japonês, chinês e coreano, pedaço de palavra (não há espaços, ou as partículas vêm grudadas).
+         */
+        fun wordRegex(word: String, plural: String = ""): Regex =
+            if (word.any { Character.UnicodeScript.of(it.code) in CJK_SCRIPTS }) Regex(Regex.escape(word))
+            else Regex("$B${Regex.escape(word)}$plural$B")
+
+        /** Separa uma descrição em palavras (qualquer escrita). */
+        fun wordsOf(norm: String): List<String> = norm.split(NON_WORD).filter { it.isNotEmpty() }
+
+        /**
+         * Número em centavos. Ponto e vírgula valem como separador de milhar ou de centavos, conforme o que vem depois:
+         * três dígitos = milhar ("1.200", "1,200"), um ou dois = centavos ("12,50", "12.50"); com os dois, o último manda.
+         */
+        internal fun toCents(num: String, factor: Long): Long? {
+            val lastDot = num.lastIndexOf('.')
+            val lastComma = num.lastIndexOf(',')
+            val plain: String = when {
+                lastDot >= 0 && lastComma >= 0 -> {
+                    val dec = if (lastDot > lastComma) '.' else ','
+                    val other = if (dec == '.') ',' else '.'
+                    num.replace(other.toString(), "").replace(dec, '.')
+                }
+                lastDot >= 0 || lastComma >= 0 -> {
+                    val sep = if (lastDot >= 0) '.' else ','
+                    val tail = num.substringAfterLast(sep)
+                    if (tail.length == 3) num.replace(sep.toString(), "")
+                    else num.substringBeforeLast(sep).replace(sep.toString(), "") + "." + tail
+                }
+                else -> num
+            }
+            val v = plain.toBigDecimalOrNull() ?: return null
+            return v.multiply(BigDecimal(factor)).movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+        }
+
+        /** "1万5千" → 15.000, "3億2000万" → 320.000.000, "3만5천" → 35.000 (em centavos). */
+        internal fun cjkCents(s: String): Long? {
+            val units = mapOf(
+                '億' to 100_000_000L, '亿' to 100_000_000L, '万' to 10_000L, '萬' to 10_000L, '만' to 10_000L,
+                '千' to 1000L, '천' to 1000L, '百' to 100L, '백' to 100L,
+            )
+            val compact = s.replace(" ", "")
+            var total = BigDecimal.ZERO
+            var last = 0
+            for (m in Regex("(\\d+(?:\\.\\d+)?)([$CJK_UNITS])").findAll(compact)) {
+                total += m.groupValues[1].toBigDecimal().multiply(BigDecimal(units.getValue(m.groupValues[2][0])))
+                last = m.range.last + 1
+            }
+            if (last == 0) return null
+            compact.substring(last).toBigDecimalOrNull()?.let { total += it }
+            return total.movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+        }
     }
 }

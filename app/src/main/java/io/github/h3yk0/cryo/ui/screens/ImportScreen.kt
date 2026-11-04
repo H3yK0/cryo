@@ -100,6 +100,7 @@ import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.CardMath
 import io.github.h3yk0.cryo.domain.Dates
+import io.github.h3yk0.cryo.domain.capFirst
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.ymOf
@@ -735,7 +736,7 @@ private fun ReviewHeader(fileName: String, st: Statement) {
 private fun InvoiceChooser(st: Statement, card: CreditCard, selected: Int?, today: LocalDate, onSelect: (Int?) -> Unit) {
     val center = remember(st, card) { ImportPlanner.defaultInvoice(st, card) ?: CardMath.invoiceFor(card, today).let { it.year * 100 + it.monthValue } }
     val months = listOf(-1L, 0L, 1L).map { ymOf(center).plusMonths(it) }
-    fun label(ym: java.time.YearMonth) = if (ym.year == today.year) Dates.monthName(ym) else "${Dates.monthShort(ym)} ${ym.year}"
+    fun label(ym: java.time.YearMonth) = if (ym.year == today.year) Dates.monthName(ym) else Dates.monthShortYear(ym).capFirst()
     FieldLabel(Res.s(R.string.import_qual_fatura))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         months.forEach { ym ->
@@ -747,7 +748,7 @@ private fun InvoiceChooser(st: Statement, card: CreditCard, selected: Int?, toda
     val chosen = selected?.let { ymOf(it) }
     Text(
         if (chosen != null) {
-            Res.s(R.string.import_fatura_que_vence_todas, label(chosen).lowercase(), Dates.full(CardMath.dueDate(card, chosen)))
+            Res.s(R.string.import_fatura_que_vence_todas, Dates.monthYearInSentence(chosen, today), Dates.full(CardMath.dueDate(card, chosen)))
         } else {
             Res.s(R.string.import_cada_compra_vai_para)
         },

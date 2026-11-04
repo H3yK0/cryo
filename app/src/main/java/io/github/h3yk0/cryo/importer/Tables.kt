@@ -3,6 +3,7 @@
 package io.github.h3yk0.cryo.importer
 
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.normalized
 import java.time.LocalDate
@@ -87,26 +88,89 @@ object Csv {
 object Columns {
     private enum class Role { DATE, DESCRIPTION, AMOUNT, CREDIT, DEBIT, BALANCE, KIND, ID, INSTALLMENT }
 
+    /**
+     * Nomes de coluna nas 10 línguas do app (RF-IMP-21), já normalizados (minúsculas, sem acento nas letras latinas).
+     * Ex.: "Data"/"Date"/"Fecha"/"Datum"/"日付"/"날짜"/"日期"/"तारीख".
+     */
     private val NAMES: List<Pair<Role, List<String>>> = listOf(
-        Role.DATE to listOf("data", "date", "dt", "data lancamento", "data de lancamento", "data da transacao", "data mov",
-            "data movimento", "data do movimento", "data compra", "data da compra", "dia"),
-        Role.DESCRIPTION to listOf("descricao", "historico", "description", "title", "titulo", "lancamento", "lancamentos",
-            "estabelecimento", "detalhes", "detalhe", "memo", "nome", "transacao", "movimentacao", "descricao do lancamento"),
-        Role.AMOUNT to listOf("valor", "amount", "valor (r$)", "valor r$", "valor em r$", "quantia", "montante", "valor rs",
-            "valor da transacao", "valor do lancamento"),
-        Role.CREDIT to listOf("credito", "creditos", "entrada", "entradas", "valor credito", "credito (r$)", "entradas (r$)"),
-        Role.DEBIT to listOf("debito", "debitos", "saida", "saidas", "valor debito", "debito (r$)", "saidas (r$)"),
-        Role.BALANCE to listOf("saldo", "balance", "saldo (r$)", "saldo do dia"),
-        Role.KIND to listOf("c/d", "d/c", "tipo", "natureza", "cd", "dc"),
-        Role.ID to listOf("identificador", "id", "fitid", "codigo da transacao"),
-        Role.INSTALLMENT to listOf("parcela", "parcelas", "parcelamento", "numero da parcela", "n parcela"),
-    )
+        Role.DATE to listOf(
+            "data", "date", "dt", "data lancamento", "data de lancamento", "data da transacao", "data mov",
+            "data movimento", "data do movimento", "data compra", "data da compra", "dia",
+            "transaction date", "posting date", "posted date", "post date", "booking date", "value date", "trans date",
+            "txn date", "tran date", "value dt", "date posted", "fecha", "fecha operacion", "fecha de operacion", "fecha valor",
+            "f. operacion", "fecha movimiento", "fecha de la transaccion", "date operation", "date de l'operation",
+            "date valeur", "date comptable", "datum", "buchungstag", "buchungsdatum", "valuta", "wertstellung",
+            "data operazione", "data contabile", "data valuta", "日付", "取引日", "利用日", "ご利用日", "お取引日", "年月日",
+            "날짜", "거래일", "거래일자", "거래일시", "이용일", "이용일자", "日期", "交易日期", "记账日期", "交易时间", "入账日期",
+            "तारीख", "दिनांक", "तिथि",
+        ),
+        Role.DESCRIPTION to listOf(
+            "descricao", "historico", "description", "title", "titulo", "lancamento", "lancamentos",
+            "estabelecimento", "detalhes", "detalhe", "memo", "nome", "transacao", "movimentacao", "descricao do lancamento",
+            "details", "narration", "payee", "merchant", "transaction details", "particulars", "transaction description",
+            "name", "concepto", "descripcion", "detalle", "movimiento", "comercio", "beneficiario", "libelle",
+            "libelle operation", "libelle de l'operation", "detail", "beneficiaire", "verwendungszweck", "buchungstext",
+            "beschreibung", "empfanger", "auftraggeber/empfanger", "begunstigter/zahlungspflichtiger", "descrizione",
+            "causale", "dettagli", "esercente", "摘要", "内容", "ご利用店名", "利用店名", "お取引内容", "取引内容", "明細",
+            "ご利用先", "내용", "적요", "거래내용", "가맹점", "가맹점명", "이용가맹점", "기재내용", "交易摘要", "说明", "备注",
+            "商户", "交易对方", "商品说明", "对方户名", "विवरण", "ब्योरा", "नैरेशन",
+        ),
+        Role.AMOUNT to listOf(
+            "valor", "amount", "valor (r$)", "valor r$", "valor em r$", "quantia", "montante", "valor rs",
+            "valor da transacao", "valor do lancamento", "transaction amount", "value", "importe", "monto", "cantidad",
+            "montant", "betrag", "umsatz", "importo", "金額", "ご利用金額", "利用金額", "お取引金額", "금액", "거래금액",
+            "이용금액", "결제금액", "金额", "交易金额", "发生额", "राशि", "रकम",
+        ),
+        Role.CREDIT to listOf(
+            "credito", "creditos", "entrada", "entradas", "valor credito", "credito (r$)", "entradas (r$)",
+            "credit", "credits", "deposit", "deposits", "money in", "paid in", "credit amount", "deposit amt",
+            "deposit amount", "abono", "abonos", "ingreso", "ingresos", "haber", "recettes", "entree", "haben",
+            "gutschrift", "eingang", "accrediti", "avere", "entrate", "入金", "お預入れ", "預入金額", "入金額", "입금",
+            "입금액", "입금금액", "맡기신금액", "收入", "贷方", "收入金额", "存入", "जमा", "क्रेडिट",
+        ),
+        Role.DEBIT to listOf(
+            "debito", "debitos", "saida", "saidas", "valor debito", "debito (r$)", "saidas (r$)",
+            "debit", "debits", "withdrawal", "withdrawals", "money out", "paid out", "debit amount", "withdrawal amt",
+            "withdrawal amount", "cargo", "cargos", "retiro", "retiros", "debe", "egreso", "egresos", "depenses", "sortie",
+            "soll", "belastung", "ausgang", "addebiti", "dare", "uscite", "出金", "お引出し", "引出金額", "出金額",
+            "お支払金額", "출금", "출금액", "찾으신금액", "출금금액", "支出", "借方", "支出金额", "निकासी", "डेबिट",
+        ),
+        Role.BALANCE to listOf(
+            "saldo", "balance", "saldo (r$)", "saldo do dia", "running balance", "closing balance", "available balance",
+            "solde", "kontostand", "残高", "差引残高", "잔액", "거래후잔액", "余额", "账户余额", "शेष", "बैलेंस",
+        ),
+        Role.KIND to listOf(
+            "c/d", "d/c", "tipo", "natureza", "cd", "dc", "dr/cr", "cr/dr", "type", "transaction type", "sens", "soll/haben",
+            "s/h", "segno", "区分", "구분", "收/支", "收支", "प्रकार",
+        ),
+        Role.ID to listOf(
+            "identificador", "id", "fitid", "codigo da transacao", "transaction id", "ref no", "ref no.", "reference number",
+            "chq/ref no", "referencia", "reference", "referenz", "riferimento", "取引番号", "거래번호", "交易单号", "流水号",
+        ),
+        Role.INSTALLMENT to listOf(
+            "parcela", "parcelas", "parcelamento", "numero da parcela", "n parcela", "installment", "cuota", "echeance",
+            "rata", "支払回数", "分割回数", "할부", "할부개월", "分期", "किस्त",
+        ),
+    ).map { (role, names) -> role to names.map { it.normalized() } }
 
     /**
      * Colunas que não são a descrição nem o valor em reais, mesmo começando com "valor" ou "nome": o valor em dólar e a
      * cotação (faturas com compras internacionais) e o nome ou o final do cartão de quem fez a compra.
      */
-    private val IGNORED = Regex("""us\$|u\$|\busd\b|dolar|cotacao|nome (?:no|do) cartao|final do cartao|titular|portador""")
+    private val IGNORED = Regex(
+        """cotacao|nome (?:no|do) cartao|final do cartao|titular|portador|exchange rate|""" +
+            """tipo de cambio|taux de change|wechselkurs|tasso di cambio|為替|환율|汇率|card member|cardholder|""" +
+            """name on card|card no|card number|kartennummer|numero de tarjeta|カード番号|카드번호|卡号""",
+    )
+
+    private val CURRENCY_WORDS = listOf(
+        Regex("""us\$|u\$|\busd\b|dolar|dollar""") to "USD", Regex("""r\$|\bbrl\b|\breais\b""") to "BRL",
+        Regex("""€|\beur\b|\beuros?\b""") to "EUR", Regex("""£|\bgbp\b""") to "GBP", Regex("""円|\bjpy\b""") to "JPY",
+        Regex("""원|\bkrw\b""") to "KRW", Regex("""元|\bcny\b|\brmb\b""") to "CNY", Regex("""₹|\binr\b""") to "INR",
+    )
+
+    /** A moeda que o nome da coluna cita ("Valor em US$" → USD, "Amount (EUR)" → EUR), se citar. */
+    private fun headerCurrency(n: String): String? = CURRENCY_WORDS.firstOrNull { it.first.containsMatchIn(n) }?.second
 
     private val INSTALLMENT_TEXT = Regex("""^(\d{1,3})\s*(?:/|de)\s*(\d{1,3})$""")
 
@@ -114,9 +178,19 @@ object Columns {
         val n = header.normalized().replace(Regex("\\s+"), " ").trim().trimEnd(':')
         // "Data: 03/10/2026", "Créditos: R$ 5.230,00": é um resumo com valores, não o nome de uma coluna.
         if (n.isEmpty() || n.any { it.isDigit() } || IGNORED.containsMatchIn(n)) return null
-        NAMES.firstOrNull { (_, names) -> n in names }?.let { return it.first }
-        return NAMES.firstOrNull { (_, names) -> names.any { it.length >= 4 && n.startsWith(it) } }?.first
+        // "Valor em US$" numa fatura em reais: é o valor na moeda da compra, não o que vai para a conta.
+        if (headerCurrency(n)?.let { it != AppLocale.currency.currencyCode } == true) return null
+        // "Amount (USD)", "金額(円)", "Betrag (EUR)": o nome sem a moeda entre parênteses.
+        val bare = n.replace(Regex("\\s*[(（][^)）]*[)）]$"), "").trim()
+        for (name in listOf(n, bare)) {
+            if (name.isEmpty()) continue
+            NAMES.firstOrNull { (_, names) -> name in names }?.let { return it.first }
+        }
+        return NAMES.firstOrNull { (_, names) -> names.any { it.length >= minPrefix(it) && n.startsWith(it) } }?.first
     }
+
+    /** Um nome que começa o cabeçalho: 4 letras no latim ("valor ..."), 2 em japonês, coreano e chinês ("金額..."). */
+    private fun minPrefix(name: String): Int = if (name.any { it.code >= 0x3000 }) 2 else 4
 
     /** Descobre as colunas: pelo cabeçalho (que pode vir depois de algumas linhas com nome do banco e período) ou pelo conteúdo. */
     fun detect(rows: Table): ColumnMap? {
@@ -128,13 +202,20 @@ object Columns {
             val credit = roles.indexOf(Role.CREDIT).takeIf { it >= 0 }
             val debit = roles.indexOf(Role.DEBIT).takeIf { it >= 0 }
             if (amount == null && credit == null && debit == null) continue
-            val texts = roles.withIndex().filter { it.value == Role.DESCRIPTION }.map { it.index }
+            val body = rows.drop(r + 1).take(60)
+            // Mais de uma coluna de texto ("Lançamento" + "Detalhes"): juntas, na ordem do arquivo. Uma que só traz
+            // "DEBIT"/"CREDIT" ("Details" no Chase) diz o sinal, não o nome.
+            val textCols = roles.withIndex().filter { it.value == Role.DESCRIPTION }.map { it.index }
+            val kindLike = textCols.filter { isKindColumn(body, it) }
+            val texts = (textCols - kindLike.toSet()).ifEmpty { textCols }
             val description = texts.firstOrNull()
                 ?: longestText(rows.drop(r + 1).take(30), setOfNotNull(date, amount, credit, debit)) ?: continue
+            val kind = roles.indexOf(Role.KIND).takeIf { it >= 0 && it != description && isKindColumn(body, it) }
+                ?: kindLike.firstOrNull { it != description }
             return ColumnMap(
                 headerRow = r, date = date, description = description, amount = amount, credit = credit, debit = debit,
-                kind = roles.indexOf(Role.KIND).takeIf { it >= 0 && it != description && isKindColumn(rows.drop(r + 1).take(60), it) },
-                id = roles.indexOf(Role.ID).takeIf { it >= 0 },
+                kind = kind,
+                id = roles.indexOf(Role.ID).takeIf { it >= 0 && it != description },
                 extra = texts.drop(1),
                 installment = roles.indexOf(Role.INSTALLMENT).takeIf { it >= 0 },
             )
@@ -142,8 +223,14 @@ object Columns {
         return byContent(rows)
     }
 
-    private val DEBIT_WORDS = setOf("d", "db", "deb", "debito", "debit", "saida", "-")
-    private val CREDIT_WORDS = setOf("c", "cr", "cred", "credito", "credit", "entrada", "+")
+    private val DEBIT_WORDS = setOf(
+        "d", "db", "deb", "debito", "debit", "saida", "-", "dr", "withdrawal", "s", "soll", "cargo", "addebito", "dare",
+        "出金", "支出", "출금", "निकासी", "डेबिट",
+    )
+    private val CREDIT_WORDS = setOf(
+        "c", "cr", "cred", "credito", "credit", "entrada", "+", "deposit", "h", "haben", "abono", "accredito", "avere",
+        "入金", "收入", "입금", "जमा", "क्रेडिट",
+    )
 
     /** -1 = débito, 1 = crédito, 0 = não diz. */
     private fun kindSign(text: String): Int {
@@ -169,7 +256,8 @@ object Columns {
             val cells = sample.mapNotNull { it.getOrNull(col) }.filter { !it.isBlank }
             return if (cells.isEmpty()) 0.0 else cells.count(test).toDouble() / sample.size
         }
-        val date = (0 until width).maxByOrNull { c -> ratio(c) { it.date != null || Values.date(it.text, Values.ANY_YEAR) != null } } ?: return null
+        val date = (0 until width).maxByOrNull { c -> ratio(c) { it.date != null || Values.date(it.text, Values.ANY_YEAR) != null } }
+            ?: return null
         if (ratio(date) { it.date != null || Values.date(it.text, Values.ANY_YEAR) != null } < 0.5) return null
         val amount = (0 until width).filter { it != date }
             .maxByOrNull { c -> ratio(c) { it.number != null || (Values.amount(it.text) != null && Regex("[.,]\\d{1,2}\\b").containsMatchIn(it.text)) } }
@@ -197,8 +285,13 @@ object Columns {
         val data = rows.drop(map.headerRow + 1)
         val amountCols = listOfNotNull(map.amount, map.credit, map.debit)
         val decimalComma = Values.guessDecimalComma(data.flatMap { r -> amountCols.mapNotNull { r.getOrNull(it)?.takeIf { c -> c.number == null }?.text } })
+        // "10/31/2026" (EUA) ou "31/10/2026": decide pelas datas do arquivo (ou pelo costume da língua do app).
+        val monthFirst = Values.monthFirst(data.asSequence().mapNotNull { r -> r.getOrNull(map.date)?.takeIf { it.date == null }?.text })
         // Datas sem ano ("05/10"): o ano vem da data completa mais recente da coluna (ou de hoje).
-        val reference = Values.reference(data.asSequence().mapNotNull { it.getOrNull(map.date)?.let { c -> c.date ?: Values.date(c.text) } }, today)
+        val reference = Values.reference(
+            data.asSequence().mapNotNull { it.getOrNull(map.date)?.let { c -> c.date ?: Values.date(c.text, monthFirst = monthFirst) } },
+            today,
+        )
         val lines = ArrayList<StatementLine>()
         val skipped = ArrayList<SkippedLine>()
 
@@ -212,7 +305,7 @@ object Columns {
             if (row.all { it.isBlank }) continue
             val source = row.joinToString(" | ") { it.text }
             val dc = row.getOrNull(map.date)
-            val date = dc?.date ?: dc?.text?.let { Values.date(it, reference) }
+            val date = dc?.date ?: dc?.text?.let { Values.date(it, reference, monthFirst) }
             val description = (listOf(map.description) + map.extra).mapNotNull { row.getOrNull(it)?.text?.trim()?.takeIf { t -> t.isNotEmpty() } }
                 .joinToString(" ")
                 .ifBlank { row.withIndex().filter { it.index !in amountCols && it.index != map.date && it.value.text.any(Char::isLetter) }.joinToString(" ") { it.value.text.trim() } }
@@ -247,6 +340,7 @@ object Columns {
             map.kind?.let { Res.s(R.string.importer_credito_debito, name(it)) }, map.id?.let { Res.s(R.string.importer_identificador, name(it)) },
             map.installment?.let { Res.s(R.string.importer_parcela_2, name(it)) },
             when (decimalComma) { true -> Res.s(R.string.importer_centavos_depois_virgula); false -> Res.s(R.string.importer_centavos_depois_ponto); null -> null },
+            if (monthFirst) Res.s(R.string.importer_mes_antes_do_dia) else null,
         )
         return Statement(format, lines, skipped, isCard = looksLikeCard(rows, map), notes = notes + colNotes)
     }
@@ -262,9 +356,16 @@ object Columns {
         return Res.s(R.string.importer_parcela, n, of)
     }
 
-    /** Faturas de cartão costumam ter "title"/"estabelecimento" e nenhuma coluna de saldo. */
+    private val CARD_HEADERS = listOf(
+        "title", "estabelecimento", "merchant", "comercio", "commercant", "esercente", "ご利用店名", "利用店名", "가맹점",
+        "이용가맹점", "商户",
+    ).map { it.normalized() }
+
+    /** Faturas de cartão costumam ter "title"/"estabelecimento"/"merchant" e nenhuma coluna de saldo. */
     private fun looksLikeCard(rows: Table, map: ColumnMap): Boolean {
-        val header = rows.getOrNull(map.headerRow)?.map { it.text.normalized() } ?: return false
-        return header.any { it == "title" || it.startsWith("estabelecimento") } && header.none { it.startsWith("saldo") }
+        val row = rows.getOrNull(map.headerRow) ?: return false
+        val header = row.map { it.text.normalized() }
+        return header.any { h -> CARD_HEADERS.any { h == it || h.startsWith(it) } } &&
+            row.none { roleOf(it.text) == Role.BALANCE }
     }
 }
