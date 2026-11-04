@@ -1,5 +1,7 @@
 # Importar extratos
 
+> Este guia é um anexo do **[PRD](PRD.md)** (requisitos RF-IMP, seção 6.13). Em caso de conflito, vale o PRD.
+
 O Cryo lê o extrato que você baixa do banco e mostra uma lista para conferir antes de qualquer coisa entrar no app. O arquivo é lido no próprio celular: o Cryo continua sem permissão de internet.
 
 ## Como usar

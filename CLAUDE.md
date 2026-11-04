@@ -1,11 +1,17 @@
 # Cryo — guia geral do projeto
 
 Este arquivo reúne tudo o que é preciso para continuar o Cryo. O Claude Code lê este arquivo sozinho ao abrir a pasta.
+
+> **Regra principal: o PRD manda.** Tudo o que o app faz e como ele é feito e mantido está em **[docs/PRD.md](docs/PRD.md)**,
+> com um código para cada item (RF-, RNF-, DS-, TXT-, PRC-...). Toda mudança segue o ciclo do PRD (PRC-01) e a definição de
+> pronto (PRC-04): primeiro o PRD, depois o código, os testes e a revisão. `PrdConformanceTest` confere sozinho as regras que
+> dá para conferir (licença, permissões, cores fixas, catálogo de telas, schema do banco, changelogs). Este CLAUDE.md é o guia
+> de trabalho no código; se ele disser outra coisa que o PRD, vale o PRD.
 Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a importação de extratos, **[docs/IMPORTACAO.md](docs/IMPORTACAO.md)**.
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **01/11/2026**.
+Situação descrita aqui: **04/11/2026**.
 
 ---
 
@@ -41,7 +47,8 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.0 | 1 | Publicada (GitHub, tag `v1.0`) |
 | 1.1 | 2 | Publicada (GitHub) |
 | 1.2 | 3 | **Publicada no GitHub e no F-Droid** (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). É o que está em `main`. |
-| 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada.** Revisão final feita; APK de teste entregue ao Hanry em 01/11/2026. Falta: o teste e a aprovação dele, publicar. |
+| 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada** (branch enviado ao GitHub como cópia de segurança em 01/11/2026). Revisão final feita; APK de teste entregue ao Hanry em 01/11/2026. Falta: o teste e a aprovação dele, publicar. |
+| 1.4 | 5 (ao publicar) | **Em preparação no branch `versao-1.4`** (só local). Feito: licença AGPL, PRD com conformidade automática. Em andamento: piloto do novo visual no Início, aguardando aprovação do Hanry antes de levar às outras telas (PRD, seção 12). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -223,6 +230,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `RepositoryTest`, `MigrationTest` | Banco de dados e migrações (1→3 sem perder nada) |
 | `AutoBackupTest`, `BackupFlowTest` | Backup automático (regras e fluxo de tela com um provedor de arquivos falso, `TestDocsProvider`) |
 | `StatementImportTest`, `ImportFlowTest` | Leitores de extrato, conferência, importação de ponta a ponta |
+| `PrdConformanceTest` | Regras do PRD conferidas sozinhas (PRC-09): licença, permissões, cores fixas, catálogo de telas, IDs, schema, changelogs |
 | `DevModeFlowTest`, `AppFlowTest`, `DebtFlowTest` | App de verdade (Activity): modo de teste, bloqueio, primeiro uso |
 | `ScreensTest`, `StoreAssetsTest` | Imagens das telas e da loja |
 
@@ -322,6 +330,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 
 | Arquivo | Para quê |
 |---|---|
+| `docs/PRD.md` | **Documento de requisitos: manda em tudo** (catálogo de telas e requisitos, design system, processo) |
 | `README.md` | Apresentação pública (GitHub) |
 | `CHANGELOG.md` | Novidades de cada versão |
 | `docs/VISUAL.md` | Guia visual: cores, tipografia, componentes, telas, textos |

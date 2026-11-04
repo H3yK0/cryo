@@ -1,6 +1,9 @@
 # Cryo — guia visual
 
 Como o Cryo é e deve continuar parecendo: cores, letras, formas, componentes, telas e o jeito de escrever.
+
+> Este guia é um anexo do **[PRD](PRD.md)** (seções 9 e 10, códigos DS-, TXT- e ACS-). Ele detalha as regras de lá; em caso de
+> conflito, vale o PRD. A direção visual 2.0 (1.4: organização de app de banco, cores do Cryo) está no PRD, seção 9.1.
 As imagens ficam em [`docs/visual/`](visual/) e são as telas reais do app (geradas pelos testes, com dados de exemplo).
 
 <p>
