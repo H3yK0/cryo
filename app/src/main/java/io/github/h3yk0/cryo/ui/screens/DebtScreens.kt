@@ -1056,9 +1056,15 @@ fun DebtEditorScreen(id: Long?) {
 /** Cartão compacto de dívidas (Início e Carteira). */
 @Composable
 fun DebtSummaryCard(l: Ledger, hide: Boolean, onClick: () -> Unit) {
+    CryoCard(onClick = onClick) { DebtSummaryContent(l, hide) }
+}
+
+/** O resumo das dívidas (quanto deve, quanto já pagou, próxima parcela): no cartão da Carteira e na seção do Início. */
+@Composable
+fun DebtSummaryContent(l: Ledger, hide: Boolean) {
     val ov = l.debtOverview
     val next = ov.open.filter { it.nextDue != null && it.hasInstallments }.minByOrNull { it.nextDue!! }
-    CryoCard(onClick = onClick) {
+    Column {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(Icons.Rounded.RequestQuote, CryoTheme.colors.expense)
             Spacer(Modifier.width(12.dp))
