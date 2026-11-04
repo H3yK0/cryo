@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
@@ -35,6 +36,7 @@ import androidx.activity.compose.setContent
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import io.github.h3yk0.cryo.data.LocaleSettings
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.notify.Reminders
 import io.github.h3yk0.cryo.ui.CryoRoot
@@ -55,6 +57,11 @@ class MainActivity : FragmentActivity() {
     private val app get() = application as CryoApp
     /** Os dados que esta tela mostra (de verdade ou de teste). */
     private lateinit var shown: AppContainer
+
+    /** A tela nasce com a língua do app (RF-LNG-02). */
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(LocaleSettings.wrap(newBase))
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         enableEdgeToEdge()

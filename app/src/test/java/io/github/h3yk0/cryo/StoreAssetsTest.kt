@@ -85,7 +85,7 @@ import java.time.LocalDate
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], application = TestApp::class, qualifiers = "w360dp-h780dp-xxhdpi")
+@Config(sdk = [35], application = TestApp::class, qualifiers = "+w360dp-h780dp-xxhdpi")
 class StoreAssetsTest {
     @get:Rule val rule = createAndroidComposeRule<ComponentActivity>()
 
@@ -181,10 +181,10 @@ class StoreAssetsTest {
         FileOutputStream(File(images, "icon.png")).use { out.compress(Bitmap.CompressFormat.PNG, 100, it) }
     }
 
-    @Config(qualifiers = "w1024dp-h500dp-mdpi")
+    @Config(qualifiers = "+w1024dp-h500dp-mdpi")
     @Test fun bannerEn() = banner(images, "Your money, crystal clear.", "Personal finance · voice entry · works offline")
 
-    @Config(qualifiers = "w1024dp-h500dp-mdpi")
+    @Config(qualifiers = "+w1024dp-h500dp-mdpi")
     @Test fun bannerPt() = banner(
         File("../fastlane/metadata/android/pt-BR/images"),
         "Seu dinheiro, claro como gelo.", "Finanças pessoais · registro por voz · sem internet",

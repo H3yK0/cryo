@@ -3,6 +3,8 @@
 package io.github.h3yk0.cryo
 
 import android.app.Application
+import android.content.Context
+import io.github.h3yk0.cryo.data.LocaleSettings
 import io.github.h3yk0.cryo.data.AutoBackupRunner
 import io.github.h3yk0.cryo.data.AutoBackupStore
 import io.github.h3yk0.cryo.data.BackupPlaces
@@ -65,6 +67,26 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
 }
 
 class CryoApp : Application() {
+    /** O contexto como o Android entregou, antes de o Cryo trocar a língua (para recalcular quando a pessoa troca). */
+    private lateinit var systemBase: Context
+
+    /** Um contexto com a língua do app agora (textos de notificações, mensagens e regras). */
+    @Volatile lateinit var localized: Context
+        private set
+
+    override fun attachBaseContext(base: Context) {
+        systemBase = base
+        super.attachBaseContext(LocaleSettings.wrap(base))
+    }
+
+    /**
+     * Aplica a língua e a moeda (RF-LNG-02, RF-MOE-02): ao abrir o app e quando a pessoa troca nos Ajustes (a tela é recriada
+     * depois). As regras sem Android passam a achar os textos e os formatos de data por aqui.
+     */
+    fun applyLocale() {
+        localized = LocaleSettings.install(systemBase)
+    }
+
     private var realData: AppContainer? = null
     private var testData: AppContainer? = null
 
@@ -99,6 +121,7 @@ class CryoApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        applyLocale()
         real // abre o banco de verdade logo (e cria as categorias na primeira vez)
         // Lembretes nunca podem impedir o app de abrir.
         runCatching { Reminders.createChannel(this) }

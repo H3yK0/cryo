@@ -74,7 +74,7 @@ import java.time.LocalDate
 /** A importação de extratos usada como uma pessoa usaria: escolher o arquivo, conferir, ajustar e importar. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], application = TestApp::class, qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [35], application = TestApp::class, qualifiers = "+w393dp-h852dp-xxhdpi")
 class ImportFlowTest {
     @get:Rule val rule = createAndroidComposeRule<ComponentActivity>()
 

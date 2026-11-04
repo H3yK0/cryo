@@ -59,6 +59,11 @@ android {
         buildConfig = true
     }
 
+    // Android 13+: o Cryo aparece na tela "Idioma do app" do sistema com as 10 línguas (RF-LNG-02).
+    androidResources {
+        generateLocaleConfig = true
+    }
+
     testOptions {
         unitTests.isReturnDefaultValues = true
         unitTests.isIncludeAndroidResources = true

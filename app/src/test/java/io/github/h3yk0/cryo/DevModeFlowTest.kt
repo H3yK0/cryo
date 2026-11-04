@@ -52,7 +52,7 @@ import java.time.LocalDateTime
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [35], qualifiers = "+w393dp-h852dp-xxhdpi")
 class DevModeFlowTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 

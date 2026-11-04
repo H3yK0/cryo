@@ -24,7 +24,7 @@ import org.robolectric.annotation.GraphicsMode
 /** Abre o app de verdade (Application + Activity), passa pelas boas-vindas e registra um gasto falando/digitando. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [35], qualifiers = "+w393dp-h852dp-xxhdpi")
 class AppFlowTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 

@@ -54,7 +54,7 @@ import java.time.LocalDate
 /** O backup automático usado como uma pessoa usaria: escolher a pasta, escolher a nuvem, restaurar ou desistir. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], application = TestApp::class, qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [35], application = TestApp::class, qualifiers = "+w393dp-h852dp-xxhdpi")
 class BackupFlowTest {
     @get:Rule val rule = createAndroidComposeRule<ComponentActivity>()
 

@@ -28,6 +28,8 @@ import java.time.YearMonth
 
 /** Regras das dívidas: quanto falta, parcelas, atrasos, previsão e patrimônio. */
 class DebtsTest {
+    init { JvmStrings.install() }
+
     /** 12 parcelas de R$ 500, 2 já pagas antes do Cryo, vencimento dia 10, próxima em setembro/2026. */
     private val moto = Debt(
         id = 1, name = "Moto", kind = DebtKind.FINANCING, color = 0, initialBalance = 500_000,

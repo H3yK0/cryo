@@ -24,6 +24,8 @@ import java.time.LocalDate
 import java.time.YearMonth
 
 class LedgerTest {
+    init { JvmStrings.install() }
+
     private val today = LocalDate.of(2026, 9, 30)
 
     @Test fun formatacaoDeDinheiro() {

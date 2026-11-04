@@ -3,6 +3,7 @@
 package io.github.h3yk0.cryo
 
 import android.app.Application
+import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -23,6 +24,7 @@ import io.github.h3yk0.cryo.data.Backup
 import io.github.h3yk0.cryo.data.BackupTarget
 import io.github.h3yk0.cryo.data.FolderMode
 import io.github.h3yk0.cryo.data.FoundBackup
+import io.github.h3yk0.cryo.data.LocaleSettings
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.SampleData
 import io.github.h3yk0.cryo.data.ThemeMode
@@ -78,12 +80,23 @@ import org.robolectric.annotation.GraphicsMode
 import java.time.LocalDate
 import kotlin.random.Random
 
-class TestApp : Application()
+/** Application das imagens de tela: sem lembretes nem backup, mas com a língua e a moeda do app (como o CryoApp). */
+class TestApp : Application() {
+    private lateinit var systemBase: Context
+    override fun attachBaseContext(base: Context) {
+        systemBase = base
+        super.attachBaseContext(LocaleSettings.wrap(base))
+    }
+    override fun onCreate() {
+        super.onCreate()
+        LocaleSettings.install(systemBase)
+    }
+}
 
 /** Gera imagens das telas com dados de exemplo, para revisar o visual sem um celular. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], application = TestApp::class, qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [35], application = TestApp::class, qualifiers = "+w393dp-h852dp-xxhdpi")
 class ScreensTest {
     private lateinit var c: AppContainer
     private val today = LocalDate.now()
@@ -121,7 +134,7 @@ class ScreensTest {
 
     @Test fun homeDynamic() = shot("03_inicio_material_you", dynamic = true) { CryoRoot(null) }
 
-    @Config(qualifiers = "w393dp-h1600dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1600dp-xxhdpi")
     @Test fun homeLong() = shot("04_inicio_completo") { CryoRoot(null) }
 
     @Test fun transactions() = shot("05_movimentos") { TransactionsScreen(null) }
@@ -132,16 +145,16 @@ class ScreensTest {
 
     @Test fun goals() = shot("08_metas") { PlanScreen(2) }
 
-    @Config(qualifiers = "w393dp-h1500dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1500dp-xxhdpi")
     @Test fun wallet() = shot("09_carteira") { WalletScreen() }
 
-    @Config(qualifiers = "w393dp-h3000dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h3000dp-xxhdpi")
     @Test fun insights() = shot("10_analises") { InsightsScreen() }
 
-    @Config(qualifiers = "w393dp-h1400dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1400dp-xxhdpi")
     @Test fun editor() = shot("11_novo_lancamento") { TxEditorScreen(null, TxType.EXPENSE, null, null) {} }
 
-    @Config(qualifiers = "w393dp-h1300dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1300dp-xxhdpi")
     @Test fun quickSheet() = shot("12_registro_rapido") {
         val l = Ledger(c.repo.snapshot.value!!, today)
         val p: ParsedEntry = PhraseParser(l.parseContext(settings)).parse("tv 1200 em 10x no cartão")
@@ -151,41 +164,41 @@ class ScreensTest {
 
     @Test fun card() = shot("13_cartao") { CardDetailScreen(1) }
 
-    @Config(qualifiers = "w393dp-h1900dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1900dp-xxhdpi")
     @Test fun settingsScreen() = shot("14_ajustes") { SettingsScreen() }
 
     @Test fun onboarding() = shot("15_boas_vindas") { OnboardingScreen() }
 
-    @Config(qualifiers = "w393dp-h2400dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h2400dp-xxhdpi")
     @Test fun insightsDark() = shot("16_analises_escuro", dark = true) { InsightsScreen() }
 
-    @Config(qualifiers = "w393dp-h1700dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1700dp-xxhdpi")
     @Test fun debts() = shot("17_dividas") { DebtsScreen() }
 
-    @Config(qualifiers = "w393dp-h1900dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1900dp-xxhdpi")
     @Test fun debtDetail() = shot("18_divida_detalhe") { DebtDetailScreen(1) }
 
-    @Config(qualifiers = "w393dp-h2600dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h2600dp-xxhdpi")
     @Test fun debtEditor() = shot("19_divida_cadastro") { DebtEditorScreen(null) }
 
-    @Config(qualifiers = "w393dp-h1300dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1300dp-xxhdpi")
     @Test fun goalsArchive() = shot("22_metas_arquivadas") { GoalsArchiveScreen() }
 
     @Test fun walletArchive() = shot("23_carteira_arquivados") { WalletArchiveScreen() }
 
-    @Config(qualifiers = "w393dp-h1700dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1700dp-xxhdpi")
     @Test fun debtsDark() = shot("24_dividas_escuro", dark = true) { DebtsScreen() }
 
-    @Config(qualifiers = "w393dp-h1600dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1600dp-xxhdpi")
     @Test fun billsWithDebts() = shot("25_contas_fixas_com_parcelas") { PlanScreen(1) }
 
-    @Config(qualifiers = "w393dp-h1400dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1400dp-xxhdpi")
     @Test fun debtDetailPaidOff() = shot("26_divida_quitada") { DebtDetailScreen(4) }
 
-    @Config(qualifiers = "w393dp-h1500dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1500dp-xxhdpi")
     @Test fun autoBackupEmpty() = shot("29_backup_automatico") { AutoBackupScreen() }
 
-    @Config(qualifiers = "w393dp-h1900dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1900dp-xxhdpi")
     @Test fun autoBackupConfigured() {
         val hour = 3_600_000L
         val now = System.currentTimeMillis()
@@ -202,7 +215,7 @@ class ScreensTest {
         shot("30_backup_automatico_configurado") { AutoBackupScreen() }
     }
 
-    @Config(qualifiers = "w393dp-h1700dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h1700dp-xxhdpi")
     @Test fun autoBackupDark() {
         runBlocking {
             c.autoBackup.setTarget(BackupTarget.FOLDER, "content://com.android.externalstorage.documents/tree/primary%3ADocuments%2FCryo", "Documents/Cryo · no celular")
@@ -213,14 +226,14 @@ class ScreensTest {
         shot("31_backup_automatico_escuro", dark = true) { AutoBackupScreen() }
     }
 
-    @Config(qualifiers = "w393dp-h900dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h900dp-xxhdpi")
     @Test fun existingBackupRestore() = shot("32_backup_encontrado_restaurar") {
         val snap = c.repo.snapshot.value!!
         val found = FoundBackup(Backup.Restored(snap, Backup.VERSION, System.currentTimeMillis() - 30 * 3_600_000L), currentTxs = 0, currentAccounts = 1)
         Box(Modifier.padding(24.dp)) { ExistingBackupContent(found, BackupTarget.CLOUD, overwrites = true, replaceMode = false, {}, {}, {}) }
     }
 
-    @Config(qualifiers = "w393dp-h900dp-xxhdpi")
+    @Config(qualifiers = "+w393dp-h900dp-xxhdpi")
     @Test fun existingBackupKeep() = shot("33_backup_encontrado_continuar", dark = true) {
         val snap = c.repo.snapshot.value!!
         val old = snap.copy(txs = snap.txs.take(40), accounts = snap.accounts.take(2))

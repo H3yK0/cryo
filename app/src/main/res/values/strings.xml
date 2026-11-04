@@ -1,4 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+    Textos do Cryo em português do Brasil: a base de todas as línguas (PRD: RF-LNG-03, TXT-09).
+    Toda chave daqui existe nas outras 9 línguas (values-en, -es, -fr, -de, -it, -ja, -ko, -zh-rCN, -hi), com os mesmos marcadores.
+-->
 <resources>
-    <string name="app_name">Cryo</string>
+    <string name="app_name" translatable="false">Cryo</string>
+
+    <!-- Datas (domain/Format.kt) -->
+    <string name="date_today">Hoje</string>
+    <string name="date_yesterday">Ontem</string>
+    <string name="date_tomorrow">Amanhã</string>
+    <string name="date_rel_today">hoje</string>
+    <string name="date_rel_tomorrow">amanhã</string>
+    <string name="date_rel_yesterday">ontem</string>
+    <plurals name="date_rel_in_days">
+        <item quantity="one">em %d dia</item>
+        <item quantity="other">em %d dias</item>
+    </plurals>
+    <plurals name="date_rel_days_ago">
+        <item quantity="one">há %d dia</item>
+        <item quantity="other">há %d dias</item>
+    </plurals>
+
+    <!-- Campo de valor (ui/components/Inputs.kt) -->
+    <string name="amount_label">Valor</string>
+    <string name="amount_a11y">%1$s: %2$s. Digite apenas números.</string>
 </resources>

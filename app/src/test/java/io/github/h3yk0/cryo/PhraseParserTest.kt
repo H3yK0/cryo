@@ -20,6 +20,8 @@ import org.junit.Test
 import java.time.LocalDate
 
 class PhraseParserTest {
+    init { JvmStrings.install() }
+
     private val today = LocalDate.of(2026, 9, 30) // quarta-feira
     private val cats = DefaultData.categories().mapIndexed { i, c -> c.copy(id = (i + 1).toLong()) }
     private fun cat(name: String) = cats.first { it.name == name }.id

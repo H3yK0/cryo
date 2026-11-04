@@ -53,6 +53,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
@@ -79,6 +80,8 @@ import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.domain.Dates
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.Money
 import java.time.Instant
 import java.time.LocalDate
@@ -86,9 +89,19 @@ import java.time.ZoneOffset
 
 /* ============================== Valor (R$) ============================== */
 
+/**
+ * Quanto vale cada dígito digitado, em centésimos: 1 com centavos (1 → 0,01), 100 em moedas sem centavos (1 → ¥1),
+ * já que guardamos sempre centésimos da unidade (DAD-01, RF-MOE-05).
+ */
+private fun digitScale(): Long = when (AppLocale.fractionDigits) {
+    0 -> 100L
+    1 -> 10L
+    else -> 1L
+}
+
 private class MoneyTransformation : VisualTransformation {
     override fun filter(text: AnnotatedString): TransformedText {
-        val cents = text.text.toLongOrNull() ?: 0L
+        val cents = (text.text.toLongOrNull() ?: 0L) * digitScale()
         val out = Money.format(cents)
         return TransformedText(
             AnnotatedString(out),
@@ -102,21 +115,23 @@ private class MoneyTransformation : VisualTransformation {
 
 /**
  * Campo de valor no estilo "caixa eletrônico": você digita só números e os centavos se ajustam sozinhos
- * (1 → R$ 0,01; 1250 → R$ 12,50). Teclado numérico grande, sem vírgulas para errar.
+ * (1 → R$ 0,01; 1250 → R$ 12,50; no iene, 1250 → ¥1,250). Teclado numérico grande, sem vírgulas para errar.
  */
 @Composable
 fun AmountField(
     cents: Long,
     onChange: (Long) -> Unit,
     modifier: Modifier = Modifier,
-    label: String = "Valor",
+    label: String = stringResource(R.string.amount_label),
     color: Color = MaterialTheme.colorScheme.onSurface,
     autoFocus: Boolean = false,
     onDone: (() -> Unit)? = null,
 ) {
     val focus = remember { FocusRequester() }
     val keyboard = LocalSoftwareKeyboardController.current
-    val digits = if (cents == 0L) "" else cents.toString()
+    val a11y = stringResource(R.string.amount_a11y, label, Money.format(cents))
+    val scale = digitScale()
+    val digits = if (cents == 0L) "" else (cents / scale).toString()
     Column(
         modifier
             .fillMaxWidth()
@@ -134,7 +149,7 @@ fun AmountField(
             value = TextFieldValue(digits, TextRange(digits.length)),
             onValueChange = { v ->
                 val d = v.text.filter(Char::isDigit).trimStart('0').take(12)
-                onChange(d.toLongOrNull() ?: 0L)
+                onChange((d.toLongOrNull() ?: 0L) * scale)
             },
             textStyle = MaterialTheme.typography.displaySmall.copy(color = color, textAlign = TextAlign.Center),
             visualTransformation = MoneyTransformation(),
@@ -145,7 +160,7 @@ fun AmountField(
             modifier = Modifier
                 .fillMaxWidth()
                 .focusRequester(focus)
-                .semantics { contentDescription = "$label: ${Money.format(cents)}. Digite apenas números." },
+                .semantics { contentDescription = a11y },
         )
     }
     LaunchedEffect(autoFocus) {

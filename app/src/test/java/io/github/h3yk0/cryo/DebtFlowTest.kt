@@ -58,7 +58,7 @@ import java.time.LocalDate
 /** Usa as telas novas como uma pessoa usaria: pagar parcela, arquivar e restaurar. */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
-@Config(sdk = [35], application = TestApp::class, qualifiers = "w393dp-h852dp-xxhdpi")
+@Config(sdk = [35], application = TestApp::class, qualifiers = "+w393dp-h852dp-xxhdpi")
 class DebtFlowTest {
     @get:Rule val rule = createAndroidComposeRule<ComponentActivity>()
 
