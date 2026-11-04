@@ -1,5 +1,9 @@
 # Novidades
 
+## 1.4 — em preparação
+
+- **Licença**: a partir desta versão, o Cryo é distribuído sob a GNU AGPL v3 ou posterior (até a 1.3, GNU GPL v3 ou posterior). Continua software livre, sem anúncios e sem internet
+
 ## 1.3 — importar extrato e modo desenvolvedor
 
 - **Importar extrato do banco** (Ajustes › Seus dados, ou o botão ↥ na tela de uma conta ou de um cartão): OFX, CSV, planilha XLSX (e o ".xls" que muitos bancos geram) e PDF, lidos no próprio celular

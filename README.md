@@ -85,4 +85,4 @@ Cryo is a simple yet complete personal finance app for Android: log expenses by 
 
 Copyright © 2026 Hanry Franco
 
-Este programa é software livre: você pode redistribuí-lo e/ou modificá-lo sob os termos da [GNU General Public License](LICENSE), publicada pela Free Software Foundation, versão 3 da licença ou (a seu critério) qualquer versão posterior. Ele é distribuído na esperança de ser útil, mas **sem nenhuma garantia**.
+Este programa é software livre: você pode redistribuí-lo e/ou modificá-lo sob os termos da [GNU Affero General Public License](LICENSE), publicada pela Free Software Foundation, versão 3 da licença ou (a seu critério) qualquer versão posterior. Até a versão 1.3, o Cryo foi distribuído sob a GNU General Public License v3 ou posterior. Ele é distribuído na esperança de ser útil, mas **sem nenhuma garantia**.

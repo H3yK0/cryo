@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
+// SPDX-License-Identifier: AGPL-3.0-or-later
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
@@ -267,7 +267,7 @@ fun SettingsScreen() {
                 SettingLink(Icons.Rounded.Code, "Código-fonte", "github.com/H3yK0/cryo · sugestões e problemas são bem-vindos") {
                     openLink(ctx, SOURCE_URL)
                 }
-                SettingLink(Icons.Rounded.Gavel, "Licença", "GNU GPL v3 ou posterior · software livre") {
+                SettingLink(Icons.Rounded.Gavel, "Licença", "GNU AGPL v3 ou posterior · software livre") {
                     openLink(ctx, "$SOURCE_URL/blob/main/LICENSE")
                 }
                 // 7 toques na versão ligam o modo desenvolvedor (como no Android).
@@ -300,7 +300,7 @@ fun SettingsScreen() {
                     )
                     Text(
                         "© 2026 Hanry Franco. Este programa é software livre: você pode redistribuí-lo e modificá-lo " +
-                            "sob os termos da GNU GPL, versão 3 ou posterior. Ele é distribuído sem nenhuma garantia.",
+                            "sob os termos da GNU AGPL, versão 3 ou posterior. Ele é distribuído sem nenhuma garantia.",
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp),
                     )

@@ -27,7 +27,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | Nome | Cryo · slogan "Seu dinheiro, claro como gelo." |
 | ID do app | `io.github.h3yk0.cryo` (debug: `io.github.h3yk0.cryo.debug`) |
 | Autor público | Hanry Franco |
-| Licença | GPL-3.0-or-later (cabeçalho SPDX em todo arquivo `.kt`) |
+| Licença | AGPL-3.0-or-later a partir da 1.4 (até a 1.3: GPL-3.0-or-later). Cabeçalho SPDX em todo arquivo `.kt` |
 | Código | https://github.com/H3yK0/cryo (branch `main`, tags `vX.Y`) |
 | F-Droid | https://f-droid.org/packages/io.github.h3yk0.cryo/ (publicado; receita em `docs/fdroid/`) |
 | Releases | https://github.com/H3yK0/cryo/releases (APK `Cryo-X.Y.apk` em cada uma) |
