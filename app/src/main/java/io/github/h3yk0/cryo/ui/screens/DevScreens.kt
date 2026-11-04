@@ -411,7 +411,7 @@ fun ImportReportScreen() {
 
     fun share(t: String) {
         val send = Intent(Intent.ACTION_SEND).setType("text/plain")
-            .putExtra(Intent.EXTRA_SUBJECT, "Relatório de leitura de extrato · Cryo")
+            .putExtra(Intent.EXTRA_SUBJECT, Res.s(R.string.dev_relatorio_cryo))
             .putExtra(Intent.EXTRA_TEXT, t)
         try {
             ctx.startActivity(Intent.createChooser(send, Res.s(R.string.dev_compartilhar_relatorio)))

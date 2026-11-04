@@ -1,0 +1,37 @@
+Cryo es una app de finanzas personales sencilla y completa. Registra ingresos, gastos, tarjetas, deudas, inversiones y metas de ahorro, y lo muestra todo en un resumen claro.
+
+<b>Registra como hablas</b>
+Escribe o di "almuerzo 12,50 con débito" o "tele 600 en 12 cuotas con tarjeta". Cryo entiende el importe, la categoría, la cuenta, la fecha y hasta las cuotas. Tú solo revisas y guardas. También aprende de tus correcciones.
+
+<b>Lo que encontrarás</b>
+<ul>
+<li>Resumen: saldo de las cuentas, patrimonio y lo que entró y salió en el mes</li>
+<li>Previsión de fin de mes: cuánto te sobrará al ritmo actual y cuánto puedes gastar al día</li>
+<li>Calendario de calor: cada día se colorea según lo que gastaste</li>
+<li>Flujo del dinero: de dónde vino el dinero y adónde fue</li>
+<li>Importar el extracto del banco (OFX, CSV, hoja XLSX o PDF): revisas la lista antes de que entre, y lo que ya está en la app queda fuera</li>
+<li>Tarjetas de crédito: facturas, crédito disponible y compras en cuotas</li>
+<li>Deudas: préstamos, financiamientos, acuerdos y dinero que le debes a alguien, con cuotas, atrasos, cuánto falta y cuándo quedas libre</li>
+<li>Pagos e ingresos fijos, con aviso antes del vencimiento</li>
+<li>Presupuesto por categoría, con aviso al 80% y al superarlo</li>
+<li>Metas de ahorro: cuánto apartar al mes para llegar, con archivo para las cumplidas</li>
+<li>Inversiones: aportes, retiros y rendimiento</li>
+<li>Transferencias entre cuentas</li>
+</ul>
+
+<b>Privacidad de verdad</b>
+<ul>
+<li>Tus datos se quedan en tu móvil. La app no tiene permiso de internet</li>
+<li>Sin registro, sin anuncios y sin rastreo</li>
+<li>Bloqueo con huella, rostro o el PIN del móvil</li>
+<li>Opción para ocultar los importes en pantalla</li>
+<li>Copia automática en una carpeta del móvil o en tu nube (Google Drive, Nextcloud y otras): la subida la hace la app de la nube</li>
+<li>Copia en archivo y exportación a hoja de cálculo (CSV)</li>
+</ul>
+
+<b>Diseño Material You</b>
+Los colores siguen tu fondo de pantalla (Android 12 o más reciente), con tema claro y oscuro.
+
+El registro por voz usa el reconocimiento de voz instalado en el móvil. Escribir la frase funciona siempre.
+
+Disponible en 10 idiomas (portugués, inglés, español, francés, alemán, italiano, japonés, coreano, chino e hindi), con la moneda que elijas.

@@ -37,7 +37,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | Código | https://github.com/H3yK0/cryo (branch `main`, tags `vX.Y`) |
 | F-Droid | https://f-droid.org/packages/io.github.h3yk0.cryo/ (publicado; receita em `docs/fdroid/`) |
 | Releases | https://github.com/H3yK0/cryo/releases (APK `Cryo-X.Y.apk` em cada uma) |
-| Idioma | Interface só em português do Brasil, valores em reais (R$) |
+| Idioma | 10 línguas a partir da 1.4 (base pt-BR; en, es, fr, de, it, ja, ko, zh-CN, hi), na moeda escolhida. Até a 1.3: só português e reais |
 | Assinatura | Chave própria do Hanry. SHA-256 do certificado: `6e13e284c2f00b72473589391776ed2f28dbad5506f515de3fac99a364a3a2e7` |
 
 ## 3. Onde estamos
@@ -48,7 +48,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.1 | 2 | Publicada (GitHub) |
 | 1.2 | 3 | **Publicada no GitHub e no F-Droid** (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). É o que está em `main`. |
 | 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada** (branch enviado ao GitHub como cópia de segurança em 01/11/2026). Revisão final feita; APK de teste entregue ao Hanry em 01/11/2026. Falta: o teste e a aprovação dele, publicar. |
-| 1.4 | 5 (ao publicar) | **Em preparação no branch `versao-1.4`** (só local). Feito: licença AGPL, PRD com conformidade automática. Em andamento: piloto do novo visual no Início, aguardando aprovação do Hanry antes de levar às outras telas (PRD, seção 12). |
+| 1.4 | 5 | **Pronta no branch `versao-1.4`** (só local, sem push: o Hanry pediu para não enviar cópia da 1.4). APK de teste entregue em 04/11/2026. Falta: o teste e a aprovação dele (a 1.3 é publicada antes). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -70,12 +70,27 @@ Uma revisão independente encontrou 15 problemas na 1.3, todos corrigidos. A **r
 correções no código e achou outros 17 problemas (lista na seção 13), **todos corrigidos**; os de dinheiro, dados e bloqueio têm testes que falham no
 código anterior. Todos os testes passam.
 
+### O que a 1.4 traz (branch `versao-1.4`)
+
+- **10 línguas** (RF-LNG): todo texto em `res/values*/strings.xml` (base `values/` = pt-BR; `values-en`, `-es`, `-fr`, `-de`, `-it`,
+  `-ja`, `-ko`, `-zh-rCN`, `-hi`). Segue a língua do celular (inglês se não for uma das 10); Ajustes › Idioma e moeda troca na hora.
+- **Moeda do app** (RF-MOE): 20 moedas, padrão pelo país do celular; trocar não converte (só muda o símbolo e o formato).
+- **Registro por frase nas 10 línguas** (`domain/PhraseLang.kt`), inclusive japonês e chinês (sem espaços), coreano (partículas) e hindi.
+- **Importação de outros países**: colunas nas 10 línguas, datas mês/dia descobertas pelo arquivo, valores e moedas de cada país,
+  Shift_JIS/CP949/GB18030, PDF em outros formatos, pagamento de fatura e categorias em outras línguas.
+- **Visual 2.0** em todas as telas, **4 abas** (Carteira dentro do Início), **restaurar backup na apresentação**, licença **AGPL**,
+  **PRD** (`docs/PRD.md`) com conformidade automática (`PrdConformanceTest`).
+- Loja (fastlane) nas 10 línguas. Banco de dados continua na versão 3 (sem migração nova).
+
 ### Próximos passos imediatos
 
 1. O Hanry testa o APK 1.3 no celular dele, com os extratos reais do banco dele (ele ainda não disse quais bancos usa: perguntar).
    Se algo mudar depois do teste, gerar o APK de novo (mesmo versionCode 4, de um clone limpo) e entregar outra vez.
 2. Só depois da aprovação dele: push do branch, merge em `main`, push, Release `v1.3` com `Cryo-1.3.apk`. O F-Droid pega a versão
    nova sozinho.
+3. Depois, a 1.4 (APK `Cryo-1.4.apk`, versionCode 5): o Hanry testa (inclusive trocar a língua e a moeda em Ajustes), aprova, e a
+   publicação segue a seção 11. A licença mudou para AGPL: a receita do F-Droid (`License:`) precisa de merge request no fdroiddata.
+   As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 
 ---
 
@@ -104,7 +119,10 @@ código anterior. Todos os testes passam.
   Backups antigos precisam continuar abrindo (`Backup.import` lê todas as versões).
 
 **Código**
-- Kotlin + Jetpack Compose + Material 3. Texto da interface em português do Brasil, simples, no "você" (guia em `docs/VISUAL.md`).
+- Kotlin + Jetpack Compose + Material 3. Texto da interface simples, no "você" (guia em `docs/VISUAL.md`), **sempre** em
+  `res/values/strings.xml` (base pt-BR) e traduzido nas outras 9 línguas no mesmo commit: `PrdConformanceTest` falha se faltar
+  chave, se os marcadores (`%1$s`) não baterem ou se houver texto escrito direto nas telas e notificações. Regras sem Android
+  usam `Res.s(R.string.x)` / `Res.p(R.plurals.x, n)` (`domain/I18n.kt`).
 - Comentários do código em português, explicando o porquê.
 - Dinheiro sempre em **centavos (`Long`)**; datas em `LocalDate`; mês de fatura como `Int` `AAAAMM` (`YearMonth.key()`).
 - Nada pode impedir o app de abrir (lembretes e backup ficam em `runCatching`).
@@ -145,9 +163,10 @@ app/src/main/java/io/github/h3yk0/cryo/
 ├── MainActivity.kt     Tema, bloqueio (camada por cima do app), apresentação inicial ou CryoRoot
 ├── data/               Room (db/), Repository.kt (FinanceRepository + SettingsRepository), Backup.kt (JSON e CSV),
 │                       AutoBackup.kt (backup automático), DefaultData.kt (categorias, paleta, ícones),
-│                       SampleData.kt (dados de exemplo), Dev.kt (modo desenvolvedor)
+│                       SampleData.kt (dados de exemplo), Dev.kt (modo desenvolvedor), LocaleSettings.kt (língua e moeda)
 ├── domain/             Regras sem Android: Ledger.kt (saldos, faturas, contas fixas, orçamentos), Analytics.kt (previsão,
-│                       calendário, fluxo), Debts.kt (dívidas), PhraseParser.kt (registro por frase), Format.kt (R$ e datas)
+│                       calendário, fluxo), Debts.kt (dívidas), PhraseParser.kt + PhraseLang.kt (registro por frase e as
+│                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
 ├── notify/             Lembretes de contas e parcelas (diário, ~9h) e worker do backup automático (a cada 6h), via WorkManager
 └── ui/                 Nav.kt (rotas e barra de abas), components/ (peças reutilizáveis), screens/ (telas), tx/ (lançamento), theme/
@@ -170,7 +189,11 @@ app/src/main/java/io/github/h3yk0/cryo/
   `SaveableStateHolder` em `MainActivity`): diálogos, menus e folhas são janelas próprias e ficariam por cima de qualquer camada.
 - Um aviso de conta ou dívida (dados de verdade) tocado com o modo de teste ligado sai do modo de teste antes de abrir a tela.
 - Navegação: rotas em `ui/Nav.kt` (`Routes`), `LocalNav` com `go()`, `back()`, `tab()`, `open()`.
-- Abas: Início, Extrato, Planejar (Orçamentos / Contas fixas / Metas), Carteira, Análises. Ajustes pela engrenagem do Início.
+- Abas (1.4): Início, Extrato, Planejar (Orçamentos / Contas fixas / Metas), Análises. A Carteira abre pelo Início; Ajustes pela
+  engrenagem do Início.
+- Língua e moeda: `LocaleSettings` (SharedPreferences `cryo_locale`) guarda a escolha; `CryoApp`/`MainActivity` embrulham o
+  contexto (`wrap`) e `install` define `AppLocale` (locale, moeda) e o `Res` das regras. Valores sempre em centavos, inclusive
+  em iene e won (múltiplos de 100). Trocar a língua recria a Activity.
 
 ## 8. Banco de dados e formatos
 
@@ -222,17 +245,19 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 180 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 230 testes:
 
 | Arquivo | O que cobre |
 |---|---|
-| `LedgerTest`, `DebtsTest`, `PhraseParserTest` | Regras de dinheiro, faturas, previsão, dívidas, frases |
+| `LedgerTest`, `DebtsTest`, `PhraseParserTest` | Regras de dinheiro, faturas, previsão, dívidas, frases (JVM puro, com `JvmStrings`) |
+| `PhraseLanguagesTest`, `I18nTest` | Frases nas 9 outras línguas; valores, moedas e datas de cada língua; troca de língua e moeda |
 | `RepositoryTest`, `MigrationTest` | Banco de dados e migrações (1→3 sem perder nada) |
 | `AutoBackupTest`, `BackupFlowTest` | Backup automático (regras e fluxo de tela com um provedor de arquivos falso, `TestDocsProvider`) |
 | `StatementImportTest`, `ImportFlowTest` | Leitores de extrato, conferência, importação de ponta a ponta |
-| `PrdConformanceTest` | Regras do PRD conferidas sozinhas (PRC-09): licença, permissões, cores fixas, catálogo de telas, IDs, schema, changelogs |
+| `ImportCountriesTest` | Extratos inventados de outros países (EUA, Reino Unido, Alemanha, França, Japão, Coreia, China, Índia) |
+| `PrdConformanceTest` | Regras do PRD conferidas sozinhas (PRC-09): licença, permissões, cores fixas, catálogo de telas, IDs, schema, changelogs, 10 línguas completas, nenhum texto no código, loja nas 10 línguas |
 | `DevModeFlowTest`, `AppFlowTest`, `DebtFlowTest` | App de verdade (Activity): modo de teste, bloqueio, primeiro uso |
-| `ScreensTest`, `StoreAssetsTest` | Imagens das telas e da loja |
+| `ScreensTest`, `StoreAssetsTest`, `LanguageScreensTest` | Imagens das telas e da loja; Início, Análises e apresentação em cada língua (`app/screenshots/linguas/`) |
 
 **Armadilhas já descobertas (economizam horas):**
 - O DataStore é um singleton por processo e o Robolectric **não zera entre testes**: testes que usam a Activity começam com
@@ -246,6 +271,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - O `BiometricPrompt` não roda no Robolectric: desbloquear com `MainActivity.unlock()` (`@VisibleForTesting`). Para simular
   mais de 1 minuto em segundo plano: `scenario.moveToState(CREATED)`, `ShadowSystemClock.advanceBy(...)`, `moveToState(RESUMED)`
   (veja `DevModeFlowTest.bloqueioTiraOAppDaTelaEVoltaParaOndeEstava`).
+- Os testes rodam em pt-BR (`src/test/resources/robolectric.properties`, `qualifiers=pt-rBR`): todo `@Config(qualifiers)` começa
+  com "+" para não perder a língua. Testes JVM puros chamam `JvmStrings.install()` (lê `values/strings.xml`).
+- Expressões regulares com grupos de nome (`groups["x"]`) dependem de uma função do Android 13+: use grupos numerados (veja `tpl`
+  em `PhraseParser`). E o `\b` do Java e o do Android tratam letras fora do latim de jeitos diferentes: use `PhraseParser.wordRegex`.
 - Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos). Um init script local em
   `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google resolve; ele fica fora do projeto e não muda o APK.
 
@@ -279,6 +308,8 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.1** (02/10/2026): área de Dívidas, arquivo de metas e de contas/cartões/investimentos, compilação reproduzível (pedido do revisor do F-Droid).
 - **1.2** (03/10/2026): backup automático em pasta e/ou nuvem, com proteções contra sobrescrever o que não é dele.
 - **1.3** (branch `versao-1.3`, não publicada): importar extrato, modo desenvolvedor, correção do bloqueio.
+- **1.4** (branch `versao-1.4`, não publicada): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas,
+  restaurar na apresentação, licença AGPL, PRD.
 
 Detalhes de cada uma em `CHANGELOG.md`.
 
@@ -301,6 +332,11 @@ Detalhes de cada uma em `CHANGELOG.md`.
   pela busca de repetidas, e a parcela seguinte (mesma data, descrição e valor) não é escondida.
 - **Exemplos reconhecidos por descrição e valor**: só a descrição pegava faturas de verdade (Uber, Spotify, iFood).
 - **Sem perfil de inicialização (ART profile)** no APK: quebra a reprodutibilidade.
+- **Uma moeda para o app todo, sem conversão**: sem internet não há cotação; trocar a moeda só muda símbolo e formato (aviso antes).
+- **Língua fora das 10 → inglês**; moeda padrão pelo país do celular (en-GB → libra, es-MX → peso), senão a da língua.
+- **Categorias padrão na língua de quem instala**, com palavras-chave do país; as de quem já usa não são traduzidas (são dados da pessoa).
+- **Extratos de exemplo continuam brasileiros** (servem para testar a importação do Brasil); os rótulos deles são traduzidos.
+- **Traduções feitas pelo Claude**, conferidas por `PrdConformanceTest` (chaves e marcadores) e por imagens; revisão humana pendente (RF-LNG-08).
 
 Correções da primeira revisão da 1.3 (todas feitas e conferidas na revisão final): pagamento de fatura importado duas vezes; chaves
 globais escondendo movimentações; ano errado em datas sem ano; vazamentos no relatório anônimo (cabeçalhos, nome do arquivo);
@@ -320,10 +356,9 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3**: concluir e publicar (seção 3).
-2. **1.4**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
+2. **1.4**: pronta (seção 3), aguardando o teste do Hanry.
+3. **1.5**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
    Detalhar com o Hanry antes de começar (quais widgets, quais momentos, quais sons).
-3. **1.5**: versões em **inglês e espanhol** (o Hanry deixa a tradução com o Claude). Hoje os textos estão direto no código;
-   vai ser preciso levar para `strings.xml` (e manter pt-BR como base). Datas e valores já usam `LocaleBR` em `domain/Format.kt`.
 4. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
 ## 15. Arquivos de referência

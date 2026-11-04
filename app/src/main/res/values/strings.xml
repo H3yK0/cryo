@@ -1506,4 +1506,26 @@
     <string name="sample_csv_conta">CSV de conta</string>
     <string name="sample_csv_fatura">CSV de fatura</string>
     <string name="sample_pdf_conta">PDF de conta</string>
+
+    <!-- Textos que faltavam (1.4) -->
+    <string name="debt_quitada_em">Quitada em %1$s</string>
+    <string name="date_range">%1$s a %2$s</string>
+    <string name="import_em_conta">\u0020em %1$s</string>
+    <string name="import_credito_fatura">Crédito na fatura (estorno, reembolso ou ajuste): diminui o valor da fatura.</string>
+    <string name="amount_of_total">\u0020de %1$s</string>
+    <string name="tx_pagamento_divida_registrado">Pagamento de %1$s registrado na dívida</string>
+    <string name="tx_ex_almoco">Ex.: Almoço</string>
+    <string name="backup_invalid_file">O arquivo não é um backup válido.</string>
+    <string name="backup_not_cryo_file">Este arquivo não é um backup do Cryo.</string>
+    <string name="backup_newer_version">Este backup é de uma versão mais nova do Cryo. Atualize o app.</string>
+    <string name="backup_err_foreign">Esta pasta já tem um arquivo cryo-backup.json que não foi feito por este celular. Para não apagar esse arquivo, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer, ou escolha Guardar várias cópias.</string>
+    <string name="backup_err_changed_folder">O arquivo cryo-backup.json da pasta foi alterado por outro celular ou app depois do último backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer.</string>
+    <string name="backup_err_changed_cloud">O arquivo na nuvem foi alterado por outro celular ou app depois do último backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar e escolha o mesmo arquivo para decidir o que fazer.</string>
+    <string name="backup_err_cant_read">Não consegui ler o backup que já está nesse lugar (a nuvem pode estar sem conexão).</string>
+    <string name="backup_err_newer">O backup que já está nesse lugar é de uma versão mais nova do Cryo.</string>
+    <string name="backup_err_damaged">O backup que já está nesse lugar parece estar danificado.</string>
+    <string name="backup_err_not_cryo">Esta pasta já tem um arquivo cryo-backup.json que não é um backup do Cryo.</string>
+    <string name="backup_err_cant_open_folder">Não consegui abrir essa pasta. Tente de novo ou escolha outra.</string>
+    <string name="backup_err_read_data">Não consegui ler os dados do Cryo agora. Vou tentar de novo mais tarde.</string>
+    <string name="backup_err_cant_check">Não consegui abrir o arquivo para conferir antes de gravar (a nuvem pode estar sem conexão, ou ele foi apagado). Vou tentar de novo mais tarde; se continuar assim, escolha o lugar de novo.</string>
 </resources>

@@ -102,12 +102,12 @@ class PrdConformanceTest {
         assertTrue("Falta app/schemas/.../$version.json", File(app, "schemas/io.github.h3yk0.cryo.data.db.CryoDatabase/$version.json").exists())
     }
 
-    @Test fun changelogsDaVersaoAtual() { // PRC-04
+    @Test fun changelogsDaVersaoAtual() { // PRC-04, RF-LNG-07
         val gradle = File(app, "build.gradle.kts").readText()
         val code = Regex("""versionCode = (\d+)""").find(gradle)!!.groupValues[1]
         val name = Regex("""versionName = "([^"]+)"""").find(gradle)!!.groupValues[1]
         assertTrue("CHANGELOG.md sem a seção ## $name", Regex("""(?m)^## ${Regex.escape(name)}\b""").containsMatchIn(File(root, "CHANGELOG.md").readText()))
-        for (lang in listOf("pt-BR", "en-US")) {
+        for (lang in STORE_LANGS) {
             val dir = File(root, "fastlane/metadata/android/$lang/changelogs")
             assertTrue("Falta o changelog $lang/$code.txt", File(dir, "$code.txt").exists())
             dir.listFiles()!!.forEach { f ->
@@ -115,5 +115,96 @@ class PrdConformanceTest {
                 assertTrue("${f.relativeTo(root).path} tem $n caracteres (máximo 500)", n <= 500)
             }
         }
+    }
+
+    /* ------------------------------------ línguas ------------------------------------ */
+
+    private val res = File(app, "src/main/res")
+
+    /** Textos de um strings.xml: chave (plurais como "chave#quantidade") -> texto. */
+    private fun strings(file: File): Map<String, String> {
+        val doc = javax.xml.parsers.DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file)
+        val out = LinkedHashMap<String, String>()
+        val nodes = doc.documentElement.childNodes
+        for (i in 0 until nodes.length) {
+            val e = nodes.item(i) as? org.w3c.dom.Element ?: continue
+            val name = e.getAttribute("name")
+            when (e.tagName) {
+                "string" -> if (e.getAttribute("translatable") != "false") out[name] = e.textContent
+                "plurals" -> {
+                    val items = e.getElementsByTagName("item")
+                    for (j in 0 until items.length) {
+                        val it = items.item(j) as org.w3c.dom.Element
+                        out["$name#${it.getAttribute("quantity")}"] = it.textContent
+                    }
+                }
+            }
+        }
+        return out
+    }
+
+    private val placeholder = Regex("""%(\d+\$)?[-#+0,(]*\d*(?:\.\d+)?[sdfxXc]""")
+    private fun marks(text: String) = placeholder.findAll(text).map { it.value }.sorted().toList()
+
+    @Test fun asDezLinguasTemTodosOsTextos() { // RF-LNG-01, RF-LNG-04
+        val folders = res.listFiles()!!.filter { it.isDirectory && it.name.startsWith("values") && File(it, "strings.xml").exists() }
+            .map { it.name }.toSet()
+        assertEquals("Pastas de texto: a base (pt-BR) e as 9 línguas do RF-LNG-01", APP_LANGS, folders)
+
+        val base = strings(File(res, "values/strings.xml"))
+        val baseKeys = base.keys.map { it.substringBefore('#') }.toSet()
+        val problems = ArrayList<String>()
+        for (folder in folders - "values") {
+            val tr = strings(File(res, "$folder/strings.xml"))
+            val keys = tr.keys.map { it.substringBefore('#') }.toSet()
+            (baseKeys - keys).forEach { problems += "$folder: falta $it" }
+            (keys - baseKeys).forEach { problems += "$folder: sobra $it" }
+            for ((k, v) in tr) {
+                // Japonês, coreano e chinês só têm a forma "other" dos plurais: compara com a "other" da base.
+                val ref = base[k] ?: base[k.substringBefore('#') + "#other"] ?: continue
+                if (marks(ref) != marks(v)) problems += "$folder: marcadores diferentes em $k (${marks(ref)} x ${marks(v)})"
+            }
+            base.keys.filter { it.endsWith("#other") }.forEach { if (it !in tr) problems += "$folder: plural sem \"other\" em $it" }
+        }
+        assertEquals("Traduções incompletas ou com marcadores trocados", emptyList<String>(), problems.take(40))
+    }
+
+    @Test fun nenhumTextoEscritoNoCodigo() { // RF-LNG-03
+        // Telas e notificações: todo texto vem do strings.xml. Um literal com palavras (letras e espaço) é texto escrito à mão.
+        val literal = Regex(""""((?:[^"\\]|\\.)*)"""")
+        val words = Regex("""\p{L}{2,}\s+\p{L}{2,}""")
+        val template = Regex("""\$\{[^}]*\}|\$\w+""")
+        val ignore = Regex("""Regex\(|label = "|error\(|check\(|require\(|Log\.|const val ROUTE|SPDX|"\$\{|\.putExtra\("""")
+        val dirs = listOf(File(main, "ui"), File(main, "notify"))
+        val found = dirs.flatMap { kotlinFiles(it) }.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, raw ->
+                val line = raw.substringBefore("//").trim()
+                if (line.startsWith("*") || line.startsWith("/*") || ignore.containsMatchIn(line)) return@mapIndexedNotNull null
+                literal.findAll(line).map { it.groupValues[1] }.firstOrNull { words.containsMatchIn(it.replace(template, " ")) }
+                    ?.let { "${f.relativeTo(root).path}:${i + 1}: ${it.take(60)}" }
+            }
+        }
+        assertEquals("Texto escrito no código (leve para res/values/strings.xml e traduza)", emptyList<String>(), found)
+    }
+
+    @Test fun lojaNasDezLinguas() { // RF-LNG-07
+        val base = File(root, "fastlane/metadata/android")
+        val problems = STORE_LANGS.flatMap { lang ->
+            listOf("title.txt", "short_description.txt", "full_description.txt").mapNotNull { f ->
+                val file = File(base, "$lang/$f")
+                when {
+                    !file.exists() -> "falta $lang/$f"
+                    f == "title.txt" && file.readText().trim().length > 50 -> "$lang/$f com mais de 50 caracteres"
+                    f == "short_description.txt" && file.readText().trim().length > 80 -> "$lang/$f com mais de 80 caracteres"
+                    else -> null
+                }
+            }
+        }
+        assertEquals("Textos da loja (F-Droid) nas 10 línguas", emptyList<String>(), problems)
+    }
+
+    private companion object {
+        val APP_LANGS = setOf("values", "values-en", "values-es", "values-fr", "values-de", "values-it", "values-ja", "values-ko", "values-zh-rCN", "values-hi")
+        val STORE_LANGS = listOf("pt-BR", "en-US", "es-ES", "fr-FR", "de-DE", "it-IT", "ja-JP", "ko-KR", "zh-CN", "hi-IN")
     }
 }

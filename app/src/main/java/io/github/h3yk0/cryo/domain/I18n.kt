@@ -78,6 +78,7 @@ object AppLocale {
     private val PT_PATTERNS = mapOf(
         "EEEEdMMMM" to "EEEE, d 'de' MMMM",
         "dMMMM" to "d 'de' MMMM",
+        "dMMMMyyyy" to "d 'de' MMMM 'de' yyyy",
         "ddMM" to "dd/MM",
         "ddMMyyyy" to "dd/MM/yyyy",
         "MMMMyyyy" to "MMMM 'de' yyyy",

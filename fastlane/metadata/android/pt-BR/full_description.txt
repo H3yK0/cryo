@@ -34,4 +34,4 @@ As cores acompanham o seu papel de parede (Android 12 ou mais novo), com tema cl
 
 O registro por voz usa o reconhecimento de fala instalado no celular. Digitar a frase funciona sempre.
 
-O app está em português do Brasil e usa valores em reais (R$).
+Disponível em 10 línguas (português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês e hindi), com a moeda que você escolher.

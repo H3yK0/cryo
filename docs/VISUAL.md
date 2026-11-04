@@ -145,7 +145,7 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt). Antes de criar alg
 |---|---|---|
 | `CryoCard` | Agrupar conteúdo | `surfaceContainerLow`, cantos 24 dp, 16 dp por dentro; pode ser clicável |
 | `IconBadge` | Ícone de categoria, conta, cartão | Círculo 40 dp, cor da paleta com transparência |
-| `MoneyText` | Qualquer valor | R$ brasileiro, sinal opcional, auto-ajuste, "esconder valores" |
+| `MoneyText` | Qualquer valor | Na moeda e no formato do app (R$ 1.234,56 · $1,234.56 · ¥1,235), sinal opcional, auto-ajuste, "esconder valores" |
 | `TxRow` | Linha de movimentação | Bolinha + título + "data · categoria · conta" + valor |
 | `SectionTitle` | Título de seção com ação ("Ver análises") | `titleMedium` |
 | `Banner` | Aviso, erro, dica | Ícone 20 dp + texto, cantos 16 dp, cor pelo tipo (seção 2.3) |
@@ -196,7 +196,7 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 
 ## 9. Como escrever (voz e tom)
 
-- Português do Brasil, falando com **"você"**, frases curtas, palavras do dia a dia ("conta fixa", não "recorrência";
+- Base em português do Brasil (traduzida nas outras 9 línguas no mesmo commit; em francês com "vous", em alemão com "du"), falando com **"você"**, frases curtas, palavras do dia a dia ("conta fixa", não "recorrência";
   "fatura", não "statement"). Sem termos técnicos na tela (nada de "JSON", "SAF", "sandbox", exceto no modo desenvolvedor).
 - **Erro = o que aconteceu + o que fazer**: "Não consegui abrir esse arquivo. Tente baixar de novo ou escolher outro."
 - **Aviso explica a consequência**: "Para o gasto não contar duas vezes (as compras já estão no cartão), registre como pagamento do cartão."

@@ -158,7 +158,7 @@ private fun BudgetsTab(l: Ledger) {
                     Text(Res.s(R.string.plan_total_planejado, Dates.monthInSentence(ym)), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     Row(verticalAlignment = Alignment.Bottom) {
                         MoneyText(spent, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                        Text(" de ${if (hide) Money.HIDDEN else Money.format(limit)}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                        Text(Res.s(R.string.amount_of_total, if (hide) Money.HIDDEN else Money.format(limit)), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     }
                     Spacer(Modifier.height(8.dp))
                     UsageBar(spent.toFloat() / limit.coerceAtLeast(1))
@@ -232,7 +232,7 @@ private fun BudgetRow(u: BudgetUsage, hide: Boolean, onClick: () -> Unit) {
             Column(Modifier.weight(1f)) {
                 Text(u.category.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    "${if (hide) Money.HIDDEN else Money.format(u.spent)} de ${if (hide) Money.HIDDEN else Money.format(u.limit)}",
+                    Res.s(R.string.goal_progress, if (hide) Money.HIDDEN else Money.format(u.spent), if (hide) Money.HIDDEN else Money.format(u.limit)),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
@@ -669,7 +669,7 @@ private fun GoalCard(
             Column(Modifier.weight(1f)) {
                 Text(g.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    "${if (hide) Money.HIDDEN else Money.format(saved)} de ${if (hide) Money.HIDDEN else Money.format(g.target)}",
+                    Res.s(R.string.goal_progress, if (hide) Money.HIDDEN else Money.format(saved), if (hide) Money.HIDDEN else Money.format(g.target)),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

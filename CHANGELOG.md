@@ -1,7 +1,15 @@
 # Novidades
 
-## 1.4 — em preparação
+## 1.4 — 10 línguas, moedas e visual novo
 
+- **10 línguas**: português do Brasil, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês (simplificado) e hindi. O Cryo segue a língua do celular (inglês, se ela não for uma das 10) e dá para trocar em Ajustes › Idioma e moeda, na hora
+- **Moeda do app**: real, dólar, euro, libra, iene, won, yuan, rupia e outras (20 ao todo), com o jeito de escrever valores de cada país. A padrão vem do país do celular. Trocar a moeda não converte valores: muda só o símbolo (o Cryo não tem internet nem cotação)
+- **Registro por frase e voz em todas as línguas**: "lunch 25 on debit", "almuerzo 12,50 con tarjeta de débito", "コーヒー500円", "점심 12000원 카드로", "午饭50元", "चाय 20 रुपये नकद". Entende valores como 1,234.56, 1万5千円 e 3만원, datas no formato de cada país e parcelas ("10 installments", "12回払い", "分12期")
+- **Importar extratos de outros países**: colunas com nomes nas 10 línguas, datas com o mês antes do dia (EUA) descobertas pelo próprio arquivo, valores no formato de cada país, arquivos em Shift_JIS, EUC-KR/CP949 e GB18030, PDF em outros formatos e pagamento de fatura reconhecido também em outras línguas
+- **Visual novo**, mais organizado, com as cores do Cryo: cabeçalho colorido no Início, seções limpas e atalhos. Agora são 4 abas: Início, Extrato, Planejar e Análises; a Carteira (contas, cartões, investimentos e dívidas) abre pelo Início
+- **Restaurar backup na primeira abertura**: quem troca de celular já começa com os seus dados
+- As categorias padrão são criadas na língua do app, com palavras-chave do país; as de quem já usa não mudam
+- A loja (F-Droid) também está nas 10 línguas
 - **Licença**: a partir desta versão, o Cryo é distribuído sob a GNU AGPL v3 ou posterior (até a 1.3, GNU GPL v3 ou posterior). Continua software livre, sem anúncios e sem internet
 
 ## 1.3 — importar extrato e modo desenvolvedor

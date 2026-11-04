@@ -394,7 +394,7 @@ private fun ClosedDebtRow(info: DebtInfo, hide: Boolean) {
                 Text(d.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     when {
-                        info.isPaidOff -> Res.s(R.string.debt_quitada) + (info.lastPayment?.let { " em ${Dates.full(it)}" } ?: "")
+                        info.isPaidOff -> info.lastPayment?.let { Res.s(R.string.debt_quitada_em, Dates.full(it)) } ?: Res.s(R.string.debt_quitada)
                         else -> Res.s(R.string.debt_arquivada_faltavam, fmt(info.remaining, hide))
                     },
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -634,7 +634,7 @@ private fun UpcomingInstallments(info: DebtInfo, l: Ledger, hide: Boolean) {
                 Column(Modifier.weight(1f)) {
                     Text(Res.s(R.string.debt_parcela_3, d.paidBefore + k + 1, info.installmentsTotal), style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        Dates.dayMonth(due) + if (due.year != l.today.year) " de ${due.year}" else "",
+                        if (due.year != l.today.year) Dates.dayMonthYear(due) else Dates.dayMonth(due),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -923,7 +923,7 @@ fun DebtEditorScreen(id: Long?) {
             FieldLabel(Res.s(R.string.debt_proxima_parcela_pagar))
             val start = ymOf(startKey)
             MonthSelector(
-                "${start.dayClamped(dueDay).dayOfMonth} de ${Dates.monthYearInSentence(start, l.today)}",
+                start.dayClamped(dueDay).let { if (it.year != l.today.year) Dates.dayMonthYear(it) else Dates.dayMonth(it) },
                 onPrev = { startKey = start.minusMonths(1).key(); startTouched = true },
                 onNext = { startKey = start.plusMonths(1).key(); startTouched = true },
             )

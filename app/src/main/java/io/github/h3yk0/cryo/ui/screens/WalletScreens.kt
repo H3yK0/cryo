@@ -668,7 +668,7 @@ fun CardDetailScreen(id: Long) {
                     Row {
                         Text(Res.s(R.string.wallet_limite_usado), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
                         MoneyText(used, style = MaterialTheme.typography.labelLarge)
-                        Text(" de ${if (LocalSettings.current.hideValues) Money.HIDDEN else Money.format(card.limitAmount)}", style = MaterialTheme.typography.labelLarge)
+                        Text(Res.s(R.string.amount_of_total, if (LocalSettings.current.hideValues) Money.HIDDEN else Money.format(card.limitAmount)), style = MaterialTheme.typography.labelLarge)
                     }
                     Spacer(Modifier.height(8.dp))
                     UsageBar(used.toFloat() / card.limitAmount.coerceAtLeast(1), baseColor = Color(card.color))

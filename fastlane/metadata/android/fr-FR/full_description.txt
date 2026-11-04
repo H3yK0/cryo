@@ -1,0 +1,37 @@
+Cryo est une appli de gestion de budget simple et complète. Elle suit revenus, dépenses, cartes, dettes, placements et objectifs d'épargne, et montre tout dans une vue d'ensemble claire.
+
+<b>Saisissez comme vous parlez</b>
+Écrivez ou dites « déjeuner 15 € par carte bancaire » ou « télé 800 en 4 fois avec la carte de crédit ». Cryo comprend le montant, la catégorie, le compte, la date et même le paiement en plusieurs fois. Vous n'avez qu'à vérifier et enregistrer. Il apprend aussi de vos corrections.
+
+<b>Ce que vous trouverez</b>
+<ul>
+<li>Vue d'ensemble : solde des comptes, patrimoine, entrées et sorties du mois</li>
+<li>Prévision de fin de mois : ce qu'il devrait rester à ce rythme et combien dépenser par jour</li>
+<li>Calendrier thermique : chaque jour prend une couleur selon vos dépenses</li>
+<li>Flux de l'argent : d'où vient l'argent et où il va</li>
+<li>Import de relevés bancaires (OFX, CSV, tableur XLSX ou PDF) : vous vérifiez la liste avant, et ce qui est déjà dans l'appli reste de côté</li>
+<li>Cartes de crédit : relevés, plafond disponible et paiements en plusieurs fois</li>
+<li>Dettes : prêts, crédits, échéanciers et argent dû à quelqu'un, avec échéances, retards, reste à payer et date de fin</li>
+<li>Charges et revenus fixes, avec rappel avant l'échéance</li>
+<li>Budget par catégorie, avec alerte à 80% et en cas de dépassement</li>
+<li>Objectifs d'épargne : combien mettre de côté par mois, avec une archive pour ceux atteints</li>
+<li>Placements : versements, retraits et gains</li>
+<li>Virements entre comptes</li>
+</ul>
+
+<b>Une vraie confidentialité</b>
+<ul>
+<li>Vos données restent sur votre téléphone. L'appli n'a pas l'autorisation d'accès à internet</li>
+<li>Sans inscription, sans pub et sans pistage</li>
+<li>Verrouillage par empreinte, visage ou code du téléphone</li>
+<li>Option pour masquer les montants à l'écran</li>
+<li>Sauvegarde automatique dans un dossier du téléphone ou dans votre cloud (Google Drive, Nextcloud…) : c'est l'appli du cloud qui envoie le fichier</li>
+<li>Sauvegarde dans un fichier et export en tableur (CSV)</li>
+</ul>
+
+<b>Design Material You</b>
+Les couleurs suivent votre fond d'écran (Android 12 ou plus récent), en thème clair ou sombre.
+
+La saisie vocale utilise la reconnaissance vocale installée sur le téléphone. Taper la phrase fonctionne toujours.
+
+Disponible en 10 langues (portugais, anglais, espagnol, français, allemand, italien, japonais, coréen, chinois et hindi), dans la devise de votre choix.

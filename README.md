@@ -25,6 +25,7 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 - **Dívidas.** Empréstimos, financiamentos, acordos e dinheiro que você deve a alguém, separados do resto: quanto falta, parcelas atrasadas, quanto da renda vai para parcelas e quando você fica livre.
 - **Planejamento.** Contas fixas com lembrete, orçamento por categoria e metas com valor mensal sugerido (as concluídas vão para o arquivo).
 - **Investimentos e transferências** entre contas.
+- **10 línguas e a sua moeda.** Português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês e hindi, com a moeda que você escolher (real, dólar, euro, iene, won, rúpia e outras). O registro por frase e a importação de extratos funcionam em todas elas.
 - **Material You**, tema claro e escuro.
 
 ## Privacidade

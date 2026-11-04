@@ -43,6 +43,7 @@ anexo é corrigido no mesmo commit.
 | 1.0 | 19/10/2026 | Regras espalhadas em CLAUDE.md, VISUAL.md e IMPORTACAO.md (base desta versão). |
 | 2.0 | 04/11/2026 | PRD único com catálogo e códigos; processo de criação e manutenção; conformidade automática; design system 2.0 (visual de banco, cores do Cryo); licença AGPL. |
 | 2.1 | 04/11/2026 | Aprovados: piloto do Início, direção 2.0 em todas as telas, 4 abas, restaurar backup na apresentação. Novos: 10 línguas (RF-LNG) e moeda do app (RF-MOE), frases nas 10 línguas, importação de outros países; tudo na 1.4. |
+| 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 
 ---
 
@@ -185,13 +186,13 @@ Formato: **ID · requisito · critério de aceite · status**. Os testes citados
 | RF-INI-08 | Cartões | Por cartão: fatura em foco (status e valor) e limite disponível; toque abre o cartão. | ✅ 1.0 |
 | RF-INI-09 | Dívidas, orçamentos, metas | Resumos que só aparecem quando existem; "›" leva à tela completa. | ✅ 1.1 |
 | RF-INI-10 | Últimas movimentações | Até 6, sem as futuras; estado vazio ensina o registro rápido. | ✅ 1.0 |
-| RF-INI-11 | **Cabeçalho na cor do Cryo** | Faixa no topo com saudação, olho, engrenagem e o saldo (DS-COMP-16). Segue o Material You. | 🟡 1.4 |
-| RF-INI-12 | **Atalhos** | Fila de atalhos redondos logo abaixo do cabeçalho: Lançar, Importar, Transferir, Pagar fatura (se houver cartão), Contas fixas, Metas, Dívidas. Cada um abre a tela certa em 1 toque (DS-COMP-15). | 🟡 1.4 |
-| RF-INI-13 | **Seções planas** | O resto do Início em seções separadas por linhas finas, cada uma com título e "›" (DS-COMP-14): Este mês, Cartão de crédito, Contas, Dívidas, Orçamentos, Metas e caixinhas, Últimas movimentações. Sem cartões empilhados. | 🟡 1.4 |
-| RF-INI-14 | Carteira dentro do Início (4 abas) | Barra com Início, Extrato, Planejar e Análises; no Início, seções Contas, Cartão, Investimentos e Dívidas; patrimônio e seções levam à Carteira completa (5.1). | 🟡 1.4 |
-| RF-INI-17 | Investimentos no Início | Seção com o total investido hoje e quanto rendeu; › abre a Carteira completa. Só aparece quando há investimento. | 🟡 1.4 |
-| RF-INI-15 | Avisos discretos | Avisos como cartões neutros com ícone colorido (DS-COMP-17), não como faixas laranja/vermelhas cheias. | 🟡 1.4 |
-| RF-INI-16 | Sem botão flutuante no Início | "Lançar" passa a ser o 1º atalho (o botão flutuante cobria conteúdo). | 🟡 1.4 |
+| RF-INI-11 | **Cabeçalho na cor do Cryo** | Faixa no topo com saudação, olho, engrenagem e o saldo (DS-COMP-16). Segue o Material You. | ✅ 1.4 |
+| RF-INI-12 | **Atalhos** | Fila de atalhos redondos logo abaixo do cabeçalho: Lançar, Importar, Transferir, Pagar fatura (se houver cartão), Contas fixas, Metas, Dívidas. Cada um abre a tela certa em 1 toque (DS-COMP-15). | ✅ 1.4 |
+| RF-INI-13 | **Seções planas** | O resto do Início em seções separadas por linhas finas, cada uma com título e "›" (DS-COMP-14): Este mês, Cartão de crédito, Contas, Dívidas, Orçamentos, Metas e caixinhas, Últimas movimentações. Sem cartões empilhados. | ✅ 1.4 |
+| RF-INI-14 | Carteira dentro do Início (4 abas) | Barra com Início, Extrato, Planejar e Análises; no Início, seções Contas, Cartão, Investimentos e Dívidas; patrimônio e seções levam à Carteira completa (5.1). | ✅ 1.4 |
+| RF-INI-17 | Investimentos no Início | Seção com o total investido hoje e quanto rendeu; › abre a Carteira completa. Só aparece quando há investimento. | ✅ 1.4 |
+| RF-INI-15 | Avisos discretos | Avisos como cartões neutros com ícone colorido (DS-COMP-17), não como faixas laranja/vermelhas cheias. | ✅ 1.4 |
+| RF-INI-16 | Sem botão flutuante no Início | "Lançar" passa a ser o 1º atalho (o botão flutuante cobria conteúdo). | ✅ 1.4 |
 
 Testes: `ScreensTest` (imagens 01–04), `AppFlowTest`, `DevModeFlowTest`.
 
@@ -207,9 +208,9 @@ Testes: `ScreensTest` (imagens 01–04), `AppFlowTest`, `DevModeFlowTest`.
 | RF-REG-06 | Entender entradas, transferências e metas | "recebi 3000 de salário" vira receita; "transferi 200 para a poupança" vira transferência; o nome de uma meta guarda nela. | ✅ 1.0 |
 | RF-REG-07 | Conferir antes de salvar | Folha com o que foi entendido; dá para corrigir; nada salva sozinho. | ✅ 1.0 |
 | RF-REG-08 | Voz | Reconhecimento de fala do próprio celular (`RecognizerIntent`), na língua do app; sem ele, digitar sempre funciona. | ✅ 1.0 |
-| RF-REG-09 | **Frases nas 10 línguas** | Valor, data relativa (ontem, dia 5, segunda...), parcelas ("10x", "in 10 installments", "10回払い"...), conta ou cartão, entrada, transferência e categoria pelas palavras-chave da língua do app. Em japonês, mandarim e coreano (sem espaços entre palavras) e em hindi, regras próprias de leitura. | 🟡 1.4 |
+| RF-REG-09 | **Frases nas 10 línguas** | Valor, data relativa (ontem, dia 5, segunda...), parcelas ("10x", "in 10 installments", "10回払い"...), conta ou cartão, entrada, transferência e categoria pelas palavras-chave da língua do app. Em japonês, mandarim e coreano (sem espaços entre palavras) e em hindi, regras próprias de leitura. | ✅ 1.4 |
 
-Código: `domain/PhraseParser.kt`, `ui/tx/QuickEntry.kt`. Testes: `PhraseParserTest`.
+Código: `domain/PhraseParser.kt` (regras), `domain/PhraseLang.kt` (palavras de cada língua), `ui/tx/QuickEntry.kt`. Testes: `PhraseParserTest`, `PhraseLanguagesTest`.
 
 ### 6.3 Lançamento completo — RF-LAN (TELA-LANCAR, TELA-LANC-EDITAR)
 
@@ -354,9 +355,9 @@ Detalhe completo em [`docs/IMPORTACAO.md`](IMPORTACAO.md).
 | RF-IMP-18 | Relatório anônimo | Letras viram x, números viram 9, formato preservado; nome do arquivo e colunas também. | ✅ 1.3 |
 | RF-IMP-19 | Tudo no celular | Nada sai do aparelho (PRI-01). | ✅ 1.3 |
 | RF-IMP-20 | Bancos do Hanry | Formatos dos bancos que o Hanry usa testados com relatório anônimo. | 🔵 1.4 |
-| RF-IMP-21 | **Extratos de outros países** | Nomes de coluna nas 10 línguas (Date/Amount, Fecha/Importe, Datum/Betrag, 日付/金額...); ordem da data (dia/mês, mês/dia como nos EUA, ano/mês/dia) descoberta pelo arquivo e, se não der, pelo país; símbolo da moeda do app e de outras; valores sem centavos (iene, won). | 🟡 1.4 |
+| RF-IMP-21 | **Extratos de outros países** | Nomes de coluna nas 10 línguas (Date/Amount, Fecha/Importe, Datum/Betrag, 日付/金額...); ordem da data (dia/mês, mês/dia como nos EUA, ano/mês/dia) descoberta pelo arquivo e, se não der, pelo país; símbolo da moeda do app e de outras; valores sem centavos (iene, won). | ✅ 1.4 |
 
-Testes: `StatementImportTest`, `ImportFlowTest`.
+Testes: `StatementImportTest`, `ImportFlowTest`, `ImportCountriesTest`.
 
 ### 6.14 Backup — RF-BKP (TELA-AJUSTES "Seus dados", TELA-BACKUP)
 
@@ -399,10 +400,10 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-AJU-04 | Lembretes | Ligar/desligar avisos de contas. | ✅ 1.0 |
 | RF-AJU-05 | Registro rápido | Conta principal. | ✅ 1.0 |
 | RF-AJU-06 | Categorias | Despesas e receitas: nome, ícone, cor, palavras-chave do registro rápido; arquivar. | ✅ 1.0 |
-| RF-AJU-07 | Sobre | Versão, código-fonte, licença AGPL v3 ou posterior, aviso de garantia. | ✅ 1.0 · licença 🟡 1.4 |
+| RF-AJU-07 | Sobre | Versão, código-fonte, licença AGPL v3 ou posterior, aviso de garantia. | ✅ 1.0 · licença ✅ 1.4 |
 | RF-AJU-08 | Modo desenvolvedor | 7 toques na versão (RF-DEV). | ✅ 1.3 |
-| RF-AJU-09 | Idioma | Ajustes › Idioma: "Do celular" (padrão) ou uma das 10 línguas; muda na hora (RF-LNG-02). | 🟡 1.4 |
-| RF-AJU-10 | Moeda | Ajustes › Moeda: lista de moedas; a do país do celular vem marcada (RF-MOE-02). | 🟡 1.4 |
+| RF-AJU-09 | Idioma | Ajustes › Idioma: "Do celular" (padrão) ou uma das 10 línguas; muda na hora (RF-LNG-02). | ✅ 1.4 |
+| RF-AJU-10 | Moeda | Ajustes › Moeda: lista de moedas; a do país do celular vem marcada (RF-MOE-02). | ✅ 1.4 |
 
 ### 6.17 Primeiro uso — RF-BOA (TELA-BOAS-VINDAS)
 
@@ -413,8 +414,8 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-BOA-03 | Conta principal | Nome e saldo de hoje (pode ser negativo). | ✅ 1.0 |
 | RF-BOA-04 | Dinheiro vivo e cartão | Opcionais. | ✅ 1.0 |
 | RF-BOA-05 | Notificações | Pedir permissão (Android 13+). | ✅ 1.0 |
-| RF-BOA-06 | Restaurar no primeiro uso | Na primeira tela da apresentação, "Já uso o Cryo: restaurar um backup" abre o arquivo, mostra o que tem nele e restaura, pulando o resto da apresentação. | 🟡 1.4 |
-| RF-BOA-07 | Língua e moeda no primeiro uso | A apresentação mostra a língua e a moeda escolhidas pelo celular e deixa trocar ali mesmo (RF-LNG-02, RF-MOE-02). | 🟡 1.4 |
+| RF-BOA-06 | Restaurar no primeiro uso | Na primeira tela da apresentação, "Já uso o Cryo: restaurar um backup" abre o arquivo, mostra o que tem nele e restaura, pulando o resto da apresentação. | ✅ 1.4 |
+| RF-BOA-07 | Língua e moeda no primeiro uso | A apresentação mostra a língua e a moeda escolhidas pelo celular e deixa trocar ali mesmo (RF-LNG-02, RF-MOE-02). | ✅ 1.4 |
 
 ### 6.18 Modo desenvolvedor e modo de teste — RF-DEV (TELA-DEV, TELA-RELATORIO)
 
@@ -430,26 +431,26 @@ Testes: `DevModeFlowTest` (bloqueio).
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-LNG-01 | **10 línguas** | Português do Brasil (base), inglês, espanhol, coreano, italiano, alemão, hindi, mandarim (chinês simplificado), japonês e francês. | 🟡 1.4 |
-| RF-LNG-02 | Qual língua | Segue a língua do celular; se ela não for uma das 10, inglês. Ajustes › Idioma troca na hora, sem fechar o app. No Android 13+, também pela tela de idioma do app do sistema. | 🟡 1.4 |
-| RF-LNG-03 | Nenhum texto no código | Todo texto que aparece na tela, em notificações e em mensagens está em `res/values*/strings.xml` (base em `values/`, pt-BR). | 🟡 1.4 |
-| RF-LNG-04 | Tradução completa | Toda chave existe nas 10 línguas, com os mesmos marcadores (`%1$s`...) e plurais pelas regras de cada língua. | 🟡 1.4 |
-| RF-LNG-05 | Datas do país | Nomes de dias e meses e a ordem da data no jeito da língua e do país (5 de outubro · October 5 · 10月5日...). | 🟡 1.4 |
-| RF-LNG-06 | Categorias na língua de quem instala | As categorias padrão (nomes e palavras-chave do registro rápido) são criadas na língua do app na primeira vez; as de quem já usa não mudam. | 🟡 1.4 |
-| RF-LNG-07 | Loja nas 10 línguas | Título, descrições e novidades do F-Droid (`fastlane/metadata/android/<língua>/`). | 🟡 1.4 |
+| RF-LNG-01 | **10 línguas** | Português do Brasil (base), inglês, espanhol, coreano, italiano, alemão, hindi, mandarim (chinês simplificado), japonês e francês. | ✅ 1.4 |
+| RF-LNG-02 | Qual língua | Segue a língua do celular; se ela não for uma das 10, inglês. Ajustes › Idioma troca na hora, sem fechar o app. No Android 13+, também pela tela de idioma do app do sistema. | ✅ 1.4 |
+| RF-LNG-03 | Nenhum texto no código | Todo texto que aparece na tela, em notificações e em mensagens está em `res/values*/strings.xml` (base em `values/`, pt-BR). | ✅ 1.4 |
+| RF-LNG-04 | Tradução completa | Toda chave existe nas 10 línguas, com os mesmos marcadores (`%1$s`...) e plurais pelas regras de cada língua. | ✅ 1.4 |
+| RF-LNG-05 | Datas do país | Nomes de dias e meses e a ordem da data no jeito da língua e do país (5 de outubro · October 5 · 10月5日...). | ✅ 1.4 |
+| RF-LNG-06 | Categorias na língua de quem instala | As categorias padrão (nomes e palavras-chave do registro rápido) são criadas na língua do app na primeira vez; as de quem já usa não mudam. | ✅ 1.4 |
+| RF-LNG-07 | Loja nas 10 línguas | Título, descrições e novidades do F-Droid (`fastlane/metadata/android/<língua>/`). | ✅ 1.4 |
 | RF-LNG-08 | Revisão por quem fala | Cada tradução revista por alguém que fala a língua (comunidade, por issue). | 🔵 contínuo |
 
 ### 6.19b Moeda — RF-MOE
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-MOE-01 | **Uma moeda para o app todo** | Todos os valores na moeda escolhida (decisão em ESC-04). | 🟡 1.4 |
-| RF-MOE-02 | Qual moeda | Padrão: a do país do celular (en-US → dólar, en-GB → libra, es-MX → peso mexicano, es-ES → euro, ko → won, hi → rúpia, zh → yuan, ja → iene...); se o país não tiver uma moeda da lista, a do país principal da língua. Ajustes › Moeda troca. | 🟡 1.4 |
-| RF-MOE-03 | Trocar não converte | Trocar a moeda muda só o símbolo e o formato: os números continuam os mesmos (sem internet não há cotação). Um aviso explica isso antes de trocar. | 🟡 1.4 |
-| RF-MOE-04 | Formato do país | Símbolo, posição do símbolo, separadores e casas decimais pela língua e pela moeda (R$ 1.234,56 · $1,234.56 · 1.234,56 € · ¥1,235 · ₩1,235 · ₹1,234.56). Iene, won e outras sem centavos aparecem sem casas. | 🟡 1.4 |
-| RF-MOE-05 | Digitar valor | O campo estilo caixa eletrônico respeita as casas da moeda (no iene, cada dígito é 1 iene). | 🟡 1.4 |
-| RF-MOE-06 | Valores resumidos | Nos gráficos, no jeito de cada língua: R$ 1,2 mil · $1.2K · 1,2 Tsd. € · ¥1.2万 · ₹1.2 लाख. | 🟡 1.4 |
-| RF-MOE-07 | Lista de moedas | Real, dólar americano, euro, libra, dólar canadense, dólar australiano, peso mexicano, peso argentino, peso chileno, peso colombiano, sol peruano, peso uruguaio, franco suíço, won, rúpia indiana, yuan, iene, novo dólar taiwanês, dólar de Hong Kong, dólar de Singapura. | 🟡 1.4 |
+| RF-MOE-01 | **Uma moeda para o app todo** | Todos os valores na moeda escolhida (decisão em ESC-04). | ✅ 1.4 |
+| RF-MOE-02 | Qual moeda | Padrão: a do país do celular (en-US → dólar, en-GB → libra, es-MX → peso mexicano, es-ES → euro, ko → won, hi → rúpia, zh → yuan, ja → iene...); se o país não tiver uma moeda da lista, a do país principal da língua. Ajustes › Moeda troca. | ✅ 1.4 |
+| RF-MOE-03 | Trocar não converte | Trocar a moeda muda só o símbolo e o formato: os números continuam os mesmos (sem internet não há cotação). Um aviso explica isso antes de trocar. | ✅ 1.4 |
+| RF-MOE-04 | Formato do país | Símbolo, posição do símbolo, separadores e casas decimais pela língua e pela moeda (R$ 1.234,56 · $1,234.56 · 1.234,56 € · ¥1,235 · ₩1,235 · ₹1,234.56). Iene, won e outras sem centavos aparecem sem casas. | ✅ 1.4 |
+| RF-MOE-05 | Digitar valor | O campo estilo caixa eletrônico respeita as casas da moeda (no iene, cada dígito é 1 iene). | ✅ 1.4 |
+| RF-MOE-06 | Valores resumidos | Nos gráficos, no jeito de cada língua: R$ 1,2 mil · $1.2K · 1,2 Tsd. € · ¥1.2万 · ₹1.2 लाख. | ✅ 1.4 |
+| RF-MOE-07 | Lista de moedas | Real, dólar americano, euro, libra, dólar canadense, dólar australiano, peso mexicano, peso argentino, peso chileno, peso colombiano, sol peruano, peso uruguaio, franco suíço, won, rúpia indiana, yuan, iene, novo dólar taiwanês, dólar de Hong Kong, dólar de Singapura. | ✅ 1.4 |
 
 ### 6.19 Notificações — RF-NOT
 
@@ -479,13 +480,13 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RNF-SEG-01 | Chave de assinatura nunca no git (`keystore/` no `.gitignore`). | `PrdConformanceTest` | ✅ |
 | RNF-SEG-02 | Bloqueio conforme RF-BLQ. | `DevModeFlowTest` | ✅ |
 | RNF-REP-01 | **Compilação reproduzível**: duas compilações do mesmo commit dão o mesmo APK; JDK 21; sem `vcsInfo`, `dependenciesInfo` e ART profile. | Compilar duas vezes de clones limpos (PRC-06) | ✅ |
-| RNF-LIC-01 | **Licença AGPL-3.0-or-later**: `LICENSE` com o texto oficial; cabeçalho SPDX em todo `.kt`. | `PrdConformanceTest` | 🟡 1.4 |
+| RNF-LIC-01 | **Licença AGPL-3.0-or-later**: `LICENSE` com o texto oficial; cabeçalho SPDX em todo `.kt`. | `PrdConformanceTest` | ✅ 1.4 |
 | RNF-COMP-01 | Android 8 (API 26) em diante; alvo API 36. | `app/build.gradle.kts` | ✅ |
 | RNF-COMP-02 | Funciona sem serviços do Google. | Revisão de dependências | ✅ |
 | RNF-DES-01 | O app abre mesmo se lembretes ou backup falharem (`runCatching`). | Revisão | ✅ |
 | RNF-DES-02 | Listas longas sem travar (LazyColumn); importação de milhares de linhas fora da linha principal. | Testes de importação | ✅ |
 | RNF-ACS-01 | Acessibilidade conforme ACS-01..07. | Revisão + testes de tela | ✅ |
-| RNF-IDI-01 | Interface nas 10 línguas e na moeda escolhida (RF-LNG, RF-MOE); até a 1.3, só português e reais. | `PrdConformanceTest` (traduções completas, sem texto no código) | 🟡 1.4 |
+| RNF-IDI-01 | Interface nas 10 línguas e na moeda escolhida (RF-LNG, RF-MOE); até a 1.3, só português e reais. | `PrdConformanceTest` (traduções completas, sem texto no código) | ✅ 1.4 |
 | RNF-TAM-01 | APK pequeno: sem bibliotecas pesadas (PDF pelo leitor do Android). | Tamanho do APK no PRC-06 (~3 MB na 1.3) | ✅ |
 
 ## 8. Regras de dados (DAD)
@@ -518,11 +519,11 @@ roxo.
 
 | ID | Regra | Status |
 |---|---|---|
-| DS-DIR-01 | **Seções, não blocos**: conteúdo em seções planas separadas por uma linha fina; cartões (fundo próprio) só para o que é destaque ou aviso. | 🟡 1.4 |
-| DS-DIR-02 | **Cor com propósito**: a cor do Cryo no cabeçalho do Início, nos atalhos e nos destaques; verde e vermelho só para entrada, saída e alerta. | 🟡 1.4 |
-| DS-DIR-03 | **Atalhos à mão**: as ações mais usadas em círculos no topo do Início. | 🟡 1.4 |
-| DS-DIR-04 | **Uma pergunta por seção**: cada seção responde uma pergunta ("Como está o mês?") e o "›" leva ao detalhe. | 🟡 1.4 |
-| DS-DIR-05 | Todas as telas na direção 2.0 (piloto do Início aprovado em 04/11/2026). | 🟡 1.4 |
+| DS-DIR-01 | **Seções, não blocos**: conteúdo em seções planas separadas por uma linha fina; cartões (fundo próprio) só para o que é destaque ou aviso. | ✅ 1.4 |
+| DS-DIR-02 | **Cor com propósito**: a cor do Cryo no cabeçalho do Início, nos atalhos e nos destaques; verde e vermelho só para entrada, saída e alerta. | ✅ 1.4 |
+| DS-DIR-03 | **Atalhos à mão**: as ações mais usadas em círculos no topo do Início. | ✅ 1.4 |
+| DS-DIR-04 | **Uma pergunta por seção**: cada seção responde uma pergunta ("Como está o mês?") e o "›" leva ao detalhe. | ✅ 1.4 |
+| DS-DIR-05 | Todas as telas na direção 2.0 (piloto do Início aprovado em 04/11/2026). | ✅ 1.4 |
 
 ### 9.2 Cores (DS-COR)
 
@@ -569,10 +570,13 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | DS-COMP-11 | `CategoryGrid` | Escolher categoria. | ✅ |
 | DS-COMP-12 | `CryoTopBar`, `ConfirmDialog`, `SwitchRow`, `ChoiceRow`, `DateChooser`, `Segmented`, `Stepper`, `SourceChips`, `FieldLabel`, choosers de cor/ícone/emoji | Peças de formulário e navegação. | ✅ |
 | DS-COMP-13 | Gráficos (`Charts.kt`) | Previsão, calendário, fluxo, rosca, barras; desenhados à mão, sem biblioteca. | ✅ |
-| DS-COMP-14 | **`CryoSection`** | Seção plana: título `titleMedium` + "›" (a seção inteira é tocável quando leva a outra tela), conteúdo, linha fina embaixo. Margem 20 dp. | 🟡 1.4 |
-| DS-COMP-15 | **`Shortcuts` / `Shortcut`** | Atalho redondo: círculo 64 dp `surfaceContainerHigh` com ícone 24 dp e rótulo `labelMedium` embaixo (até 2 linhas); fila com rolagem lateral. | 🟡 1.4 |
-| DS-COMP-16 | **`HomeHeader`** | Cabeçalho colorido do Início (DS-COR-04): saudação, olho, engrenagem, saldo em `displaySmall` e patrimônio. | 🟡 1.4 |
-| DS-COMP-17 | **`InfoCard`** | Aviso discreto: fundo `surfaceContainerLow`, cantos 16, ícone colorido pelo tipo (vermelho atrasado, âmbar vencendo), texto e "›". | 🟡 1.4 |
+| DS-COMP-14 | **`CryoSection`** | Seção plana: título `titleMedium` + "›" (a seção inteira é tocável quando leva a outra tela), conteúdo, linha fina embaixo. Margem 20 dp. | ✅ 1.4 |
+| DS-COMP-15 | **`Shortcuts` / `Shortcut`** | Atalho redondo: círculo 64 dp `surfaceContainerHigh` com ícone 24 dp e rótulo `labelMedium` embaixo (até 2 linhas); fila com rolagem lateral. | ✅ 1.4 |
+| DS-COMP-16 | **`HomeHeader`** | Cabeçalho colorido do Início (DS-COR-04): saudação, olho, engrenagem, saldo em `displaySmall` e patrimônio. | ✅ 1.4 |
+| DS-COMP-17 | **`InfoCard`** | Aviso discreto: fundo `surfaceContainerLow`, cantos 16, ícone colorido pelo tipo (vermelho atrasado, âmbar vencendo), texto e "›". | ✅ 1.4 |
+| DS-COMP-18 | **`CryoListRow`** | Linha de lista plana: ícone à esquerda, título e subtítulo, valor ou ação à direita, toque opcional; conteúdo extra embaixo (barra de uso). Margem 20 dp. | ✅ 1.4 |
+| DS-COMP-19 | **`HeroBlock`** | Destaque plano no topo das telas de detalhe (conta, cartão, dívida, investimento): valor principal em `displaySmall` e informações abaixo, sem cartão em volta. | ✅ 1.4 |
+| DS-COMP-20 | **`FlatItem`** | Item plano tocável das listas de Planejar, Dívidas e Análises, com opção de aparecer apagado (pago, arquivado). | ✅ 1.4 |
 
 ### 9.6 Padrões de tela (DS-PAD)
 
@@ -752,7 +756,7 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.1 | ✅ 02/10/2026 | Dívidas, arquivo, compilação reproduzível. |
 | 1.2 | ✅ 03/10/2026 | Backup automático (pasta e nuvem). |
 | 1.3 | Pronta, aguardando teste do Hanry | Importar extrato, modo desenvolvedor, correções de bloqueio. |
-| **1.4** | 🟡 Em preparação | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20). |
+| **1.4** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20). |
 | 1.5 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
 
 ## 13. Glossário

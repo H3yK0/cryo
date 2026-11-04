@@ -1,0 +1,37 @@
+Cryo è un'app di gestione delle spese semplice e completa. Registra entrate, uscite, carte di credito, debiti, investimenti e obiettivi di risparmio, e mostra tutto in una panoramica chiara.
+
+<b>Registra come parli</b>
+Scrivi o di' "pranzo 14 con bancomat" o "tv 1000 in 10 rate con carta di credito". Cryo capisce l'importo, la categoria, il conto, la data e perfino le rate. Tu controlli e salvi. Impara anche dalle tue correzioni.
+
+<b>Cosa trovi</b>
+<ul>
+<li>Panoramica: saldo dei conti, patrimonio e quanto è entrato e uscito nel mese</li>
+<li>Previsione di fine mese: quanto dovrebbe avanzare a questo ritmo e quanto puoi spendere al giorno</li>
+<li>Calendario termico: ogni giorno ha un colore in base a quanto hai speso</li>
+<li>Flusso del denaro: da dove arrivano i soldi e dove vanno</li>
+<li>Importazione dell'estratto conto (OFX, CSV, foglio XLSX o PDF): controlli l'elenco prima, e quello che è già nell'app resta fuori</li>
+<li>Carte di credito: estratti conto, plafond disponibile e acquisti a rate</li>
+<li>Debiti: prestiti, finanziamenti, rateizzazioni e soldi che devi a qualcuno, con rate, ritardi, quanto manca e quando sarai libero</li>
+<li>Spese ed entrate fisse, con promemoria prima della scadenza</li>
+<li>Budget per categoria, con avviso all'80% e quando lo superi</li>
+<li>Obiettivi di risparmio: quanto mettere da parte al mese, con archivio per quelli raggiunti</li>
+<li>Investimenti: versamenti, prelievi e rendimento</li>
+<li>Trasferimenti tra conti</li>
+</ul>
+
+<b>Privacy vera</b>
+<ul>
+<li>I tuoi dati restano sul telefono. L'app non ha il permesso di accedere a internet</li>
+<li>Senza registrazione, senza pubblicità e senza tracciamento</li>
+<li>Blocco con impronta, volto o codice del telefono</li>
+<li>Opzione per nascondere gli importi sullo schermo</li>
+<li>Backup automatico in una cartella del telefono o nel tuo cloud (Google Drive, Nextcloud e altri): il caricamento lo fa l'app del cloud</li>
+<li>Backup su file ed esportazione in foglio di calcolo (CSV)</li>
+</ul>
+
+<b>Design Material You</b>
+I colori seguono lo sfondo (Android 12 o più recente), con tema chiaro e scuro.
+
+La registrazione vocale usa il riconoscimento vocale installato sul telefono. Scrivere la frase funziona sempre.
+
+Disponibile in 10 lingue (portoghese, inglese, spagnolo, francese, tedesco, italiano, giapponese, coreano, cinese e hindi), nella valuta che scegli.

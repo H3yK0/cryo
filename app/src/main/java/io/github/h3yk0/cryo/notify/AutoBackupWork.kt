@@ -34,7 +34,7 @@ object AutoBackupWork {
 
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
-            val ch = NotificationChannel(CHANNEL, "Backup automático", NotificationManager.IMPORTANCE_DEFAULT)
+            val ch = NotificationChannel(CHANNEL, Res.s(R.string.settings_backup_automatico), NotificationManager.IMPORTANCE_DEFAULT)
             ch.description = Res.s(R.string.backup_avisa_quando_backup_automatico)
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
         }

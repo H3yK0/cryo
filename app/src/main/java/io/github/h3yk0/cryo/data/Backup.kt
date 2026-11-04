@@ -116,12 +116,15 @@ object Backup {
     /** [exportedAt]: quando o backup foi salvo (nulo se o arquivo não disser). [testMode]: cópia dos dados de teste. */
     data class Restored(val snapshot: Snapshot, val version: Int, val exportedAt: Long? = null, val testMode: Boolean = false)
 
+    /** Backup de uma versão mais nova do Cryo (a mensagem é a de cada língua; quem precisa saber o motivo olha o tipo). */
+    class NewerVersion : IllegalArgumentException(Res.s(R.string.backup_newer_version))
+
     /** Lê um backup (de qualquer versão do Cryo). Lança exceção com mensagem amigável se o arquivo não for do Cryo. */
     fun import(json: String): Restored {
-        val root = try { JSONObject(json) } catch (e: Exception) { throw IllegalArgumentException("O arquivo não é um backup válido.") }
-        if (root.optString("app") != "Cryo") throw IllegalArgumentException("Este arquivo não é um backup do Cryo.")
+        val root = try { JSONObject(json) } catch (e: Exception) { throw IllegalArgumentException(Res.s(R.string.backup_invalid_file)) }
+        if (root.optString("app") != "Cryo") throw IllegalArgumentException(Res.s(R.string.backup_not_cryo_file))
         val version = root.optInt("version", 1)
-        if (version > VERSION) throw IllegalArgumentException("Este backup é de uma versão mais nova do Cryo. Atualize o app.")
+        if (version > VERSION) throw NewerVersion()
         val snapshot = Snapshot(
             accounts = root.getJSONArray("accounts").mapObj {
                 Account(

@@ -197,8 +197,8 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
     }
     val summary = when {
         o != null -> Res.s(R.string.tx_alteracoes_salvas)
-        saved.debtId != null && d.type == TxType.EXPENSE -> "Pagamento de ${Money.format(d.amount)} registrado na dívida"
-        d.type == TxType.DEBT_IN -> "${Money.format(d.amount)} somados à dívida"
+        saved.debtId != null && d.type == TxType.EXPENSE -> Res.s(R.string.tx_pagamento_divida_registrado, Money.format(d.amount))
+        d.type == TxType.DEBT_IN -> Res.s(R.string.debt_somados_divida, Money.format(d.amount))
         else -> Res.s(R.string.tx_registrada, what, Money.format(d.amount))
     }
     return SaveResult(alert, undo, summary)
@@ -246,7 +246,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
             value = d.description,
             onValueChange = { d.description = it },
             label = { Text(Res.s(R.string.tx_descricao)) },
-            placeholder = { Text(if (d.type == TxType.INCOME) "Ex.: Salário" else "Ex.: Almoço") },
+            placeholder = { Text(if (d.type == TxType.INCOME) Res.s(R.string.plan_ex_salario) else Res.s(R.string.tx_ex_almoco)) },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
             modifier = Modifier.fillMaxWidth(),
@@ -278,7 +278,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                 CategorySection(d, l, compact)
                 val isDebtCategory = d.categoryId?.let { l.category[it]?.icon } == DefaultData.DEBT_ICON
                 if (d.type == TxType.EXPENSE && (d.debtId != null || isDebtCategory)) DebtPicker(d, l)
-                FieldLabel(if (d.type == TxType.EXPENSE) "Pago com" else "Recebido em")
+                FieldLabel(if (d.type == TxType.EXPENSE) Res.s(R.string.plan_pago_com) else Res.s(R.string.plan_recebido_2))
                 SourceChips(
                     accounts = l.activeAccounts,
                     cards = if (d.type == TxType.EXPENSE && d.debtId == null) l.activeCards else emptyList(),
@@ -323,7 +323,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     }
                 }
                 if (l.activeInvestments.isEmpty()) NoItemsText(Res.s(R.string.tx_cadastre_investimento_aba_carteira))
-                FieldLabel(if (d.type == TxType.INVEST_IN) "Sai da conta" else "Entra na conta")
+                FieldLabel(if (d.type == TxType.INVEST_IN) Res.s(R.string.wallet_sai_conta) else Res.s(R.string.wallet_entra_conta))
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
             }
             TxType.GOAL_IN, TxType.GOAL_OUT -> {
@@ -334,7 +334,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     }
                 }
                 if (l.activeGoals.isEmpty()) NoItemsText(Res.s(R.string.tx_crie_meta_aba_planejar))
-                FieldLabel(if (d.type == TxType.GOAL_IN) "Sai da conta" else "Volta para a conta")
+                FieldLabel(if (d.type == TxType.GOAL_IN) Res.s(R.string.wallet_sai_conta) else Res.s(R.string.plan_volta_para_conta))
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
             }
             TxType.DEBT_IN -> {

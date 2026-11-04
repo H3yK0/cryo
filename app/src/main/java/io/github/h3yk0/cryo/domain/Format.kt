@@ -190,6 +190,8 @@ object Dates {
     }
 
     fun dayMonth(d: LocalDate): String = d.format(fmt("dMMMM"))
+    /** "5 de outubro de 2027", "October 5, 2027", "2027年10月5日". */
+    fun dayMonthYear(d: LocalDate): String = d.format(fmt("dMMMMyyyy"))
     fun longDate(d: LocalDate): String = d.format(fmt("EEEEdMMMM")).capFirst()
     fun short(d: LocalDate): String = d.format(fmt("ddMM"))
     fun full(d: LocalDate): String = d.format(fmt("ddMMyyyy"))

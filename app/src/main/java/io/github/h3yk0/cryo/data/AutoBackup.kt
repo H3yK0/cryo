@@ -703,23 +703,23 @@ class AutoBackupRunner(
         when {
             // O começo do arquivo diz que é do Cryo: é um backup, só que não deu para ler.
             !text.take(300).contains("\"Cryo\"") -> Parsed.NotCryo
-            e.message?.contains("versão mais nova") == true -> Parsed.Broken(BackupErrors.NEWER)
+            e is Backup.NewerVersion -> Parsed.Broken(BackupErrors.NEWER)
             else -> Parsed.Broken(BackupErrors.DAMAGED)
         }
     }
 }
 
 object BackupErrors {
-    const val FOREIGN = "Esta pasta já tem um arquivo cryo-backup.json que não foi feito por este celular. Para não apagar esse arquivo, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer, ou escolha Guardar várias cópias."
-    const val CHANGED_FOLDER = "O arquivo cryo-backup.json da pasta foi alterado por outro celular ou app depois do último backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar pasta e escolha esta mesma pasta para decidir o que fazer."
-    const val CHANGED_CLOUD = "O arquivo na nuvem foi alterado por outro celular ou app depois do último backup. Para não apagar essa versão, o Cryo não o substituiu. Toque em Trocar e escolha o mesmo arquivo para decidir o que fazer."
-    const val CANT_READ = "Não consegui ler o backup que já está nesse lugar (a nuvem pode estar sem conexão)."
-    const val NEWER = "O backup que já está nesse lugar é de uma versão mais nova do Cryo."
-    const val DAMAGED = "O backup que já está nesse lugar parece estar danificado."
-    const val NOT_CRYO = "Esta pasta já tem um arquivo cryo-backup.json que não é um backup do Cryo."
-    const val CANT_OPEN_FOLDER = "Não consegui abrir essa pasta. Tente de novo ou escolha outra."
-    const val READ_DATA = "Não consegui ler os dados do Cryo agora. Vou tentar de novo mais tarde."
-    const val CANT_CHECK = "Não consegui abrir o arquivo para conferir antes de gravar (a nuvem pode estar sem conexão, ou ele foi apagado). Vou tentar de novo mais tarde; se continuar assim, escolha o lugar de novo."
+    val FOREIGN: String get() = Res.s(R.string.backup_err_foreign)
+    val CHANGED_FOLDER: String get() = Res.s(R.string.backup_err_changed_folder)
+    val CHANGED_CLOUD: String get() = Res.s(R.string.backup_err_changed_cloud)
+    val CANT_READ: String get() = Res.s(R.string.backup_err_cant_read)
+    val NEWER: String get() = Res.s(R.string.backup_err_newer)
+    val DAMAGED: String get() = Res.s(R.string.backup_err_damaged)
+    val NOT_CRYO: String get() = Res.s(R.string.backup_err_not_cryo)
+    val CANT_OPEN_FOLDER: String get() = Res.s(R.string.backup_err_cant_open_folder)
+    val READ_DATA: String get() = Res.s(R.string.backup_err_read_data)
+    val CANT_CHECK: String get() = Res.s(R.string.backup_err_cant_check)
 
     fun message(e: Throwable, t: BackupTarget): String {
         val where = if (t == BackupTarget.FOLDER) Res.s(R.string.backup_pasta_3) else Res.s(R.string.backup_arquivo)

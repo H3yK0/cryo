@@ -108,7 +108,7 @@ Só no modo de teste do modo desenvolvedor. Serve para montar casos de teste à 
 | `transactions` | sim | A lista. Também vale mandar só a lista (`[ {...}, {...} ]`). |
 | `date` | sim | Data no formato `AAAA-MM-DD` (também aceita `DD/MM/AAAA`). |
 | `description` | não | Texto da movimentação. |
-| `amount` | sim | Valor em reais: negativo = saiu, positivo = entrou. Número (`-12.5`) ou texto (`"-12,50"`). |
+| `amount` | sim | Valor na moeda do app: negativo = saiu, positivo = entrou. Número (`-12.5`) ou texto (`"-12,50"`). |
 | `id` | não | Identificador único: com ele, a mesma movimentação nunca é importada duas vezes. |
 
 Linhas com problema (sem data, sem valor, valor zero) ficam de fora e aparecem no relatório. Um backup do Cryo (`cryo-backup-....json`) é reconhecido e o app indica **Ajustes › Restaurar backup**.
@@ -120,7 +120,7 @@ Linhas com problema (sem data, sem valor, valor zero) ficam de fora e aparecem n
 | `importer/StatementReader.kt` | Descobre o formato pelo conteúdo (não pelo nome) e chama o leitor certo |
 | `importer/Ofx.kt`, `Tables.kt` (CSV e colunas), `Xlsx.kt`, `HtmlTable.kt`, `PdfStatement.kt`, `JsonStatement.kt` | Um leitor por formato; todos devolvem um `Statement` (valores em centavos, negativo = saída) |
 | `importer/PdfText.kt` | Texto do PDF com o leitor do próprio Android (sem bibliotecas de fora) |
-| `importer/Values.kt` | Datas, valores e textos no jeito brasileiro |
+| `importer/Values.kt` | Datas, valores e textos no jeito brasileiro e de outros países (mês/dia, 1,234.56, ₹1,23,456, 2026年10月1日; Shift_JIS, CP949, GB18030) |
 | `importer/ImportPlan.kt` | A conferência: categorias, repetidas, pagamentos de fatura, e a conversão em movimentações |
 | `importer/ImportReport.kt` | O relatório e a versão anônima |
 | `importer/SampleFiles.kt` | Os extratos de exemplo |

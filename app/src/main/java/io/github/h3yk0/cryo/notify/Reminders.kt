@@ -41,7 +41,7 @@ object Reminders {
 
     fun createChannel(context: Context) {
         if (Build.VERSION.SDK_INT >= 26) {
-            val ch = NotificationChannel(CHANNEL, "Lembretes de contas", NotificationManager.IMPORTANCE_DEFAULT)
+            val ch = NotificationChannel(CHANNEL, Res.s(R.string.onboarding_lembretes_contas), NotificationManager.IMPORTANCE_DEFAULT)
             ch.description = Res.s(R.string.reminder_avisos_contas_fixas_parcelas)
             context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
         }

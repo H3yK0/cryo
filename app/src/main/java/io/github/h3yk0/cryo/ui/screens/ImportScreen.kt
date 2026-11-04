@@ -717,7 +717,7 @@ private fun ReviewHeader(fileName: String, st: Statement) {
             Column(Modifier.weight(1f)) {
                 Text(fileName, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 val period = if (first != null && last != null) {
-                    if (first == last) Dates.full(first) else "${Dates.full(first)} a ${Dates.full(last)}"
+                    if (first == last) Dates.full(first) else Res.s(R.string.date_range, Dates.full(first), Dates.full(last))
                 } else ""
                 Text(
                     listOf(st.format.label, Res.p(R.plurals.count_transactions, st.lines.size, st.lines.size), period)
@@ -917,13 +917,13 @@ private fun RowEditor(
 private fun explanation(r: ImportRow, t: ImportTarget, l: Ledger): String? = when (r.flag) {
     RowFlag.IMPORTED_BEFORE -> Res.s(R.string.import_esta_movimentacao_ja_veio)
     RowFlag.LOOKS_DUPLICATE -> r.match?.let { m ->
-        Res.s(R.string.import_parece_com_que_ja, m.description.ifBlank { Res.s(R.string.import_sem_descricao) }, Dates.full(m.date), Money.format(m.amount), m.accountId?.let { " em ${l.accountName(it)}" } ?: m.cardId?.let { Res.s(R.string.import_cartao_2, l.cardName(it)) } ?: "")
+        Res.s(R.string.import_parece_com_que_ja, m.description.ifBlank { Res.s(R.string.import_sem_descricao) }, Dates.full(m.date), Money.format(m.amount), m.accountId?.let { Res.s(R.string.import_em_conta, l.accountName(it)) } ?: m.cardId?.let { Res.s(R.string.import_cartao_2, l.cardName(it)) } ?: "")
     } ?: Res.s(R.string.import_parece_com_algo_que)
     RowFlag.CARD_CREDIT ->
         Res.s(R.string.import_parece_pagamento_fatura_cryo)
     RowFlag.INVOICE_PAYMENT ->
         Res.s(R.string.import_parece_pagamento_fatura_cartao)
-    RowFlag.NONE -> if (t.isCard && r.type == TxType.INCOME) "Crédito na fatura (estorno, reembolso ou ajuste): diminui o valor da fatura." else null
+    RowFlag.NONE -> if (t.isCard && r.type == TxType.INCOME) Res.s(R.string.import_credito_fatura) else null
 }
 
 /* ===================================== pronto ===================================== */

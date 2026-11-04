@@ -1,0 +1,37 @@
+Cryo ist ein einfaches und trotzdem vollständiges Haushaltsbuch. Es erfasst Einnahmen, Ausgaben, Kreditkarten, Schulden, Geldanlagen und Sparziele und zeigt alles in einer klaren Übersicht.
+
+<b>Erfassen, wie du sprichst</b>
+Schreib oder sag „Mittagessen 12,50 mit Karte“ oder „Fernseher 900 in 6 Raten mit Kreditkarte“. Cryo versteht Betrag, Kategorie, Konto, Datum und sogar Ratenzahlungen. Du prüfst nur noch und speicherst. Es lernt auch aus deinen Korrekturen.
+
+<b>Was du bekommst</b>
+<ul>
+<li>Übersicht: Kontostände, Vermögen und was diesen Monat rein- und rausging</li>
+<li>Prognose zum Monatsende: was bei diesem Tempo übrig bleibt und wie viel du pro Tag ausgeben kannst</li>
+<li>Heatmap-Kalender: Jeder Tag bekommt eine Farbe je nach Ausgaben</li>
+<li>Geldfluss: woher das Geld kam und wohin es ging</li>
+<li>Import von Kontoauszügen (OFX, CSV, XLSX-Tabelle oder PDF): Du prüfst die Liste vorher, und was schon in der App ist, bleibt draußen</li>
+<li>Kreditkarten: Abrechnungen, verfügbarer Rahmen und Ratenkäufe</li>
+<li>Schulden: Kredite, Finanzierungen, Ratenvereinbarungen und Geld, das du jemandem schuldest, mit Raten, Verzug, Restbetrag und Ende</li>
+<li>Fixkosten und feste Einnahmen, mit Erinnerung vor der Fälligkeit</li>
+<li>Budget pro Kategorie, mit Hinweis bei 80% und bei Überschreitung</li>
+<li>Sparziele: wie viel du pro Monat zurücklegen musst, mit Archiv für erreichte Ziele</li>
+<li>Geldanlagen: Einzahlungen, Entnahmen und Erträge</li>
+<li>Umbuchungen zwischen Konten</li>
+</ul>
+
+<b>Echter Datenschutz</b>
+<ul>
+<li>Deine Daten bleiben auf deinem Handy. Die App hat keine Internetberechtigung</li>
+<li>Ohne Anmeldung, ohne Werbung und ohne Tracking</li>
+<li>Sperre mit Fingerabdruck, Gesicht oder PIN des Handys</li>
+<li>Option, Beträge auf dem Bildschirm auszublenden</li>
+<li>Automatische Sicherung in einem Ordner auf dem Handy oder in deiner Cloud (Google Drive, Nextcloud und andere): Das Hochladen übernimmt die App der Cloud</li>
+<li>Sicherung als Datei und Export als Tabelle (CSV)</li>
+</ul>
+
+<b>Material-You-Design</b>
+Die Farben folgen deinem Hintergrundbild (Android 12 oder neuer), mit hellem und dunklem Design.
+
+Die Spracherfassung nutzt die Spracherkennung auf deinem Handy. Tippen funktioniert immer.
+
+Verfügbar in 10 Sprachen (Portugiesisch, Englisch, Spanisch, Französisch, Deutsch, Italienisch, Japanisch, Koreanisch, Chinesisch und Hindi), in der Währung deiner Wahl.
