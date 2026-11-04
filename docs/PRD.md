@@ -12,7 +12,7 @@
 |---|---|
 | Produto | Cryo · "Seu dinheiro, claro como gelo." |
 | Dono do produto | Hanry Franco (aprova tudo o que vai para o público) |
-| Versão do PRD | **2.0** (04/11/2026) |
+| Versão do PRD | **2.1** (04/11/2026) |
 | Versão publicada do app | 1.2 (GitHub e F-Droid) · 1.3 pronta, aguardando teste · 1.4 em preparação |
 | Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) |
 
@@ -42,6 +42,7 @@ anexo é corrigido no mesmo commit.
 |---|---|---|
 | 1.0 | 19/10/2026 | Regras espalhadas em CLAUDE.md, VISUAL.md e IMPORTACAO.md (base desta versão). |
 | 2.0 | 04/11/2026 | PRD único com catálogo e códigos; processo de criação e manutenção; conformidade automática; design system 2.0 (visual de banco, cores do Cryo); licença AGPL. |
+| 2.1 | 04/11/2026 | Aprovados: piloto do Início, direção 2.0 em todas as telas, 4 abas, restaurar backup na apresentação. Novos: 10 línguas (RF-LNG) e moeda do app (RF-MOE), frases nas 10 línguas, importação de outros países; tudo na 1.4. |
 
 ---
 
@@ -57,7 +58,8 @@ Quem só quer saber "quanto posso gastar até o fim do mês" desiste no meio.
 - é **software livre** (AGPL v3 ou posterior) e publicado no F-Droid com compilação reproduzível.
 
 **Objetivos da 1.4** (veja a [seção 12](#12-roadmap)): aparência organizada de app de banco (referência: Nubank), mantendo as
-cores do Cryo; app mais fácil e intuitivo; licença AGPL; este PRD como regra para tudo.
+cores do Cryo; app mais fácil e intuitivo (4 abas, atalhos); **10 línguas e a moeda de cada país**; licença AGPL; este PRD como
+regra para tudo.
 
 ## 2. Princípios (PRI)
 
@@ -84,6 +86,7 @@ Toda decisão é conferida contra estes princípios, nesta ordem de prioridade.
 | PER-02 | **Quem quer sair do vermelho**: tem dívidas, cartão no limite. | Ver quanto deve, parcelas, quando fica livre, quanto pode gastar por dia. |
 | PER-03 | **Quem preza privacidade**: chegou pelo F-Droid. | Nada de internet, código aberto, backup no próprio controle. |
 | PER-04 | **Quem tem pouca familiaridade com tecnologia**: usa o celular para WhatsApp e banco. | Textos simples, botões grandes, poucos passos, voz. |
+| PER-05 | **Quem não fala português**: chegou pelo F-Droid em outro país (EUA, Espanha, Coreia, Itália, Alemanha, Índia, China, Japão, França...). | O app na sua língua, com a sua moeda e o jeito de escrever datas e valores do seu país; registrar por frase na sua língua. |
 
 ### 3.2 Jornadas principais (JOR)
 
@@ -99,7 +102,7 @@ Toda decisão é conferida contra estes princípios, nesta ordem de prioridade.
 
 ## 4. Escopo
 
-**Dentro**: finanças pessoais de uma pessoa, em reais, num celular Android.
+**Dentro**: finanças pessoais de uma pessoa, numa moeda (a do seu país, RF-MOE), em 10 línguas (RF-LNG), num celular Android.
 
 **Fora (⛔, decidido)**:
 
@@ -108,19 +111,19 @@ Toda decisão é conferida contra estes princípios, nesta ordem de prioridade.
 | ESC-01 | Internet, sincronização própria, conta online | PRI-01. A nuvem só entra pelo seletor de arquivos do Android (o app da nuvem envia). |
 | ESC-02 | Open Finance / conexão com bancos | Exige internet e instituição autorizada; decidido importar arquivos (CLAUDE.md, seção 13). Se um dia voltar, será outro app, nunca o principal. |
 | ESC-03 | Anúncios, analytics, crash reporting online | PRI-01. |
-| ESC-04 | Várias moedas | Valores em reais; compras internacionais entram pelo valor em reais da fatura. |
+| ESC-04 | Várias moedas ao mesmo tempo (conversão entre moedas) | Decidido (04/11/2026): **uma moeda para o app todo** (RF-MOE-01). Sem internet não há cotação; compras internacionais entram pelo valor na moeda da fatura. |
 | ESC-05 | Uso por empresa / várias pessoas | Escopo pessoal. |
 
 ## 5. Arquitetura de informação
 
 ### 5.1 Navegação
 
-- **Abas** (barra inferior, 5): Início · Extrato · Planejar · Carteira · Análises. Ajustes pela engrenagem do Início.
+- **Abas** (barra inferior, **4** a partir da 1.4, RF-INI-14): Início · Extrato · Planejar · Análises. Ajustes pela engrenagem
+  do Início. Até a 1.3 eram 5 (com Carteira).
 - **Início é o painel** (DS 2.0, 1.4): responde "quanto tenho, quanto devo, como está o mês" e leva a tudo pelos atalhos e pelas
-  seções com ›.
+  seções com ›. As seções de contas, cartões, investimentos e dívidas ficam no Início; a Carteira completa (TELA-CARTEIRA:
+  patrimônio detalhado, todas as contas, cartões, investimentos e arquivados) abre pelo patrimônio e pelas seções.
 - Telas internas abrem por cima, com seta de voltar.
-- 🔵 **Proposta 1.4 (RF-INI-14)**: reduzir para 4 abas (Início · Extrato · Planejar · Análises), levando a Carteira para dentro
-  do Início (seções Contas, Cartões, Investimentos, Dívidas), como nos apps de banco. Decidir depois do piloto do Início.
 
 ### 5.2 Catálogo de telas (TELA)
 
@@ -132,7 +135,7 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | TELA-INICIO | Início (painel) | `home` | `ui/screens/HomeScreen.kt` |
 | TELA-EXTRATO | Extrato (movimentações por mês, busca, calendário) | `txs?category={category}` | `ui/screens/TransactionsScreen.kt` |
 | TELA-PLANEJAR | Planejar (abas Orçamentos, Contas fixas, Metas) | `plan?tab={tab}` | `ui/screens/PlanScreens.kt` |
-| TELA-CARTEIRA | Carteira (patrimônio, contas, cartões, dívidas, investimentos) | `wallet` | `ui/screens/WalletScreens.kt` |
+| TELA-CARTEIRA | Carteira completa (patrimônio, contas, cartões, dívidas, investimentos); aba até a 1.3, tela interna na 1.4 | `wallet` | `ui/screens/WalletScreens.kt` |
 | TELA-ANALISES | Análises (previsão, calendário de calor, fluxo, categorias, 6 meses) | `insights` | `ui/screens/InsightsScreen.kt` |
 | TELA-LANCAR | Novo lançamento | `tx/new?type={type}&account={account}&card={card}` | `ui/tx/TxEditorScreen.kt`, `ui/tx/TxForm.kt` |
 | TELA-LANC-EDITAR | Editar lançamento | `tx/edit/{id}` | `ui/tx/TxEditorScreen.kt` |
@@ -185,7 +188,8 @@ Formato: **ID · requisito · critério de aceite · status**. Os testes citados
 | RF-INI-11 | **Cabeçalho na cor do Cryo** | Faixa no topo com saudação, olho, engrenagem e o saldo (DS-COMP-16). Segue o Material You. | 🟡 1.4 |
 | RF-INI-12 | **Atalhos** | Fila de atalhos redondos logo abaixo do cabeçalho: Lançar, Importar, Transferir, Pagar fatura (se houver cartão), Contas fixas, Metas, Dívidas. Cada um abre a tela certa em 1 toque (DS-COMP-15). | 🟡 1.4 |
 | RF-INI-13 | **Seções planas** | O resto do Início em seções separadas por linhas finas, cada uma com título e "›" (DS-COMP-14): Este mês, Cartão de crédito, Contas, Dívidas, Orçamentos, Metas e caixinhas, Últimas movimentações. Sem cartões empilhados. | 🟡 1.4 |
-| RF-INI-14 | Carteira dentro do Início (4 abas) | Veja 5.1. | 🔵 1.4 |
+| RF-INI-14 | Carteira dentro do Início (4 abas) | Barra com Início, Extrato, Planejar e Análises; no Início, seções Contas, Cartão, Investimentos e Dívidas; patrimônio e seções levam à Carteira completa (5.1). | 🟡 1.4 |
+| RF-INI-17 | Investimentos no Início | Seção com o total investido hoje e quanto rendeu; › abre a Carteira completa. Só aparece quando há investimento. | 🟡 1.4 |
 | RF-INI-15 | Avisos discretos | Avisos como cartões neutros com ícone colorido (DS-COMP-17), não como faixas laranja/vermelhas cheias. | 🟡 1.4 |
 | RF-INI-16 | Sem botão flutuante no Início | "Lançar" passa a ser o 1º atalho (o botão flutuante cobria conteúdo). | 🟡 1.4 |
 
@@ -202,7 +206,8 @@ Testes: `ScreensTest` (imagens 01–04), `AppFlowTest`, `DevModeFlowTest`.
 | RF-REG-05 | Entender parcelas | "em 10x" no cartão: uma movimentação por parcela, cada uma na fatura certa (DAD-05). | ✅ 1.0 |
 | RF-REG-06 | Entender entradas, transferências e metas | "recebi 3000 de salário" vira receita; "transferi 200 para a poupança" vira transferência; o nome de uma meta guarda nela. | ✅ 1.0 |
 | RF-REG-07 | Conferir antes de salvar | Folha com o que foi entendido; dá para corrigir; nada salva sozinho. | ✅ 1.0 |
-| RF-REG-08 | Voz | Reconhecimento de fala do próprio celular (`RecognizerIntent`); sem ele, digitar sempre funciona. | ✅ 1.0 |
+| RF-REG-08 | Voz | Reconhecimento de fala do próprio celular (`RecognizerIntent`), na língua do app; sem ele, digitar sempre funciona. | ✅ 1.0 |
+| RF-REG-09 | **Frases nas 10 línguas** | Valor, data relativa (ontem, dia 5, segunda...), parcelas ("10x", "in 10 installments", "10回払い"...), conta ou cartão, entrada, transferência e categoria pelas palavras-chave da língua do app. Em japonês, mandarim e coreano (sem espaços entre palavras) e em hindi, regras próprias de leitura. | 🟡 1.4 |
 
 Código: `domain/PhraseParser.kt`, `ui/tx/QuickEntry.kt`. Testes: `PhraseParserTest`.
 
@@ -349,6 +354,7 @@ Detalhe completo em [`docs/IMPORTACAO.md`](IMPORTACAO.md).
 | RF-IMP-18 | Relatório anônimo | Letras viram x, números viram 9, formato preservado; nome do arquivo e colunas também. | ✅ 1.3 |
 | RF-IMP-19 | Tudo no celular | Nada sai do aparelho (PRI-01). | ✅ 1.3 |
 | RF-IMP-20 | Bancos do Hanry | Formatos dos bancos que o Hanry usa testados com relatório anônimo. | 🔵 1.4 |
+| RF-IMP-21 | **Extratos de outros países** | Nomes de coluna nas 10 línguas (Date/Amount, Fecha/Importe, Datum/Betrag, 日付/金額...); ordem da data (dia/mês, mês/dia como nos EUA, ano/mês/dia) descoberta pelo arquivo e, se não der, pelo país; símbolo da moeda do app e de outras; valores sem centavos (iene, won). | 🟡 1.4 |
 
 Testes: `StatementImportTest`, `ImportFlowTest`.
 
@@ -395,6 +401,8 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-AJU-06 | Categorias | Despesas e receitas: nome, ícone, cor, palavras-chave do registro rápido; arquivar. | ✅ 1.0 |
 | RF-AJU-07 | Sobre | Versão, código-fonte, licença AGPL v3 ou posterior, aviso de garantia. | ✅ 1.0 · licença 🟡 1.4 |
 | RF-AJU-08 | Modo desenvolvedor | 7 toques na versão (RF-DEV). | ✅ 1.3 |
+| RF-AJU-09 | Idioma | Ajustes › Idioma: "Do celular" (padrão) ou uma das 10 línguas; muda na hora (RF-LNG-02). | 🟡 1.4 |
+| RF-AJU-10 | Moeda | Ajustes › Moeda: lista de moedas; a do país do celular vem marcada (RF-MOE-02). | 🟡 1.4 |
 
 ### 6.17 Primeiro uso — RF-BOA (TELA-BOAS-VINDAS)
 
@@ -405,7 +413,8 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-BOA-03 | Conta principal | Nome e saldo de hoje (pode ser negativo). | ✅ 1.0 |
 | RF-BOA-04 | Dinheiro vivo e cartão | Opcionais. | ✅ 1.0 |
 | RF-BOA-05 | Notificações | Pedir permissão (Android 13+). | ✅ 1.0 |
-| RF-BOA-06 | Restaurar no primeiro uso | Oferecer "Já usei o Cryo: restaurar um backup" na apresentação inicial (hoje: Ajustes › Restaurar backup ou Backup automático). | 🔵 1.4 |
+| RF-BOA-06 | Restaurar no primeiro uso | Na primeira tela da apresentação, "Já uso o Cryo: restaurar um backup" abre o arquivo, mostra o que tem nele e restaura, pulando o resto da apresentação. | 🟡 1.4 |
+| RF-BOA-07 | Língua e moeda no primeiro uso | A apresentação mostra a língua e a moeda escolhidas pelo celular e deixa trocar ali mesmo (RF-LNG-02, RF-MOE-02). | 🟡 1.4 |
 
 ### 6.18 Modo desenvolvedor e modo de teste — RF-DEV (TELA-DEV, TELA-RELATORIO)
 
@@ -416,6 +425,31 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-DEV-03 | Dados de verdade intocados | Lembretes e backup sempre nos dados de verdade; aviso de conta/dívida sai do modo de teste. | ✅ 1.3 |
 | RF-DEV-04 | Arquivos de exemplo | Todos os formatos; salvar numa pasta; abrir direto na importação. | ✅ 1.3 |
 | RF-DEV-05 | Relatório da leitura | Completo e anônimo; copiar e compartilhar o completo pedem confirmação. | ✅ 1.3 |
+
+### 6.19a Línguas — RF-LNG
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-LNG-01 | **10 línguas** | Português do Brasil (base), inglês, espanhol, coreano, italiano, alemão, hindi, mandarim (chinês simplificado), japonês e francês. | 🟡 1.4 |
+| RF-LNG-02 | Qual língua | Segue a língua do celular; se ela não for uma das 10, inglês. Ajustes › Idioma troca na hora, sem fechar o app. No Android 13+, também pela tela de idioma do app do sistema. | 🟡 1.4 |
+| RF-LNG-03 | Nenhum texto no código | Todo texto que aparece na tela, em notificações e em mensagens está em `res/values*/strings.xml` (base em `values/`, pt-BR). | 🟡 1.4 |
+| RF-LNG-04 | Tradução completa | Toda chave existe nas 10 línguas, com os mesmos marcadores (`%1$s`...) e plurais pelas regras de cada língua. | 🟡 1.4 |
+| RF-LNG-05 | Datas do país | Nomes de dias e meses e a ordem da data no jeito da língua e do país (5 de outubro · October 5 · 10月5日...). | 🟡 1.4 |
+| RF-LNG-06 | Categorias na língua de quem instala | As categorias padrão (nomes e palavras-chave do registro rápido) são criadas na língua do app na primeira vez; as de quem já usa não mudam. | 🟡 1.4 |
+| RF-LNG-07 | Loja nas 10 línguas | Título, descrições e novidades do F-Droid (`fastlane/metadata/android/<língua>/`). | 🟡 1.4 |
+| RF-LNG-08 | Revisão por quem fala | Cada tradução revista por alguém que fala a língua (comunidade, por issue). | 🔵 contínuo |
+
+### 6.19b Moeda — RF-MOE
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-MOE-01 | **Uma moeda para o app todo** | Todos os valores na moeda escolhida (decisão em ESC-04). | 🟡 1.4 |
+| RF-MOE-02 | Qual moeda | Padrão: a do país do celular (en-US → dólar, en-GB → libra, es-MX → peso mexicano, es-ES → euro, ko → won, hi → rúpia, zh → yuan, ja → iene...); se o país não tiver uma moeda da lista, a do país principal da língua. Ajustes › Moeda troca. | 🟡 1.4 |
+| RF-MOE-03 | Trocar não converte | Trocar a moeda muda só o símbolo e o formato: os números continuam os mesmos (sem internet não há cotação). Um aviso explica isso antes de trocar. | 🟡 1.4 |
+| RF-MOE-04 | Formato do país | Símbolo, posição do símbolo, separadores e casas decimais pela língua e pela moeda (R$ 1.234,56 · $1,234.56 · 1.234,56 € · ¥1,235 · ₩1,235 · ₹1,234.56). Iene, won e outras sem centavos aparecem sem casas. | 🟡 1.4 |
+| RF-MOE-05 | Digitar valor | O campo estilo caixa eletrônico respeita as casas da moeda (no iene, cada dígito é 1 iene). | 🟡 1.4 |
+| RF-MOE-06 | Valores resumidos | Nos gráficos, no jeito de cada língua: R$ 1,2 mil · $1.2K · 1,2 Tsd. € · ¥1.2万 · ₹1.2 लाख. | 🟡 1.4 |
+| RF-MOE-07 | Lista de moedas | Real, dólar americano, euro, libra, dólar canadense, dólar australiano, peso mexicano, peso argentino, peso chileno, peso colombiano, sol peruano, peso uruguaio, franco suíço, won, rúpia indiana, yuan, iene, novo dólar taiwanês, dólar de Hong Kong, dólar de Singapura. | 🟡 1.4 |
 
 ### 6.19 Notificações — RF-NOT
 
@@ -451,14 +485,14 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RNF-DES-01 | O app abre mesmo se lembretes ou backup falharem (`runCatching`). | Revisão | ✅ |
 | RNF-DES-02 | Listas longas sem travar (LazyColumn); importação de milhares de linhas fora da linha principal. | Testes de importação | ✅ |
 | RNF-ACS-01 | Acessibilidade conforme ACS-01..07. | Revisão + testes de tela | ✅ |
-| RNF-IDI-01 | Interface em português do Brasil; valores em R$. Inglês e espanhol na 1.5 (textos para `strings.xml`). | — | ✅ · 🔵 1.5 |
+| RNF-IDI-01 | Interface nas 10 línguas e na moeda escolhida (RF-LNG, RF-MOE); até a 1.3, só português e reais. | `PrdConformanceTest` (traduções completas, sem texto no código) | 🟡 1.4 |
 | RNF-TAM-01 | APK pequeno: sem bibliotecas pesadas (PDF pelo leitor do Android). | Tamanho do APK no PRC-06 (~3 MB na 1.3) | ✅ |
 
 ## 8. Regras de dados (DAD)
 
 | ID | Regra |
 |---|---|
-| DAD-01 | Dinheiro sempre em **centavos (`Long`)**; nunca `Double` para guardar valor. |
+| DAD-01 | Dinheiro sempre em **centésimos da unidade da moeda (`Long`)**, em qualquer moeda; nunca `Double` para guardar valor. Em moedas sem centavos (iene, won), os valores são múltiplos de 100 e aparecem sem casas. Trocar a moeda não muda os números guardados (RF-MOE-03). |
 | DAD-02 | Datas em `LocalDate`; mês de fatura como `Int` `AAAAMM` (`YearMonth.key()`). |
 | DAD-03 | Mudança no banco = nova versão do Room, migração e teste em `MigrationTest`; schema exportado em `app/schemas/` (conferido por `PrdConformanceTest`). Banco atual: versão 3. |
 | DAD-04 | Tipos de movimentação: `EXPENSE`, `INCOME` (no cartão = estorno), `TRANSFER`, `CARD_PAYMENT` (com `invoiceYm`), `INVEST_IN`/`INVEST_OUT`, `GOAL_IN`/`GOAL_OUT`, `DEBT_IN` (não é receita). |
@@ -484,11 +518,11 @@ roxo.
 
 | ID | Regra | Status |
 |---|---|---|
-| DS-DIR-01 | **Seções, não blocos**: conteúdo em seções planas separadas por uma linha fina; cartões (fundo próprio) só para o que é destaque ou aviso. | 🟡 1.4 (Início) |
+| DS-DIR-01 | **Seções, não blocos**: conteúdo em seções planas separadas por uma linha fina; cartões (fundo próprio) só para o que é destaque ou aviso. | 🟡 1.4 |
 | DS-DIR-02 | **Cor com propósito**: a cor do Cryo no cabeçalho do Início, nos atalhos e nos destaques; verde e vermelho só para entrada, saída e alerta. | 🟡 1.4 |
 | DS-DIR-03 | **Atalhos à mão**: as ações mais usadas em círculos no topo do Início. | 🟡 1.4 |
 | DS-DIR-04 | **Uma pergunta por seção**: cada seção responde uma pergunta ("Como está o mês?") e o "›" leva ao detalhe. | 🟡 1.4 |
-| DS-DIR-05 | As demais telas passam para a direção 2.0 depois da aprovação do piloto do Início. | 🔵 1.4 |
+| DS-DIR-05 | Todas as telas na direção 2.0 (piloto do Início aprovado em 04/11/2026). | 🟡 1.4 |
 
 ### 9.2 Cores (DS-COR)
 
@@ -571,8 +605,9 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | TXT-04 | Aviso explica a consequência. |
 | TXT-05 | Confirmação: título pergunta, texto diz o que acontece, botão repete o verbo. |
 | TXT-06 | Plural certo ("1 movimentação" / "2 movimentações"). |
-| TXT-07 | Dinheiro `R$ 1.234,56`, `+ R$ 10,00`, `− R$ 10,00` (menos de verdade, espaço que não quebra); resumido `R$ 1,2 mil`; escondido `R$ ••••`. Tudo em `domain/Format.kt`. |
-| TXT-08 | Datas: "Segunda-feira, 5 de outubro", "05/10", "05/10/2025", "vence em 5 dias", "hoje", "amanhã". |
+| TXT-07 | Dinheiro no formato da língua e da moeda (RF-MOE-04); com sinal, `+` e `−` (menos de verdade) antes do valor, com espaço que não quebra; resumido (RF-MOE-06); escondido com o símbolo da moeda e `••••`. Tudo em `domain/Format.kt`. Exemplo em pt-BR: `R$ 1.234,56`, `− R$ 10,00`, `R$ 1,2 mil`, `R$ ••••`. |
+| TXT-08 | Datas no jeito da língua (RF-LNG-05). Em pt-BR: "Segunda-feira, 5 de outubro", "05/10", "05/10/2025", "vence em 5 dias", "hoje", "amanhã". |
+| TXT-09 | Tradução: a base é `values/strings.xml` (pt-BR). Mesmo tom em todas as línguas (próximo, simples, sem jargão; tratamento informal onde é o costume: "tú", "du", "tu"; formal-cortês no japonês, coreano e hindi). Nome "Cryo" e slogan traduzidos pelo sentido. |
 
 ### 10.2 Acessibilidade (ACS)
 
@@ -691,6 +726,8 @@ conferir sozinho:
 | Nenhum extrato (`.ofx`, `.csv`, `.xlsx`, `.xls`, `.pdf`) nem chave (`.jks`, `.keystore`) versionado; `keystore/` no `.gitignore` | RNF-PRIV-04, RNF-SEG-01 |
 | Nenhuma cor fixa (`Color(0x…)`) em telas e componentes | DS-COR-02 |
 | Toda rota de `Routes` está no catálogo de telas (5.2) | PRC-02 |
+| Toda chave de texto existe nas 10 línguas, com os mesmos marcadores; nenhum `Text("...")` com texto escrito no código nas telas | RF-LNG-03, RF-LNG-04 |
+| As línguas dos `values-*` são as 10 do RF-LNG-01, iguais às da loja (fastlane) | RF-LNG-01, RF-LNG-07 |
 | Todo caminho de arquivo citado no PRD existe; IDs do PRD não se repetem | PRC-02 |
 | Existe o schema do Room da versão atual do banco | DAD-03 |
 | `CHANGELOG.md` tem a seção da versão atual; changelogs do fastlane com no máximo 500 caracteres | PRC-04 |
@@ -715,8 +752,8 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.1 | ✅ 02/10/2026 | Dívidas, arquivo, compilação reproduzível. |
 | 1.2 | ✅ 03/10/2026 | Backup automático (pasta e nuvem). |
 | 1.3 | Pronta, aguardando teste do Hanry | Importar extrato, modo desenvolvedor, correções de bloqueio. |
-| **1.4** | 🟡 Em preparação | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** (DS-DIR-01..05): piloto no Início (RF-INI-11..16), depois as outras telas · **Mais fácil**: atalhos, seções com uma pergunta cada, menos blocos; proposta de 4 abas (RF-INI-14) · Bancos do Hanry (RF-IMP-20). |
-| 1.5 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04), inglês e espanhol (RNF-IDI-01). |
+| **1.4** | 🟡 Em preparação | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20). |
+| 1.5 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
 
 ## 13. Glossário
 
@@ -728,3 +765,4 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | Modo de teste | Banco de dados separado com dados de exemplo, para testar sem mexer nos dados de verdade. |
 | Compilação reproduzível | Qualquer pessoa compila o mesmo código e chega ao mesmo APK, byte a byte. |
 | AGPL | GNU Affero General Public License: licença livre; quem distribuir versões modificadas precisa liberar o código. |
+| Moeda do app | A única moeda em que o Cryo mostra todos os valores (RF-MOE-01). |
