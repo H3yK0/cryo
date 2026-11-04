@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -578,7 +579,7 @@ private fun Compare(icon: ImageVector, title: String, detail: String, modifier: 
 }
 
 private fun counts(txs: Int, accounts: Int) =
-    "${plural(txs, "movimentação", "movimentações")} · ${plural(accounts, "conta", "contas")}"
+    "${plural(R.plurals.count_transactions, txs)} · ${plural(R.plurals.count_accounts, accounts)}"
 
 private fun summary(r: List<BackupOutcome>): String {
     r.firstOrNull { it.status == BackupStatus.FAILED || it.status == BackupStatus.HELD }?.let { return it.message ?: "O backup falhou" }

@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
@@ -34,6 +36,8 @@ import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Code
 import androidx.compose.material.icons.rounded.Gavel
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.DeleteForever
 import androidx.compose.material.icons.rounded.FileDownload
 import androidx.compose.material.icons.rounded.FileUpload
@@ -78,6 +82,7 @@ import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.notify.Reminders
+import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
 import io.github.h3yk0.cryo.ui.components.AccountChips
@@ -112,6 +117,8 @@ fun SettingsScreen() {
     val ctx = LocalContext.current
     val l = rememberLedger() ?: return LoadingBox()
     var editName by rememberSaveable { mutableStateOf(false) }
+    var showLanguage by rememberSaveable { mutableStateOf(false) }
+    var showCurrency by rememberSaveable { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<Backup.Restored?>(null) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
     val autoBackup by c.autoBackup.flow.collectAsState(initial = null)
@@ -123,151 +130,157 @@ fun SettingsScreen() {
     val exportJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) c.launch {
             val ok = writeText(ctx, uri, Backup.export(c.repo.loadOnce(), testMode = c.sandbox))
-            c.message(if (ok) "Backup salvo" else "Não foi possível salvar o arquivo")
+            c.message(if (ok) Res.s(R.string.settings_backup_salvo) else Res.s(R.string.settings_nao_foi_possivel_salvar))
         }
     }
     val exportCsv = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/csv")) { uri ->
         if (uri != null) c.launch {
             val ok = writeText(ctx, uri, Backup.csv(c.repo.loadOnce(), LocalDate.now()))
-            c.message(if (ok) "Planilha exportada" else "Não foi possível salvar o arquivo")
+            c.message(if (ok) Res.s(R.string.settings_planilha_exportada) else Res.s(R.string.settings_nao_foi_possivel_salvar))
         }
     }
     val importJson = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) c.launch {
             try {
                 val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
-                    ?: throw IllegalArgumentException("Não consegui ler o arquivo.")
+                    ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
                 val restored = Backup.import(text)
                 if (restored.testMode && !c.sandbox) {
-                    throw IllegalArgumentException("Este backup é do modo de teste (dados de exemplo) e não pode substituir os seus dados de verdade.")
+                    throw IllegalArgumentException(Res.s(R.string.settings_este_backup_modo_teste))
                 }
                 pendingImport = restored
             } catch (e: Exception) {
-                c.message(e.message ?: "Arquivo inválido")
+                c.message(e.message ?: Res.s(R.string.settings_arquivo_invalido))
             }
         }
     }
     val notifPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!granted) c.message("Sem permissão, os lembretes não aparecem. Você pode liberar nas configurações do Android.")
+        if (!granted) c.message(Res.s(R.string.settings_sem_permissao_lembretes_nao))
     }
 
-    Scaffold(topBar = { CryoTopBar("Ajustes", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.settings), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
-            item { Header("Perfil") }
+            item { Header(Res.s(R.string.settings_perfil)) }
             item {
-                SettingLink(Icons.Rounded.Person, "Seu nome", s.userName.ifBlank { "Toque para dizer como quer ser chamado" }) { editName = true }
+                SettingLink(Icons.Rounded.Person, Res.s(R.string.settings_seu_nome), s.userName.ifBlank { Res.s(R.string.settings_toque_para_dizer_como) }) { editName = true }
             }
 
-            item { Header("Aparência") }
+            item { Header(Res.s(R.string.settings_idioma_moeda)) }
             item {
-                FieldLabel("Tema")
+                SettingLink(Icons.Rounded.Language, Res.s(R.string.locale_language_title), languageSummary(ctx)) { showLanguage = true }
+                SettingLink(Icons.Rounded.Payments, Res.s(R.string.locale_currency_title), currencySummary(ctx)) { showCurrency = true }
+            }
+
+            item { Header(Res.s(R.string.settings_aparencia)) }
+            item {
+                FieldLabel(Res.s(R.string.settings_tema))
                 Segmented(
-                    listOf(ThemeMode.SYSTEM to "Automático", ThemeMode.LIGHT to "Claro", ThemeMode.DARK to "Escuro"), s.themeMode,
+                    listOf(ThemeMode.SYSTEM to Res.s(R.string.settings_automatico), ThemeMode.LIGHT to Res.s(R.string.settings_claro), ThemeMode.DARK to Res.s(R.string.settings_escuro)), s.themeMode,
                     { m -> c.launch { c.settings.setTheme(m) } },
                 )
                 Spacer(Modifier.height(8.dp))
                 if (Build.VERSION.SDK_INT >= 31) {
                     SwitchRow(
-                        "Cores do papel de parede (Material You)", s.dynamicColor,
-                        { v -> c.launch { c.settings.setDynamic(v) } }, "O app combina com as cores do seu celular",
+                        Res.s(R.string.settings_cores_papel_parede_material), s.dynamicColor,
+                        { v -> c.launch { c.settings.setDynamic(v) } }, Res.s(R.string.settings_app_combina_com_cores),
                     )
                 } else {
                     Text(
-                        "As cores do papel de parede precisam do Android 12 ou mais novo. Usando a paleta Cryo.",
+                        Res.s(R.string.settings_cores_papel_parede_precisam),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
 
-            item { Header("Privacidade e segurança") }
+            item { Header(Res.s(R.string.settings_privacidade_seguranca)) }
             item {
                 SwitchRow(
-                    "Bloquear com digital ou senha", lock?.lockEnabled ?: s.lockEnabled,
+                    Res.s(R.string.settings_bloquear_com_digital_ou), lock?.lockEnabled ?: s.lockEnabled,
                     { v ->
                         if (v && !canUseDeviceLock(ctx)) {
-                            c.message("Cadastre uma digital, rosto ou senha de tela no Android primeiro")
+                            c.message(Res.s(R.string.settings_cadastre_digital_rosto_ou))
                         } else {
                             c.launch { c.lockSettings.setLock(v) }
                         }
                     },
-                    "Pede o desbloqueio ao abrir o app",
+                    Res.s(R.string.settings_pede_desbloqueio_ao_abrir),
                 )
-                SwitchRow("Esconder valores", s.hideValues, { v -> c.launch { c.settings.setHideValues(v) } }, "Mostra R$ •••• no lugar dos números")
+                SwitchRow(Res.s(R.string.hide_values), s.hideValues, { v -> c.launch { c.settings.setHideValues(v) } }, Res.s(R.string.settings_hide_values_hint, Money.HIDDEN))
             }
 
-            item { Header("Lembretes") }
+            item { Header(Res.s(R.string.settings_lembretes)) }
             if (c.sandbox) {
-                item { TestModeNote("No modo de teste, os lembretes continuam avisando das suas contas de verdade.") }
+                item { TestModeNote(Res.s(R.string.settings_modo_teste_lembretes_continuam)) }
             } else item {
                 SwitchRow(
-                    "Avisar contas a vencer", s.remindersEnabled,
+                    Res.s(R.string.settings_avisar_contas_vencer), s.remindersEnabled,
                     { v ->
                         c.launch { c.settings.setReminders(v) }
                         if (v && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) {
                             notifPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
                         }
                     },
-                    "Notificação no dia que você escolher em cada conta fixa",
+                    Res.s(R.string.settings_notificacao_dia_que_voce),
                 )
             }
 
-            item { Header("Registro rápido") }
+            item { Header(Res.s(R.string.settings_registro_rapido)) }
             item {
-                FieldLabel("Conta principal (usada quando você não diz a conta)")
+                FieldLabel(Res.s(R.string.settings_conta_principal_usada_quando))
                 AccountChips(l.activeAccounts, s.defaultAccountId, { id -> c.launch { c.settings.setDefaultAccount(id) } })
                 Spacer(Modifier.height(8.dp))
-                SettingLink(Icons.Rounded.Category, "Categorias", "Nomes, ícones, cores e palavras-chave") { nav.go(Routes.CATEGORIES) }
+                SettingLink(Icons.Rounded.Category, Res.s(R.string.settings_categorias), Res.s(R.string.settings_nomes_icones_cores_palavras)) { nav.go(Routes.CATEGORIES) }
             }
 
-            item { Header("Seus dados") }
+            item { Header(Res.s(R.string.settings_seus_dados)) }
             item {
                 if (c.sandbox) {
                     TestModeNote(
-                        "Modo de teste: os dados abaixo são de exemplo. O backup automático continua salvando os seus dados de verdade.",
+                        Res.s(R.string.settings_modo_teste_dados_abaixo),
                     )
                 } else {
                     Text(
-                        "Tudo fica guardado só neste celular. Ligue o backup automático para não perder nada se o celular quebrar ou for trocado.",
+                        Res.s(R.string.settings_tudo_fica_guardado_so),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 4.dp),
                     )
                     SettingLink(
-                        Icons.Rounded.Backup, "Backup automático",
-                        autoBackup?.let { autoBackupSummary(it) } ?: "Numa pasta do celular ou na sua nuvem",
+                        Icons.Rounded.Backup, Res.s(R.string.settings_backup_automatico),
+                        autoBackup?.let { autoBackupSummary(it) } ?: Res.s(R.string.settings_numa_pasta_celular_ou),
                         warning = autoBackup?.hasProblem == true,
                     ) { nav.go(Routes.AUTO_BACKUP) }
                 }
-                SettingLink(Icons.Rounded.UploadFile, "Importar extrato do banco", "OFX, CSV, planilha ou PDF · você confere antes de entrar") {
+                SettingLink(Icons.Rounded.UploadFile, Res.s(R.string.settings_importar_extrato_banco), Res.s(R.string.settings_ofx_csv_planilha_ou)) {
                     nav.go(Routes.import())
                 }
-                SettingLink(Icons.Rounded.FileDownload, "Salvar uma cópia agora", "Um arquivo .json com tudo, onde você escolher") {
+                SettingLink(Icons.Rounded.FileDownload, Res.s(R.string.settings_salvar_copia_agora), Res.s(R.string.settings_arquivo_json_com_tudo)) {
                     exportJson.launch(if (c.sandbox) "cryo-teste-backup-${LocalDate.now()}.json" else "cryo-backup-${LocalDate.now()}.json")
                 }
-                SettingLink(Icons.Rounded.FileUpload, "Restaurar backup", "Substitui os dados atuais pelos do arquivo") {
+                SettingLink(Icons.Rounded.FileUpload, Res.s(R.string.settings_restaurar_backup_2), Res.s(R.string.settings_substitui_dados_atuais_pelos)) {
                     importJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
                 }
-                SettingLink(Icons.Rounded.TableChart, "Exportar planilha (CSV)", "Abre no Excel ou Planilhas Google") {
+                SettingLink(Icons.Rounded.TableChart, Res.s(R.string.settings_exportar_planilha_csv), Res.s(R.string.settings_abre_excel_ou_planilhas)) {
                     exportCsv.launch("cryo-movimentacoes-${LocalDate.now()}.csv")
                 }
-                SettingLink(Icons.Rounded.DeleteForever, "Apagar todos os dados", "Começar do zero", danger = true) { confirmErase = true }
+                SettingLink(Icons.Rounded.DeleteForever, Res.s(R.string.settings_apagar_todos_dados), Res.s(R.string.settings_comecar_zero), danger = true) { confirmErase = true }
             }
 
             if (devMode) {
-                item { Header("Desenvolvedor") }
+                item { Header(Res.s(R.string.settings_desenvolvedor)) }
                 item {
                     SettingLink(
-                        Icons.Rounded.Science, "Modo desenvolvedor",
-                        if (c.sandbox) "Usando dados de teste · arquivos de exemplo e relatórios" else "Dados de teste, arquivos de exemplo e relatórios",
+                        Icons.Rounded.Science, Res.s(R.string.settings_modo_desenvolvedor),
+                        if (c.sandbox) Res.s(R.string.settings_usando_dados_teste_arquivos) else Res.s(R.string.settings_dados_teste_arquivos_exemplo),
                     ) { nav.go(Routes.DEV) }
                 }
             }
 
-            item { Header("Sobre") }
+            item { Header(Res.s(R.string.settings_sobre)) }
             item {
-                SettingLink(Icons.Rounded.Code, "Código-fonte", "github.com/H3yK0/cryo · sugestões e problemas são bem-vindos") {
+                SettingLink(Icons.Rounded.Code, Res.s(R.string.settings_codigo_fonte), Res.s(R.string.settings_github_com_h3yk0_cryo)) {
                     openLink(ctx, SOURCE_URL)
                 }
-                SettingLink(Icons.Rounded.Gavel, "Licença", "GNU AGPL v3 ou posterior · software livre") {
+                SettingLink(Icons.Rounded.Gavel, Res.s(R.string.settings_licenca), Res.s(R.string.settings_gnu_agpl_v3_ou)) {
                     openLink(ctx, "$SOURCE_URL/blob/main/LICENSE")
                 }
                 // 7 toques na versão ligam o modo desenvolvedor (como no Android).
@@ -275,32 +288,30 @@ fun SettingsScreen() {
                     Modifier.padding(top = 12.dp),
                     onClick = {
                         if (devMode) {
-                            c.message("O modo desenvolvedor já está ligado")
+                            c.message(Res.s(R.string.settings_modo_desenvolvedor_ja_esta))
                         } else {
                             versionTaps++
                             if (versionTaps >= DEV_TAPS) {
                                 versionTaps = 0
                                 c.dev.enabled = true
-                                c.message("Modo desenvolvedor ligado")
+                                c.message(Res.s(R.string.settings_modo_desenvolvedor_ligado))
                             }
                         }
                     },
                 ) {
-                    Text("Cryo ${BuildConfig.VERSION_NAME}", style = MaterialTheme.typography.titleSmall)
+                    Text(Res.s(R.string.settings_cryo, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.titleSmall)
                     if (!devMode && versionTaps >= 3) {
                         Text(
-                            (DEV_TAPS - versionTaps).let { n -> if (n == 1) "Mais 1 toque para o modo desenvolvedor" else "Mais $n toques para o modo desenvolvedor" },
+                            (DEV_TAPS - versionTaps).let { n -> if (n == 1) Res.s(R.string.settings_mais_toque_para_modo) else Res.s(R.string.settings_mais_toques_para_modo, n) },
                             style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary,
                         )
                     }
                     Text(
-                        "Organização financeira com registro por voz, previsão do mês e fluxo do dinheiro. " +
-                            "Funciona sem internet, sem anúncios e sem rastreamento.",
+                        Res.s(R.string.settings_organizacao_financeira_com_registro),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Text(
-                        "© 2026 Hanry Franco. Este programa é software livre: você pode redistribuí-lo e modificá-lo " +
-                            "sob os termos da GNU AGPL, versão 3 ou posterior. Ele é distribuído sem nenhuma garantia.",
+                        Res.s(R.string.settings_2026_hanry_franco_este),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 8.dp),
                     )
@@ -309,32 +320,34 @@ fun SettingsScreen() {
         }
     }
 
+    if (showLanguage) LanguageSheet(onDismiss = { showLanguage = false })
+    if (showCurrency) CurrencySheet(onDismiss = { showCurrency = false })
     if (editName) {
         var name by remember { mutableStateOf(s.userName) }
         AlertDialog(
             onDismissRequest = { editName = false },
-            title = { Text("Como quer ser chamado?") },
+            title = { Text(Res.s(R.string.settings_como_quer_ser_chamado)) },
             text = {
                 OutlinedTextField(
-                    name, { name = it }, singleLine = true, label = { Text("Nome") },
+                    name, { name = it }, singleLine = true, label = { Text(Res.s(R.string.wallet_nome)) },
                     keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words),
                 )
             },
-            confirmButton = { TextButton(onClick = { editName = false; c.launch { c.settings.setName(name) } }) { Text("Salvar") } },
-            dismissButton = { TextButton(onClick = { editName = false }) { Text("Cancelar") } },
+            confirmButton = { TextButton(onClick = { editName = false; c.launch { c.settings.setName(name) } }) { Text(Res.s(R.string.wallet_salvar)) } },
+            dismissButton = { TextButton(onClick = { editName = false }) { Text(Res.s(R.string.wallet_cancelar)) } },
         )
     }
     pendingImport?.let { restored ->
         val snap = restored.snapshot
         ConfirmDialog(
-            "Restaurar backup?",
-            "O arquivo tem ${snap.txs.size} movimentações e ${snap.accounts.size} contas. Os dados atuais deste celular serão substituídos.",
-            "Restaurar",
+            Res.s(R.string.settings_restaurar_backup),
+            Res.s(R.string.settings_arquivo_tem_movimentacoes_contas, snap.txs.size, snap.accounts.size),
+            Res.s(R.string.wallet_restaurar),
             onConfirm = {
                 pendingImport = null
                 c.launch {
                     c.repo.replaceAll(snap, fromOldVersion = restored.version < Backup.VERSION)
-                    c.message("Backup restaurado")
+                    c.message(Res.s(R.string.settings_backup_restaurado))
                 }
             },
             onDismiss = { pendingImport = null },
@@ -342,8 +355,8 @@ fun SettingsScreen() {
     }
     if (confirmErase) {
         ConfirmDialog(
-            "Apagar tudo?", "Todas as contas, cartões, movimentações, metas e orçamentos serão apagados. Não dá para desfazer.",
-            "Apagar tudo",
+            Res.s(R.string.settings_apagar_tudo_2), Res.s(R.string.settings_todas_contas_cartoes_movimentacoes),
+            Res.s(R.string.settings_apagar_tudo),
             onConfirm = {
                 confirmErase = false
                 c.launch {
@@ -418,16 +431,16 @@ fun CategoriesScreen() {
     var tab by rememberSaveable { mutableIntStateOf(0) }
     val kind = if (tab == 0) CategoryKind.EXPENSE else CategoryKind.INCOME
     Scaffold(
-        topBar = { CryoTopBar("Categorias", onBack = nav::back) },
+        topBar = { CryoTopBar(Res.s(R.string.settings_categorias), onBack = nav::back) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { nav.go(Routes.categoryEdit(kind = kind)) }, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Nova") })
+            ExtendedFloatingActionButton(onClick = { nav.go(Routes.categoryEdit(kind = kind)) }, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.wallet_nova)) })
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             PrimaryTabRow(selectedTabIndex = tab) {
-                Tab(tab == 0, { tab = 0 }, text = { Text("Despesas") })
-                Tab(tab == 1, { tab = 1 }, text = { Text("Receitas") })
+                Tab(tab == 0, { tab = 0 }, text = { Text(Res.s(R.string.settings_despesas)) })
+                Tab(tab == 1, { tab = 1 }, text = { Text(Res.s(R.string.settings_receitas)) })
             }
             LazyColumn(contentPadding = PaddingValues(bottom = 96.dp)) {
                 items(l.categories(kind), key = { it.id }) { cat ->
@@ -435,7 +448,7 @@ fun CategoriesScreen() {
                         headlineContent = { Text(cat.name) },
                         supportingContent = {
                             val n = cat.keywords.split(',').count { it.isNotBlank() }
-                            Text(if (n > 0) "$n palavras-chave" else "Sem palavras-chave")
+                            Text(if (n > 0) Res.p(R.plurals.category_keywords, n, n) else Res.s(R.string.settings_sem_palavras_chave))
                         },
                         leadingContent = { IconBadge(categoryIcon(cat.icon), Color(cat.color)) },
                         modifier = Modifier.clickable { nav.go(Routes.categoryEdit(cat.id, kind)) },
@@ -461,7 +474,7 @@ fun CategoryEditorScreen(id: Long?, kindArg: CategoryKind) {
     val kind = existing?.kind ?: kindArg
 
     EditorScaffold(
-        title = if (existing == null) "Nova categoria" else "Editar categoria",
+        title = if (existing == null) Res.s(R.string.settings_nova_categoria) else Res.s(R.string.settings_editar_categoria),
         canSave = name.isNotBlank(),
         onSave = {
             val kw = keywords.split(',').map { it.trim() }.filter { it.isNotEmpty() }.joinToString(",")
@@ -473,29 +486,29 @@ fun CategoryEditorScreen(id: Long?, kindArg: CategoryKind) {
         onDelete = existing?.let { { confirmDelete = true } },
     ) {
         OutlinedTextField(
-            name, { name = it }, label = { Text("Nome") }, singleLine = true,
+            name, { name = it }, label = { Text(Res.s(R.string.wallet_nome)) }, singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
         )
-        FieldLabel("Ícone")
+        FieldLabel(Res.s(R.string.plan_icone))
         IconChooser(DefaultData.categoryIcons, icon, Color(color)) { icon = it }
-        FieldLabel("Cor")
+        FieldLabel(Res.s(R.string.wallet_cor))
         ColorChooser(color) { color = it }
-        FieldLabel("Palavras-chave do registro rápido")
+        FieldLabel(Res.s(R.string.settings_palavras_chave_registro_rapido))
         OutlinedTextField(
             keywords, { keywords = it }, modifier = Modifier.fillMaxWidth(), minLines = 3,
-            placeholder = { Text("Ex.: padaria, lanche, café") },
+            placeholder = { Text(Res.s(R.string.settings_ex_padaria_lanche_cafe)) },
         )
         Text(
-            "Quando você digitar ou falar uma destas palavras, o Cryo escolhe esta categoria. Separe por vírgula.",
+            Res.s(R.string.settings_quando_voce_digitar_ou),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
     if (confirmDelete && existing != null) {
         ConfirmDialog(
-            "Apagar categoria?", "Se ela já foi usada, será só arquivada para não bagunçar o histórico.", "Apagar",
+            Res.s(R.string.settings_apagar_categoria), Res.s(R.string.settings_se_ela_ja_foi), Res.s(R.string.wallet_apagar),
             onConfirm = {
                 confirmDelete = false
-                c.launch { if (c.repo.deleteCategory(existing)) c.message("Categoria apagada") else c.message("Categoria arquivada") }
+                c.launch { if (c.repo.deleteCategory(existing)) c.message(Res.s(R.string.settings_categoria_apagada)) else c.message(Res.s(R.string.settings_categoria_arquivada)) }
                 nav.back()
             },
             onDismiss = { confirmDelete = false },

@@ -199,8 +199,8 @@ fun Ledger.insights(): List<Insight> {
     if (before.expense > 0 && now.expense > 0) {
         val pct = ((now.expense - before.expense) * 100.0 / before.expense).roundToLong()
         if (abs(pct) >= 5) {
-            out += if (pct < 0) Insight("Até hoje você gastou ${abs(pct)}% menos que no mesmo período de ${Dates.monthName(prev).lowercase()}.", true)
-            else Insight("Até hoje você gastou $pct% mais que no mesmo período de ${Dates.monthName(prev).lowercase()}.", false)
+            out += if (pct < 0) Insight("Até hoje você gastou ${abs(pct)}% menos que no mesmo período de ${Dates.monthInSentence(prev)}.", true)
+            else Insight("Até hoje você gastou $pct% mais que no mesmo período de ${Dates.monthInSentence(prev)}.", false)
         }
     }
 

@@ -295,7 +295,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     val inv = CardMath.invoiceFor(card, d.date)
                     val per = if (d.installments > 1) " · ${d.installments}x de ${Money.format(CardMath.split(d.amount, d.installments).last())}" else ""
                     Text(
-                        "Entra na fatura de ${Dates.monthName(inv).lowercase()} (vence ${Dates.short(CardMath.dueDate(card, inv))})$per",
+                        "Entra na fatura de ${Dates.monthInSentence(inv)} (vence ${Dates.short(CardMath.dueDate(card, inv))})$per",
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp),
                     )

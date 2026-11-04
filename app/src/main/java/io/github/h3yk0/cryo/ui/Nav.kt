@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ReceiptLong
-import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.automirrored.rounded.EventNote
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Insights
@@ -31,7 +30,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.annotation.StringRes
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import io.github.h3yk0.cryo.R
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -141,14 +143,16 @@ class Navigator(private val nav: NavHostController) {
 
 val LocalNav = staticCompositionLocalOf<Navigator> { error("Navigator ausente") }
 
-private data class TabItem(val route: String, val pattern: String, val label: String, val icon: ImageVector)
+private data class TabItem(val route: String, val pattern: String, @StringRes val label: Int, val icon: ImageVector)
 
+/**
+ * RF-INI-14: 4 abas. A Carteira (contas, cartões, investimentos, dívidas) fica no Início, e a Carteira completa abre por lá.
+ */
 private val tabs = listOf(
-    TabItem(Routes.HOME, Routes.HOME, "Início", Icons.Rounded.Home),
-    TabItem(Routes.txs(), Routes.TXS, "Extrato", Icons.AutoMirrored.Rounded.ReceiptLong),
-    TabItem(Routes.plan(), Routes.PLAN, "Planejar", Icons.AutoMirrored.Rounded.EventNote),
-    TabItem(Routes.WALLET, Routes.WALLET, "Carteira", Icons.Rounded.AccountBalanceWallet),
-    TabItem(Routes.INSIGHTS, Routes.INSIGHTS, "Análises", Icons.Rounded.Insights),
+    TabItem(Routes.HOME, Routes.HOME, R.string.tab_home, Icons.Rounded.Home),
+    TabItem(Routes.txs(), Routes.TXS, R.string.tab_transactions, Icons.AutoMirrored.Rounded.ReceiptLong),
+    TabItem(Routes.plan(), Routes.PLAN, R.string.tab_plan, Icons.AutoMirrored.Rounded.EventNote),
+    TabItem(Routes.INSIGHTS, Routes.INSIGHTS, R.string.tab_insights, Icons.Rounded.Insights),
 )
 
 @Composable
@@ -198,7 +202,7 @@ fun CryoRoot(openOnStart: String?) {
                                     selected = currentPattern == t.pattern,
                                     onClick = { navigator.tab(t.route) },
                                     icon = { Icon(t.icon, null) },
-                                    label = { Text(t.label, maxLines = 1) },
+                                    label = { Text(stringResource(t.label), maxLines = 1) },
                                 )
                             }
                         }

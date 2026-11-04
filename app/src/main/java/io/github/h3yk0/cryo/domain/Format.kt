@@ -126,6 +126,16 @@ object Money {
     }
 }
 
+/** Números e porcentagens no jeito da língua do app ("80%" em português, "80 %" em francês e alemão). */
+object Num {
+    fun percent(p: Int): String = NumberFormat.getPercentInstance(AppLocale.locale).format(p / 100.0)
+    fun int(n: Long): String = NumberFormat.getIntegerInstance(AppLocale.locale).format(n)
+    fun decimal(x: Double, digits: Int = 1): String = NumberFormat.getNumberInstance(AppLocale.locale).apply {
+        minimumFractionDigits = digits
+        maximumFractionDigits = digits
+    }.format(x)
+}
+
 fun YearMonth.key(): Int = year * 100 + monthValue
 fun ymOf(key: Int): YearMonth = YearMonth.of(key / 100, key % 100)
 fun LocalDate.ym(): YearMonth = YearMonth.from(this)
@@ -150,6 +160,18 @@ object Dates {
 
     fun monthYear(ym: YearMonth, today: LocalDate = LocalDate.now()): String =
         if (ym.year == today.year) monthName(ym) else ym.atDay(1).format(fmt("MMMMyyyy")).capFirst()
+
+    /**
+     * O mês no meio de uma frase, do jeito de cada língua: "fatura de outubro" (minúsculo em português, espanhol, francês,
+     * italiano), "October invoice" e "Oktober" (maiúsculo em inglês e alemão).
+     */
+    fun monthInSentence(ym: YearMonth): String = ym.month.getDisplayName(TextStyle.FULL_STANDALONE, AppLocale.locale)
+
+    fun monthYearInSentence(ym: YearMonth, today: LocalDate = LocalDate.now()): String =
+        if (ym.year == today.year) monthInSentence(ym) else ym.atDay(1).format(fmt("MMMMyyyy"))
+
+    /** Mês curto com ano: "out. de 2027", "Oct 2027", "2027年10月". */
+    fun monthShortYear(ym: YearMonth): String = ym.atDay(1).format(fmt("MMMyyyy"))
 
     fun dayHeader(d: LocalDate, today: LocalDate): String = when (ChronoUnit.DAYS.between(d, today)) {
         0L -> Res.s(R.string.date_today)

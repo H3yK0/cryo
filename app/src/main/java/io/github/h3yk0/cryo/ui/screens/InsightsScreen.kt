@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,7 +53,8 @@ import io.github.h3yk0.cryo.domain.ym
 import io.github.h3yk0.cryo.domain.ymOf
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
-import io.github.h3yk0.cryo.ui.components.CryoCard
+import io.github.h3yk0.cryo.ui.components.FlatItem
+import io.github.h3yk0.cryo.ui.components.InfoCard
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.DonutChart
 import io.github.h3yk0.cryo.ui.components.ForecastChart
@@ -83,7 +86,7 @@ fun InsightsScreen() {
     val summary = remember(l, ymKey) { l.monthSummary(ym) }
     val nav = LocalNav.current
 
-    Scaffold(topBar = { CryoTopBar("Análises") }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.tab_insights)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
             Modifier.fillMaxSize().padding(pad),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -100,70 +103,67 @@ fun InsightsScreen() {
                 item { ForecastCard(forecast) }
                 if (insights.isNotEmpty()) {
                     item {
-                        CryoCard(color = MaterialTheme.colorScheme.tertiaryContainer) {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(Icons.Rounded.Lightbulb, null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
-                                Spacer(Modifier.width(8.dp))
-                                Text("O Cryo percebeu", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                            }
+                        // Direção 2.0: as observações como avisos discretos (DS-COMP-17), como no Início.
+                        Column {
+                            SectionTitle(Res.s(R.string.home_insights))
                             insights.forEach {
-                                Text("• ${it.text}", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer, modifier = Modifier.padding(top = 6.dp))
+                                InfoCard(Icons.Rounded.Lightbulb, it.text, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 4.dp))
                             }
                         }
                     }
                 }
             } else {
                 item {
-                    CryoCard {
-                        Text("Resultado do mês", style = MaterialTheme.typography.titleMedium)
+                    FlatItem {
+                        Text(Res.s(R.string.insights_resultado_mes), style = MaterialTheme.typography.titleMedium)
                         Spacer(Modifier.height(8.dp))
-                        Line("Entrou", summary.income, CryoTheme.colors.income)
-                        Line("Saiu", -summary.expense, CryoTheme.colors.expense)
-                        if (summary.invested != 0L) Line("Investido", -summary.invested, MaterialTheme.colorScheme.onSurface)
-                        if (summary.saved != 0L) Line("Guardado em metas", -summary.saved, MaterialTheme.colorScheme.onSurface)
+                        Line(Res.s(R.string.month_in), summary.income, CryoTheme.colors.income)
+                        Line(Res.s(R.string.month_out), -summary.expense, CryoTheme.colors.expense)
+                        if (summary.invested != 0L) Line(Res.s(R.string.insights_investido), -summary.invested, MaterialTheme.colorScheme.onSurface)
+                        if (summary.saved != 0L) Line(Res.s(R.string.plan_guardado_metas), -summary.saved, MaterialTheme.colorScheme.onSurface)
                         HorizontalDivider(Modifier.padding(vertical = 6.dp))
-                        Line("Sobrou", summary.result, if (summary.result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
+                        Line(Res.s(R.string.insights_sobrou), summary.result, if (summary.result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
                     }
                 }
             }
 
-            item { SectionTitle("Fluxo do dinheiro") }
+            item { SectionTitle(Res.s(R.string.insights_fluxo_dinheiro)) }
             item {
-                CryoCard {
+                FlatItem {
                     if (flow.isEmpty) {
-                        Text("Registre entradas e saídas para ver o caminho do seu dinheiro.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(Res.s(R.string.insights_registre_entradas_saidas_para), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
                         Text(
-                            "De onde o dinheiro veio (em cima) e para onde foi (embaixo).",
+                            Res.s(R.string.insights_onde_dinheiro_veio_cima),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.height(12.dp))
                         SankeyChart(flow)
                         Spacer(Modifier.height(12.dp))
                         Row(Modifier.fillMaxWidth()) {
-                            FlowLegend("De onde veio", flow.sources, flow.total, Modifier.weight(1f))
+                            FlowLegend(Res.s(R.string.insights_onde_veio), flow.sources, flow.total, Modifier.weight(1f))
                             Spacer(Modifier.width(12.dp))
-                            FlowLegend("Para onde foi", flow.destinations, flow.total, Modifier.weight(1f))
+                            FlowLegend(Res.s(R.string.insights_para_onde_foi), flow.destinations, flow.total, Modifier.weight(1f))
                         }
                     }
                 }
             }
 
-            item { SectionTitle("Gastos por categoria") }
+            item { SectionTitle(Res.s(R.string.insights_gastos_por_categoria_2)) }
             item {
-                CryoCard {
+                FlatItem {
                     if (cats.isEmpty()) {
-                        Text("Sem gastos neste mês.", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(Res.s(R.string.insights_sem_gastos_neste_mes), color = MaterialTheme.colorScheme.onSurfaceVariant)
                     } else {
                         val total = cats.sumOf { it.total }
                         DonutChart(
                             values = cats.map { it.total },
                             colors = cats.map { Color(it.category?.color ?: 0xFF9E9E9E.toInt()) },
                             modifier = Modifier.fillMaxWidth(0.62f).align(Alignment.CenterHorizontally),
-                            description = "Gastos por categoria: " + cats.joinToString { "${it.category?.name}: ${Money.format(it.total)}" },
+                            description = Res.s(R.string.insights_gastos_por_categoria) + cats.joinToString { "${it.category?.name}: ${Money.format(it.total)}" },
                         ) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text("Total", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(Res.s(R.string.insights_total), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 MoneyText(total, style = MaterialTheme.typography.titleMedium)
                             }
                         }
@@ -176,7 +176,7 @@ fun InsightsScreen() {
                             ) {
                                 if (cat != null) IconBadge(categoryIcon(cat.icon), Color(cat.color), 32.dp)
                                 Spacer(Modifier.width(10.dp))
-                                Text(cat?.name ?: "Sem categoria", style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                Text(cat?.name ?: Res.s(R.string.insights_sem_categoria), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 Text("${ct.total * 100 / total.coerceAtLeast(1)}%  ", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 MoneyText(ct.total, style = MaterialTheme.typography.titleSmall)
                             }
@@ -185,35 +185,36 @@ fun InsightsScreen() {
                 }
             }
 
-            item { SectionTitle("Calendário de calor") }
+            item { SectionTitle(Res.s(R.string.insights_calendario_calor)) }
             item {
                 var day by remember(ymKey) { mutableStateOf<Int?>(null) }
                 val daily = remember(l, ymKey) { l.dailyExpenses(ym) }
-                CryoCard {
+                FlatItem {
                     HeatmapCalendar(ym, daily, l.today, day, onSelect = { day = it })
                     day?.let {
                         Text(
-                            "Dia $it: ${if (daily[it] > 0) "gastou ${Money.format(daily[it])}" else "sem gastos"}",
+                            Res.s(R.string.insights_dia, it, if (daily[it] > 0) Res.s(R.string.insights_gastou, Money.format(daily[it])) else Res.s(R.string.insights_sem_gastos)),
                             style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp),
                         )
                     }
                     val days = if (isCurrent) l.today.dayOfMonth else ym.lengthOfMonth()
                     val active = (1..days).count { daily[it] > 0 }
                     Text(
-                        "Você gastou em $active de $days dias" + if (days - active > 0) " — ${days - active} dias sem gastar nada." else ".",
+                        if (days - active > 0) Res.s(R.string.insights_spent_days_with_free, active, days, Res.p(R.plurals.insights_days_without_spending, days - active, days - active))
+                        else Res.s(R.string.insights_spent_days, active, days),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 6.dp),
                     )
                 }
             }
 
-            item { SectionTitle("Últimos 6 meses") }
+            item { SectionTitle(Res.s(R.string.insights_ultimos_6_meses)) }
             item {
-                CryoCard {
+                FlatItem {
                     MonthBarsChart(bars)
                     Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        LegendDot(CryoTheme.colors.income); Text(" Entradas   ", style = MaterialTheme.typography.labelMedium)
-                        LegendDot(CryoTheme.colors.expense); Text(" Saídas", style = MaterialTheme.typography.labelMedium)
+                        LegendDot(CryoTheme.colors.income); Text(Res.s(R.string.insights_entradas), style = MaterialTheme.typography.labelMedium)
+                        LegendDot(CryoTheme.colors.expense); Text(Res.s(R.string.insights_saidas), style = MaterialTheme.typography.labelMedium)
                     }
                 }
             }
@@ -224,15 +225,15 @@ fun InsightsScreen() {
 @Composable
 private fun ForecastCard(f: MonthForecast) {
     val hide = LocalSettings.current.hideValues
-    CryoCard {
-        Text("Previsão do fim do mês", style = MaterialTheme.typography.titleMedium)
+    FlatItem {
+        Text(Res.s(R.string.insights_previsao_fim_mes), style = MaterialTheme.typography.titleMedium)
         Row(verticalAlignment = Alignment.Bottom) {
             MoneyText(
                 f.projectedResult, signed = true, style = MaterialTheme.typography.headlineMedium,
                 color = if (f.projectedResult >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
             )
             Text(
-                if (f.projectedResult >= 0) "  devem sobrar" else "  devem faltar",
+                if (f.projectedResult >= 0) Res.s(R.string.insights_devem_sobrar) else Res.s(R.string.insights_devem_faltar),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
@@ -240,26 +241,26 @@ private fun ForecastCard(f: MonthForecast) {
         Spacer(Modifier.height(8.dp))
         ForecastChart(f)
         Text(
-            "Linha cheia: o que já aconteceu. Tracejada: a previsão até o dia ${f.daysInMonth}.",
+            Res.s(R.string.insights_linha_cheia_que_ja, f.daysInMonth),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.height(12.dp))
-        Text("Como cheguei nesse número", style = MaterialTheme.typography.titleSmall)
+        Text(Res.s(R.string.insights_como_cheguei_nesse_numero), style = MaterialTheme.typography.titleSmall)
         Spacer(Modifier.height(4.dp))
-        Line("Já entrou", f.incomeSoFar, CryoTheme.colors.income)
-        if (f.pendingBillsIncome + f.scheduledIncome > 0) Line("Ainda vai entrar (fixos e agendados)", f.pendingBillsIncome + f.scheduledIncome, CryoTheme.colors.income)
-        Line("Já saiu", -f.expenseSoFar, CryoTheme.colors.expense)
-        if (f.pendingBillsExpense > 0) Line("Contas fixas a pagar", -f.pendingBillsExpense, CryoTheme.colors.expense)
-        if (f.scheduledExpense > 0) Line("Parcelas e agendados", -f.scheduledExpense, CryoTheme.colors.expense)
-        if (f.pendingDebts > 0) Line("Parcelas de dívidas a pagar", -f.pendingDebts, CryoTheme.colors.expense)
+        Line(Res.s(R.string.insights_ja_entrou), f.incomeSoFar, CryoTheme.colors.income)
+        if (f.pendingBillsIncome + f.scheduledIncome > 0) Line(Res.s(R.string.insights_ainda_vai_entrar_fixos), f.pendingBillsIncome + f.scheduledIncome, CryoTheme.colors.income)
+        Line(Res.s(R.string.insights_ja_saiu), -f.expenseSoFar, CryoTheme.colors.expense)
+        if (f.pendingBillsExpense > 0) Line(Res.s(R.string.insights_contas_fixas_pagar), -f.pendingBillsExpense, CryoTheme.colors.expense)
+        if (f.scheduledExpense > 0) Line(Res.s(R.string.insights_parcelas_agendados), -f.scheduledExpense, CryoTheme.colors.expense)
+        if (f.pendingDebts > 0) Line(Res.s(R.string.insights_parcelas_dividas_pagar), -f.pendingDebts, CryoTheme.colors.expense)
         if (f.remainingDays > 0) {
-            Line("Dia a dia (${if (hide) Money.HIDDEN else Money.format(f.dailyRate)}/dia × ${f.remainingDays} dias)", -f.projectedVariable, CryoTheme.colors.expense)
+            Line(Res.s(R.string.insights_dia_dia_dia_dias, if (hide) Money.HIDDEN else Money.format(f.dailyRate), f.remainingDays), -f.projectedVariable, CryoTheme.colors.expense)
         }
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
-        Line("Resultado previsto", f.projectedResult, if (f.projectedResult >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
+        Line(Res.s(R.string.insights_resultado_previsto), f.projectedResult, if (f.projectedResult >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
         if (f.usedHistory) {
             Text(
-                "Como o mês está no começo, também usei a sua média dos últimos meses para estimar o dia a dia.",
+                Res.s(R.string.insights_como_mes_esta_comeco),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 6.dp),
             )

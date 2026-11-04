@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -91,6 +93,7 @@ import io.github.h3yk0.cryo.ui.components.CategoryGrid
 import io.github.h3yk0.cryo.ui.components.ColorChooser
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
 import io.github.h3yk0.cryo.ui.components.CryoCard
+import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.DatePickerDialogField
 import io.github.h3yk0.cryo.ui.components.EmojiChooser
@@ -118,10 +121,10 @@ import kotlin.math.max
 fun PlanScreen(initialTab: Int) {
     val l = rememberLedger() ?: return LoadingBox()
     var tab by rememberSaveable(initialTab) { mutableIntStateOf(initialTab.coerceIn(0, 2)) }
-    Scaffold(topBar = { CryoTopBar("Planejar") }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.tab_plan)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             PrimaryTabRow(selectedTabIndex = tab) {
-                listOf("Orçamentos", "Contas fixas", "Metas").forEachIndexed { i, t ->
+                listOf(Res.s(R.string.home_shortcut_budgets), Res.s(R.string.home_shortcut_bills), Res.s(R.string.home_shortcut_goals)).forEachIndexed { i, t ->
                     Tab(selected = tab == i, onClick = { tab = i }, text = { Text(t, maxLines = 1) })
                 }
             }
@@ -151,8 +154,8 @@ private fun BudgetsTab(l: Ledger) {
                 val limit = usages.sumOf { it.limit }
                 val spent = usages.sumOf { it.spent }
                 val daysLeft = ym.lengthOfMonth() - l.today.dayOfMonth + 1
-                CryoCard(color = MaterialTheme.colorScheme.secondaryContainer) {
-                    Text("Total planejado em ${Dates.monthName(ym).lowercase()}", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                Column(Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 12.dp)) {
+                    Text(Res.s(R.string.plan_total_planejado, Dates.monthInSentence(ym)), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     Row(verticalAlignment = Alignment.Bottom) {
                         MoneyText(spent, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
                         Text(" de ${if (hide) Money.HIDDEN else Money.format(limit)}", style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -161,8 +164,8 @@ private fun BudgetsTab(l: Ledger) {
                     UsageBar(spent.toFloat() / limit.coerceAtLeast(1))
                     Spacer(Modifier.height(6.dp))
                     Text(
-                        if (limit - spent >= 0) "Restam ${if (hide) Money.HIDDEN else Money.format(limit - spent)} · cerca de ${if (hide) Money.HIDDEN else Money.format((limit - spent) / daysLeft)} por dia"
-                        else "Você passou ${if (hide) Money.HIDDEN else Money.format(spent - limit)} do total planejado",
+                        if (limit - spent >= 0) Res.s(R.string.plan_restam_cerca_por_dia, if (hide) Money.HIDDEN else Money.format(limit - spent), if (hide) Money.HIDDEN else Money.format((limit - spent) / daysLeft))
+                        else Res.s(R.string.plan_voce_passou_total_planejado, if (hide) Money.HIDDEN else Money.format(spent - limit)),
                         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                 }
@@ -171,8 +174,8 @@ private fun BudgetsTab(l: Ledger) {
         if (usages.isEmpty()) {
             item {
                 EmptyState(
-                    Icons.Rounded.PieChart, "Defina limites por categoria",
-                    "O Cryo avisa quando você chegar a 80% e quando estourar o limite.",
+                    Icons.Rounded.PieChart, Res.s(R.string.plan_defina_limites_por_categoria),
+                    Res.s(R.string.plan_cryo_avisa_quando_voce),
                 )
             }
         }
@@ -183,7 +186,7 @@ private fun BudgetsTab(l: Ledger) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
                         Icon(Icons.Rounded.AutoAwesome, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
                         Spacer(Modifier.width(6.dp))
-                        Text("Sugestões pela sua média de gastos", style = MaterialTheme.typography.labelLarge)
+                        Text(Res.s(R.string.plan_sugestoes_pela_sua_media), style = MaterialTheme.typography.labelLarge)
                     }
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         suggestions.forEach { (cat, v) ->
@@ -195,7 +198,7 @@ private fun BudgetsTab(l: Ledger) {
         }
         item {
             Button(onClick = { editing = null to 0L }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text("Novo orçamento")
+                Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_novo_orcamento))
             }
         }
     }
@@ -204,8 +207,8 @@ private fun BudgetsTab(l: Ledger) {
         BudgetSheet(
             l, catId, if (catId != null) l.budgetOf(catId)?.limitAmount ?: suggested else suggested,
             onDismiss = { editing = null },
-            onSave = { id, v -> editing = null; c.launch { c.repo.saveBudget(id, v); c.message("Orçamento salvo") } },
-            onDelete = { id -> editing = null; c.launch { c.repo.deleteBudget(id); c.message("Orçamento removido") } },
+            onSave = { id, v -> editing = null; c.launch { c.repo.saveBudget(id, v); c.message(Res.s(R.string.plan_orcamento_salvo)) } },
+            onDelete = { id -> editing = null; c.launch { c.repo.deleteBudget(id); c.message(Res.s(R.string.plan_orcamento_removido)) } },
         )
     }
 }
@@ -222,7 +225,7 @@ private fun budgetSuggestions(l: Ledger): List<Pair<io.github.h3yk0.cryo.data.db
 
 @Composable
 private fun BudgetRow(u: BudgetUsage, hide: Boolean, onClick: () -> Unit) {
-    CryoCard(onClick = onClick) {
+    FlatItem(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(categoryIcon(u.category.icon), Color(u.category.color), 36.dp)
             Spacer(Modifier.width(12.dp))
@@ -243,7 +246,7 @@ private fun BudgetRow(u: BudgetUsage, hide: Boolean, onClick: () -> Unit) {
         Spacer(Modifier.height(10.dp))
         UsageBar(u.ratio)
         Text(
-            if (u.remaining >= 0) "Restam ${if (hide) Money.HIDDEN else Money.format(u.remaining)}" else "Passou ${if (hide) Money.HIDDEN else Money.format(-u.remaining)} do limite",
+            if (u.remaining >= 0) Res.s(R.string.budget_left, if (hide) Money.HIDDEN else Money.format(u.remaining)) else Res.s(R.string.plan_passou_limite, if (hide) Money.HIDDEN else Money.format(-u.remaining)),
             style = MaterialTheme.typography.bodySmall,
             color = if (u.remaining >= 0) MaterialTheme.colorScheme.onSurfaceVariant else CryoTheme.colors.expense,
             modifier = Modifier.padding(top = 4.dp),
@@ -266,25 +269,25 @@ private fun BudgetSheet(
     val options = l.categories(CategoryKind.EXPENSE).filter { it.id == categoryId || l.budgetOf(it.id) == null }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
-            Text(if (existing != null) "Editar orçamento" else "Novo orçamento", style = MaterialTheme.typography.titleLarge)
-            Text("Quanto você quer gastar no máximo por mês nesta categoria?", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(if (existing != null) Res.s(R.string.plan_editar_orcamento) else Res.s(R.string.plan_novo_orcamento), style = MaterialTheme.typography.titleLarge)
+            Text(Res.s(R.string.plan_quanto_voce_quer_gastar), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.height(16.dp))
-            AmountField(amount, { amount = it }, label = "Limite por mês")
+            AmountField(amount, { amount = it }, label = Res.s(R.string.plan_limite_por_mes))
             if (existing == null) {
-                FieldLabel("Categoria")
+                FieldLabel(Res.s(R.string.plan_categoria))
                 CategoryGrid(options, cat, { cat = it.id })
             } else {
-                FieldLabel("Categoria: ${l.category[categoryId]?.name}")
+                FieldLabel(Res.s(R.string.plan_categoria_2, l.category[categoryId]?.name))
             }
             Spacer(Modifier.height(20.dp))
             Button(
                 onClick = { cat?.let { onSave(it, amount) } }, enabled = cat != null && amount > 0,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) { Text("Salvar orçamento") }
+            ) { Text(Res.s(R.string.plan_salvar_orcamento)) }
             if (existing != null) {
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = { onDelete(existing.categoryId) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                    Text("Remover orçamento", color = MaterialTheme.colorScheme.error)
+                    Text(Res.s(R.string.plan_remover_orcamento), color = MaterialTheme.colorScheme.error)
                 }
             }
         }
@@ -317,8 +320,8 @@ private fun BillsTab(l: Ledger) {
         if (statuses.isEmpty() && installments.isEmpty()) {
             item {
                 EmptyState(
-                    Icons.Rounded.EventRepeat, "Nenhuma conta fixa",
-                    "Cadastre aluguel, internet, assinaturas e também o salário. O Cryo lembra do vencimento e usa isso na previsão do mês.",
+                    Icons.Rounded.EventRepeat, Res.s(R.string.plan_nenhuma_conta_fixa),
+                    Res.s(R.string.plan_cadastre_aluguel_internet_assinaturas),
                 )
             }
         }
@@ -326,14 +329,14 @@ private fun BillsTab(l: Ledger) {
             item {
                 val total = pay.sumOf { it.bill.amount }
                 val paid = pay.filter { it.payment != null }
-                SummaryLine("A pagar", "${paid.size} de ${pay.size} pagas", total, hide)
+                SummaryLine(Res.s(R.string.plan_pagar), Res.s(R.string.plan_pagas, paid.size, pay.size), total, hide)
             }
             items(pay, key = { "p${it.bill.id}" }) { s -> BillRow(s, l, hide, onPay = { paying = s }, onUndo = { undoing = s }) }
         }
         if (installments.isNotEmpty()) {
             item {
                 SummaryLine(
-                    "Parcelas de dívidas", "${installments.count { it.paid }} de ${installments.size} pagas",
+                    Res.s(R.string.plan_parcelas_dividas), Res.s(R.string.plan_pagas, installments.count { it.paid }, installments.size),
                     installments.sumOf { it.info.debt.installmentAmount }, hide,
                 )
             }
@@ -343,17 +346,17 @@ private fun BillsTab(l: Ledger) {
             item {
                 val total = receive.sumOf { it.bill.amount }
                 val got = receive.count { it.payment != null }
-                SummaryLine("A receber", "$got de ${receive.size} recebidos", total, hide)
+                SummaryLine(Res.s(R.string.plan_receber), Res.s(R.string.plan_recebidos, got, receive.size), total, hide)
             }
             items(receive, key = { "r${it.bill.id}" }) { s -> BillRow(s, l, hide, onPay = { paying = s }, onUndo = { undoing = s }) }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 Button(onClick = { nav.go(Routes.billEdit(kind = CategoryKind.EXPENSE)) }, modifier = Modifier.weight(1f).height(52.dp)) {
-                    Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text("Conta a pagar")
+                    Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.plan_conta_pagar))
                 }
                 OutlinedButton(onClick = { nav.go(Routes.billEdit(kind = CategoryKind.INCOME)) }, modifier = Modifier.weight(1f).height(52.dp)) {
-                    Text("A receber")
+                    Text(Res.s(R.string.plan_receber))
                 }
             }
         }
@@ -363,26 +366,26 @@ private fun BillsTab(l: Ledger) {
         val b = s.bill
         val card = b.cardId?.let { l.card[it] }
         MoneyActionSheet(
-            title = if (b.kind == CategoryKind.EXPENSE) "Marcar ${b.name} como paga" else "Marcar ${b.name} como recebido",
-            subtitle = if (card != null) "Será lançada no cartão ${card.name}" else "Confira o valor (pode mudar de um mês para outro)",
+            title = if (b.kind == CategoryKind.EXPENSE) Res.s(R.string.plan_marcar_como_paga, b.name) else Res.s(R.string.plan_marcar_como_recebido, b.name),
+            subtitle = if (card != null) Res.s(R.string.plan_sera_lancada_cartao, card.name) else Res.s(R.string.plan_confira_valor_pode_mudar),
             initialAmount = b.amount, l = l,
-            accountLabel = if (card != null) null else if (b.kind == CategoryKind.EXPENSE) "Pago com" else "Recebido em",
+            accountLabel = if (card != null) null else if (b.kind == CategoryKind.EXPENSE) Res.s(R.string.plan_pago_com) else Res.s(R.string.plan_recebido_2),
             initialAccount = b.accountId ?: LocalSettings.current.defaultAccountId,
-            confirmLabel = "Confirmar",
+            confirmLabel = Res.s(R.string.plan_confirmar),
             onDismiss = { paying = null },
             onConfirm = { amount, acc, date ->
                 paying = null
                 c.launch {
                     c.repo.markBillPaid(b, s.ym, amount, date, acc, card)
                     val alert = if (b.kind == CategoryKind.EXPENSE) c.repo.budgetAlert(b.categoryId, date, amount) else null
-                    c.message(alert ?: if (b.kind == CategoryKind.EXPENSE) "${b.name} paga" else "${b.name} recebido")
+                    c.message(alert ?: if (b.kind == CategoryKind.EXPENSE) Res.s(R.string.plan_paga, b.name) else Res.s(R.string.plan_recebido_3, b.name))
                 }
             },
         )
     }
     undoing?.let { s ->
         ConfirmDialog(
-            "Desmarcar pagamento?", "O lançamento de ${s.bill.name} neste mês será apagado.", "Desmarcar",
+            Res.s(R.string.plan_desmarcar_pagamento), Res.s(R.string.plan_lancamento_neste_mes_sera, s.bill.name), Res.s(R.string.plan_desmarcar),
             onConfirm = { undoing = null; c.launch { c.repo.unmarkBillPaid(s.bill, s.ym) } },
             onDismiss = { undoing = null },
         )
@@ -399,18 +402,18 @@ private fun DebtInstallmentRow(m: DebtMath.MonthInstallment, l: Ledger, hide: Bo
     val amount = if (m.payable) info.nextAmount else d.installmentAmount
     val (status, statusColor) = when {
         m.paid -> "paga" to CryoTheme.colors.income
-        m.due.isBefore(l.today) -> "venceu ${Dates.relative(m.due, l.today)}" to CryoTheme.colors.expense
-        ChronoUnit.DAYS.between(l.today, m.due) <= 3 -> "vence ${Dates.relative(m.due, l.today)}" to CryoTheme.colors.warning
-        else -> "vence dia ${m.due.dayOfMonth}" to MaterialTheme.colorScheme.onSurfaceVariant
+        m.due.isBefore(l.today) -> Res.s(R.string.bill_was_due, Dates.relative(m.due, l.today)) to CryoTheme.colors.expense
+        ChronoUnit.DAYS.between(l.today, m.due) <= 3 -> Res.s(R.string.bill_due, Dates.relative(m.due, l.today)) to CryoTheme.colors.warning
+        else -> Res.s(R.string.plan_vence_dia, m.due.dayOfMonth) to MaterialTheme.colorScheme.onSurfaceVariant
     }
-    CryoCard(onClick = { nav.go(Routes.debt(d.id)) }) {
+    FlatItem(onClick = { nav.go(Routes.debt(d.id)) }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(debtKindIcon(d.kind), Color(d.color))
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(d.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
-                    "${if (hide) Money.HIDDEN else Money.format(amount)} · parcela ${m.number} de ${info.installmentsTotal}",
+                    Res.s(R.string.plan_parcela, if (hide) Money.HIDDEN else Money.format(amount), m.number, info.installmentsTotal),
                     style = MaterialTheme.typography.bodyMedium,
                 )
                 Text(status, style = MaterialTheme.typography.bodySmall, color = statusColor)
@@ -418,21 +421,21 @@ private fun DebtInstallmentRow(m: DebtMath.MonthInstallment, l: Ledger, hide: Bo
             Spacer(Modifier.width(8.dp))
             when {
                 m.paid -> Row(
-                    Modifier.padding(horizontal = 12.dp).semantics { contentDescription = "Parcela paga" },
+                    Modifier.padding(horizontal = 12.dp).semantics { contentDescription = Res.s(R.string.plan_parcela_paga) },
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(Icons.Rounded.CheckCircle, null, Modifier.size(20.dp), tint = CryoTheme.colors.income)
                     Spacer(Modifier.width(6.dp))
-                    Text("Paga", style = MaterialTheme.typography.labelLarge, color = CryoTheme.colors.income)
+                    Text(Res.s(R.string.wallet_paga), style = MaterialTheme.typography.labelLarge, color = CryoTheme.colors.income)
                 }
                 m.payable -> FilledTonalButton(onClick = onPay, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text("Paguei")
+                    Text(Res.s(R.string.debt_paguei))
                 }
             }
         }
         if (!m.paid && !m.payable) {
             Text(
-                "Antes desta, falta pagar a parcela ${info.installmentsPaid + 1}.",
+                Res.s(R.string.plan_antes_desta_falta_pagar, info.installmentsPaid + 1),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 6.dp),
             )
@@ -459,12 +462,12 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
     val income = b.kind == CategoryKind.INCOME
     val value = if (hide) Money.HIDDEN else Money.format(s.payment?.amount ?: b.amount)
     val (status, statusColor) = when (s.state) {
-        BillState.PAID -> (if (income) "recebido em " else "paga em ") + Dates.short(s.payment!!.date) to CryoTheme.colors.income
-        BillState.OVERDUE -> (if (income) "atrasado desde " else "venceu ") + Dates.relative(s.due, l.today) to CryoTheme.colors.expense
-        BillState.DUE_SOON -> (if (income) "cai " else "vence ") + Dates.relative(s.due, l.today) to CryoTheme.colors.warning
-        BillState.UPCOMING -> (if (income) "cai dia " else "vence dia ") + s.due.dayOfMonth to MaterialTheme.colorScheme.onSurfaceVariant
+        BillState.PAID -> Res.s(if (income) R.string.bill_received_on else R.string.bill_paid_on, Dates.short(s.payment!!.date)) to CryoTheme.colors.income
+        BillState.OVERDUE -> Res.s(if (income) R.string.bill_late_since else R.string.bill_was_due, Dates.relative(s.due, l.today)) to CryoTheme.colors.expense
+        BillState.DUE_SOON -> Res.s(if (income) R.string.bill_arrives else R.string.bill_due, Dates.relative(s.due, l.today)) to CryoTheme.colors.warning
+        BillState.UPCOMING -> Res.s(if (income) R.string.bill_arrives_day else R.string.bill_due_day, s.due.dayOfMonth) to MaterialTheme.colorScheme.onSurfaceVariant
     }
-    CryoCard(onClick = { nav.go(Routes.billEdit(b.id, b.kind)) }) {
+    FlatItem(onClick = { nav.go(Routes.billEdit(b.id, b.kind)) }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             if (cat != null) IconBadge(categoryIcon(cat.icon), Color(cat.color)) else IconBadge(Icons.Rounded.EventRepeat, MaterialTheme.colorScheme.primary)
             Spacer(Modifier.width(12.dp))
@@ -479,16 +482,16 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
             Spacer(Modifier.width(8.dp))
             if (s.payment == null) {
                 FilledTonalButton(onClick = onPay, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text(if (income) "Recebi" else "Paguei")
+                    Text(if (income) Res.s(R.string.plan_recebi) else Res.s(R.string.debt_paguei))
                 }
             } else {
                 TextButton(
                     onClick = onUndo,
-                    modifier = Modifier.semantics { contentDescription = if (income) "Recebido. Toque para desmarcar" else "Paga. Toque para desmarcar" },
+                    modifier = Modifier.semantics { contentDescription = if (income) Res.s(R.string.plan_recebido_toque_para_desmarcar) else Res.s(R.string.plan_paga_toque_para_desmarcar) },
                 ) {
                     Icon(Icons.Rounded.CheckCircle, null, Modifier.size(20.dp), tint = CryoTheme.colors.income)
                     Spacer(Modifier.width(6.dp))
-                    Text(if (income) "Recebido" else "Paga", color = CryoTheme.colors.income)
+                    Text(if (income) Res.s(R.string.plan_recebido) else Res.s(R.string.wallet_paga), color = CryoTheme.colors.income)
                 }
             }
         }
@@ -517,7 +520,7 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     EditorScaffold(
-        title = if (existing == null) (if (kind == CategoryKind.EXPENSE) "Nova conta fixa" else "Novo recebimento fixo") else "Editar",
+        title = if (existing == null) (if (kind == CategoryKind.EXPENSE) Res.s(R.string.plan_nova_conta_fixa) else Res.s(R.string.plan_novo_recebimento_fixo)) else Res.s(R.string.plan_editar),
         canSave = name.isNotBlank() && amount > 0,
         onSave = {
             val b = (existing ?: Bill(name = name, amount = amount, dueDay = day, startYm = l.today.ym().key())).copy(
@@ -526,42 +529,42 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
                 remind = remind, remindDaysBefore = before, active = active,
             )
             if (remind && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            c.launch { c.repo.saveBill(b); c.message("Salvo") }
+            c.launch { c.repo.saveBill(b); c.message(Res.s(R.string.plan_salvo)) }
             nav.back()
         },
         onDelete = existing?.let { { confirmDelete = true } },
     ) {
         Segmented(
-            listOf(CategoryKind.EXPENSE to "A pagar", CategoryKind.INCOME to "A receber"), kind,
+            listOf(CategoryKind.EXPENSE to Res.s(R.string.plan_pagar), CategoryKind.INCOME to Res.s(R.string.plan_receber)), kind,
             { kind = it; cat = null; if (it == CategoryKind.INCOME && source is Source.Card) source = l.activeAccounts.firstOrNull()?.let { a -> Source.Acc(a.id) } },
         )
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
-            name, { name = it }, label = { Text("Nome") }, singleLine = true,
-            placeholder = { Text(if (kind == CategoryKind.EXPENSE) "Ex.: Aluguel, Internet, Netflix" else "Ex.: Salário") },
+            name, { name = it }, label = { Text(Res.s(R.string.wallet_nome)) }, singleLine = true,
+            placeholder = { Text(if (kind == CategoryKind.EXPENSE) Res.s(R.string.plan_ex_aluguel_internet_netflix) else Res.s(R.string.plan_ex_salario)) },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
         )
-        FieldLabel("Valor de todo mês (aproximado)")
+        FieldLabel(Res.s(R.string.plan_valor_todo_mes_aproximado))
         AmountField(amount, { amount = it }, color = if (kind == CategoryKind.INCOME) CryoTheme.colors.income else MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(8.dp))
-        Stepper(day, { day = it }, 1..31, if (kind == CategoryKind.EXPENSE) "Vence todo dia" else "Cai todo dia")
-        FieldLabel("Categoria")
+        Stepper(day, { day = it }, 1..31, if (kind == CategoryKind.EXPENSE) Res.s(R.string.debt_vence_todo_dia) else Res.s(R.string.plan_cai_todo_dia))
+        FieldLabel(Res.s(R.string.plan_categoria))
         CategoryGrid(l.categories(kind), cat, { cat = it.id })
-        FieldLabel(if (kind == CategoryKind.EXPENSE) "Paga com" else "Entra na conta")
+        FieldLabel(if (kind == CategoryKind.EXPENSE) Res.s(R.string.debt_paga_com) else Res.s(R.string.wallet_entra_conta))
         SourceChips(l.activeAccounts, if (kind == CategoryKind.EXPENSE) l.activeCards else emptyList(), source, { source = it })
         if (kind == CategoryKind.EXPENSE) {
             Spacer(Modifier.height(8.dp))
-            SwitchRow("Lembrar do vencimento", remind, { remind = it }, "Notificação no celular")
+            SwitchRow(Res.s(R.string.debt_lembrar_vencimento), remind, { remind = it }, Res.s(R.string.debt_notificacao_celular))
             if (remind) {
-                Stepper(before, { before = it }, 0..7, "Avisar antes", format = { if (it == 0) "No dia" else "$it dia${if (it > 1) "s" else ""}" })
+                Stepper(before, { before = it }, 0..7, Res.s(R.string.debt_avisar_antes), format = { if (it == 0) Res.s(R.string.debt_dia) else Res.p(R.plurals.count_days, it, it) })
             }
         }
-        if (existing != null) SwitchRow("Ativa", active, { active = it }, "Desligue quando a conta deixar de existir")
+        if (existing != null) SwitchRow(Res.s(R.string.plan_ativa), active, { active = it }, Res.s(R.string.plan_desligue_quando_conta_deixar))
     }
     if (confirmDelete && existing != null) {
         ConfirmDialog(
-            "Apagar ${existing.name}?", "Os pagamentos já registrados continuam no histórico.", "Apagar",
-            onConfirm = { confirmDelete = false; c.launch { c.repo.deleteBill(existing); c.message("Conta fixa apagada") }; nav.back() },
+            Res.s(R.string.plan_apagar, existing.name), Res.s(R.string.plan_pagamentos_ja_registrados_continuam), Res.s(R.string.wallet_apagar),
+            onConfirm = { confirmDelete = false; c.launch { c.repo.deleteBill(existing); c.message(Res.s(R.string.plan_conta_fixa_apagada)) }; nav.back() },
             onDismiss = { confirmDelete = false },
         )
     }
@@ -582,27 +585,27 @@ private fun GoalsTab(l: Ledger) {
             item {
                 if (archived.isEmpty()) {
                     EmptyState(
-                        Icons.Rounded.Flag, "Crie sua primeira meta",
-                        "Viagem, reserva de emergência, celular novo... Defina o valor e o prazo, e o Cryo mostra quanto guardar por mês.",
+                        Icons.Rounded.Flag, Res.s(R.string.plan_crie_sua_primeira_meta),
+                        Res.s(R.string.plan_viagem_reserva_emergencia_celular),
                     )
                 } else {
                     EmptyState(
-                        Icons.Rounded.Flag, "Nenhuma meta ativa",
-                        "Suas metas arquivadas continuam guardadas no arquivo, logo abaixo. Crie uma nova meta quando quiser.",
+                        Icons.Rounded.Flag, Res.s(R.string.plan_nenhuma_meta_ativa),
+                        Res.s(R.string.plan_suas_metas_arquivadas_continuam),
                     )
                 }
             }
         } else {
             item {
-                CryoCard(color = MaterialTheme.colorScheme.secondaryContainer) {
-                    Text("Guardado em metas", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                Column(Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 12.dp)) {
+                    Text(Res.s(R.string.plan_guardado_metas), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     MoneyText(
                         l.activeGoals.sumOf { l.goalSaved(it.id) }, style = MaterialTheme.typography.headlineSmall,
                         color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
                     if (archivedSaved > 0) {
                         Text(
-                            "e mais ${if (hide) Money.HIDDEN else Money.format(archivedSaved)} em metas arquivadas",
+                            Res.s(R.string.plan_mais_metas_arquivadas, if (hide) Money.HIDDEN else Money.format(archivedSaved)),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer,
                         )
                     }
@@ -614,11 +617,11 @@ private fun GoalsTab(l: Ledger) {
                 g, l, hide,
                 onClick = { nav.go(Routes.goalEdit(g.id)) },
                 actions = { saved ->
-                    FilledTonalButton(onClick = { action = g to true }) { Text("Guardar") }
-                    OutlinedButton(onClick = { action = g to false }, enabled = saved > 0) { Text("Retirar") }
+                    FilledTonalButton(onClick = { action = g to true }) { Text(Res.s(R.string.plan_guardar)) }
+                    OutlinedButton(onClick = { action = g to false }, enabled = saved > 0) { Text(Res.s(R.string.plan_retirar)) }
                     if (saved >= g.target) {
                         TextButton(onClick = { archiveGoal(c, g) }) {
-                            Icon(Icons.Rounded.Archive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Arquivar")
+                            Icon(Icons.Rounded.Archive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.wallet_arquivar))
                         }
                     }
                 },
@@ -626,13 +629,13 @@ private fun GoalsTab(l: Ledger) {
         }
         item {
             Button(onClick = { nav.go(Routes.goalEdit()) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text("Nova meta")
+                Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_nova_meta))
             }
         }
         if (archived.isNotEmpty()) {
             item {
                 OutlinedButton(onClick = { nav.go(Routes.GOALS_ARCHIVE) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                    Icon(Icons.Rounded.Inventory2, null); Spacer(Modifier.width(8.dp)); Text("Metas arquivadas (${archived.size})")
+                    Icon(Icons.Rounded.Inventory2, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_metas_arquivadas_2, archived.size))
                 }
             }
         }
@@ -643,7 +646,7 @@ private fun GoalsTab(l: Ledger) {
 private fun archiveGoal(c: io.github.h3yk0.cryo.AppContainer, g: Goal) {
     c.launch {
         c.repo.saveGoal(g.copy(archived = true))
-        c.message("Meta arquivada. Ela fica em Metas arquivadas.", "Desfazer") { c.repo.saveGoal(g.copy(archived = false)) }
+        c.message(Res.s(R.string.plan_meta_arquivada_ela_fica), Res.s(R.string.wallet_desfazer)) { c.repo.saveGoal(g.copy(archived = false)) }
     }
 }
 
@@ -659,10 +662,7 @@ private fun GoalCard(
 ) {
     val saved = l.goalSaved(g.id)
     val ratio = saved.toFloat() / g.target.coerceAtLeast(1)
-    CryoCard(
-        onClick = onClick,
-        color = if (faded) MaterialTheme.colorScheme.surfaceContainerLowest else MaterialTheme.colorScheme.surfaceContainerLow,
-    ) {
+    FlatItem(onClick = onClick, faded = faded) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             io.github.h3yk0.cryo.ui.components.EmojiBadge(g.emoji, Color(g.color), 48.dp)
             Spacer(Modifier.width(12.dp))
@@ -679,14 +679,17 @@ private fun GoalCard(
         UsageBar(ratio, baseColor = Color(g.color), height = 12.dp, warn = false)
         val need = l.goalMonthlyNeeded(g)
         val info = when {
-            saved >= g.target -> "Meta alcançada! 🎉"
-            g.archived && saved <= 0 -> "Arquivada sem dinheiro guardado nela"
-            g.archived -> "Arquivada · faltavam ${if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved))}"
+            saved >= g.target -> Res.s(R.string.plan_meta_alcancada)
+            g.archived && saved <= 0 -> Res.s(R.string.plan_arquivada_sem_dinheiro_guardado)
+            g.archived -> Res.s(R.string.debt_arquivada_faltavam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
             need != null && g.deadline != null -> {
                 val months = ChronoUnit.MONTHS.between(l.today.ym(), g.deadline.ym()) + 1
-                "Guarde ${if (hide) Money.HIDDEN else Money.format(need)} por mês para chegar lá em ${Dates.monthYear(g.deadline.ym(), l.today).lowercase()} ($months ${if (months == 1L) "mês" else "meses"})"
+                Res.s(
+                    R.string.goal_save_per_month, if (hide) Money.HIDDEN else Money.format(need),
+                    Dates.monthYearInSentence(g.deadline.ym(), l.today), Res.p(R.plurals.count_months, months.toInt(), months.toInt()),
+                )
             }
-            else -> "Faltam ${if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved))}"
+            else -> Res.s(R.string.plan_faltam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
         }
         Text(info, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
         FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { actions(saved) }
@@ -698,16 +701,16 @@ private fun GoalCard(
 private fun GoalMoneySheet(g: Goal, deposit: Boolean, l: Ledger, onDismiss: () -> Unit) {
     val c = LocalContainer.current
     MoneyActionSheet(
-        title = if (deposit) "Guardar em ${g.name}" else "Retirar de ${g.name}",
-        subtitle = if (deposit) "O dinheiro sai da conta escolhida e fica separado na meta" else "O dinheiro volta para a conta escolhida",
+        title = if (deposit) Res.s(R.string.plan_guardar_2, g.name) else Res.s(R.string.plan_retirar_2, g.name),
+        subtitle = if (deposit) Res.s(R.string.plan_dinheiro_sai_conta_escolhida) else Res.s(R.string.wallet_dinheiro_volta_para_conta),
         initialAmount = when {
             deposit -> l.goalMonthlyNeeded(g) ?: 0
             g.archived -> l.goalSaved(g.id).coerceAtLeast(0)
             else -> 0
         },
         l = l,
-        accountLabel = if (deposit) "Sai da conta" else "Volta para a conta",
-        initialAccount = LocalSettings.current.defaultAccountId, confirmLabel = if (deposit) "Guardar" else "Retirar",
+        accountLabel = if (deposit) Res.s(R.string.wallet_sai_conta) else Res.s(R.string.plan_volta_para_conta),
+        initialAccount = LocalSettings.current.defaultAccountId, confirmLabel = if (deposit) Res.s(R.string.plan_guardar) else Res.s(R.string.plan_retirar),
         onDismiss = onDismiss,
         onConfirm = { amount, acc, date ->
             onDismiss()
@@ -715,10 +718,10 @@ private fun GoalMoneySheet(g: Goal, deposit: Boolean, l: Ledger, onDismiss: () -
                 c.repo.saveTx(
                     Tx(
                         type = if (deposit) TxType.GOAL_IN else TxType.GOAL_OUT, amount = amount, date = date,
-                        description = if (deposit) "Guardado: ${g.name}" else "Retirado: ${g.name}", accountId = acc, goalId = g.id,
+                        description = if (deposit) Res.s(R.string.plan_guardado, g.name) else Res.s(R.string.plan_retirado, g.name), accountId = acc, goalId = g.id,
                     ),
                 )
-                c.message(if (deposit) "${Money.format(amount)} guardados em ${g.name}" else "${Money.format(amount)} retirados de ${g.name}")
+                c.message(if (deposit) Res.s(R.string.plan_guardados, Money.format(amount), g.name) else Res.s(R.string.plan_retirados, Money.format(amount), g.name))
             }
         },
     )
@@ -736,7 +739,7 @@ fun GoalsArchiveScreen() {
     val stillSaved = archived.sumOf { l.goalSaved(it.id).coerceAtLeast(0) }
     var withdrawing by remember { mutableStateOf<Goal?>(null) }
 
-    Scaffold(topBar = { CryoTopBar("Metas arquivadas", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.plan_metas_arquivadas), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
             Modifier.fillMaxSize().padding(pad),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -745,18 +748,18 @@ fun GoalsArchiveScreen() {
             if (archived.isEmpty()) {
                 item {
                     EmptyState(
-                        Icons.Rounded.Inventory2, "Nenhuma meta arquivada",
-                        "Quando você arquivar uma meta, ela sai da lista de Metas e fica guardada aqui. Dá para restaurar quando quiser.",
+                        Icons.Rounded.Inventory2, Res.s(R.string.plan_nenhuma_meta_arquivada),
+                        Res.s(R.string.plan_quando_voce_arquivar_meta),
                     )
                 }
             } else {
                 item {
                     Text(
                         if (stillSaved > 0) {
-                            "Ainda há ${if (hide) Money.HIDDEN else Money.format(stillSaved)} guardados nestas metas. " +
-                                "Esse dinheiro continua no seu patrimônio. Use “Retirar” para devolvê-lo a uma conta."
+                            Res.s(R.string.plan_ainda_ha_guardados_nestas, if (hide) Money.HIDDEN else Money.format(stillSaved)) +
+                                Res.s(R.string.plan_esse_dinheiro_continua_seu)
                         } else {
-                            "Metas arquivadas não aparecem em Planejar nem no Início. Toque em “Restaurar” para trazer uma de volta."
+                            Res.s(R.string.plan_metas_arquivadas_nao_aparecem)
                         },
                         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
@@ -768,10 +771,10 @@ fun GoalsArchiveScreen() {
                     FilledTonalButton(onClick = {
                         c.launch {
                             c.repo.saveGoal(g.copy(archived = false))
-                            c.message("${g.name} voltou para Metas", "Desfazer") { c.repo.saveGoal(g.copy(archived = true)) }
+                            c.message(Res.s(R.string.plan_voltou_para_metas, g.name), Res.s(R.string.wallet_desfazer)) { c.repo.saveGoal(g.copy(archived = true)) }
                         }
-                    }) { Icon(Icons.Rounded.Unarchive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text("Restaurar") }
-                    if (saved > 0) OutlinedButton(onClick = { withdrawing = g }) { Text("Retirar") }
+                    }) { Icon(Icons.Rounded.Unarchive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.wallet_restaurar)) }
+                    if (saved > 0) OutlinedButton(onClick = { withdrawing = g }) { Text(Res.s(R.string.plan_retirar)) }
                 }
             }
         }
@@ -796,9 +799,9 @@ fun GoalEditorScreen(id: Long?) {
 
     EditorScaffold(
         title = when {
-            existing == null -> "Nova meta"
-            existing.archived -> "Meta arquivada"
-            else -> "Editar meta"
+            existing == null -> Res.s(R.string.plan_nova_meta)
+            existing.archived -> Res.s(R.string.plan_meta_arquivada)
+            else -> Res.s(R.string.plan_editar_meta)
         },
         canSave = name.isNotBlank() && target > 0,
         onSave = {
@@ -809,7 +812,7 @@ fun GoalEditorScreen(id: Long?) {
             c.launch {
                 val newId = c.repo.saveGoal(g)
                 if (existing == null && initial > 0) {
-                    c.repo.saveTx(Tx(type = TxType.GOAL_IN, amount = initial, date = l.today, description = "Saldo inicial", goalId = newId))
+                    c.repo.saveTx(Tx(type = TxType.GOAL_IN, amount = initial, date = l.today, description = Res.s(R.string.wallet_saldo_inicial), goalId = newId))
                 }
             }
             nav.back()
@@ -818,51 +821,51 @@ fun GoalEditorScreen(id: Long?) {
     ) {
         if (existing?.archived == true) {
             io.github.h3yk0.cryo.ui.components.Banner(
-                Icons.Rounded.Inventory2, "Esta meta está arquivada. Ela não aparece em Planejar nem no Início.",
+                Icons.Rounded.Inventory2, Res.s(R.string.plan_esta_meta_esta_arquivada),
                 MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
                 Modifier.padding(bottom = 12.dp),
             )
         }
         OutlinedTextField(
-            name, { name = it }, label = { Text("Nome da meta") }, singleLine = true, placeholder = { Text("Ex.: Viagem, Reserva de emergência") },
+            name, { name = it }, label = { Text(Res.s(R.string.plan_nome_meta)) }, singleLine = true, placeholder = { Text(Res.s(R.string.plan_ex_viagem_reserva_emergencia)) },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
         )
-        FieldLabel("Ícone")
+        FieldLabel(Res.s(R.string.plan_icone))
         EmojiChooser(DefaultData.goalEmojis, emoji) { emoji = it }
-        FieldLabel("Quanto quer juntar")
-        AmountField(target, { target = it }, label = "Valor da meta")
-        FieldLabel("Prazo (opcional)")
+        FieldLabel(Res.s(R.string.plan_quanto_quer_juntar))
+        AmountField(target, { target = it }, label = Res.s(R.string.plan_valor_meta))
+        FieldLabel(Res.s(R.string.plan_prazo_opcional))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
-                deadline?.let { Dates.full(java.time.LocalDate.ofEpochDay(it)) } ?: "Sem prazo",
+                deadline?.let { Dates.full(java.time.LocalDate.ofEpochDay(it)) } ?: Res.s(R.string.debt_sem_prazo),
                 style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).clickable { pickDate = true },
             )
-            TextButton(onClick = { pickDate = true }) { Text(if (deadline == null) "Definir" else "Mudar") }
-            if (deadline != null) TextButton(onClick = { deadline = null }) { Text("Tirar") }
+            TextButton(onClick = { pickDate = true }) { Text(if (deadline == null) Res.s(R.string.debt_definir) else Res.s(R.string.debt_mudar)) }
+            if (deadline != null) TextButton(onClick = { deadline = null }) { Text(Res.s(R.string.debt_tirar)) }
         }
         if (existing == null) {
-            FieldLabel("Já tem algo guardado? (opcional)")
-            AmountField(initial, { initial = it }, label = "Já guardado")
+            FieldLabel(Res.s(R.string.plan_ja_tem_algo_guardado))
+            AmountField(initial, { initial = it }, label = Res.s(R.string.plan_ja_guardado))
         }
-        FieldLabel("Cor")
+        FieldLabel(Res.s(R.string.wallet_cor))
         ColorChooser(color) { color = it }
         if (existing != null) {
             Spacer(Modifier.height(20.dp))
             if (existing.archived) {
                 OutlinedButton(
                     onClick = {
-                        c.launch { c.repo.saveGoal(existing.copy(archived = false)); c.message("${existing.name} voltou para Metas") }
+                        c.launch { c.repo.saveGoal(existing.copy(archived = false)); c.message(Res.s(R.string.plan_voltou_para_metas, existing.name)) }
                         nav.back()
                     },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
-                ) { Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text("Restaurar meta") }
+                ) { Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_restaurar_meta)) }
             } else {
                 OutlinedButton(
                     onClick = { archiveGoal(c, existing); nav.back() },
                     modifier = Modifier.fillMaxWidth().height(52.dp),
-                ) { Icon(Icons.Rounded.Archive, null); Spacer(Modifier.width(8.dp)); Text("Arquivar meta") }
+                ) { Icon(Icons.Rounded.Archive, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_arquivar_meta)) }
                 Text(
-                    "Para metas concluídas ou que você deixou de lado. Ela vai para Planejar › Metas › Metas arquivadas, e você pode restaurar depois.",
+                    Res.s(R.string.plan_para_metas_concluidas_ou),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp),
                 )
@@ -877,8 +880,8 @@ fun GoalEditorScreen(id: Long?) {
     }
     if (confirmDelete && existing != null) {
         ConfirmDialog(
-            "Apagar meta?", "O dinheiro guardado nela volta para as contas de onde saiu.", "Apagar",
-            onConfirm = { confirmDelete = false; c.launch { c.repo.deleteGoal(existing); c.message("Meta apagada") }; nav.back() },
+            Res.s(R.string.plan_apagar_meta), Res.s(R.string.plan_dinheiro_guardado_nela_volta), Res.s(R.string.wallet_apagar),
+            onConfirm = { confirmDelete = false; c.launch { c.repo.deleteGoal(existing); c.message(Res.s(R.string.plan_meta_apagada)) }; nav.back() },
             onDismiss = { confirmDelete = false },
         )
     }

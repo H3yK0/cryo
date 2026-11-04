@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -52,7 +54,7 @@ import io.github.h3yk0.cryo.domain.ym
 import io.github.h3yk0.cryo.domain.ymOf
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
-import io.github.h3yk0.cryo.ui.components.CryoCard
+import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.EmptyState
 import io.github.h3yk0.cryo.ui.components.HeatmapCalendar
@@ -66,7 +68,7 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.LocalDate
 
-private enum class TxFilter(val label: String) { ALL("Tudo"), OUT("Saídas"), IN("Entradas"), OTHER("Transferências e outros") }
+private enum class TxFilter(val label: String) { ALL(Res.s(R.string.txs_tudo)), OUT(Res.s(R.string.txs_saidas)), IN(Res.s(R.string.txs_entradas)), OTHER(Res.s(R.string.txs_transferencias_outros)) }
 
 @Composable
 fun TransactionsScreen(categoryFilter: Long?) {
@@ -102,10 +104,10 @@ fun TransactionsScreen(categoryFilter: Long?) {
     Scaffold(
         topBar = {
             CryoTopBar(
-                title = "Extrato",
+                title = Res.s(R.string.tab_transactions),
                 actions = {
                     IconButton(onClick = { searching = !searching; if (!searching) query = "" }) {
-                        Icon(if (searching) Icons.Rounded.Close else Icons.Rounded.Search, if (searching) "Fechar busca" else "Buscar")
+                        Icon(if (searching) Icons.Rounded.Close else Icons.Rounded.Search, if (searching) Res.s(R.string.txs_fechar_busca) else Res.s(R.string.txs_buscar))
                     }
                 },
             )
@@ -113,7 +115,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { nav.go(Routes.txNew()) },
-                icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Lançar") },
+                icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.home_shortcut_new)) },
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -123,7 +125,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                 item {
                     OutlinedTextField(
                         value = query, onValueChange = { query = it }, singleLine = true,
-                        label = { Text("Buscar em todos os meses") },
+                        label = { Text(Res.s(R.string.txs_buscar_todos_meses)) },
                         leadingIcon = { Icon(Icons.Rounded.Search, null) },
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                     )
@@ -139,12 +141,12 @@ fun TransactionsScreen(categoryFilter: Long?) {
                     )
                 }
                 item {
-                    CryoCard(Modifier.padding(horizontal = 16.dp)) {
+                    FlatItem(Modifier.padding(horizontal = 16.dp)) {
                         Row(Modifier.fillMaxWidth()) {
-                            SummaryCell("Entrou", summary.income, CryoTheme.colors.income, Modifier.weight(1f))
-                            SummaryCell("Saiu", summary.expense, CryoTheme.colors.expense, Modifier.weight(1f))
+                            SummaryCell(Res.s(R.string.month_in), summary.income, CryoTheme.colors.income, Modifier.weight(1f))
+                            SummaryCell(Res.s(R.string.month_out), summary.expense, CryoTheme.colors.expense, Modifier.weight(1f))
                             SummaryCell(
-                                "Resultado", summary.result,
+                                Res.s(R.string.txs_resultado), summary.result,
                                 if (summary.result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, Modifier.weight(1f), signed = true,
                             )
                         }
@@ -152,7 +154,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                 }
                 item {
                     Segmented(
-                        listOf(0 to "Lista", 1 to "Calendário"), mode, { mode = it },
+                        listOf(0 to Res.s(R.string.txs_lista), 1 to Res.s(R.string.txs_calendario)), mode, { mode = it },
                         modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
                     )
                 }
@@ -160,10 +162,10 @@ fun TransactionsScreen(categoryFilter: Long?) {
 
             if (mode == 1 && query.isBlank()) {
                 item {
-                    CryoCard(Modifier.padding(horizontal = 16.dp)) {
-                        Text("Calendário de gastos", style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+                    FlatItem(Modifier.padding(horizontal = 16.dp)) {
+                        Text(Res.s(R.string.txs_calendario_gastos), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
                         Text(
-                            "Quanto mais forte a cor, mais você gastou no dia. Toque em um dia para ver os detalhes.",
+                            Res.s(R.string.txs_quanto_mais_forte_cor),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.height(12.dp))
@@ -178,7 +180,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                     if (list.isEmpty()) {
                         item {
                             Text(
-                                "Nenhuma movimentação neste dia.", style = MaterialTheme.typography.bodyMedium,
+                                Res.s(R.string.txs_nenhuma_movimentacao_neste_dia), style = MaterialTheme.typography.bodyMedium,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp),
                             )
                         }
@@ -194,8 +196,8 @@ fun TransactionsScreen(categoryFilter: Long?) {
                         category?.let { id ->
                             InputChip(
                                 selected = true, onClick = { category = null },
-                                label = { Text(l.category[id]?.name ?: "Categoria") },
-                                trailingIcon = { Icon(Icons.Rounded.Close, "Remover filtro de categoria") },
+                                label = { Text(l.category[id]?.name ?: Res.s(R.string.plan_categoria)) },
+                                trailingIcon = { Icon(Icons.Rounded.Close, Res.s(R.string.txs_remover_filtro_categoria)) },
                             )
                         }
                         TxFilter.entries.forEach { f ->
@@ -207,8 +209,8 @@ fun TransactionsScreen(categoryFilter: Long?) {
                     item {
                         EmptyState(
                             Icons.AutoMirrored.Rounded.ReceiptLong,
-                            if (query.isNotBlank()) "Nada encontrado" else "Nenhuma movimentação",
-                            if (query.isNotBlank()) "Tente outra palavra." else "Use o botão Lançar ou o registro rápido na tela inicial.",
+                            if (query.isNotBlank()) Res.s(R.string.txs_nada_encontrado) else Res.s(R.string.txs_nenhuma_movimentacao),
+                            if (query.isNotBlank()) Res.s(R.string.txs_tente_outra_palavra) else Res.s(R.string.txs_use_botao_lancar_ou),
                         )
                     }
                 } else {

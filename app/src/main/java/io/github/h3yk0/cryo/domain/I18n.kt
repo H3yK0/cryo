@@ -81,6 +81,8 @@ object AppLocale {
         "ddMM" to "dd/MM",
         "ddMMyyyy" to "dd/MM/yyyy",
         "MMMMyyyy" to "MMMM 'de' yyyy",
+        "MMMyyyy" to "MMM/yyyy",
+        "EEEEdMMMMyyyy" to "EEEE, d 'de' MMMM 'de' yyyy",
     )
 }
 

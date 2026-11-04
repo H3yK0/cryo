@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import androidx.annotation.PluralsRes
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -96,6 +99,8 @@ import io.github.h3yk0.cryo.ui.components.ChoiceRow
 import io.github.h3yk0.cryo.ui.components.ColorChooser
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
 import io.github.h3yk0.cryo.ui.components.CryoCard
+import io.github.h3yk0.cryo.ui.components.FlatItem
+import io.github.h3yk0.cryo.ui.components.HeroBlock
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.DateChooser
 import io.github.h3yk0.cryo.ui.components.DatePickerDialogField
@@ -124,21 +129,21 @@ import kotlin.math.roundToInt
 /* ============================== Textos e ícones ============================== */
 
 fun debtKindName(k: DebtKind) = when (k) {
-    DebtKind.LOAN -> "Empréstimo"
-    DebtKind.FINANCING -> "Financiamento"
-    DebtKind.CARD -> "Cartão ou cheque especial"
-    DebtKind.AGREEMENT -> "Acordo"
-    DebtKind.PERSON -> "Pessoa (amigo ou família)"
-    DebtKind.OTHER -> "Outra"
+    DebtKind.LOAN -> Res.s(R.string.debt_emprestimo)
+    DebtKind.FINANCING -> Res.s(R.string.debt_financiamento)
+    DebtKind.CARD -> Res.s(R.string.debt_cartao_ou_cheque_especial)
+    DebtKind.AGREEMENT -> Res.s(R.string.debt_acordo)
+    DebtKind.PERSON -> Res.s(R.string.debt_pessoa_amigo_ou_familia)
+    DebtKind.OTHER -> Res.s(R.string.wallet_outra)
 }
 
 fun debtKindShort(k: DebtKind) = when (k) {
-    DebtKind.LOAN -> "Empréstimo"
-    DebtKind.FINANCING -> "Financiamento"
-    DebtKind.CARD -> "Cartão/cheque especial"
-    DebtKind.AGREEMENT -> "Acordo"
-    DebtKind.PERSON -> "Pessoa"
-    DebtKind.OTHER -> "Outra"
+    DebtKind.LOAN -> Res.s(R.string.debt_emprestimo)
+    DebtKind.FINANCING -> Res.s(R.string.debt_financiamento)
+    DebtKind.CARD -> Res.s(R.string.debt_cartao_cheque_especial)
+    DebtKind.AGREEMENT -> Res.s(R.string.debt_acordo)
+    DebtKind.PERSON -> Res.s(R.string.debt_pessoa)
+    DebtKind.OTHER -> Res.s(R.string.wallet_outra)
 }
 
 fun debtKindIcon(k: DebtKind): ImageVector = when (k) {
@@ -150,10 +155,11 @@ fun debtKindIcon(k: DebtKind): ImageVector = when (k) {
     DebtKind.OTHER -> Icons.Rounded.MoneyOff
 }
 
-internal fun plural(n: Int, one: String, many: String) = if (n == 1) "1 $one" else "$n $many"
+/** "1 parcela" / "3 parcelas", com as regras de plural de cada língua (RF-LNG-04). */
+internal fun plural(@PluralsRes id: Int, n: Int) = Res.p(id, n, n)
 
 /** Mês por extenso, curto: "mar/2029". */
-fun shortMonthYear(ym: YearMonth) = "${Dates.monthShort(ym).lowercase()}/${ym.year}"
+fun shortMonthYear(ym: YearMonth) = Dates.monthShortYear(ym)
 
 data class StatusLook(val text: String, val container: Color, val content: Color)
 
@@ -164,15 +170,15 @@ fun debtStatusLook(info: DebtInfo, today: LocalDate): StatusLook {
     val onNeutral = MaterialTheme.colorScheme.onSurface
     val due = info.nextDue
     return when (info.state) {
-        DebtState.PAID_OFF -> StatusLook("Quitada", c.incomeContainer, c.onIncomeContainer)
+        DebtState.PAID_OFF -> StatusLook(Res.s(R.string.debt_quitada), c.incomeContainer, c.onIncomeContainer)
         DebtState.OVERDUE -> StatusLook(
-            if (info.hasInstallments) plural(info.overdueCount, "parcela atrasada", "parcelas atrasadas") else "Prazo vencido",
+            if (info.hasInstallments) plural(R.plurals.debt_overdue_installments, info.overdueCount) else Res.s(R.string.debt_prazo_vencido),
             c.expenseContainer, c.onExpenseContainer,
         )
-        DebtState.DUE_SOON -> StatusLook("Vence ${due?.let { Dates.relative(it, today) }}", c.warningContainer, c.onWarningContainer)
-        DebtState.PAID_THIS_MONTH -> StatusLook("Parcela do mês paga", c.incomeContainer, c.onIncomeContainer)
-        DebtState.UPCOMING -> StatusLook("Próxima: ${due?.let { Dates.short(it) }}", neutral, onNeutral)
-        DebtState.FREE -> StatusLook(if (due != null) "Prazo: ${Dates.short(due)}" else "Sem prazo", neutral, onNeutral)
+        DebtState.DUE_SOON -> StatusLook(Res.s(R.string.debt_vence_2, due?.let { Dates.relative(it, today) }), c.warningContainer, c.onWarningContainer)
+        DebtState.PAID_THIS_MONTH -> StatusLook(Res.s(R.string.debt_parcela_mes_paga), c.incomeContainer, c.onIncomeContainer)
+        DebtState.UPCOMING -> StatusLook(Res.s(R.string.debt_proxima, due?.let { Dates.short(it) }), neutral, onNeutral)
+        DebtState.FREE -> StatusLook(if (due != null) Res.s(R.string.debt_prazo, Dates.short(due)) else Res.s(R.string.debt_sem_prazo), neutral, onNeutral)
     }
 }
 
@@ -191,11 +197,11 @@ fun DebtsScreen() {
     var paying by remember { mutableStateOf<DebtInfo?>(null) }
 
     Scaffold(
-        topBar = { CryoTopBar("Dívidas", onBack = nav::back) },
+        topBar = { CryoTopBar(Res.s(R.string.home_shortcut_debts), onBack = nav::back) },
         floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { nav.go(Routes.debtEdit()) },
-                icon = { Icon(Icons.Rounded.Add, null) }, text = { Text("Nova dívida") },
+                icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.debt_nova_divida)) },
             )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -208,10 +214,10 @@ fun DebtsScreen() {
             if (ov.open.isEmpty() && closed.isEmpty()) {
                 item {
                     EmptyState(
-                        Icons.Rounded.RequestQuote, "Organize suas dívidas",
-                        "Cadastre empréstimos, financiamentos, acordos ou dinheiro que você deve a alguém. " +
-                            "O Cryo mostra quanto falta, lembra dos vencimentos e mostra quando você fica livre.",
-                    ) { Button(onClick = { nav.go(Routes.debtEdit()) }) { Text("Cadastrar dívida") } }
+                        Icons.Rounded.RequestQuote, Res.s(R.string.debt_organize_suas_dividas),
+                        Res.s(R.string.debt_cadastre_emprestimos_financiamentos_acordos) +
+                            Res.s(R.string.debt_cryo_mostra_quanto_falta),
+                    ) { Button(onClick = { nav.go(Routes.debtEdit()) }) { Text(Res.s(R.string.debt_cadastrar_divida)) } }
                 }
             } else {
                 item { DebtHero(ov, hide) }
@@ -219,14 +225,13 @@ fun DebtsScreen() {
                     item {
                         Banner(
                             Icons.Rounded.ErrorOutline,
-                            plural(ov.overdueCount, "parcela atrasada", "parcelas atrasadas") +
-                                ". Pagar logo evita juros e multa.",
+                            Res.s(R.string.debt_overdue_hint, plural(R.plurals.debt_overdue_installments, ov.overdueCount)),
                             CryoTheme.colors.expenseContainer, CryoTheme.colors.onExpenseContainer,
                         )
                     }
                 }
                 if (ov.monthlyInstallments > 0) item { IncomeShareCard(ov, l.averageIncome, hide) }
-                if (ov.open.isNotEmpty()) item { SectionTitle("Em aberto") }
+                if (ov.open.isNotEmpty()) item { SectionTitle(Res.s(R.string.debt_aberto)) }
                 items(ov.open, key = { it.debt.id }) { info -> DebtCard(info, l, hide, onPay = { paying = info }) }
                 if (ov.open.isEmpty()) {
                     item {
@@ -235,7 +240,7 @@ fun DebtsScreen() {
                                 Icon(Icons.Rounded.Celebration, null, tint = CryoTheme.colors.onIncomeContainer)
                                 Spacer(Modifier.width(10.dp))
                                 Text(
-                                    "Nenhuma dívida em aberto. Muito bem!",
+                                    Res.s(R.string.debt_nenhuma_divida_aberto_muito),
                                     style = MaterialTheme.typography.titleSmall, color = CryoTheme.colors.onIncomeContainer,
                                 )
                             }
@@ -247,7 +252,7 @@ fun DebtsScreen() {
                         TextButton(onClick = { showClosed = !showClosed }, modifier = Modifier.fillMaxWidth()) {
                             Icon(if (showClosed) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null)
                             Spacer(Modifier.width(8.dp))
-                            Text("Quitadas e arquivadas (${closed.size})")
+                            Text(Res.s(R.string.debt_quitadas_arquivadas, closed.size))
                         }
                     }
                     if (showClosed) items(closed, key = { "c${it.debt.id}" }) { info -> ClosedDebtRow(info, hide) }
@@ -260,20 +265,20 @@ fun DebtsScreen() {
 
 @Composable
 private fun DebtHero(ov: DebtOverview, hide: Boolean) {
-    val bg = CryoTheme.colors.expenseContainer
-    val fg = CryoTheme.colors.onExpenseContainer
-    CryoCard(color = bg) {
-        Text("Você deve", style = MaterialTheme.typography.labelLarge, color = fg)
+    // Direção 2.0: o número em destaque sem fundo vermelho (calmo, PRI-06); o vermelho fica para o que está atrasado.
+    val fg = MaterialTheme.colorScheme.onSurface
+    Column(Modifier.fillMaxWidth().padding(vertical = 4.dp)) {
+        Text(Res.s(R.string.debt_voce_deve), style = MaterialTheme.typography.labelLarge, color = fg)
         MoneyText(ov.total, style = MaterialTheme.typography.displaySmall, color = fg)
         Text(
-            if (ov.open.isEmpty()) "Nenhuma dívida em aberto" else "em ${plural(ov.open.size, "dívida", "dívidas")}",
+            if (ov.open.isEmpty()) Res.s(R.string.debt_nenhuma_divida_aberto) else Res.s(R.string.debt_in_count, plural(R.plurals.debt_count, ov.open.size)),
             style = MaterialTheme.typography.bodyMedium, color = fg,
         )
         if (ov.paidAll > 0) {
             Spacer(Modifier.height(12.dp))
-            UsageBar(ov.progress, baseColor = fg, warn = false, height = 8.dp)
+            UsageBar(ov.progress, baseColor = CryoTheme.colors.income, warn = false, height = 8.dp)
             Text(
-                "Já pagou ${fmt(ov.paidAll, hide)} (${(ov.progress * 100).roundToInt()}%)",
+                Res.s(R.string.debt_ja_pagou_por_cento_2, fmt(ov.paidAll, hide), (ov.progress * 100).roundToInt()),
                 style = MaterialTheme.typography.bodySmall, color = fg, modifier = Modifier.padding(top = 4.dp),
             )
         }
@@ -284,13 +289,13 @@ private fun DebtHero(ov: DebtOverview, hide: Boolean) {
             Row(Modifier.fillMaxWidth()) {
                 if (ov.monthlyInstallments > 0) {
                     Column(Modifier.weight(1f)) {
-                        Text("Parcelas por mês", style = MaterialTheme.typography.labelMedium, color = fg)
+                        Text(Res.s(R.string.debt_parcelas_por_mes), style = MaterialTheme.typography.labelMedium, color = fg)
                         MoneyText(ov.monthlyInstallments, style = MaterialTheme.typography.titleSmall, color = fg)
                     }
                 }
                 ov.freeOfDebtYm?.let { end ->
                     Column(Modifier.weight(1f)) {
-                        Text("Livre das dívidas em", style = MaterialTheme.typography.labelMedium, color = fg)
+                        Text(Res.s(R.string.debt_livre_das_dividas), style = MaterialTheme.typography.labelMedium, color = fg)
                         Text(shortMonthYear(end), style = MaterialTheme.typography.titleSmall, color = fg)
                     }
                 }
@@ -304,7 +309,7 @@ private fun IncomeShareCard(ov: DebtOverview, avgIncome: Long, hide: Boolean) {
     CryoCard {
         if (avgIncome <= 0) {
             Text(
-                "Suas parcelas somam ${fmt(ov.monthlyInstallments, hide)} por mês. Registre o que você recebe para ver quanto isso pesa na sua renda.",
+                Res.s(R.string.debt_suas_parcelas_somam_por, fmt(ov.monthlyInstallments, hide)),
                 style = MaterialTheme.typography.bodyMedium,
             )
             return@CryoCard
@@ -312,7 +317,7 @@ private fun IncomeShareCard(ov: DebtOverview, avgIncome: Long, hide: Boolean) {
         val ratio = ov.monthlyInstallments.toFloat() / avgIncome
         val pct = (ratio * 100).roundToInt()
         Row(verticalAlignment = Alignment.CenterVertically) {
-            Text("Quanto da sua renda vai para parcelas", style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
+            Text(Res.s(R.string.debt_quanto_sua_renda_vai), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
             val c = CryoTheme.colors
             val (bg, fg) = when {
                 ratio > 0.5f -> c.expenseContainer to c.onExpenseContainer
@@ -324,7 +329,7 @@ private fun IncomeShareCard(ov: DebtOverview, avgIncome: Long, hide: Boolean) {
         Spacer(Modifier.height(8.dp))
         UsageBar(ratio, warn = false, baseColor = MaterialTheme.colorScheme.primary)
         Text(
-            "${fmt(ov.monthlyInstallments, hide)} de parcelas por mês, de ${fmt(avgIncome, hide)} que você costuma receber.",
+            Res.s(R.string.debt_parcelas_por_mes_que, fmt(ov.monthlyInstallments, hide), fmt(avgIncome, hide)),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp),
         )
@@ -336,7 +341,7 @@ fun DebtCard(info: DebtInfo, l: Ledger, hide: Boolean, onPay: () -> Unit) {
     val nav = LocalNav.current
     val d = info.debt
     val look = debtStatusLook(info, l.today)
-    CryoCard(onClick = { nav.go(Routes.debt(d.id)) }) {
+    FlatItem(onClick = { nav.go(Routes.debt(d.id)) }) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(debtKindIcon(d.kind), Color(d.color))
             Spacer(Modifier.width(12.dp))
@@ -350,16 +355,16 @@ fun DebtCard(info: DebtInfo, l: Ledger, hide: Boolean, onPay: () -> Unit) {
             }
             Column(horizontalAlignment = Alignment.End) {
                 MoneyText(info.remaining, style = MaterialTheme.typography.titleMedium)
-                Text("falta pagar", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(Res.s(R.string.debt_falta_pagar_3), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         Spacer(Modifier.height(10.dp))
         UsageBar(info.progress, baseColor = Color(d.color), warn = false, height = 8.dp)
         Text(
             if (info.hasInstallments) {
-                "${info.installmentsPaid} de ${info.installmentsTotal} parcelas pagas · ${fmt(d.installmentAmount, hide)} por mês"
+                Res.s(R.string.debt_parcelas_pagas_por_mes, info.installmentsPaid, info.installmentsTotal, fmt(d.installmentAmount, hide))
             } else {
-                "Pagou ${fmt(info.paid, hide)}" + (info.monthlyNeeded?.let { " · ${fmt(it, hide)} por mês para quitar no prazo" } ?: "")
+                Res.s(R.string.debt_pagou, fmt(info.paid, hide)) + (info.monthlyNeeded?.let { Res.s(R.string.debt_por_mes_para_quitar, fmt(it, hide)) } ?: "")
             },
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp),
@@ -370,7 +375,7 @@ fun DebtCard(info: DebtInfo, l: Ledger, hide: Boolean, onPay: () -> Unit) {
             Spacer(Modifier.weight(1f))
             if (!info.isPaidOff) {
                 FilledTonalButton(onClick = onPay, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) {
-                    Text(if (info.hasInstallments && info.state != DebtState.PAID_THIS_MONTH) "Paguei" else "Pagar")
+                    Text(if (info.hasInstallments && info.state != DebtState.PAID_THIS_MONTH) Res.s(R.string.debt_paguei) else Res.s(R.string.debt_pagar_2))
                 }
             }
         }
@@ -381,7 +386,7 @@ fun DebtCard(info: DebtInfo, l: Ledger, hide: Boolean, onPay: () -> Unit) {
 private fun ClosedDebtRow(info: DebtInfo, hide: Boolean) {
     val nav = LocalNav.current
     val d = info.debt
-    CryoCard(onClick = { nav.go(Routes.debt(d.id)) }, color = MaterialTheme.colorScheme.surfaceContainerLowest) {
+    FlatItem(onClick = { nav.go(Routes.debt(d.id)) }, faded = true) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(debtKindIcon(d.kind), Color(d.color).copy(alpha = 0.5f), 36.dp)
             Spacer(Modifier.width(12.dp))
@@ -389,8 +394,8 @@ private fun ClosedDebtRow(info: DebtInfo, hide: Boolean) {
                 Text(d.name, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     when {
-                        info.isPaidOff -> "Quitada" + (info.lastPayment?.let { " em ${Dates.full(it)}" } ?: "")
-                        else -> "Arquivada · faltavam ${fmt(info.remaining, hide)}"
+                        info.isPaidOff -> Res.s(R.string.debt_quitada) + (info.lastPayment?.let { " em ${Dates.full(it)}" } ?: "")
+                        else -> Res.s(R.string.debt_arquivada_faltavam, fmt(info.remaining, hide))
                     },
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -412,13 +417,12 @@ fun DebtDetailScreen(id: Long) {
     val info = l.debtInfo(d)
     var action by rememberSaveable { mutableStateOf<String?>(null) }
     val paidOff = info.isPaidOff
-    val bg = if (paidOff) CryoTheme.colors.incomeContainer else CryoTheme.colors.expenseContainer
-    val fg = if (paidOff) CryoTheme.colors.onIncomeContainer else CryoTheme.colors.onExpenseContainer
+    val fg = MaterialTheme.colorScheme.onSurface
 
     Scaffold(
         topBar = {
             CryoTopBar(d.name, onBack = nav::back, actions = {
-                IconButton(onClick = { nav.go(Routes.debtEdit(id)) }) { Icon(Icons.Rounded.Edit, "Editar dívida") }
+                IconButton(onClick = { nav.go(Routes.debtEdit(id)) }) { Icon(Icons.Rounded.Edit, Res.s(R.string.debt_editar_divida)) }
             })
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -428,20 +432,20 @@ fun DebtDetailScreen(id: Long) {
             contentPadding = PaddingValues(bottom = 32.dp),
         ) {
             item {
-                CryoCard(Modifier.padding(horizontal = 16.dp), color = bg) {
+                HeroBlock {
                     if (paidOff) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(Icons.Rounded.Celebration, null, tint = fg, modifier = Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
-                            Text("Dívida quitada. Parabéns!", style = MaterialTheme.typography.labelLarge, color = fg)
+                            Text(Res.s(R.string.debt_divida_quitada_parabens_2), style = MaterialTheme.typography.labelLarge, color = fg)
                         }
                         MoneyText(info.paidAll, style = MaterialTheme.typography.displaySmall, color = fg)
                         Text(
-                            (listOf("pagos no total") + listOf(debtKindShort(d.kind), d.creditor).filter { it.isNotBlank() }).joinToString(" · "),
+                            (listOf(Res.s(R.string.debt_pagos_total)) + listOf(debtKindShort(d.kind), d.creditor).filter { it.isNotBlank() }).joinToString(" · "),
                             style = MaterialTheme.typography.bodyMedium, color = fg,
                         )
                     } else {
-                        Text("Falta pagar", style = MaterialTheme.typography.labelLarge, color = fg)
+                        Text(Res.s(R.string.debt_falta_pagar), style = MaterialTheme.typography.labelLarge, color = fg)
                         MoneyText(info.remaining, style = MaterialTheme.typography.displaySmall, color = fg)
                         Text(
                             listOf(debtKindShort(d.kind), d.creditor).filter { it.isNotBlank() }.joinToString(" · "),
@@ -449,22 +453,22 @@ fun DebtDetailScreen(id: Long) {
                         )
                     }
                     Spacer(Modifier.height(12.dp))
-                    UsageBar(info.progress, baseColor = fg, warn = false, height = 8.dp)
+                    UsageBar(info.progress, baseColor = CryoTheme.colors.income, warn = false, height = 8.dp)
                     Text(
                         if (info.hasInstallments) {
-                            "${info.installmentsPaid} de ${info.installmentsTotal} parcelas pagas · ${fmt(d.installmentAmount, hide)} cada"
+                            Res.s(R.string.debt_parcelas_pagas_cada, info.installmentsPaid, info.installmentsTotal, fmt(d.installmentAmount, hide))
                         } else {
-                            "Já pagou ${fmt(info.paid, hide)}"
+                            Res.s(R.string.debt_ja_pagou, fmt(info.paid, hide))
                         },
                         style = MaterialTheme.typography.bodySmall, color = fg, modifier = Modifier.padding(top = 4.dp),
                     )
                     if (!info.isPaidOff) {
                         val end = when {
                             info.hasInstallments -> info.payoffYm?.let {
-                                "Termina em ${Dates.monthYear(it, l.today).lowercase()} · ${plural(info.installmentsLeft, "parcela restante", "parcelas restantes")}"
+                                Res.s(R.string.debt_termina, Dates.monthYearInSentence(it, l.today), plural(R.plurals.debt_installments_left, info.installmentsLeft))
                             }
-                            d.deadline != null -> "Prazo: ${Dates.full(d.deadline)}" +
-                                (info.monthlyNeeded?.let { " · ${fmt(it, hide)} por mês" } ?: "")
+                            d.deadline != null -> Res.s(R.string.debt_prazo, Dates.full(d.deadline)) +
+                                (info.monthlyNeeded?.let { Res.s(R.string.debt_por_mes, fmt(it, hide)) } ?: "")
                             else -> null
                         }
                         if (end != null) Text(end, style = MaterialTheme.typography.bodyMedium, color = fg, modifier = Modifier.padding(top = 6.dp))
@@ -474,17 +478,17 @@ fun DebtDetailScreen(id: Long) {
                         OutlinedButton(onClick = {
                             c.launch {
                                 c.repo.saveDebt(d.copy(archived = true))
-                                c.message("Dívida arquivada. Ela fica em Quitadas e arquivadas.", "Desfazer") { c.repo.saveDebt(d.copy(archived = false)) }
+                                c.message(Res.s(R.string.debt_divida_arquivada_ela_fica), Res.s(R.string.wallet_desfazer)) { c.repo.saveDebt(d.copy(archived = false)) }
                             }
                             nav.back()
-                        }) { Icon(Icons.Rounded.Archive, null, tint = fg); Spacer(Modifier.width(8.dp)); Text("Arquivar", color = fg) }
+                        }) { Icon(Icons.Rounded.Archive, null, tint = fg); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.wallet_arquivar), color = fg) }
                     }
                 }
             }
             if (d.archived) {
                 item {
                     Banner(
-                        Icons.Rounded.Archive, "Dívida arquivada: ela não entra nos totais nem na previsão.",
+                        Icons.Rounded.Archive, Res.s(R.string.debt_divida_arquivada_ela_nao),
                         MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
                         Modifier.padding(16.dp),
                     )
@@ -495,9 +499,9 @@ fun DebtDetailScreen(id: Long) {
                     Banner(
                         Icons.Rounded.ErrorOutline,
                         if (info.hasInstallments) {
-                            "${plural(info.overdueCount, "parcela atrasada", "parcelas atrasadas")} desde ${info.nextDue?.let { Dates.short(it) }}"
+                            Res.s(R.string.debt_desde, plural(R.plurals.debt_overdue_installments, info.overdueCount), info.nextDue?.let { Dates.short(it) })
                         } else {
-                            "O prazo combinado já passou"
+                            Res.s(R.string.debt_prazo_combinado_ja_passou)
                         },
                         CryoTheme.colors.expenseContainer, CryoTheme.colors.onExpenseContainer,
                         Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
@@ -511,45 +515,45 @@ fun DebtDetailScreen(id: Long) {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     if (!info.isPaidOff) {
-                        Button(onClick = { action = "pay" }) { Text(if (info.hasInstallments) "Pagar parcela" else "Pagar") }
-                        FilledTonalButton(onClick = { action = "payoff" }) { Text("Quitar") }
+                        Button(onClick = { action = "pay" }) { Text(if (info.hasInstallments) Res.s(R.string.debt_pagar_parcela) else Res.s(R.string.debt_pagar_2)) }
+                        FilledTonalButton(onClick = { action = "payoff" }) { Text(Res.s(R.string.debt_quitar_2)) }
                     }
-                    FilledTonalButton(onClick = { action = "adjust" }) { Text("Atualizar saldo") }
-                    FilledTonalButton(onClick = { action = "borrow" }) { Text("Peguei mais") }
+                    FilledTonalButton(onClick = { action = "adjust" }) { Text(Res.s(R.string.debt_atualizar_saldo)) }
+                    FilledTonalButton(onClick = { action = "borrow" }) { Text(Res.s(R.string.debt_peguei_mais)) }
                     if (d.archived) {
-                        OutlinedButton(onClick = { c.launch { c.repo.saveDebt(d.copy(archived = false)); c.message("Dívida restaurada") } }) {
-                            Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text("Restaurar")
+                        OutlinedButton(onClick = { c.launch { c.repo.saveDebt(d.copy(archived = false)); c.message(Res.s(R.string.debt_divida_restaurada)) } }) {
+                            Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.wallet_restaurar))
                         }
                     }
                 }
             }
             if (info.hasInstallments && !info.isPaidOff) {
-                item { SectionTitle("Próximas parcelas", Modifier.padding(horizontal = 16.dp)) }
+                item { SectionTitle(Res.s(R.string.debt_proximas_parcelas), Modifier.padding(horizontal = 16.dp)) }
                 item { UpcomingInstallments(info, l, hide) }
             }
             item {
                 CryoCard(Modifier.padding(horizontal = 16.dp, vertical = 12.dp)) {
-                    InfoLine("Tipo", debtKindName(d.kind))
-                    if (d.creditor.isNotBlank()) InfoLine("Com quem", d.creditor)
-                    InfoLine("Paga com", d.accountId?.let { l.accountName(it) } ?: "—")
+                    InfoLine(Res.s(R.string.wallet_tipo), debtKindName(d.kind))
+                    if (d.creditor.isNotBlank()) InfoLine(Res.s(R.string.debt_com_quem), d.creditor)
+                    InfoLine(Res.s(R.string.debt_paga_com), d.accountId?.let { l.accountName(it) } ?: "—")
                     if (info.hasInstallments && !paidOff) {
-                        InfoLine("Vencimento", "todo dia ${d.dueDay}")
-                        InfoLine("Lembrete", if (d.remind) (if (d.remindDaysBefore == 0) "no dia" else "${plural(d.remindDaysBefore, "dia", "dias")} antes") else "desligado")
+                        InfoLine(Res.s(R.string.debt_vencimento), Res.s(R.string.debt_todo_dia, d.dueDay))
+                        InfoLine(Res.s(R.string.debt_lembrete), if (d.remind) (if (d.remindDaysBefore == 0) Res.s(R.string.debt_dia_2) else plural(R.plurals.days_before, d.remindDaysBefore)) else "desligado")
                     }
-                    if (info.borrowed > 0) InfoLine("Pegou depois do cadastro", fmt(info.borrowed, hide))
-                    if (info.adjusted != 0L) InfoLine(if (info.adjusted > 0) "Juros e encargos" else "Descontos", fmt(kotlin.math.abs(info.adjusted), hide))
+                    if (info.borrowed > 0) InfoLine(Res.s(R.string.debt_pegou_depois_cadastro), fmt(info.borrowed, hide))
+                    if (info.adjusted != 0L) InfoLine(if (info.adjusted > 0) Res.s(R.string.debt_juros_encargos) else Res.s(R.string.debt_descontos), fmt(kotlin.math.abs(info.adjusted), hide))
                     if (d.note.isNotBlank()) {
                         Spacer(Modifier.height(6.dp))
                         Text(d.note, style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
-            item { SectionTitle("Histórico", Modifier.padding(horizontal = 16.dp)) }
+            item { SectionTitle(Res.s(R.string.wallet_historico), Modifier.padding(horizontal = 16.dp)) }
             val hist = l.debtHistory(id)
             if (hist.isEmpty()) {
                 item {
                     Text(
-                        "Nenhum pagamento registrado ainda.", Modifier.padding(horizontal = 20.dp),
+                        Res.s(R.string.debt_nenhum_pagamento_registrado_ainda), Modifier.padding(horizontal = 20.dp),
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -558,7 +562,7 @@ fun DebtDetailScreen(id: Long) {
                 when (val h = hist[i]) {
                     is Tx -> TxRow(h, l, onClick = { nav.go(Routes.txEdit(h.id)) }, showDate = true)
                     is DebtAdjustment -> AdjustmentRow(h, hide, l.today, onDelete = {
-                        c.launch { c.repo.deleteDebtAdjustment(h); c.message("Ajuste removido") }
+                        c.launch { c.repo.deleteDebtAdjustment(h); c.message(Res.s(R.string.debt_ajuste_removido)) }
                     })
                 }
             }
@@ -569,31 +573,31 @@ fun DebtDetailScreen(id: Long) {
         "pay" -> DebtPaySheet(info, l, payoff = false, onDismiss = { action = null })
         "payoff" -> DebtPaySheet(info, l, payoff = true, onDismiss = { action = null })
         "adjust" -> MoneyActionSheet(
-            title = "Atualizar quanto falta",
-            subtitle = "Veja o valor no app do banco ou no contrato. Se aumentou, a diferença conta como juros e encargos. Se diminuiu, como desconto.",
+            title = Res.s(R.string.debt_atualizar_quanto_falta),
+            subtitle = Res.s(R.string.debt_veja_valor_app_banco),
             initialAmount = info.remaining, l = l, accountLabel = null, initialAccount = null,
-            confirmLabel = "Atualizar", amountLabel = "Falta pagar hoje",
+            confirmLabel = Res.s(R.string.wallet_atualizar), amountLabel = Res.s(R.string.debt_falta_pagar_hoje),
             onDismiss = { action = null },
             onConfirm = { amount, _, date ->
                 action = null
                 val diff = amount - info.outstanding
                 c.launch {
-                    val u = c.repo.adjustDebt(d, diff, date, if (diff > 0) "Juros e encargos" else "Desconto")
-                    if (u.adjustments.isNotEmpty()) c.message("Saldo da dívida atualizado", "Desfazer") { c.repo.undo(u) }
+                    val u = c.repo.adjustDebt(d, diff, date, if (diff > 0) Res.s(R.string.debt_juros_encargos) else Res.s(R.string.debt_desconto))
+                    if (u.adjustments.isNotEmpty()) c.message(Res.s(R.string.debt_saldo_divida_atualizado), Res.s(R.string.wallet_desfazer)) { c.repo.undo(u) }
                 }
             },
         )
         "borrow" -> MoneyActionSheet(
-            title = "Peguei mais emprestado",
-            subtitle = "O dinheiro entra na conta e aumenta a dívida. Não conta como receita.",
-            initialAmount = 0, l = l, accountLabel = "Entrou na conta",
-            initialAccount = d.accountId ?: LocalSettings.current.defaultAccountId, confirmLabel = "Registrar",
+            title = Res.s(R.string.debt_peguei_mais_emprestado),
+            subtitle = Res.s(R.string.debt_dinheiro_entra_conta_aumenta),
+            initialAmount = 0, l = l, accountLabel = Res.s(R.string.debt_entrou_conta),
+            initialAccount = d.accountId ?: LocalSettings.current.defaultAccountId, confirmLabel = Res.s(R.string.debt_registrar),
             onDismiss = { action = null },
             onConfirm = { amount, acc, date ->
                 action = null
                 c.launch {
                     val u = c.repo.borrowMore(d, amount, acc!!, date)
-                    c.message("${Money.format(amount)} somados à dívida", "Desfazer") { c.repo.undo(u) }
+                    c.message(Res.s(R.string.debt_somados_divida, Money.format(amount)), Res.s(R.string.wallet_desfazer)) { c.repo.undo(u) }
                 }
             },
         )
@@ -621,14 +625,14 @@ private fun UpcomingInstallments(info: DebtInfo, l: Ledger, hide: Boolean) {
             val amount = if (i == 0) info.nextAmount else minOf(d.installmentAmount, info.remaining - info.nextAmount - (i - 1L) * d.installmentAmount)
             val c = CryoTheme.colors
             val (text, color) = when {
-                due.isBefore(l.today) -> "Atrasada" to c.expense
-                due.ym() == l.today.ym() -> "Este mês" to c.warning
+                due.isBefore(l.today) -> Res.s(R.string.debt_atrasada) to c.expense
+                due.ym() == l.today.ym() -> Res.s(R.string.debt_este_mes) to c.warning
                 else -> "" to MaterialTheme.colorScheme.onSurfaceVariant
             }
             if (i > 0) HorizontalDivider(Modifier.padding(vertical = 6.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Parcela ${d.paidBefore + k + 1} de ${info.installmentsTotal}", style = MaterialTheme.typography.bodyLarge)
+                    Text(Res.s(R.string.debt_parcela_3, d.paidBefore + k + 1, info.installmentsTotal), style = MaterialTheme.typography.bodyLarge)
                     Text(
                         Dates.dayMonth(due) + if (due.year != l.today.year) " de ${due.year}" else "",
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -640,7 +644,7 @@ private fun UpcomingInstallments(info: DebtInfo, l: Ledger, hide: Boolean) {
         }
         if (info.installmentsLeft > shown) {
             Text(
-                "e mais ${info.installmentsLeft - shown}, até ${info.payoffYm?.let { Dates.monthYear(it, l.today).lowercase() }}",
+                Res.s(R.string.debt_mais_ate, info.installmentsLeft - shown, info.payoffYm?.let { Dates.monthYearInSentence(it, l.today) }),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
@@ -652,7 +656,7 @@ private fun UpcomingInstallments(info: DebtInfo, l: Ledger, hide: Boolean) {
 private fun AdjustmentRow(a: DebtAdjustment, hide: Boolean, today: LocalDate, onDelete: () -> Unit) {
     var ask by remember { mutableStateOf(false) }
     val up = a.amount > 0
-    val title = a.note.ifBlank { if (up) "Juros e encargos" else "Desconto" }
+    val title = a.note.ifBlank { if (up) Res.s(R.string.debt_juros_encargos) else Res.s(R.string.debt_desconto) }
     Row(Modifier.fillMaxWidth().padding(start = 16.dp, end = 4.dp, top = 10.dp, bottom = 10.dp), verticalAlignment = Alignment.CenterVertically) {
         IconBadge(if (up) Icons.AutoMirrored.Rounded.TrendingUp else Icons.AutoMirrored.Rounded.TrendingDown, if (up) CryoTheme.colors.expense else CryoTheme.colors.income)
         Spacer(Modifier.width(14.dp))
@@ -660,7 +664,7 @@ private fun AdjustmentRow(a: DebtAdjustment, hide: Boolean, today: LocalDate, on
             Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
                 (if (a.date.year == today.year) Dates.short(a.date) else Dates.full(a.date)) +
-                    if (up) " · aumentou a dívida" else " · diminuiu a dívida",
+                    if (up) Res.s(R.string.debt_aumentou_divida) else Res.s(R.string.debt_diminuiu_divida),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
@@ -669,9 +673,9 @@ private fun AdjustmentRow(a: DebtAdjustment, hide: Boolean, today: LocalDate, on
             if (hide) Money.HIDDEN else (if (up) "+ " else "− ") + Money.format(kotlin.math.abs(a.amount)),
             style = MaterialTheme.typography.titleSmall, color = if (up) CryoTheme.colors.expense else CryoTheme.colors.income,
         )
-        IconButton(onClick = { ask = true }) { Icon(Icons.Rounded.Close, "Remover ajuste: $title") }
+        IconButton(onClick = { ask = true }) { Icon(Icons.Rounded.Close, Res.s(R.string.debt_remover_ajuste_2, title)) }
     }
-    if (ask) ConfirmDialog("Remover ajuste?", "A dívida volta ao valor de antes deste ajuste.", "Remover", { ask = false; onDelete() }, { ask = false })
+    if (ask) ConfirmDialog(Res.s(R.string.debt_remover_ajuste), Res.s(R.string.debt_divida_volta_ao_valor), Res.s(R.string.wallet_remover), { ask = false; onDelete() }, { ask = false })
 }
 
 /* ============================== Pagamento ============================== */
@@ -711,39 +715,39 @@ fun DebtPaySheet(info: DebtInfo, l: Ledger, payoff: Boolean, onDismiss: () -> Un
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Text(
                 when {
-                    payoff -> "Quitar ${d.name}"
-                    info.hasInstallments -> "Pagar parcela"
-                    else -> "Pagar ${d.name}"
+                    payoff -> Res.s(R.string.debt_quitar, d.name)
+                    info.hasInstallments -> Res.s(R.string.debt_pagar_parcela)
+                    else -> Res.s(R.string.debt_pagar, d.name)
                 },
                 style = MaterialTheme.typography.titleLarge,
             )
             Text(
                 when {
-                    payoff -> "Falta pagar ${Money.format(remaining)}. Se o banco ou a pessoa deu desconto, coloque o valor que você pagou."
+                    payoff -> Res.s(R.string.debt_falta_pagar_se_banco, Money.format(remaining))
                     info.hasInstallments ->
-                        "Parcela ${info.installmentsPaid + 1} de ${info.installmentsTotal} de ${d.name}" +
-                            (info.nextDue?.let { " · vence ${Dates.short(it)}" } ?: "")
-                    else -> "Falta pagar ${Money.format(remaining)}"
+                        Res.s(R.string.debt_parcela_2, info.installmentsPaid + 1, info.installmentsTotal, d.name) +
+                            (info.nextDue?.let { Res.s(R.string.debt_vence, Dates.short(it)) } ?: "")
+                    else -> Res.s(R.string.debt_falta_pagar_2, Money.format(remaining))
                 },
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(16.dp))
-            AmountField(amount, { amount = it }, label = "Valor pago", color = CryoTheme.colors.expense)
+            AmountField(amount, { amount = it }, label = Res.s(R.string.debt_valor_pago), color = CryoTheme.colors.expense)
 
             when {
-                payoff && amount in 1 until remaining -> Hint("Desconto de ${Money.format(remaining - amount)}: a dívida fica quitada e o desconto fica registrado.")
-                overTotal > 0 -> Hint("Você pagou ${Money.format(overTotal)} a mais do que falta: essa diferença conta como juros ou multa.")
-                !payoff && amount == remaining && remaining > 0 -> Hint("Esse pagamento quita a dívida. 🎉")
+                payoff && amount in 1 until remaining -> Hint(Res.s(R.string.debt_desconto_divida_fica_quitada, Money.format(remaining - amount)))
+                overTotal > 0 -> Hint(Res.s(R.string.debt_voce_pagou_mais_que, Money.format(overTotal)))
+                !payoff && amount == remaining && remaining > 0 -> Hint(Res.s(R.string.debt_esse_pagamento_quita_divida))
                 asksExtra -> {
-                    FieldLabel("A diferença de ${Money.format(overInstallment)} foi:")
-                    ChoiceRow("Juros ou multa por atraso", "Sai da conta, mas não diminui a dívida", extraIsInterest) { extraIsInterest = true }
-                    ChoiceRow("Para adiantar a dívida", "Diminui quanto falta pagar", !extraIsInterest) { extraIsInterest = false }
+                    FieldLabel(Res.s(R.string.debt_diferenca_foi, Money.format(overInstallment)))
+                    ChoiceRow(Res.s(R.string.debt_juros_ou_multa_por), Res.s(R.string.debt_sai_conta_mas_nao), extraIsInterest) { extraIsInterest = true }
+                    ChoiceRow(Res.s(R.string.debt_para_adiantar_divida), Res.s(R.string.debt_diminui_quanto_falta_pagar), !extraIsInterest) { extraIsInterest = false }
                 }
             }
 
-            FieldLabel("Pago com a conta")
+            FieldLabel(Res.s(R.string.debt_pago_com_conta))
             AccountChips(l.activeAccounts, acc, { acc = it })
-            FieldLabel("Data")
+            FieldLabel(Res.s(R.string.wallet_data))
             DateChooser(date, l.today, { date = it })
             Spacer(Modifier.height(20.dp))
             Button(
@@ -762,7 +766,7 @@ fun DebtPaySheet(info: DebtInfo, l: Ledger, payoff: Boolean, onDismiss: () -> Un
                             )
                         }
                         val quitou = payoff || amount >= remaining
-                        c.message(if (quitou) "Dívida quitada. Parabéns! 🎉" else "Pagamento registrado", "Desfazer") { c.repo.undo(u) }
+                        c.message(if (quitou) Res.s(R.string.debt_divida_quitada_parabens) else Res.s(R.string.debt_pagamento_registrado), Res.s(R.string.wallet_desfazer)) { c.repo.undo(u) }
                     }
                 },
                 enabled = amount > 0 && acc != null,
@@ -770,10 +774,10 @@ fun DebtPaySheet(info: DebtInfo, l: Ledger, payoff: Boolean, onDismiss: () -> Un
             ) {
                 Icon(Icons.Rounded.Check, null)
                 Spacer(Modifier.width(8.dp))
-                Text(if (payoff) "Quitar dívida" else "Registrar pagamento")
+                Text(if (payoff) Res.s(R.string.debt_quitar_divida) else Res.s(R.string.debt_registrar_pagamento))
             }
             Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text("Cancelar") }
+            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.wallet_cancelar)) }
         }
     }
 }
@@ -835,17 +839,17 @@ fun DebtEditorScreen(id: Long?) {
     }
 
     val problem = when {
-        name.isBlank() -> "Dê um nome para a dívida"
-        installments && amountEach <= 0 -> "Informe o valor da parcela"
-        installments && paidBefore >= count -> "As parcelas pagas precisam ser menos que o total"
-        creating && balance <= 0 -> "Informe quanto falta pagar"
-        creating && received && (receivedAmount <= 0 || receivedAcc == null) -> "Informe quanto entrou e em qual conta"
-        creating && received && receivedAmount > balance -> "O valor que entrou não pode ser maior que o total a pagar"
+        name.isBlank() -> Res.s(R.string.debt_nome_para_divida)
+        installments && amountEach <= 0 -> Res.s(R.string.debt_informe_valor_parcela)
+        installments && paidBefore >= count -> Res.s(R.string.debt_parcelas_pagas_precisam_ser)
+        creating && balance <= 0 -> Res.s(R.string.debt_informe_quanto_falta_pagar)
+        creating && received && (receivedAmount <= 0 || receivedAcc == null) -> Res.s(R.string.debt_informe_quanto_entrou_qual)
+        creating && received && receivedAmount > balance -> Res.s(R.string.debt_valor_que_entrou_nao)
         else -> null
     }
 
     EditorScaffold(
-        title = if (creating) "Nova dívida" else "Editar dívida",
+        title = if (creating) Res.s(R.string.debt_nova_divida) else Res.s(R.string.debt_editar_divida),
         canSave = problem == null,
         onSave = {
             val base = (existing ?: Debt(name = name, color = color, initialBalance = 0, startYm = startKey)).copy(
@@ -861,7 +865,7 @@ fun DebtEditorScreen(id: Long?) {
                 if (existing == null) {
                     val r = if (received) receivedAmount else 0L
                     c.repo.createDebt(base.copy(initialBalance = balance - r), r, receivedAcc, l.today)
-                    c.message("Dívida cadastrada")
+                    c.message(Res.s(R.string.debt_divida_cadastrada))
                 } else {
                     val noHistory = info!!.paid == 0L && info.borrowed == 0L && info.adjusted == 0L
                     when {
@@ -870,10 +874,10 @@ fun DebtEditorScreen(id: Long?) {
                         else -> {
                             c.repo.saveDebt(base)
                             val diff = balance - info.outstanding
-                            if (diff != 0L) c.repo.adjustDebt(base, diff, l.today, "Correção do saldo")
+                            if (diff != 0L) c.repo.adjustDebt(base, diff, l.today, Res.s(R.string.debt_correcao_saldo))
                         }
                     }
-                    c.message("Dívida atualizada")
+                    c.message(Res.s(R.string.debt_divida_atualizada))
                 }
             }
             nav.back()
@@ -881,11 +885,11 @@ fun DebtEditorScreen(id: Long?) {
         onDelete = existing?.let { { confirmDelete = true } },
     ) {
         OutlinedTextField(
-            name, { name = it }, label = { Text("Nome da dívida") }, singleLine = true,
-            placeholder = { Text("Ex.: Financiamento da moto, Devo à Ana") },
+            name, { name = it }, label = { Text(Res.s(R.string.debt_nome_divida)) }, singleLine = true,
+            placeholder = { Text(Res.s(R.string.debt_ex_financiamento_moto_devo)) },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
         )
-        FieldLabel("Tipo")
+        FieldLabel(Res.s(R.string.wallet_tipo))
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             DebtKind.entries.forEach { k ->
                 FilterChip(
@@ -901,50 +905,50 @@ fun DebtEditorScreen(id: Long?) {
         }
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
-            creditor, { creditor = it }, label = { Text("Com quem (opcional)") }, singleLine = true,
-            placeholder = { Text("Ex.: banco, loja ou nome da pessoa") },
+            creditor, { creditor = it }, label = { Text(Res.s(R.string.debt_com_quem_opcional)) }, singleLine = true,
+            placeholder = { Text(Res.s(R.string.debt_ex_banco_loja_ou)) },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words), modifier = Modifier.fillMaxWidth(),
         )
 
-        FieldLabel("Como você paga")
-        Segmented(listOf(true to "Parcelas fixas", false to "Quando puder"), installments, { installments = it; modeTouched = true })
+        FieldLabel(Res.s(R.string.debt_como_voce_paga))
+        Segmented(listOf(true to Res.s(R.string.debt_parcelas_fixas), false to Res.s(R.string.debt_quando_puder)), installments, { installments = it; modeTouched = true })
 
         if (installments) {
-            FieldLabel("Valor de cada parcela")
-            AmountField(amountEach, { amountEach = it }, label = "Parcela")
+            FieldLabel(Res.s(R.string.debt_valor_cada_parcela))
+            AmountField(amountEach, { amountEach = it }, label = Res.s(R.string.debt_parcela))
             Spacer(Modifier.height(8.dp))
-            Stepper(count, { count = it; if (paidBefore >= it) paidBefore = it - 1 }, 1..600, "Total de parcelas")
-            Stepper(paidBefore, { paidBefore = it }, 0..(count - 1).coerceAtLeast(0), "Já pagas")
-            Stepper(dueDay, { dueDay = it }, 1..31, "Vence todo dia")
-            FieldLabel("Próxima parcela a pagar")
+            Stepper(count, { count = it; if (paidBefore >= it) paidBefore = it - 1 }, 1..600, Res.s(R.string.debt_total_parcelas))
+            Stepper(paidBefore, { paidBefore = it }, 0..(count - 1).coerceAtLeast(0), Res.s(R.string.debt_ja_pagas))
+            Stepper(dueDay, { dueDay = it }, 1..31, Res.s(R.string.debt_vence_todo_dia))
+            FieldLabel(Res.s(R.string.debt_proxima_parcela_pagar))
             val start = ymOf(startKey)
             MonthSelector(
-                "${start.dayClamped(dueDay).dayOfMonth} de ${Dates.monthYear(start, l.today).lowercase()}",
+                "${start.dayClamped(dueDay).dayOfMonth} de ${Dates.monthYearInSentence(start, l.today)}",
                 onPrev = { startKey = start.minusMonths(1).key(); startTouched = true },
                 onNext = { startKey = start.plusMonths(1).key(); startTouched = true },
             )
         } else {
-            FieldLabel("Prazo para quitar (opcional)")
+            FieldLabel(Res.s(R.string.debt_prazo_para_quitar_opcional))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    deadline?.let { Dates.full(LocalDate.ofEpochDay(it)) } ?: "Sem prazo",
+                    deadline?.let { Dates.full(LocalDate.ofEpochDay(it)) } ?: Res.s(R.string.debt_sem_prazo),
                     style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f).clickable { pickDate = true },
                 )
-                TextButton(onClick = { pickDate = true }) { Text(if (deadline == null) "Definir" else "Mudar") }
-                if (deadline != null) TextButton(onClick = { deadline = null }) { Text("Tirar") }
+                TextButton(onClick = { pickDate = true }) { Text(if (deadline == null) Res.s(R.string.debt_definir) else Res.s(R.string.debt_mudar)) }
+                if (deadline != null) TextButton(onClick = { deadline = null }) { Text(Res.s(R.string.debt_tirar)) }
             }
         }
 
-        FieldLabel(if (creating) "Quanto falta pagar" else "Falta pagar hoje")
-        AmountField(balance, { balance = it; balanceTouched = true }, label = "Falta pagar", color = CryoTheme.colors.expense)
+        FieldLabel(if (creating) Res.s(R.string.debt_quanto_falta_pagar) else Res.s(R.string.debt_falta_pagar_hoje))
+        AmountField(balance, { balance = it; balanceTouched = true }, label = Res.s(R.string.debt_falta_pagar), color = CryoTheme.colors.expense)
         Text(
             when {
-                !creating -> "Se você mudar este valor, a diferença fica registrada como juros ou desconto."
-                installments && amountEach <= 0 -> "Preencha o valor da parcela: o total é calculado sozinho."
+                !creating -> Res.s(R.string.debt_se_voce_mudar_este)
+                installments && amountEach <= 0 -> Res.s(R.string.debt_preencha_valor_parcela_total)
                 installments && !balanceTouched ->
-                    "Calculado: ${count - paidBefore} parcelas de ${Money.format(amountEach)}. Ajuste se o banco informou outro valor (por exemplo, com desconto para quitar)."
-                installments -> "Valor informado por você (as parcelas somariam ${Money.format(computed)})."
-                else -> "O total que você deve hoje."
+                    Res.s(R.string.debt_calculado_parcelas_ajuste_se, count - paidBefore, Money.format(amountEach))
+                installments -> Res.s(R.string.debt_valor_informado_por_voce, Money.format(computed))
+                else -> Res.s(R.string.debt_total_que_voce_deve)
             },
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 4.dp),
@@ -953,7 +957,7 @@ fun DebtEditorScreen(id: Long?) {
             val left = count - paidBefore
             val end = ymOf(startKey).plusMonths((left - 1).toLong())
             Text(
-                "Termina em ${Dates.monthYear(end, l.today).lowercase()} · ${plural(left, "parcela", "parcelas")} pela frente",
+                Res.s(R.string.debt_termina, Dates.monthYearInSentence(end, l.today), plural(R.plurals.debt_installments_ahead, left)),
                 style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 6.dp),
             )
         }
@@ -961,36 +965,36 @@ fun DebtEditorScreen(id: Long?) {
         if (creating) {
             Spacer(Modifier.height(8.dp))
             SwitchRow(
-                "O dinheiro entrou numa conta agora", received, { received = it },
-                "Use quando acabou de pegar o empréstimo. Não conta como receita.",
+                Res.s(R.string.debt_dinheiro_entrou_numa_conta), received, { received = it },
+                Res.s(R.string.debt_use_quando_acabou_pegar),
             )
             if (received) {
-                AmountField(receivedAmount, { receivedAmount = it }, label = "Quanto entrou")
-                FieldLabel("Entrou na conta")
+                AmountField(receivedAmount, { receivedAmount = it }, label = Res.s(R.string.debt_quanto_entrou))
+                FieldLabel(Res.s(R.string.debt_entrou_conta))
                 AccountChips(l.activeAccounts, receivedAcc, { receivedAcc = it })
             }
         }
 
-        FieldLabel("Conta usada para pagar")
+        FieldLabel(Res.s(R.string.wallet_conta_usada_para_pagar))
         AccountChips(l.activeAccounts, payAcc, { payAcc = it })
         if (installments) {
             Spacer(Modifier.height(8.dp))
-            SwitchRow("Lembrar do vencimento", remind, { remind = it }, "Notificação no celular")
+            SwitchRow(Res.s(R.string.debt_lembrar_vencimento), remind, { remind = it }, Res.s(R.string.debt_notificacao_celular))
             if (remind) {
-                Stepper(remindBefore, { remindBefore = it }, 0..7, "Avisar antes", format = { if (it == 0) "No dia" else "$it dia${if (it > 1) "s" else ""}" })
+                Stepper(remindBefore, { remindBefore = it }, 0..7, Res.s(R.string.debt_avisar_antes), format = { if (it == 0) Res.s(R.string.debt_dia) else Res.p(R.plurals.count_days, it, it) })
             }
             Text(
-                "Não precisa criar uma conta fixa para esta parcela: ela já aparece em Planejar › Contas fixas e na previsão do mês.",
+                Res.s(R.string.debt_nao_precisa_criar_conta),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
         }
-        FieldLabel("Cor")
+        FieldLabel(Res.s(R.string.wallet_cor))
         ColorChooser(color) { color = it }
         Spacer(Modifier.height(12.dp))
         OutlinedTextField(
-            note, { note = it }, label = { Text("Observação (opcional)") }, minLines = 2,
-            placeholder = { Text("Ex.: juros de 2% ao mês, número do contrato") }, modifier = Modifier.fillMaxWidth(),
+            note, { note = it }, label = { Text(Res.s(R.string.debt_observacao_opcional)) }, minLines = 2,
+            placeholder = { Text(Res.s(R.string.debt_ex_juros_ao_mes)) }, modifier = Modifier.fillMaxWidth(),
         )
         if (problem != null && name.isNotBlank()) {
             Text(problem, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 12.dp))
@@ -999,12 +1003,12 @@ fun DebtEditorScreen(id: Long?) {
             Spacer(Modifier.height(16.dp))
             if (existing.archived) {
                 OutlinedButton(onClick = {
-                    c.launch { c.repo.saveDebt(existing.copy(archived = false)); c.message("Dívida restaurada") }
+                    c.launch { c.repo.saveDebt(existing.copy(archived = false)); c.message(Res.s(R.string.debt_divida_restaurada)) }
                     nav.back()
-                }, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text("Restaurar dívida") }
+                }, modifier = Modifier.fillMaxWidth()) { Icon(Icons.Rounded.Unarchive, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.debt_restaurar_divida)) }
             } else {
                 OutlinedButton(onClick = { confirmArchive = true }, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Rounded.Archive, null); Spacer(Modifier.width(8.dp)); Text("Arquivar dívida")
+                    Icon(Icons.Rounded.Archive, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.debt_arquivar_divida_2))
                 }
             }
         }
@@ -1018,18 +1022,18 @@ fun DebtEditorScreen(id: Long?) {
     }
     if (confirmArchive && existing != null) {
         ConfirmDialog(
-            "Arquivar dívida?",
+            Res.s(R.string.debt_arquivar_divida),
             if (info!!.remaining > 0) {
-                "Ela ainda tem ${Money.format(info.remaining)} em aberto. Arquivada, ela sai dos totais, da previsão e dos lembretes. Você encontra em Dívidas › Quitadas e arquivadas."
+                Res.s(R.string.debt_ela_ainda_tem_aberto, Money.format(info.remaining))
             } else {
-                "Ela vai para Dívidas › Quitadas e arquivadas."
+                Res.s(R.string.debt_ela_vai_para_dividas)
             },
-            "Arquivar",
+            Res.s(R.string.wallet_arquivar),
             onConfirm = {
                 confirmArchive = false
                 c.launch {
                     c.repo.saveDebt(existing.copy(archived = true))
-                    c.message("Dívida arquivada", "Desfazer") { c.repo.saveDebt(existing.copy(archived = false)) }
+                    c.message(Res.s(R.string.debt_divida_arquivada), Res.s(R.string.wallet_desfazer)) { c.repo.saveDebt(existing.copy(archived = false)) }
                 }
                 nav.back(); nav.back()
             },
@@ -1038,12 +1042,12 @@ fun DebtEditorScreen(id: Long?) {
     }
     if (confirmDelete && existing != null) {
         ConfirmDialog(
-            "Apagar dívida?",
-            "Os pagamentos já feitos continuam no extrato, porque o dinheiro saiu de verdade. Para só esconder a dívida, use Arquivar.",
-            "Apagar",
+            Res.s(R.string.debt_apagar_divida),
+            Res.s(R.string.debt_pagamentos_ja_feitos_continuam),
+            Res.s(R.string.wallet_apagar),
             onConfirm = {
                 confirmDelete = false
-                c.launch { c.repo.deleteDebt(existing); c.message("Dívida apagada") }
+                c.launch { c.repo.deleteDebt(existing); c.message(Res.s(R.string.debt_divida_apagada)) }
                 nav.back(); nav.back()
             },
             onDismiss = { confirmDelete = false },
@@ -1069,16 +1073,16 @@ fun DebtSummaryContent(l: Ledger, hide: Boolean) {
             IconBadge(Icons.Rounded.RequestQuote, CryoTheme.colors.expense)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text("Você deve", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(Res.s(R.string.debt_voce_deve), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 MoneyText(ov.total, style = MaterialTheme.typography.titleLarge)
             }
-            Text(plural(ov.open.size, "dívida", "dívidas"), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(plural(R.plurals.debt_count, ov.open.size), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (ov.paidAll > 0) {
             Spacer(Modifier.height(10.dp))
             UsageBar(ov.progress, baseColor = CryoTheme.colors.income, warn = false, height = 6.dp)
             Text(
-                "Já pagou ${(ov.progress * 100).roundToInt()}%" + (ov.freeOfDebtYm?.let { " · livre em ${shortMonthYear(it)}" } ?: ""),
+                Res.s(R.string.debt_ja_pagou_por_cento, (ov.progress * 100).roundToInt()) + (ov.freeOfDebtYm?.let { Res.s(R.string.debt_livre, shortMonthYear(it)) } ?: ""),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 4.dp),
             )
@@ -1088,7 +1092,7 @@ fun DebtSummaryContent(l: Ledger, hide: Boolean) {
             val look = debtStatusLook(next, l.today)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Próxima parcela", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(Res.s(R.string.debt_proxima_parcela), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text(
                         "${next.debt.name} · ${fmt(next.nextAmount, hide)}",
                         style = MaterialTheme.typography.bodyMedium, maxLines = 1, overflow = TextOverflow.Ellipsis,

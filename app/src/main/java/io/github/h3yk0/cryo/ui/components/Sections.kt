@@ -41,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
@@ -50,6 +51,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
+import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 
 /*
@@ -72,6 +74,8 @@ fun CryoSection(
     onClick: (() -> Unit)? = null,
     headerOnly: Boolean = false,
     divider: Boolean = true,
+    /** Ação no título, no lugar do "›" (ex.: "+ Nova"). */
+    action: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier.fillMaxWidth()) {
@@ -87,13 +91,81 @@ fun CryoSection(
                     title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
                     modifier = Modifier.weight(1f).semantics { heading() },
                 )
-                if (onClick != null) {
-                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                when {
+                    action != null -> action()
+                    onClick != null -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
             Column(Modifier.fillMaxWidth().padding(start = SectionPadding, end = SectionPadding, bottom = 12.dp), content = content)
         }
         if (divider) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+    }
+}
+
+/**
+ * DS-COMP-18: linha de lista dentro de uma seção (conta, cartão, investimento...): ícone, título, subtítulo e o valor à direita.
+ * A linha inteira é tocável quando leva a outra tela.
+ */
+@Composable
+fun CryoListRow(
+    title: String,
+    modifier: Modifier = Modifier,
+    subtitle: String? = null,
+    leading: (@Composable () -> Unit)? = null,
+    trailing: (@Composable () -> Unit)? = null,
+    onClick: (() -> Unit)? = null,
+    below: (@Composable ColumnScope.() -> Unit)? = null,
+) {
+    Column(
+        modifier.fillMaxWidth().clip(MaterialTheme.shapes.small)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(vertical = 10.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            if (leading != null) {
+                leading()
+                Spacer(Modifier.width(12.dp))
+            }
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                if (subtitle != null) {
+                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                }
+            }
+            if (trailing != null) {
+                Spacer(Modifier.width(8.dp))
+                trailing()
+            }
+        }
+        below?.invoke(this)
+    }
+}
+
+/**
+ * DS-COMP-19: destaque de uma tela interna (saldo da conta, total da fatura, valor do investimento): o número grande, sem
+ * cartão em volta, e uma linha fina embaixo (PRI-04, DS-DIR-01).
+ */
+@Composable
+fun HeroBlock(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier.fillMaxWidth().padding(start = SectionPadding, end = SectionPadding, top = 4.dp, bottom = 16.dp), content = content)
+    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+}
+
+/**
+ * DS-COMP-20: item de lista sem cartão, com uma linha fina embaixo, para itens de várias linhas (orçamento, conta fixa, meta,
+ * dívida). Substitui os cartões empilhados da 1.3 (DS-DIR-01).
+ */
+@Composable
+fun FlatItem(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, faded: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
+    Column(modifier.fillMaxWidth()) {
+        Column(
+            Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+                .then(if (faded) Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest) else Modifier)
+                .padding(horizontal = 4.dp, vertical = 14.dp),
+            content = content,
+        )
+        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
     }
 }
 
@@ -174,7 +246,7 @@ fun HomeHeader(
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        if (name.isNotBlank()) "Olá, ${name.trim()}" else "Olá!",
+                        if (name.isNotBlank()) stringResource(R.string.home_hello, name.trim()) else stringResource(R.string.home_hello_anonymous),
                         style = MaterialTheme.typography.titleLarge, maxLines = 1, overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.semantics { heading() },
                     )
@@ -183,10 +255,10 @@ fun HomeHeader(
                 IconButton(onClick = onToggleHide) {
                     Icon(
                         if (hideValues) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
-                        if (hideValues) "Mostrar valores" else "Esconder valores",
+                        stringResource(if (hideValues) R.string.show_values else R.string.hide_values),
                     )
                 }
-                IconButton(onClick = onSettings) { Icon(Icons.Rounded.Settings, "Ajustes") }
+                IconButton(onClick = onSettings) { Icon(Icons.Rounded.Settings, stringResource(R.string.settings)) }
             }
             Spacer(Modifier.height(20.dp))
             Column(Modifier.padding(end = 12.dp), content = content)
