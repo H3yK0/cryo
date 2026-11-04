@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.tx
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -99,17 +101,17 @@ class TxDraft(
 
     /** O que falta preencher (null = pode salvar). */
     fun problem(): String? = when {
-        amount <= 0 -> "Informe o valor"
-        type == TxType.EXPENSE && source == null -> "Escolha de onde saiu o dinheiro"
-        type == TxType.INCOME && source !is Source.Acc -> "Escolha em qual conta entrou"
-        type == TxType.TRANSFER && (source !is Source.Acc || toAccountId == null) -> "Escolha as duas contas"
-        type == TxType.TRANSFER && (source as? Source.Acc)?.id == toAccountId -> "As contas precisam ser diferentes"
-        (type == TxType.INVEST_IN || type == TxType.INVEST_OUT) && investmentId == null -> "Escolha o investimento"
-        (type == TxType.GOAL_IN || type == TxType.GOAL_OUT) && goalId == null -> "Escolha a meta"
-        type == TxType.DEBT_IN && debtId == null -> "Escolha a dívida"
-        type == TxType.EXPENSE && debtId != null && source !is Source.Acc -> "Pagamentos de dívidas saem de uma conta"
+        amount <= 0 -> Res.s(R.string.tx_informe_valor)
+        type == TxType.EXPENSE && source == null -> Res.s(R.string.tx_escolha_onde_saiu_dinheiro)
+        type == TxType.INCOME && source !is Source.Acc -> Res.s(R.string.tx_escolha_qual_conta_entrou)
+        type == TxType.TRANSFER && (source !is Source.Acc || toAccountId == null) -> Res.s(R.string.tx_escolha_duas_contas)
+        type == TxType.TRANSFER && (source as? Source.Acc)?.id == toAccountId -> Res.s(R.string.tx_contas_precisam_ser_diferentes)
+        (type == TxType.INVEST_IN || type == TxType.INVEST_OUT) && investmentId == null -> Res.s(R.string.tx_escolha_investimento)
+        (type == TxType.GOAL_IN || type == TxType.GOAL_OUT) && goalId == null -> Res.s(R.string.tx_escolha_meta)
+        type == TxType.DEBT_IN && debtId == null -> Res.s(R.string.tx_escolha_divida)
+        type == TxType.EXPENSE && debtId != null && source !is Source.Acc -> Res.s(R.string.tx_pagamentos_dividas_saem_conta)
         (type == TxType.INVEST_IN || type == TxType.INVEST_OUT || type == TxType.GOAL_IN || type == TxType.GOAL_OUT ||
-            type == TxType.CARD_PAYMENT || type == TxType.DEBT_IN) && source !is Source.Acc -> "Escolha a conta"
+            type == TxType.CARD_PAYMENT || type == TxType.DEBT_IN) && source !is Source.Acc -> Res.s(R.string.tx_escolha_conta)
         else -> null
     }
 
@@ -189,15 +191,15 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
         { repo.deleteTx(saved) }
     }
     val what = when (d.type) {
-        TxType.EXPENSE -> "Despesa"
-        TxType.INCOME -> "Receita"
+        TxType.EXPENSE -> Res.s(R.string.wallet_despesa)
+        TxType.INCOME -> Res.s(R.string.wallet_receita)
         else -> typeLabel(d.type)
     }
     val summary = when {
-        o != null -> "Alterações salvas"
+        o != null -> Res.s(R.string.tx_alteracoes_salvas)
         saved.debtId != null && d.type == TxType.EXPENSE -> "Pagamento de ${Money.format(d.amount)} registrado na dívida"
         d.type == TxType.DEBT_IN -> "${Money.format(d.amount)} somados à dívida"
-        else -> "$what de ${Money.format(d.amount)} registrada"
+        else -> Res.s(R.string.tx_registrada, what, Money.format(d.amount))
     }
     return SaveResult(alert, undo, summary)
 }
@@ -207,7 +209,7 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
  */
 @Composable
 fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifier, autoFocusAmount: Boolean = false) {
-    val simpleTypes = listOf(TxType.EXPENSE to "Despesa", TxType.INCOME to "Receita", TxType.TRANSFER to "Transferir")
+    val simpleTypes = listOf(TxType.EXPENSE to Res.s(R.string.wallet_despesa), TxType.INCOME to Res.s(R.string.wallet_receita), TxType.TRANSFER to Res.s(R.string.home_shortcut_transfer))
     Column(modifier) {
         if (d.type in simpleTypes.map { it.first } && (d.original == null || d.original.billId == null)) {
             Segmented(simpleTypes, d.type, onSelect = { t ->
@@ -226,7 +228,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     TextButton(onClick = {
                         d.type = TxType.EXPENSE
                         if (d.source !is Source.Acc) l.activeAccounts.firstOrNull()?.let { d.source = Source.Acc(it.id) }
-                    }) { Text("Trocar para despesa") }
+                    }) { Text(Res.s(R.string.tx_trocar_para_despesa)) }
                 }
             }
         }
@@ -243,7 +245,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
         OutlinedTextField(
             value = d.description,
             onValueChange = { d.description = it },
-            label = { Text("Descrição") },
+            label = { Text(Res.s(R.string.tx_descricao)) },
             placeholder = { Text(if (d.type == TxType.INCOME) "Ex.: Salário" else "Ex.: Almoço") },
             singleLine = true,
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences, imeAction = ImeAction.Done),
@@ -288,57 +290,57 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     if (d.original == null) {
                         Spacer(Modifier.height(8.dp))
                         Stepper(
-                            value = d.installments, onChange = { d.installments = it }, range = 1..24, label = "Parcelas",
-                            format = { if (it == 1) "À vista" else "${it}x" },
+                            value = d.installments, onChange = { d.installments = it }, range = 1..24, label = Res.s(R.string.tx_parcelas),
+                            format = { if (it == 1) Res.s(R.string.tx_vista) else "${it}x" },
                         )
                     }
                     val inv = CardMath.invoiceFor(card, d.date)
-                    val per = if (d.installments > 1) " · ${d.installments}x de ${Money.format(CardMath.split(d.amount, d.installments).last())}" else ""
+                    val per = if (d.installments > 1) Res.s(R.string.tx_1x, d.installments, Money.format(CardMath.split(d.amount, d.installments).last())) else ""
                     Text(
-                        "Entra na fatura de ${Dates.monthInSentence(inv)} (vence ${Dates.short(CardMath.dueDate(card, inv))})$per",
+                        Res.s(R.string.tx_entra_fatura_vence, Dates.monthInSentence(inv), Dates.short(CardMath.dueDate(card, inv)), per),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp),
                     )
                     if (d.original != null && d.original.installmentTotal > 1) {
                         Text(
-                            "Parcela ${d.original.installmentNumber} de ${d.original.installmentTotal}. As alterações valem só para esta parcela.",
+                            Res.s(R.string.tx_parcela_alteracoes_valem_so, d.original.installmentNumber, d.original.installmentTotal),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
                 }
             }
             TxType.TRANSFER -> {
-                FieldLabel("De")
+                FieldLabel(Res.s(R.string.tx_texto))
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
-                FieldLabel("Para")
+                FieldLabel(Res.s(R.string.tx_para))
                 AccountChips(l.activeAccounts, d.toAccountId, { d.toAccountId = it }, exclude = (d.source as? Source.Acc)?.id)
             }
             TxType.INVEST_IN, TxType.INVEST_OUT -> {
-                FieldLabel("Investimento")
+                FieldLabel(Res.s(R.string.tx_investimento))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     l.activeInvestments.forEach { i ->
                         FilterChip(selected = d.investmentId == i.id, onClick = { d.investmentId = i.id }, label = { Text(i.name) })
                     }
                 }
-                if (l.activeInvestments.isEmpty()) NoItemsText("Cadastre um investimento na aba Carteira.")
+                if (l.activeInvestments.isEmpty()) NoItemsText(Res.s(R.string.tx_cadastre_investimento_aba_carteira))
                 FieldLabel(if (d.type == TxType.INVEST_IN) "Sai da conta" else "Entra na conta")
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
             }
             TxType.GOAL_IN, TxType.GOAL_OUT -> {
-                FieldLabel("Meta")
+                FieldLabel(Res.s(R.string.tx_meta))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     l.activeGoals.forEach { g ->
                         FilterChip(selected = d.goalId == g.id, onClick = { d.goalId = g.id }, label = { Text("${g.emoji} ${g.name}") })
                     }
                 }
-                if (l.activeGoals.isEmpty()) NoItemsText("Crie uma meta na aba Planejar.")
+                if (l.activeGoals.isEmpty()) NoItemsText(Res.s(R.string.tx_crie_meta_aba_planejar))
                 FieldLabel(if (d.type == TxType.GOAL_IN) "Sai da conta" else "Volta para a conta")
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
             }
             TxType.DEBT_IN -> {
-                FieldLabel("Dívida")
+                FieldLabel(Res.s(R.string.tx_divida))
                 if (l.activeDebts.isEmpty()) {
-                    NoItemsText("Cadastre a dívida primeiro em Carteira › Dívidas. No cadastro dá para registrar o dinheiro que entrou.")
+                    NoItemsText(Res.s(R.string.tx_cadastre_divida_primeiro_carteira))
                 } else {
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         l.activeDebts.forEach { debt ->
@@ -346,34 +348,34 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                         }
                     }
                 }
-                FieldLabel("Entrou na conta")
+                FieldLabel(Res.s(R.string.debt_entrou_conta))
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
                 Text(
-                    "Dinheiro emprestado não conta como receita: ele entra na conta e aumenta a dívida.",
+                    Res.s(R.string.tx_dinheiro_emprestado_nao_conta),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp),
                 )
             }
             TxType.CARD_PAYMENT -> {
-                FieldLabel("Pago com a conta")
+                FieldLabel(Res.s(R.string.debt_pago_com_conta))
                 AccountChips(l.activeAccounts, (d.source as? Source.Acc)?.id, { d.source = Source.Acc(it) })
                 d.original?.cardId?.let { cid ->
                     Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
                         Icon(Icons.Rounded.CreditCard, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
-                        Text("Cartão ${l.cardName(cid)}", style = MaterialTheme.typography.bodyMedium)
+                        Text(Res.s(R.string.home_card_title, l.cardName(cid)), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
         }
 
-        FieldLabel("Data")
+        FieldLabel(Res.s(R.string.wallet_data))
         DateChooser(d.date, l.today, onChange = { d.date = it })
 
         if (!compact) {
             Spacer(Modifier.height(12.dp))
             OutlinedTextField(
-                value = d.note, onValueChange = { d.note = it }, label = { Text("Observação (opcional)") },
+                value = d.note, onValueChange = { d.note = it }, label = { Text(Res.s(R.string.debt_observacao_opcional)) },
                 modifier = Modifier.fillMaxWidth(), minLines = 2,
             )
         }
@@ -392,15 +394,15 @@ private fun CategorySection(d: TxDraft, l: Ledger, compact: Boolean) {
     var expanded by rememberSaveable(compact) { mutableStateOf(!compact || d.categoryId == null) }
     val sel = d.categoryId?.let { l.category[it] }
     if (!expanded && sel != null) {
-        FieldLabel("Categoria")
+        FieldLabel(Res.s(R.string.plan_categoria))
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(categoryIcon(sel.icon), Color(sel.color), 40.dp)
             Spacer(Modifier.width(12.dp))
             Text(sel.name, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
-            TextButton(onClick = { expanded = true }) { Text("Trocar") }
+            TextButton(onClick = { expanded = true }) { Text(Res.s(R.string.onboarding_trocar)) }
         }
     } else {
-        FieldLabel("Categoria")
+        FieldLabel(Res.s(R.string.plan_categoria))
         CategoryGrid(cats, d.categoryId, onSelect = {
             d.categoryId = it.id
             if (it.icon != DefaultData.DEBT_ICON) d.debtId = null
@@ -413,13 +415,13 @@ private fun CategorySection(d: TxDraft, l: Ledger, compact: Boolean) {
 @Composable
 private fun DebtPicker(d: TxDraft, l: Ledger) {
     val debts = l.activeDebts.filter { !l.debtInfo(it).isPaidOff || it.id == d.debtId }
-    FieldLabel("Pagamento de qual dívida?")
+    FieldLabel(Res.s(R.string.tx_pagamento_qual_divida))
     if (debts.isEmpty()) {
-        NoItemsText("Nenhuma dívida em aberto. Cadastre em Carteira › Dívidas para acompanhar quanto falta pagar.")
+        NoItemsText(Res.s(R.string.tx_nenhuma_divida_aberto_cadastre))
         return
     }
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = d.debtId == null, onClick = { d.debtId = null }, label = { Text("Nenhuma") })
+        FilterChip(selected = d.debtId == null, onClick = { d.debtId = null }, label = { Text(Res.s(R.string.tx_nenhuma)) })
         debts.forEach { debt ->
             FilterChip(
                 selected = d.debtId == debt.id,

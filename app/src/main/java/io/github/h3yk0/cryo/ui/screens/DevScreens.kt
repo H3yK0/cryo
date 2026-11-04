@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.ClipData
@@ -120,7 +122,7 @@ fun switchTestMode(ctx: Context, on: Boolean, done: () -> Unit = {}) {
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            app.container.message("Não consegui preparar o modo de teste. Tente de novo.")
+            app.container.message(Res.s(R.string.dev_nao_consegui_preparar_modo))
         } finally {
             withContext(NonCancellable + Dispatchers.Main) { done() }
         }
@@ -137,7 +139,7 @@ private fun testDataTask(ctx: Context, c: AppContainer, doneMessage: String, don
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {
-            c.message("Não deu certo. Tente de novo.")
+            c.message(Res.s(R.string.dev_nao_deu_certo_tente))
         } finally {
             withContext(NonCancellable + Dispatchers.Main) { done() }
         }
@@ -163,57 +165,55 @@ fun DevScreen() {
             val n = withContext(Dispatchers.IO) { saveSamples(ctx, uri, today) }
             c.message(
                 when {
-                    n == 1 -> "1 arquivo de exemplo salvo na pasta"
-                    n > 1 -> "$n arquivos de exemplo salvos na pasta"
-                    else -> "Não consegui salvar os arquivos nessa pasta"
+                    n > 0 -> Res.p(R.plurals.dev_samples_saved, n, n)
+                    else -> Res.s(R.string.dev_nao_consegui_salvar_arquivos)
                 },
             )
         }
     }
 
-    Scaffold(topBar = { CryoTopBar("Modo desenvolvedor", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.settings_modo_desenvolvedor), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
             item {
                 Text(
-                    "Ferramentas para testar o Cryo e ajudar a melhorar a leitura de extratos, sem mexer nos seus dados de verdade.",
+                    Res.s(R.string.dev_ferramentas_para_testar_cryo),
                     style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
 
-            item { DevHeader("Modo de teste") }
+            item { DevHeader(Res.s(R.string.dev_modo_teste)) }
             item {
                 SwitchRow(
-                    "Usar dados de teste", c.sandbox,
+                    Res.s(R.string.dev_usar_dados_teste_2), c.sandbox,
                     { on ->
                         if (working) return@SwitchRow
                         if (on) confirmEnter = true else { working = true; switchTestMode(ctx, false) { working = false } }
                     },
-                    "As telas passam a usar outro banco de dados, com dados de exemplo. Os seus dados ficam guardados, " +
-                        "do jeito que estão, até você voltar.",
+                    Res.s(R.string.dev_telas_passam_usar_outro),
                 )
                 if (working) LinearProgressIndicator(Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 4.dp))
                 if (c.sandbox) {
-                    DevLink(Icons.Rounded.Refresh, "Recriar os dados de exemplo", "Apaga o que tem no modo de teste e cria 4 meses de exemplo") {
+                    DevLink(Icons.Rounded.Refresh, Res.s(R.string.dev_recriar_dados_exemplo_2), Res.s(R.string.dev_apaga_que_tem_modo)) {
                         if (!working) confirmRefill = true
                     }
-                    DevLink(Icons.Rounded.DeleteSweep, "Começar do zero", "Modo de teste vazio, com a apresentação inicial") {
+                    DevLink(Icons.Rounded.DeleteSweep, Res.s(R.string.settings_comecar_zero), Res.s(R.string.dev_modo_teste_vazio_com)) {
                         if (!working) confirmFresh = true
                     }
                 } else {
                     Text(
-                        "Lembretes e backup automático sempre cuidam dos seus dados de verdade, mesmo no modo de teste.",
+                        Res.s(R.string.dev_lembretes_backup_automatico_sempre),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 4.dp),
                     )
                 }
             }
 
-            item { DevHeader("Importação de extratos") }
+            item { DevHeader(Res.s(R.string.dev_importacao_extratos)) }
             item {
-                Text("Testar com um arquivo de exemplo", style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 4.dp))
+                Text(Res.s(R.string.dev_testar_com_arquivo_exemplo), style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(horizontal = 4.dp))
                 if (c.sandbox) {
                     Text(
-                        "Abre a importação já com o arquivo (inventado). Bom para ver cada formato e a conferência.",
+                        Res.s(R.string.dev_abre_importacao_ja_com),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                     )
@@ -229,43 +229,43 @@ fun DevScreen() {
                     }
                 } else {
                     Text(
-                        "Ligue os dados de teste acima: assim os exemplos nunca entram nas suas contas de verdade.",
+                        Res.s(R.string.dev_ligue_dados_teste_acima),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp),
                     )
                 }
                 Spacer(Modifier.height(8.dp))
                 if (c.sandbox) {
-                    DevLink(Icons.Rounded.FolderOpen, "Salvar os exemplos numa pasta", "OFX, CSV de conta e de fatura, XLSX, JSON e PDF") {
+                    DevLink(Icons.Rounded.FolderOpen, Res.s(R.string.dev_salvar_exemplos_numa_pasta), Res.s(R.string.dev_ofx_csv_conta_fatura)) {
                         saveFolder.launch(null)
                     }
                 }
                 DevLink(
-                    Icons.Rounded.Description, "Relatório da última leitura",
-                    report?.let { "${it.fileName} · como o arquivo foi lido, linha por linha" } ?: "Nenhum arquivo lido ainda",
+                    Icons.Rounded.Description, Res.s(R.string.import_relatorio_ultima_leitura),
+                    report?.let { Res.s(R.string.dev_como_arquivo_foi_lido, it.fileName) } ?: Res.s(R.string.dev_nenhum_arquivo_lido_ainda),
                 ) { nav.go(Routes.IMPORT_REPORT) }
                 DevLink(
-                    Icons.Rounded.UploadFile, "Importar extrato",
-                    if (c.sandbox) "No modo de teste, aceita também o JSON de teste" else "Para os seus dados de verdade, como em Ajustes",
+                    Icons.Rounded.UploadFile, Res.s(R.string.import_importar_extrato),
+                    if (c.sandbox) Res.s(R.string.dev_modo_teste_aceita_tambem) else Res.s(R.string.dev_para_seus_dados_verdade),
                 ) { nav.go(Routes.import()) }
                 TextButton(onClick = { openLink(ctx, "$SOURCE_URL/blob/main/docs/IMPORTACAO.md") }) {
-                    Text("Formatos, JSON de teste e como mandar um extrato anônimo")
+                    Text(Res.s(R.string.dev_formatos_json_teste_como))
                 }
             }
 
-            item { DevHeader("Este celular") }
+            item { DevHeader(Res.s(R.string.dev_este_celular)) }
             item {
                 CryoCard {
-                    InfoLine("Versão do Cryo", "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-                    InfoLine("Android", "${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
-                    InfoLine("Leitura de PDF", if (PdfText.isSupported()) "disponível" else "indisponível neste Android")
-                    InfoLine("Banco de dados em uso", if (c.sandbox) CryoDatabase.TEST_NAME else CryoDatabase.NAME)
+                    InfoLine(Res.s(R.string.dev_versao_cryo), "${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
+                    InfoLine(Res.s(R.string.dev_android), Res.s(R.string.dev_api, Build.VERSION.RELEASE, Build.VERSION.SDK_INT))
+                    InfoLine(Res.s(R.string.dev_leitura_pdf), if (PdfText.isSupported()) Res.s(R.string.dev_disponivel) else Res.s(R.string.dev_indisponivel_neste_android))
+                    InfoLine(Res.s(R.string.dev_banco_dados_uso), if (c.sandbox) CryoDatabase.TEST_NAME else CryoDatabase.NAME)
                 }
             }
 
             item {
                 Spacer(Modifier.height(16.dp))
-                DevLink(Icons.Rounded.PowerSettingsNew, "Desligar o modo desenvolvedor", "Volta aos seus dados e esconde estas opções", danger = true) {
+                DevLink(Icons.Rounded.PowerSettingsNew, Res.s(R.string.dev_desligar_modo_desenvolvedor), Res.s(R.string.dev_volta_aos_seus_dados), danger = true) {
                     if (working) return@DevLink
                     val wasTest = c.sandbox
                     c.dev.enabled = false
@@ -273,7 +273,7 @@ fun DevScreen() {
                         working = true
                         switchTestMode(ctx, false) { working = false }
                     } else {
-                        c.message("Modo desenvolvedor desligado")
+                        c.message(Res.s(R.string.dev_modo_desenvolvedor_desligado))
                         nav.back()
                     }
                 }
@@ -283,10 +283,9 @@ fun DevScreen() {
 
     if (confirmEnter) {
         ConfirmDialog(
-            "Usar dados de teste?",
-            "O Cryo vai mostrar dados de exemplo num banco separado. Os seus dados ficam guardados, sem mudança nenhuma, " +
-                "e voltam quando você sair do modo de teste (pela faixa na parte de baixo da tela ou aqui).",
-            "Entrar no modo de teste",
+            Res.s(R.string.dev_usar_dados_teste),
+            Res.s(R.string.dev_cryo_vai_mostrar_dados),
+            Res.s(R.string.dev_entrar_modo_teste),
             onConfirm = {
                 confirmEnter = false
                 working = true
@@ -297,24 +296,24 @@ fun DevScreen() {
     }
     if (confirmRefill) {
         ConfirmDialog(
-            "Recriar os dados de exemplo?", "Tudo o que está no modo de teste é apagado e trocado pelos exemplos. Os seus dados de verdade não mudam.",
-            "Recriar",
+            Res.s(R.string.dev_recriar_dados_exemplo), Res.s(R.string.dev_tudo_que_esta_modo),
+            Res.s(R.string.dev_recriar),
             onConfirm = {
                 confirmRefill = false
                 working = true
-                testDataTask(ctx, c, "Dados de exemplo recriados", { working = false }) { t -> CryoApp.fillWithSamples(t) }
+                testDataTask(ctx, c, Res.s(R.string.dev_dados_exemplo_recriados), { working = false }) { t -> CryoApp.fillWithSamples(t) }
             },
             onDismiss = { confirmRefill = false },
         )
     }
     if (confirmFresh) {
         ConfirmDialog(
-            "Começar do zero?", "O modo de teste fica vazio e a apresentação inicial aparece de novo. Os seus dados de verdade não mudam.",
-            "Começar do zero",
+            Res.s(R.string.dev_comecar_zero), Res.s(R.string.dev_modo_teste_fica_vazio),
+            Res.s(R.string.settings_comecar_zero),
             onConfirm = {
                 confirmFresh = false
                 working = true
-                testDataTask(ctx, c, "Modo de teste vazio", { working = false }) { t ->
+                testDataTask(ctx, c, Res.s(R.string.dev_modo_teste_vazio), { working = false }) { t ->
                     t.repo.eraseAll()
                     t.settings.setDefaultAccount(null)
                     t.settings.setOnboardingDone(false)
@@ -381,9 +380,9 @@ fun TestModeStrip(insetTop: Boolean = false) {
         ) {
             Icon(Icons.Rounded.Science, null, Modifier.size(18.dp))
             Spacer(Modifier.width(10.dp))
-            Text("Modo de teste: dados de exemplo", style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+            Text(Res.s(R.string.dev_modo_teste_dados_exemplo), style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
             TextButton(onClick = { if (!leaving) { leaving = true; switchTestMode(ctx, false) { leaving = false } } }) {
-                Text("Sair", color = MaterialTheme.colorScheme.onTertiaryContainer)
+                Text(Res.s(R.string.import_sair), color = MaterialTheme.colorScheme.onTertiaryContainer)
             }
         }
     }
@@ -406,7 +405,7 @@ fun ImportReportScreen() {
     // Limite de tamanho: o texto passa pelo Android para copiar e compartilhar, e lá há um teto.
     val text = remember(report, anonymous) {
         report?.text(anonymous, BuildConfig.VERSION_NAME)?.let { t ->
-            if (t.length <= MAX_REPORT) t else t.take(MAX_REPORT) + "\n... (relatório cortado: o arquivo é muito grande)"
+            if (t.length <= MAX_REPORT) t else t.take(MAX_REPORT) + Res.s(R.string.dev_relatorio_cortado_arquivo_muito)
         }
     }
 
@@ -415,60 +414,59 @@ fun ImportReportScreen() {
             .putExtra(Intent.EXTRA_SUBJECT, "Relatório de leitura de extrato · Cryo")
             .putExtra(Intent.EXTRA_TEXT, t)
         try {
-            ctx.startActivity(Intent.createChooser(send, "Compartilhar relatório"))
+            ctx.startActivity(Intent.createChooser(send, Res.s(R.string.dev_compartilhar_relatorio)))
         } catch (_: ActivityNotFoundException) {
-            c.message("Nenhum app para compartilhar")
+            c.message(Res.s(R.string.dev_nenhum_app_para_compartilhar))
         } catch (_: Exception) {
-            c.message("Não consegui compartilhar o relatório")
+            c.message(Res.s(R.string.dev_nao_consegui_compartilhar_relatorio))
         }
     }
 
     /** [sensitive]: o relatório completo. No Android 13 ou mais novo, ele não aparece na prévia do que foi copiado. */
     fun copy(t: String, sensitive: Boolean) {
         val copied = runCatching {
-            val clip = ClipData.newPlainText("Relatório do Cryo", t)
+            val clip = ClipData.newPlainText(Res.s(R.string.dev_relatorio_cryo), t)
             if (sensitive && Build.VERSION.SDK_INT >= 33) {
                 clip.description.extras = PersistableBundle().apply { putBoolean(ClipDescription.EXTRA_IS_SENSITIVE, true) }
             }
             ctx.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(clip)
         }.isSuccess
-        if (!copied) c.message("Não consegui copiar o relatório") else if (Build.VERSION.SDK_INT < 33) c.message("Relatório copiado")
+        if (!copied) c.message(Res.s(R.string.dev_nao_consegui_copiar_relatorio)) else if (Build.VERSION.SDK_INT < 33) c.message(Res.s(R.string.dev_relatorio_copiado))
     }
 
-    Scaffold(topBar = { CryoTopBar("Relatório da leitura", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.import_relatorio_leitura), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         if (text == null) {
             Column(Modifier.fillMaxSize().padding(pad)) {
                 EmptyState(
-                    Icons.Rounded.Description, "Nenhuma leitura ainda",
-                    "Importe um extrato e volte aqui para ver como o Cryo leu o arquivo, linha por linha.",
+                    Icons.Rounded.Description, Res.s(R.string.dev_nenhuma_leitura_ainda),
+                    Res.s(R.string.dev_importe_extrato_volte_aqui),
                 )
             }
             return@Scaffold
         }
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 8.dp)) {
-            Segmented(listOf(true to "Anônimo", false to "Completo"), anonymous, { anonymous = it })
+            Segmented(listOf(true to Res.s(R.string.dev_anonimo), false to Res.s(R.string.dev_completo)), anonymous, { anonymous = it })
             Spacer(Modifier.height(10.dp))
             if (anonymous) {
                 Banner(
                     Icons.Rounded.Science,
-                    "Letras viram x e números viram 9, mas o formato de cada linha continua igual. É esta versão que ajuda " +
-                        "a corrigir a leitura: mande numa issue no GitHub do Cryo.",
+                    Res.s(R.string.dev_letras_viram_x_numeros),
                     MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
                 )
             } else {
                 Banner(
                     Icons.Rounded.Description,
-                    "Esta versão tem as suas movimentações de verdade. Não publique em lugar nenhum.",
+                    Res.s(R.string.dev_esta_versao_tem_suas),
                     MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer,
                 )
             }
             Spacer(Modifier.height(12.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedButton(onClick = { if (anonymous) copy(text, sensitive = false) else confirmCopy = true }) {
-                    Icon(Icons.Rounded.ContentCopy, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Copiar")
+                    Icon(Icons.Rounded.ContentCopy, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.dev_copiar))
                 }
                 OutlinedButton(onClick = { if (anonymous) share(text) else confirmShare = true }) {
-                    Icon(Icons.Rounded.Share, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text("Compartilhar")
+                    Icon(Icons.Rounded.Share, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.dev_compartilhar))
                 }
             }
             Spacer(Modifier.height(12.dp))
@@ -488,19 +486,18 @@ fun ImportReportScreen() {
     }
     if (confirmShare && text != null) {
         ConfirmDialog(
-            "Compartilhar o relatório completo?",
-            "Ele tem as suas movimentações de verdade (descrições e valores). Para pedir ajuda, use a versão anônima.",
-            "Compartilhar mesmo assim",
+            Res.s(R.string.dev_compartilhar_relatorio_completo),
+            Res.s(R.string.dev_ele_tem_suas_movimentacoes_2),
+            Res.s(R.string.dev_compartilhar_mesmo_assim),
             onConfirm = { confirmShare = false; share(text) },
             onDismiss = { confirmShare = false },
         )
     }
     if (confirmCopy && text != null) {
         ConfirmDialog(
-            "Copiar o relatório completo?",
-            "Ele tem as suas movimentações de verdade (descrições e valores), e o app em que você colar vai ver tudo. " +
-                "Para pedir ajuda, use a versão anônima.",
-            "Copiar mesmo assim",
+            Res.s(R.string.dev_copiar_relatorio_completo),
+            Res.s(R.string.dev_ele_tem_suas_movimentacoes),
+            Res.s(R.string.dev_copiar_mesmo_assim),
             onConfirm = { confirmCopy = false; copy(text, sensitive = true) },
             onDismiss = { confirmCopy = false },
         )

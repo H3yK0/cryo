@@ -8,6 +8,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,8 +29,11 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ShowChart
+import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.NotificationsActive
+import androidx.compose.material.icons.rounded.Payments
+import androidx.compose.material.icons.rounded.SettingsBackupRestore
 import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
@@ -45,6 +49,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -53,22 +58,27 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import io.github.h3yk0.cryo.R
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.data.Backup
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.CreditCard
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.notify.Reminders
 import io.github.h3yk0.cryo.ui.components.AmountField
+import io.github.h3yk0.cryo.ui.components.ConfirmDialog
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.Stepper
 import io.github.h3yk0.cryo.ui.components.SwitchRow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /** Primeira abertura: nome, conta principal, cartão (opcional) e lembretes. */
 @Composable
@@ -77,7 +87,7 @@ fun OnboardingScreen() {
     val ctx = LocalContext.current
     var step by rememberSaveable { mutableIntStateOf(0) }
     var name by rememberSaveable { mutableStateOf("") }
-    var accName by rememberSaveable { mutableStateOf("Conta principal") }
+    var accName by rememberSaveable { mutableStateOf(Res.s(R.string.wallet_conta_principal)) }
     var balance by rememberSaveable { mutableLongStateOf(0L) }
     var negative by rememberSaveable { mutableStateOf(false) }
     var cash by rememberSaveable { mutableStateOf(true) }
@@ -87,14 +97,33 @@ fun OnboardingScreen() {
     var closing by rememberSaveable { mutableIntStateOf(3) }
     var due by rememberSaveable { mutableIntStateOf(10) }
     val notif = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
+    var showLanguage by rememberSaveable { mutableStateOf(false) }
+    var showCurrency by rememberSaveable { mutableStateOf(false) }
+    var restoring by remember { mutableStateOf<Backup.Restored?>(null) }
+    // RF-BOA-06: quem já usa o Cryo (celular novo) restaura um backup e pula a apresentação.
+    val pickBackup = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) c.launch {
+            try {
+                val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
+                    ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
+                val restored = Backup.import(text)
+                if (restored.testMode && !c.sandbox) {
+                    throw IllegalArgumentException(Res.s(R.string.settings_este_backup_modo_teste))
+                }
+                restoring = restored
+            } catch (e: Exception) {
+                c.message(e.message ?: Res.s(R.string.settings_arquivo_invalido))
+            }
+        }
+    }
 
     fun finish() {
         c.launch {
             c.settings.setName(name)
             val accId = c.repo.saveAccount(
-                Account(name = accName.ifBlank { "Conta principal" }.trim(), type = AccountType.CHECKING, initialBalance = if (negative) -balance else balance, color = Palette.pick(5)),
+                Account(name = accName.ifBlank { Res.s(R.string.wallet_conta_principal) }.trim(), type = AccountType.CHECKING, initialBalance = if (negative) -balance else balance, color = Palette.pick(5)),
             )
-            if (cash) c.repo.saveAccount(Account(name = "Carteira", type = AccountType.CASH, initialBalance = 0, color = Palette.pick(9), sortOrder = 1))
+            if (cash) c.repo.saveAccount(Account(name = Res.s(R.string.wallet_carteira), type = AccountType.CASH, initialBalance = 0, color = Palette.pick(9), sortOrder = 1))
             if (hasCard && cardName.isNotBlank() && limit > 0) {
                 c.repo.saveCard(CreditCard(name = cardName.trim(), limitAmount = limit, closingDay = closing, dueDay = due, color = Palette.pick(2), payAccountId = accId))
             }
@@ -117,73 +146,84 @@ fun OnboardingScreen() {
                             contentAlignment = Alignment.Center,
                         ) { Icon(painterResource(R.drawable.ic_cryo_mark), null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer) }
                         Spacer(Modifier.height(20.dp))
-                        Text("Bem-vindo ao Cryo", style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
+                        Text(Res.s(R.string.onboarding_bem_vindo_ao_cryo), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
                         Text(
-                            "Seu dinheiro, claro como gelo.", style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
+                            Res.s(R.string.onboarding_seu_dinheiro_claro_como), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
                             color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(),
                         )
                         Spacer(Modifier.height(24.dp))
-                        Feature(Icons.Rounded.Mic, "Registre falando", "Diga “almoço 25 no débito” e pronto.")
-                        Feature(Icons.AutoMirrored.Rounded.ShowChart, "Saiba como o mês vai terminar", "Previsão, calendário de gastos e o caminho do seu dinheiro.")
-                        Feature(Icons.Rounded.Shield, "Seus dados são seus", "Tudo fica só neste celular, sem cadastro e sem internet.")
+                        Feature(Icons.Rounded.Mic, Res.s(R.string.onboarding_registre_falando), Res.s(R.string.onboarding_diga_almoco_25_debito))
+                        Feature(Icons.AutoMirrored.Rounded.ShowChart, Res.s(R.string.onboarding_saiba_como_mes_vai), Res.s(R.string.onboarding_previsao_calendario_gastos_caminho))
+                        Feature(Icons.Rounded.Shield, Res.s(R.string.onboarding_seus_dados_sao_seus), Res.s(R.string.onboarding_tudo_fica_so_neste))
                         Spacer(Modifier.height(16.dp))
                         OutlinedTextField(
-                            name, { name = it }, label = { Text("Como quer ser chamado? (opcional)") }, singleLine = true,
+                            name, { name = it }, label = { Text(Res.s(R.string.onboarding_como_quer_ser_chamado)) }, singleLine = true,
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words), modifier = Modifier.fillMaxWidth(),
                         )
+                        // RF-BOA-07: a língua e a moeda que o celular escolheu, para trocar ali mesmo.
+                        Spacer(Modifier.height(12.dp))
+                        LocaleLine(Icons.Rounded.Language, Res.s(R.string.locale_language_title), languageSummary(ctx)) { showLanguage = true }
+                        LocaleLine(Icons.Rounded.Payments, Res.s(R.string.locale_currency_title), currencySummary(ctx)) { showCurrency = true }
+                        Spacer(Modifier.height(8.dp))
+                        TextButton(
+                            onClick = { pickBackup.launch(arrayOf("application/json", "text/plain", "application/octet-stream")) },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Icon(Icons.Rounded.SettingsBackupRestore, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.onboarding_ja_uso_cryo_restaurar))
+                        }
                     }
                     1 -> {
-                        Text("Sua conta principal", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+                        Text(Res.s(R.string.onboarding_sua_conta_principal), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
                         Text(
-                            "Onde fica a maior parte do seu dinheiro? Pode ser o banco ou a carteira digital.",
+                            Res.s(R.string.onboarding_onde_fica_maior_parte),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.height(16.dp))
                         OutlinedTextField(
-                            accName, { accName = it }, label = { Text("Nome da conta") }, singleLine = true,
-                            placeholder = { Text("Ex.: Nubank, Caixa, Inter") },
+                            accName, { accName = it }, label = { Text(Res.s(R.string.wallet_nome_conta)) }, singleLine = true,
+                            placeholder = { Text(Res.s(R.string.onboarding_ex_nubank_caixa_inter)) },
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words), modifier = Modifier.fillMaxWidth(),
                         )
-                        FieldLabel("Quanto tem nela hoje?")
-                        AmountField(balance, { balance = it }, label = "Saldo atual")
-                        SwitchRow("O saldo está negativo", negative, { negative = it })
-                        SwitchRow("Também uso dinheiro vivo", cash, { cash = it }, "Cria uma “Carteira” para gastos em espécie")
+                        FieldLabel(Res.s(R.string.onboarding_quanto_tem_nela_hoje))
+                        AmountField(balance, { balance = it }, label = Res.s(R.string.wallet_saldo_atual))
+                        SwitchRow(Res.s(R.string.onboarding_saldo_esta_negativo), negative, { negative = it })
+                        SwitchRow(Res.s(R.string.onboarding_tambem_uso_dinheiro_vivo), cash, { cash = it }, Res.s(R.string.onboarding_cria_carteira_para_gastos))
                     }
                     2 -> {
-                        Text("Cartão de crédito", style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
+                        Text(Res.s(R.string.onboarding_cartao_credito), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
                         Text(
-                            "Com o cartão cadastrado, o Cryo separa as compras por fatura e cuida das parcelas para você.",
+                            Res.s(R.string.onboarding_com_cartao_cadastrado_cryo),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                         Spacer(Modifier.height(8.dp))
-                        SwitchRow("Uso cartão de crédito", hasCard, { hasCard = it })
+                        SwitchRow(Res.s(R.string.onboarding_uso_cartao_credito), hasCard, { hasCard = it })
                         if (hasCard) {
                             OutlinedTextField(
-                                cardName, { cardName = it }, label = { Text("Nome do cartão") }, singleLine = true,
-                                placeholder = { Text("Ex.: Nubank") },
+                                cardName, { cardName = it }, label = { Text(Res.s(R.string.wallet_nome_cartao)) }, singleLine = true,
+                                placeholder = { Text(Res.s(R.string.onboarding_ex_nubank)) },
                                 keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words), modifier = Modifier.fillMaxWidth(),
                             )
-                            FieldLabel("Limite")
-                            AmountField(limit, { limit = it }, label = "Limite total")
+                            FieldLabel(Res.s(R.string.wallet_limite))
+                            AmountField(limit, { limit = it }, label = Res.s(R.string.wallet_limite_total))
                             Spacer(Modifier.height(8.dp))
-                            Stepper(closing, { closing = it }, 1..31, "Dia que fecha")
-                            Stepper(due, { due = it }, 1..31, "Dia que vence")
+                            Stepper(closing, { closing = it }, 1..31, Res.s(R.string.wallet_dia_que_fecha))
+                            Stepper(due, { due = it }, 1..31, Res.s(R.string.wallet_dia_que_vence))
                             Text(
-                                "Dá para ver essas datas no app do seu banco. Você pode mudar depois.",
+                                Res.s(R.string.onboarding_para_ver_essas_datas),
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
                     }
                     else -> {
                         Spacer(Modifier.height(24.dp))
-                        Text("Tudo pronto!", style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
+                        Text(Res.s(R.string.onboarding_tudo_pronto), style = MaterialTheme.typography.headlineMedium, modifier = Modifier.semantics { heading() })
                         Spacer(Modifier.height(12.dp))
-                        Feature(Icons.Rounded.Mic, "Experimente o registro rápido", "Na tela inicial, toque no microfone e fale um gasto do seu dia.")
-                        Feature(Icons.Rounded.NotificationsActive, "Lembretes de contas", "Cadastre suas contas fixas em Planejar e o Cryo avisa antes de vencer.")
+                        Feature(Icons.Rounded.Mic, Res.s(R.string.onboarding_experimente_registro_rapido), Res.s(R.string.onboarding_tela_inicial_toque_microfone))
+                        Feature(Icons.Rounded.NotificationsActive, Res.s(R.string.onboarding_lembretes_contas), Res.s(R.string.onboarding_cadastre_suas_contas_fixas))
                         if (Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) {
                             Spacer(Modifier.height(8.dp))
                             OutlinedButton(onClick = { notif.launch(Manifest.permission.POST_NOTIFICATIONS) }, modifier = Modifier.fillMaxWidth()) {
-                                Text("Permitir notificações")
+                                Text(Res.s(R.string.onboarding_permitir_notificacoes))
                             }
                         }
                     }
@@ -191,7 +231,7 @@ fun OnboardingScreen() {
             }
         }
         Row(Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (step > 0) TextButton(onClick = { step-- }, modifier = Modifier.height(56.dp)) { Text("Voltar") }
+            if (step > 0) TextButton(onClick = { step-- }, modifier = Modifier.height(56.dp)) { Text(Res.s(R.string.onboarding_voltar)) }
             Button(
                 onClick = { if (step < 3) step++ else finish() },
                 enabled = step != 2 || !hasCard || (cardName.isNotBlank() && limit > 0),
@@ -199,14 +239,50 @@ fun OnboardingScreen() {
             ) {
                 Text(
                     when (step) {
-                        0 -> "Começar"
-                        2 -> if (hasCard) "Continuar" else "Pular"
-                        3 -> "Ir para o Cryo"
-                        else -> "Continuar"
+                        0 -> Res.s(R.string.onboarding_comecar)
+                        2 -> if (hasCard) Res.s(R.string.onboarding_continuar) else Res.s(R.string.onboarding_pular)
+                        3 -> Res.s(R.string.onboarding_ir_para_cryo)
+                        else -> Res.s(R.string.onboarding_continuar)
                     },
                 )
             }
         }
+    }
+    if (showLanguage) LanguageSheet(onDismiss = { showLanguage = false })
+    if (showCurrency) CurrencySheet(onDismiss = { showCurrency = false })
+    restoring?.let { restored ->
+        val snap = restored.snapshot
+        ConfirmDialog(
+            Res.s(R.string.onboarding_restaurar_este_backup),
+            Res.s(R.string.onboarding_dados_arquivo_entram_cryo, Res.p(R.plurals.count_transactions, snap.txs.size, snap.txs.size), Res.p(R.plurals.count_accounts, snap.accounts.size, snap.accounts.size)),
+            Res.s(R.string.wallet_restaurar),
+            onConfirm = {
+                restoring = null
+                c.launch {
+                    c.repo.replaceAll(snap, fromOldVersion = restored.version < Backup.VERSION)
+                    snap.accounts.firstOrNull { !it.archived }?.let { c.settings.setDefaultAccount(it.id) }
+                    c.settings.setOnboardingDone(true)
+                    c.message(Res.s(R.string.settings_backup_restaurado))
+                }
+            },
+            onDismiss = { restoring = null },
+        )
+    }
+}
+
+@Composable
+private fun LocaleLine(icon: ImageVector, title: String, value: String, onClick: () -> Unit) {
+    Row(
+        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).clickable(onClick = onClick).padding(vertical = 10.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, null, tint = MaterialTheme.colorScheme.primary)
+        Spacer(Modifier.width(12.dp))
+        Column(Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(value, style = MaterialTheme.typography.bodyLarge)
+        }
+        Text(Res.s(R.string.onboarding_trocar), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
     }
 }
 
@@ -239,12 +315,12 @@ fun LockScreen(onUnlock: () -> Unit) {
             contentAlignment = Alignment.Center,
         ) { Icon(painterResource(R.drawable.ic_cryo_mark), null, Modifier.size(44.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer) }
         Spacer(Modifier.height(20.dp))
-        Text("Cryo bloqueado", style = MaterialTheme.typography.headlineSmall)
+        Text(Res.s(R.string.onboarding_cryo_bloqueado), style = MaterialTheme.typography.headlineSmall)
         Text(
-            "Use sua digital, rosto ou senha do celular.", style = MaterialTheme.typography.bodyMedium,
+            Res.s(R.string.onboarding_use_sua_digital_rosto), style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onUnlock, modifier = Modifier.height(52.dp)) { Text("Desbloquear") }
+        Button(onClick = onUnlock, modifier = Modifier.height(52.dp)) { Text(Res.s(R.string.onboarding_desbloquear)) }
     }
 }

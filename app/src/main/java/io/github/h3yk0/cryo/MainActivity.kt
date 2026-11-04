@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.content.Context
 import android.graphics.Color
 import android.os.Build
@@ -180,8 +182,8 @@ class MainActivity : FragmentActivity() {
             },
         )
         val info = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Desbloquear o Cryo")
-            .setSubtitle("Use sua digital, rosto ou senha do celular")
+            .setTitle(Res.s(R.string.lock_desbloquear_cryo))
+            .setSubtitle(Res.s(R.string.lock_use_sua_digital_rosto))
             .setAllowedAuthenticators(BIOMETRIC_WEAK or DEVICE_CREDENTIAL)
             .build()
         prompt.authenticate(info)

@@ -81,6 +81,7 @@ import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.domain.Dates
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.Money
 import java.time.Instant
@@ -242,7 +243,7 @@ fun SourceChips(
             FilterChip(
                 selected = sel,
                 onClick = { onSelect(Source.Card(c.id)) },
-                label = { Text("Cartão ${c.name}") },
+                label = { Text(Res.s(R.string.home_card_title, c.name)) },
                 leadingIcon = { Icon(if (sel) Icons.Rounded.Check else Icons.Rounded.CreditCard, null, Modifier.size(18.dp)) },
             )
         }
@@ -268,12 +269,12 @@ fun DateChooser(date: LocalDate, today: LocalDate, onChange: (LocalDate) -> Unit
     val isToday = date == today
     val isYesterday = date == today.minusDays(1)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = isToday, onClick = { onChange(today) }, label = { Text("Hoje") })
-        FilterChip(selected = isYesterday, onClick = { onChange(today.minusDays(1)) }, label = { Text("Ontem") })
+        FilterChip(selected = isToday, onClick = { onChange(today) }, label = { Text(Res.s(R.string.date_today)) })
+        FilterChip(selected = isYesterday, onClick = { onChange(today.minusDays(1)) }, label = { Text(Res.s(R.string.date_yesterday)) })
         FilterChip(
             selected = !isToday && !isYesterday,
             onClick = { showPicker = true },
-            label = { Text(if (!isToday && !isYesterday) Dates.full(date) else "Outra data") },
+            label = { Text(if (!isToday && !isYesterday) Dates.full(date) else Res.s(R.string.input_outra_data)) },
             leadingIcon = { Icon(Icons.Rounded.CalendarMonth, null, Modifier.size(18.dp)) },
         )
     }
@@ -290,7 +291,7 @@ fun DatePickerDialogField(initial: LocalDate?, onDismiss: () -> Unit, onPick: (L
         confirmButton = {
             TextButton(onClick = { state.selectedDateMillis?.let { onPick(it.utcMillisToDate()) } ?: onDismiss() }) { Text("OK") }
         },
-        dismissButton = { TextButton(onClick = onDismiss) { Text("Cancelar") } },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(Res.s(R.string.wallet_cancelar)) } },
     ) { DatePicker(state = state, showModeToggle = true) }
 }
 
@@ -322,7 +323,7 @@ fun ColorChooser(selected: Int, onSelect: (Int) -> Unit) {
                     .background(Color(c))
                     .then(if (sel) Modifier.border(3.dp, MaterialTheme.colorScheme.onSurface, CircleShape) else Modifier)
                     .selectable(selected = sel, role = Role.RadioButton, onClick = { onSelect(c) })
-                    .semantics { contentDescription = "Cor ${i + 1}" },
+                    .semantics { contentDescription = Res.s(R.string.input_cor, i + 1) },
                 contentAlignment = Alignment.Center,
             ) { if (sel) Icon(Icons.Rounded.Check, null, tint = Color.White) }
         }
@@ -375,14 +376,14 @@ fun Stepper(
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(label, style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
         FilledTonalIconButton(onClick = { if (value > range.first) onChange(value - 1) }, enabled = value > range.first) {
-            Icon(Icons.Rounded.Remove, "Diminuir $label")
+            Icon(Icons.Rounded.Remove, Res.s(R.string.input_diminuir, label))
         }
         Text(
             format(value), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
             modifier = Modifier.width(72.dp).semantics { stateDescription = format(value) },
         )
         FilledTonalIconButton(onClick = { if (value < range.last) onChange(value + 1) }, enabled = value < range.last) {
-            Icon(Icons.Rounded.Add, "Aumentar $label")
+            Icon(Icons.Rounded.Add, Res.s(R.string.input_aumentar, label))
         }
     }
 }

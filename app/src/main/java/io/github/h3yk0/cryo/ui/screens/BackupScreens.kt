@@ -3,6 +3,7 @@
 package io.github.h3yk0.cryo.ui.screens
 
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.Manifest
 import android.content.ActivityNotFoundException
 import android.content.Context
@@ -102,10 +103,10 @@ fun backupWhen(at: Long, now: Long = System.currentTimeMillis(), zone: ZoneId = 
     val time = "%02d:%02d".format(d.hour, d.minute)
     val day = d.toLocalDate()
     return when {
-        day == today -> "hoje às $time"
-        day == today.minusDays(1) -> "ontem às $time"
-        day.year == today.year -> "${Dates.short(day)} às $time"
-        else -> "${Dates.full(day)} às $time"
+        day == today -> Res.s(R.string.backup_hoje, time)
+        day == today.minusDays(1) -> Res.s(R.string.backup_ontem, time)
+        day.year == today.year -> Res.s(R.string.backup_texto, Dates.short(day), time)
+        else -> Res.s(R.string.backup_texto, Dates.full(day), time)
     }
 }
 
@@ -113,11 +114,11 @@ fun backupWhen(at: Long, now: Long = System.currentTimeMillis(), zone: ZoneId = 
 fun autoBackupSummary(s: AutoBackupSettings, now: Long = System.currentTimeMillis()): String {
     val last = listOfNotNull(s.folder.lastAt, s.cloud.lastAt).maxOrNull()
     return when {
-        !s.enabled -> "Desligado · toque para configurar"
-        !s.hasTarget -> "Escolha onde guardar"
-        s.hasProblem -> "Atenção: o último backup não foi salvo"
-        last != null -> "${s.frequency.label} · último: ${backupWhen(last, now)}"
-        else -> "${s.frequency.label} · o primeiro ainda vai ser feito"
+        !s.enabled -> Res.s(R.string.backup_desligado_toque_para_configurar)
+        !s.hasTarget -> Res.s(R.string.backup_escolha_onde_guardar)
+        s.hasProblem -> Res.s(R.string.backup_atencao_ultimo_backup_nao)
+        last != null -> Res.s(R.string.backup_ultimo, s.frequency.label, backupWhen(last, now))
+        else -> Res.s(R.string.backup_primeiro_ainda_vai_ser, s.frequency.label)
     }
 }
 
@@ -139,7 +140,7 @@ private fun AppContainer.safely(done: () -> Unit = {}, block: suspend () -> Unit
     } catch (e: CancellationException) {
         throw e
     } catch (e: Exception) {
-        message("Não consegui concluir agora. Tente de novo.")
+        message(Res.s(R.string.backup_nao_consegui_concluir_agora))
     } finally {
         done()
     }
@@ -165,8 +166,8 @@ fun AutoBackupScreen() {
         val previous = s.target(t).uri
         if (runCatching { BackupPlaces.keepAccess(ctx, uri) }.isFailure) {
             c.message(
-                if (t == BackupTarget.FOLDER) "Não deu para usar essa pasta. Tente outra."
-                else "Essa nuvem não deixa o Cryo atualizar o arquivo depois. Tente outra nuvem ou use a pasta do celular.",
+                if (t == BackupTarget.FOLDER) Res.s(R.string.backup_nao_deu_para_usar)
+                else Res.s(R.string.backup_essa_nuvem_nao_deixa),
             )
             return
         }
@@ -203,15 +204,15 @@ fun AutoBackupScreen() {
         try {
             launch()
         } catch (_: ActivityNotFoundException) {
-            c.message("Este celular não tem o seletor de arquivos do Android.")
+            c.message(Res.s(R.string.backup_este_celular_nao_tem))
         }
     }
     val askNotify = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         canNotify = granted
-        if (!granted) c.message("Sem permissão, o aviso não aparece. Você pode liberar nas configurações do Android.")
+        if (!granted) c.message(Res.s(R.string.backup_sem_permissao_aviso_nao))
     }
 
-    Scaffold(topBar = { CryoTopBar("Backup automático", onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.settings_backup_automatico), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
             Modifier.fillMaxSize().padding(pad),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
@@ -223,13 +224,12 @@ fun AutoBackupScreen() {
                         Icon(Icons.Rounded.Backup, null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            "Uma cópia de tudo, sem você lembrar", style = MaterialTheme.typography.titleSmall,
+                            Res.s(R.string.backup_copia_tudo_sem_voce), style = MaterialTheme.typography.titleSmall,
                             color = MaterialTheme.colorScheme.onPrimaryContainer,
                         )
                     }
                     Text(
-                        "O Cryo salva seus dados sozinho, numa pasta do celular, na nuvem ou nos dois. " +
-                            "Ele continua sem acesso à internet: quem envia o arquivo para a nuvem é o app da própria nuvem.",
+                        Res.s(R.string.backup_cryo_salva_seus_dados),
                         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onPrimaryContainer,
                         modifier = Modifier.padding(top = 6.dp),
                     )
@@ -237,39 +237,39 @@ fun AutoBackupScreen() {
             }
             item {
                 SwitchRow(
-                    "Fazer backup automático", s.enabled,
+                    Res.s(R.string.backup_fazer_backup_automatico), s.enabled,
                     { v ->
                         c.safely {
                             c.autoBackup.setEnabled(v)
                             runCatching { AutoBackupWork.sync(ctx, v && s.hasTarget) }
                         }
                     },
-                    if (s.hasTarget) "Em segundo plano, mesmo com o app fechado" else "Escolha abaixo onde guardar",
+                    if (s.hasTarget) Res.s(R.string.backup_segundo_plano_mesmo_com) else Res.s(R.string.backup_escolha_abaixo_onde_guardar),
                 )
             }
             if (s.enabled && s.hasTarget && !canNotify && Build.VERSION.SDK_INT >= 33) {
                 item {
                     Banner(
                         Icons.Rounded.NotificationsActive,
-                        "Toque aqui e permita as notificações, para o Cryo avisar se um backup não for salvo.",
+                        Res.s(R.string.backup_toque_aqui_permita_notificacoes),
                         MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer,
                     ) { askNotify.launch(Manifest.permission.POST_NOTIFICATIONS) }
                 }
             }
             item {
-                FieldLabel("Com que frequência")
+                FieldLabel(Res.s(R.string.backup_com_que_frequencia))
                 Segmented(
                     BackupFrequency.entries.map { it to it.label }, s.frequency,
                     { f -> c.safely { c.autoBackup.setFrequency(f) } },
                 )
                 Text(
-                    "Se nada mudou desde o último backup, o Cryo não grava outra cópia igual.",
+                    Res.s(R.string.backup_se_nada_mudou_desde),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 6.dp),
                 )
             }
 
-            item { SectionTitle("No celular") }
+            item { SectionTitle(Res.s(R.string.backup_celular)) }
             item {
                 FolderCard(
                     s,
@@ -288,7 +288,7 @@ fun AutoBackupScreen() {
                 )
             }
 
-            item { SectionTitle("Na nuvem") }
+            item { SectionTitle(Res.s(R.string.backup_nuvem_2)) }
             item { CloudCard(s, onPick = { open { pickCloud.launch(BackupPolicy.SINGLE_NAME) } }, onRemove = { remove(c, ctx, BackupTarget.CLOUD, s.cloud.uri) }) }
 
             item {
@@ -303,14 +303,12 @@ fun AutoBackupScreen() {
                 ) {
                     Icon(Icons.Rounded.Backup, null)
                     Spacer(Modifier.width(8.dp))
-                    Text(if (running) "Salvando..." else "Fazer backup agora")
+                    Text(if (running) Res.s(R.string.backup_salvando) else Res.s(R.string.backup_fazer_backup_agora))
                 }
             }
             item {
                 Text(
-                    "Para voltar um backup, use Ajustes › Restaurar backup e escolha o arquivo. " +
-                        "Se o celular economizar bateria de forma rígida, o backup pode atrasar um pouco; " +
-                        "abrir o Cryo também faz o backup que estiver atrasado.",
+                    Res.s(R.string.backup_para_voltar_backup_use),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 8.dp),
                 )
@@ -344,7 +342,7 @@ fun AutoBackupScreen() {
                             usePlace(c, ctx, p.t, p.uri, p.previous, restored = true, fresh = true, mode = p.mode)
                         } else {
                             if (p.uri.toString() != p.previous) BackupPlaces.releaseAccess(ctx, p.uri.toString())
-                            c.message("Não consegui restaurar esse backup. Nada foi mudado.")
+                            c.message(Res.s(R.string.backup_nao_consegui_restaurar_esse))
                         }
                     }
                 },
@@ -352,9 +350,9 @@ fun AutoBackupScreen() {
                 onCancel = ::cancel,
             )
             is PlaceCheck.CantRead -> ConfirmDialog(
-                "Usar este lugar?",
-                "${check.reason} Se continuar, ele será substituído pelos dados deste celular.",
-                "Substituir", onConfirm = ::keep, onDismiss = ::cancel,
+                Res.s(R.string.backup_usar_este_lugar),
+                Res.s(R.string.backup_se_continuar_ele_sera, check.reason),
+                Res.s(R.string.backup_substituir), onConfirm = ::keep, onDismiss = ::cancel,
             )
             PlaceCheck.Clear, is PlaceCheck.Unreachable -> Unit
         }
@@ -366,45 +364,44 @@ private fun FolderCard(s: AutoBackupSettings, onPick: () -> Unit, onRemove: () -
     val c = LocalContainer.current
     CryoCard {
         if (!s.folder.isSet) {
-            Place(Icons.Rounded.Folder, "Nenhuma pasta escolhida", null)
+            Place(Icons.Rounded.Folder, Res.s(R.string.backup_nenhuma_pasta_escolhida), null)
             Text(
-                "Guarde no próprio celular ou numa pasta que um app de nuvem sincroniza. " +
-                    "Dica: na tela que abrir, crie uma pasta chamada Cryo (por exemplo, dentro de Documents) e toque em \"Usar esta pasta\".",
+                Res.s(R.string.backup_guarde_proprio_celular_ou),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
             Button(onClick = onPick, modifier = Modifier.padding(top = 12.dp)) {
-                Icon(Icons.Rounded.Folder, null); Spacer(Modifier.width(8.dp)); Text("Escolher pasta")
+                Icon(Icons.Rounded.Folder, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.backup_escolher_pasta))
             }
             return@CryoCard
         }
         Place(Icons.Rounded.Folder, s.folder.name, s.folder)
-        FieldLabel("Como guardar")
+        FieldLabel(Res.s(R.string.backup_como_guardar))
         ChoiceRow(
-            "Substituir sempre o mesmo arquivo", "Fica só a cópia mais recente, no arquivo ${BackupPolicy.SINGLE_NAME}",
+            Res.s(R.string.backup_substituir_sempre_mesmo_arquivo), Res.s(R.string.backup_fica_so_copia_mais, BackupPolicy.SINGLE_NAME),
             s.folderMode == FolderMode.REPLACE,
         ) { onMode(FolderMode.REPLACE) }
         ChoiceRow(
-            "Guardar várias cópias", "Um arquivo novo a cada backup, para poder voltar a uma data anterior",
+            Res.s(R.string.backup_guardar_varias_copias), Res.s(R.string.backup_arquivo_novo_cada_backup),
             s.folderMode == FolderMode.COPIES,
         ) { onMode(FolderMode.COPIES) }
         if (s.folderMode == FolderMode.COPIES) {
-            FieldLabel("Quantas cópias guardar")
+            FieldLabel(Res.s(R.string.backup_quantas_copias_guardar))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(5 to "5", 10 to "10", 30 to "30", 0 to "Todas").forEach { (n, label) ->
+                listOf(5 to "5", 10 to "10", 30 to "30", 0 to Res.s(R.string.backup_todas)).forEach { (n, label) ->
                     FilterChip(selected = s.keep == n, onClick = { c.safely { c.autoBackup.setKeep(n) } }, label = { Text(label) })
                 }
             }
             Text(
-                if (s.keep == 0) "Nenhuma cópia é apagada. De vez em quando, apague as antigas para liberar espaço."
-                else "Quando passar de ${s.keep}, a cópia mais antiga feita por este celular é apagada sozinha. Os outros arquivos da pasta nunca são mexidos.",
+                if (s.keep == 0) Res.s(R.string.backup_nenhuma_copia_apagada_vez)
+                else Res.s(R.string.backup_quando_passar_copia_mais, s.keep),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
         Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onPick) { Text("Trocar pasta") }
+            OutlinedButton(onClick = onPick) { Text(Res.s(R.string.backup_trocar_pasta)) }
             Spacer(Modifier.width(8.dp))
-            TextButton(onClick = onRemove) { Text("Parar de usar") }
+            TextButton(onClick = onRemove) { Text(Res.s(R.string.backup_parar_usar)) }
         }
     }
 }
@@ -413,16 +410,16 @@ private fun FolderCard(s: AutoBackupSettings, onPick: () -> Unit, onRemove: () -
 private fun CloudCard(s: AutoBackupSettings, onPick: () -> Unit, onRemove: () -> Unit) {
     CryoCard {
         if (!s.cloud.isSet) {
-            Place(Icons.Rounded.Cloud, "Nenhuma nuvem escolhida", null)
+            Place(Icons.Rounded.Cloud, Res.s(R.string.backup_nenhuma_nuvem_escolhida), null)
             Text(
-                "Funciona com o Google Drive, OneDrive, Nextcloud e outras nuvens instaladas no celular.",
+                Res.s(R.string.backup_funciona_com_google_drive),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
             listOf(
-                "Toque em \"Escolher na nuvem\".",
-                "Na tela que abrir, toque em ☰ e escolha a nuvem.",
-                "Escolha a pasta e toque em Salvar.",
+                Res.s(R.string.backup_toque_escolher_nuvem),
+                Res.s(R.string.backup_tela_que_abrir_toque),
+                Res.s(R.string.backup_escolha_pasta_toque_salvar),
             ).forEachIndexed { i, step ->
                 Text(
                     "${i + 1}. $step", style = MaterialTheme.typography.bodySmall,
@@ -430,20 +427,20 @@ private fun CloudCard(s: AutoBackupSettings, onPick: () -> Unit, onRemove: () ->
                 )
             }
             Button(onClick = onPick, modifier = Modifier.padding(top = 12.dp)) {
-                Icon(Icons.Rounded.Cloud, null); Spacer(Modifier.width(8.dp)); Text("Escolher na nuvem")
+                Icon(Icons.Rounded.Cloud, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.backup_escolher_nuvem))
             }
             return@CryoCard
         }
         Place(Icons.Rounded.Cloud, s.cloud.name, s.cloud)
         Text(
-            "A cada backup, o Cryo atualiza este mesmo arquivo. O envio pela internet é feito pelo app da nuvem.",
+            Res.s(R.string.backup_cada_backup_cryo_atualiza),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(top = 8.dp),
         )
         Row(Modifier.padding(top = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-            OutlinedButton(onClick = onPick) { Text("Trocar") }
+            OutlinedButton(onClick = onPick) { Text(Res.s(R.string.onboarding_trocar)) }
             Spacer(Modifier.width(8.dp))
-            TextButton(onClick = onRemove) { Text("Parar de usar") }
+            TextButton(onClick = onRemove) { Text(Res.s(R.string.backup_parar_usar)) }
         }
     }
 }
@@ -466,12 +463,12 @@ private fun TargetStatus(t: BackupTargetState) {
     val now = System.currentTimeMillis()
     val error = MaterialTheme.colorScheme.error
     val (text, color, icon) = when {
-        t.lastError != null -> Triple("Não salvou ${backupWhen(t.lastErrorAt ?: now, now)}: ${t.lastError}", error, Icons.Rounded.ErrorOutline)
+        t.lastError != null -> Triple(Res.s(R.string.backup_nao_salvou, backupWhen(t.lastErrorAt ?: now, now), t.lastError), error, Icons.Rounded.ErrorOutline)
         t.lastAt != null -> Triple(
-            "Último backup: ${backupWhen(t.lastAt, now)}" + if (t.checkedAt != null && t.checkedAt > t.lastAt) " · nada mudou desde então" else "",
+            Res.s(R.string.backup_ultimo_backup, backupWhen(t.lastAt, now)) + if (t.checkedAt != null && t.checkedAt > t.lastAt) Res.s(R.string.backup_nada_mudou_desde_entao) else "",
             CryoTheme.colors.income, Icons.Rounded.CheckCircle,
         )
-        else -> Triple("O primeiro backup ainda não foi feito", MaterialTheme.colorScheme.onSurfaceVariant, Icons.Rounded.Schedule)
+        else -> Triple(Res.s(R.string.backup_primeiro_backup_ainda_nao), MaterialTheme.colorScheme.onSurfaceVariant, Icons.Rounded.Schedule)
     }
     Row(Modifier.padding(top = 2.dp), verticalAlignment = Alignment.Top) {
         Icon(icon, null, tint = color, modifier = Modifier.padding(top = 1.dp).size(16.dp))
@@ -515,7 +512,7 @@ fun ExistingBackupContent(
     onKeep: () -> Unit,
     onCancel: () -> Unit,
 ) {
-    val keepLabel = if (overwrites) "Substituir pelos dados deste celular" else "Continuar sem restaurar"
+    val keepLabel = if (overwrites) Res.s(R.string.backup_substituir_pelos_dados_deste) else Res.s(R.string.backup_continuar_sem_restaurar)
     Surface(shape = MaterialTheme.shapes.extraLarge, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(24.dp)) {
             Icon(
@@ -523,43 +520,43 @@ fun ExistingBackupContent(
                 modifier = Modifier.align(Alignment.CenterHorizontally).size(28.dp),
             )
             Text(
-                "Já existe um backup aqui", style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center,
+                Res.s(R.string.backup_ja_existe_backup_aqui), style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center,
                 modifier = Modifier.fillMaxWidth().padding(top = 16.dp),
             )
             Text(
-                (if (target == BackupTarget.FOLDER) "Esta pasta" else "Este arquivo") +
-                    " já tem um backup do Cryo, com dados diferentes dos deste celular.",
+                (if (target == BackupTarget.FOLDER) Res.s(R.string.backup_esta_pasta) else Res.s(R.string.backup_este_arquivo)) +
+                    Res.s(R.string.backup_ja_tem_backup_cryo),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 12.dp),
             )
             Compare(
                 if (target == BackupTarget.FOLDER) Icons.Rounded.Folder else Icons.Rounded.Cloud,
-                "No backup" + (found.exportedAt?.let { " · salvo ${backupWhen(it)}" } ?: ""),
+                Res.s(R.string.backup_backup) + (found.exportedAt?.let { Res.s(R.string.backup_salvo, backupWhen(it)) } ?: ""),
                 counts(found.txs, found.accounts), Modifier.padding(top = 16.dp),
             )
             Compare(
-                Icons.Rounded.Smartphone, "Neste celular agora", counts(found.currentTxs, found.currentAccounts),
+                Icons.Rounded.Smartphone, Res.s(R.string.backup_neste_celular_agora), counts(found.currentTxs, found.currentAccounts),
                 Modifier.padding(top = 8.dp),
             )
             Column(Modifier.padding(top = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (found.richer) {
-                    Button(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text("Restaurar este backup") }
+                    Button(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.backup_restaurar_este_backup)) }
                     OutlinedButton(onClick = onKeep, modifier = Modifier.fillMaxWidth()) { Text(keepLabel, textAlign = TextAlign.Center) }
                 } else {
                     Button(onClick = onKeep, modifier = Modifier.fillMaxWidth()) { Text(keepLabel, textAlign = TextAlign.Center) }
-                    OutlinedButton(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text("Restaurar este backup") }
+                    OutlinedButton(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.backup_restaurar_este_backup)) }
                 }
             }
             Text(
-                "Restaurar troca os dados deste celular pelos do backup. " + when {
-                    overwrites -> "Substituir troca o backup pelos dados deste celular."
-                    replaceMode -> "Continuar mantém os outros backups da pasta, e o arquivo ${BackupPolicy.SINGLE_NAME} passa a ter os dados deste celular."
-                    else -> "Os backups que já estão na pasta continuam lá."
+                Res.s(R.string.backup_restaurar_troca_dados_deste) + when {
+                    overwrites -> Res.s(R.string.backup_substituir_troca_backup_pelos)
+                    replaceMode -> Res.s(R.string.backup_continuar_mantem_outros_backups, BackupPolicy.SINGLE_NAME)
+                    else -> Res.s(R.string.backup_backups_que_ja_estao)
                 },
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 12.dp),
             )
-            TextButton(onClick = onCancel, modifier = Modifier.align(Alignment.End).padding(top = 8.dp)) { Text("Cancelar") }
+            TextButton(onClick = onCancel, modifier = Modifier.align(Alignment.End).padding(top = 8.dp)) { Text(Res.s(R.string.wallet_cancelar)) }
         }
     }
 }
@@ -582,14 +579,14 @@ private fun counts(txs: Int, accounts: Int) =
     "${plural(R.plurals.count_transactions, txs)} · ${plural(R.plurals.count_accounts, accounts)}"
 
 private fun summary(r: List<BackupOutcome>): String {
-    r.firstOrNull { it.status == BackupStatus.FAILED || it.status == BackupStatus.HELD }?.let { return it.message ?: "O backup falhou" }
-    if (r.any { it.status == BackupStatus.NOTHING_TO_SAVE }) return "Ainda não há nada para salvar"
+    r.firstOrNull { it.status == BackupStatus.FAILED || it.status == BackupStatus.HELD }?.let { return it.message ?: Res.s(R.string.backup_backup_falhou) }
+    if (r.any { it.status == BackupStatus.NOTHING_TO_SAVE }) return Res.s(R.string.backup_ainda_nao_ha_nada)
     val written = r.filter { it.status == BackupStatus.WRITTEN }.map { it.target }
     return when {
-        written.containsAll(BackupTarget.entries) -> "Backup feito na pasta e na nuvem"
-        BackupTarget.FOLDER in written -> "Backup feito na pasta"
-        BackupTarget.CLOUD in written -> "Backup feito na nuvem"
-        else -> "Nada para salvar agora"
+        written.containsAll(BackupTarget.entries) -> Res.s(R.string.backup_backup_feito_pasta_nuvem)
+        BackupTarget.FOLDER in written -> Res.s(R.string.backup_backup_feito_pasta)
+        BackupTarget.CLOUD in written -> Res.s(R.string.backup_backup_feito_nuvem)
+        else -> Res.s(R.string.backup_nada_para_salvar_agora)
     }
 }
 
@@ -620,17 +617,17 @@ private suspend fun usePlace(
     c.autoBackup.setEnabled(true)
     runCatching { AutoBackupWork.sync(ctx, true) }
     val r = c.backupRunner.run(force = true, only = t).firstOrNull()
-    val where = if (t == BackupTarget.FOLDER) "na pasta" else "na nuvem"
+    val where = if (t == BackupTarget.FOLDER) Res.s(R.string.backup_pasta) else Res.s(R.string.backup_nuvem)
     c.message(
         when (r?.status) {
             BackupStatus.WRITTEN -> when {
-                restored -> "Backup restaurado. Daqui para frente, o Cryo salva $where."
-                mode == FolderMode.REPLACE -> "Pronto! Agora o backup fica sempre no arquivo ${BackupPolicy.SINGLE_NAME}."
-                else -> "Pronto! O primeiro backup já está $where."
+                restored -> Res.s(R.string.backup_backup_restaurado_daqui_para, where)
+                mode == FolderMode.REPLACE -> Res.s(R.string.backup_pronto_agora_backup_fica, BackupPolicy.SINGLE_NAME)
+                else -> Res.s(R.string.backup_pronto_primeiro_backup_ja, where)
             }
-            BackupStatus.NOTHING_TO_SAVE -> "Lugar escolhido. O primeiro backup sai quando você tiver algo cadastrado."
-            BackupStatus.FAILED, BackupStatus.HELD -> r.message ?: "Não consegui salvar nesse lugar"
-            else -> if (restored) "Backup restaurado" else "Lugar escolhido"
+            BackupStatus.NOTHING_TO_SAVE -> Res.s(R.string.backup_lugar_escolhido_primeiro_backup)
+            BackupStatus.FAILED, BackupStatus.HELD -> r.message ?: Res.s(R.string.backup_nao_consegui_salvar_nesse)
+            else -> if (restored) Res.s(R.string.settings_backup_restaurado) else Res.s(R.string.backup_lugar_escolhido)
         },
     )
 }
@@ -641,7 +638,7 @@ private fun remove(c: AppContainer, ctx: Context, t: BackupTarget, uri: String?)
         c.autoBackup.setTarget(t, null, "")
         val left = c.autoBackup.current()
         runCatching { AutoBackupWork.sync(ctx, left.enabled && left.hasTarget) }
-        c.message(if (t == BackupTarget.FOLDER) "A pasta não será mais usada. Os arquivos que já estão lá continuam." else "A nuvem não será mais usada. O arquivo que já está lá continua.")
+        c.message(if (t == BackupTarget.FOLDER) Res.s(R.string.backup_pasta_nao_sera_mais) else Res.s(R.string.backup_nuvem_nao_sera_mais))
     }
 }
 
@@ -650,15 +647,14 @@ private fun remove(c: AppContainer, ctx: Context, t: BackupTarget, uri: String?)
 private fun TestModeBackupNotice(onBack: () -> Unit) {
     val ctx = LocalContext.current
     var leaving by remember { mutableStateOf(false) }
-    Scaffold(topBar = { CryoTopBar("Backup automático", onBack = onBack) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.settings_backup_automatico), onBack = onBack) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         Column(Modifier.fillMaxSize().padding(pad)) {
             EmptyState(
-                Icons.Rounded.Science, "Você está no modo de teste",
-                "O backup automático continua salvando os seus dados de verdade, como sempre. Para ver ou mudar os ajustes " +
-                    "do backup, saia do modo de teste.",
+                Icons.Rounded.Science, Res.s(R.string.backup_voce_esta_modo_teste),
+                Res.s(R.string.backup_backup_automatico_continua_salvando),
             ) {
                 Button(onClick = { leaving = true; switchTestMode(ctx, false) { leaving = false } }, enabled = !leaving) {
-                    Text("Sair do modo de teste")
+                    Text(Res.s(R.string.backup_sair_modo_teste))
                 }
             }
         }

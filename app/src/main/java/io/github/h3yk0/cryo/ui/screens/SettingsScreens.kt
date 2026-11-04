@@ -341,7 +341,7 @@ fun SettingsScreen() {
         val snap = restored.snapshot
         ConfirmDialog(
             Res.s(R.string.settings_restaurar_backup),
-            Res.s(R.string.settings_arquivo_tem_movimentacoes_contas, snap.txs.size, snap.accounts.size),
+            Res.s(R.string.settings_restore_counts, Res.p(R.plurals.count_transactions, snap.txs.size, snap.txs.size), Res.p(R.plurals.count_accounts, snap.accounts.size, snap.accounts.size)),
             Res.s(R.string.wallet_restaurar),
             onConfirm = {
                 pendingImport = null

@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -185,10 +187,10 @@ fun ImportScreen(presetAccountId: Long? = null, presetCardId: Long? = null, mode
 
     if (confirmLeave) {
         ConfirmDialog(
-            "Sair da conferência?", "Nada deste arquivo foi importado ainda.", "Sair",
+            Res.s(R.string.import_sair_conferencia), Res.s(R.string.import_nada_deste_arquivo_foi), Res.s(R.string.import_sair),
             onConfirm = { confirmLeave = false; vm.reset() },
             onDismiss = { confirmLeave = false },
-            dismissLabel = "Continuar conferindo",
+            dismissLabel = Res.s(R.string.import_continuar_conferindo),
         )
     }
 }
@@ -206,8 +208,8 @@ private fun ImportStart(
     onReport: () -> Unit,
 ) {
     Scaffold(
-        topBar = { CryoTopBar("Importar extrato", onBack = onBack) },
-        bottomBar = { BottomButton("Escolher arquivo", enabled = true, onClick = onPick) },
+        topBar = { CryoTopBar(Res.s(R.string.import_importar_extrato), onBack = onBack) },
+        bottomBar = { BottomButton(Res.s(R.string.import_escolher_arquivo), enabled = true, onClick = onPick) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp)) {
@@ -216,11 +218,10 @@ private fun ImportStart(
                 contentAlignment = Alignment.Center,
             ) { Icon(Icons.Rounded.UploadFile, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(32.dp)) }
             Spacer(Modifier.height(16.dp))
-            Text("Traga as movimentações do seu banco", style = MaterialTheme.typography.headlineSmall)
+            Text(Res.s(R.string.import_traga_movimentacoes_seu_banco), style = MaterialTheme.typography.headlineSmall)
             Spacer(Modifier.height(6.dp))
             Text(
-                "Baixe o extrato no app ou no site do banco e escolha o arquivo aqui. Antes de qualquer coisa entrar no Cryo, " +
-                    "você confere a lista: o que já estiver lançado fica de fora.",
+                Res.s(R.string.import_baixe_extrato_app_ou),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (testMode) {
@@ -233,24 +234,23 @@ private fun ImportStart(
                     Icons.Rounded.ErrorOutline, error, MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer,
                 )
                 if (devMode && hasReport) {
-                    TextButton(onClick = onReport) { Text("Ver o relatório da leitura") }
+                    TextButton(onClick = onReport) { Text(Res.s(R.string.import_ver_relatorio_leitura)) }
                 }
             }
-            FieldLabel("Formatos que o Cryo lê")
+            FieldLabel(Res.s(R.string.import_formatos_que_cryo_le))
             CryoCard {
-                FormatLine("OFX", "O melhor: valores exatos, e o Cryo reconhece o que já foi importado.", best = true)
-                FormatLine("CSV ou planilha (XLSX)", "Funciona com quase todos os bancos. Se as colunas não ficarem claras, o Cryo pergunta.")
+                FormatLine("OFX", Res.s(R.string.import_melhor_valores_exatos_cryo), best = true)
+                FormatLine(Res.s(R.string.import_csv_ou_planilha_xlsx), Res.s(R.string.import_funciona_com_quase_todos))
                 FormatLine(
                     "PDF",
-                    if (PdfText.isSupported()) "Lido pelo texto do arquivo. Confira a lista com atenção."
-                    else "Este celular não consegue ler o texto de PDFs. Use OFX, CSV ou XLSX.",
+                    if (PdfText.isSupported()) Res.s(R.string.import_lido_pelo_texto_arquivo)
+                    else Res.s(R.string.import_este_celular_nao_consegue),
                 )
-                if (devMode) FormatLine("JSON de teste", "Só no modo desenvolvedor (formato em docs/IMPORTACAO.md).")
+                if (devMode) FormatLine(Res.s(R.string.import_json_teste), Res.s(R.string.import_so_modo_desenvolvedor_formato))
             }
-            FieldLabel("Onde encontrar o arquivo")
+            FieldLabel(Res.s(R.string.import_onde_encontrar_arquivo))
             Text(
-                "No app do banco, procure Extrato › Exportar (ou Compartilhar) e escolha OFX ou CSV. " +
-                    "Para o cartão de crédito, abra a fatura e procure Exportar.",
+                Res.s(R.string.import_app_banco_procure_extrato),
                 style = MaterialTheme.typography.bodyMedium,
             )
             Spacer(Modifier.height(20.dp))
@@ -258,12 +258,12 @@ private fun ImportStart(
                 Icon(Icons.Rounded.Lock, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "O arquivo é lido aqui no celular. Nada vai para a internet.",
+                    Res.s(R.string.import_arquivo_lido_aqui_celular),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             if (devMode && hasReport && error == null) {
-                TextButton(onClick = onReport, modifier = Modifier.padding(top = 8.dp)) { Text("Relatório da última leitura") }
+                TextButton(onClick = onReport, modifier = Modifier.padding(top = 8.dp)) { Text(Res.s(R.string.import_relatorio_ultima_leitura)) }
             }
             Spacer(Modifier.height(16.dp))
         }
@@ -272,14 +272,14 @@ private fun ImportStart(
 
 @Composable
 private fun ReadingScreen(fileName: String) {
-    Scaffold(topBar = { CryoTopBar("Importar extrato") }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
+    Scaffold(topBar = { CryoTopBar(Res.s(R.string.import_importar_extrato)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         Column(
             Modifier.fillMaxSize().padding(pad).padding(32.dp),
             horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center,
         ) {
             CircularProgressIndicator()
             Spacer(Modifier.height(20.dp))
-            Text("Lendo o arquivo...", style = MaterialTheme.typography.titleMedium)
+            Text(Res.s(R.string.import_lendo_arquivo), style = MaterialTheme.typography.titleMedium)
             if (fileName.isNotEmpty()) {
                 Text(
                     fileName, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -295,7 +295,7 @@ private fun ReadingScreen(fileName: String) {
 private fun TestModeImportNote() {
     Banner(
         Icons.Rounded.Science,
-        "Modo de teste: o extrato vai para os dados de teste, não para as suas contas de verdade.",
+        Res.s(R.string.import_modo_teste_extrato_vai),
         MaterialTheme.colorScheme.tertiaryContainer, MaterialTheme.colorScheme.onTertiaryContainer,
     )
 }
@@ -340,8 +340,8 @@ private fun PasswordStep(fileName: String, retry: Boolean, onSubmit: (String) ->
     var password by remember { mutableStateOf("") }
     var show by remember { mutableStateOf(false) }
     Scaffold(
-        topBar = { CryoTopBar("PDF com senha", onBack = onBack) },
-        bottomBar = { BottomButton("Abrir o PDF", enabled = password.isNotEmpty()) { onSubmit(password) } },
+        topBar = { CryoTopBar(Res.s(R.string.import_pdf_com_senha), onBack = onBack) },
+        bottomBar = { BottomButton(Res.s(R.string.import_abrir_pdf), enabled = password.isNotEmpty()) { onSubmit(password) } },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         Column(Modifier.fillMaxSize().padding(pad).verticalScroll(rememberScrollState()).padding(horizontal = 20.dp, vertical = 8.dp)) {
@@ -353,23 +353,23 @@ private fun PasswordStep(fileName: String, retry: Boolean, onSubmit: (String) ->
             Text(fileName, style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(6.dp))
             Text(
-                "Esse extrato está protegido. Muitos bancos usam parte do CPF ou a data de nascimento como senha.",
+                Res.s(R.string.import_esse_extrato_esta_protegido),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (retry) {
                 Spacer(Modifier.height(16.dp))
                 Banner(
-                    Icons.Rounded.ErrorOutline, "Essa senha não abriu o arquivo. Confira e tente de novo.",
+                    Icons.Rounded.ErrorOutline, Res.s(R.string.import_essa_senha_nao_abriu),
                     MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer,
                 )
             }
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(
-                password, { password = it }, label = { Text("Senha do PDF") }, singleLine = true, isError = retry && password.isEmpty(),
+                password, { password = it }, label = { Text(Res.s(R.string.import_senha_pdf)) }, singleLine = true, isError = retry && password.isEmpty(),
                 visualTransformation = if (show) VisualTransformation.None else PasswordVisualTransformation(),
                 trailingIcon = {
                     IconButton(onClick = { show = !show }) {
-                        Icon(if (show) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, if (show) "Esconder senha" else "Mostrar senha")
+                        Icon(if (show) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, if (show) Res.s(R.string.import_esconder_senha) else Res.s(R.string.import_mostrar_senha))
                     }
                 },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Done),
@@ -381,11 +381,11 @@ private fun PasswordStep(fileName: String, retry: Boolean, onSubmit: (String) ->
                 Icon(Icons.Rounded.Lock, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "A senha só abre o arquivo agora, aqui no celular. O Cryo não guarda.",
+                    Res.s(R.string.import_senha_so_abre_arquivo),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            TextButton(onClick = onBack, modifier = Modifier.padding(top = 8.dp)) { Text("Escolher outro arquivo") }
+            TextButton(onClick = onBack, modifier = Modifier.padding(top = 8.dp)) { Text(Res.s(R.string.import_escolher_outro_arquivo)) }
         }
     }
 }
@@ -414,14 +414,14 @@ private fun ColumnsStep(step: ImportModel.Step.Columns, error: String?, onBack: 
     }
 
     Scaffold(
-        topBar = { CryoTopBar("Escolher colunas", onBack = onBack) },
-        bottomBar = { BottomButton("Continuar", enabled = effective.isValid) { onDone(effective) } },
+        topBar = { CryoTopBar(Res.s(R.string.import_escolher_colunas), onBack = onBack) },
+        bottomBar = { BottomButton(Res.s(R.string.onboarding_continuar), enabled = effective.isValid) { onDone(effective) } },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 24.dp)) {
             item {
                 Text(
-                    "O Cryo não teve certeza de onde está cada informação neste arquivo. Toque na coluna certa de cada uma.",
+                    Res.s(R.string.import_cryo_nao_teve_certeza),
                     style = MaterialTheme.typography.bodyMedium,
                 )
             }
@@ -434,33 +434,33 @@ private fun ColumnsStep(step: ImportModel.Step.Columns, error: String?, onBack: 
                 }
             }
             item {
-                FieldLabel("Começo do arquivo")
+                FieldLabel(Res.s(R.string.import_comeco_arquivo))
                 TablePreview(headers, data.take(5), effective)
             }
             item {
-                FieldLabel("Data")
+                FieldLabel(Res.s(R.string.wallet_data))
                 ColumnChips(headers, data, map.date) { map = map.copy(date = it) }
-                FieldLabel("Descrição")
+                FieldLabel(Res.s(R.string.tx_descricao))
                 ColumnChips(headers, data, map.description) { map = map.copy(description = it) }
-                FieldLabel("Valor")
-                Segmented(listOf(false to "Uma coluna", true to "Entradas e saídas"), twoColumns, { twoColumns = it })
+                FieldLabel(Res.s(R.string.amount_label))
+                Segmented(listOf(false to Res.s(R.string.import_coluna), true to Res.s(R.string.import_entradas_saidas)), twoColumns, { twoColumns = it })
                 Spacer(Modifier.height(8.dp))
                 if (!twoColumns) {
                     ColumnChips(headers, data, map.amount ?: -1) { map = map.copy(amount = it) }
                 } else {
-                    Text("Entradas (créditos)", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 6.dp))
+                    Text(Res.s(R.string.import_entradas_creditos), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 6.dp))
                     ColumnChips(headers, data, map.credit ?: -1) { map = map.copy(credit = it) }
-                    Text("Saídas (débitos)", style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 6.dp))
+                    Text(Res.s(R.string.import_saidas_debitos), style = MaterialTheme.typography.labelLarge, modifier = Modifier.padding(vertical = 6.dp))
                     ColumnChips(headers, data, map.debit ?: -1) { map = map.copy(debit = it) }
                 }
             }
             item {
-                FieldLabel("Como vai ficar")
+                FieldLabel(Res.s(R.string.import_como_vai_ficar))
                 CryoCard {
                     if (preview.isEmpty()) {
                         Text(
-                            if (effective.isValid) "Nenhuma das primeiras linhas virou movimentação. Confira a data e o valor."
-                            else "Escolha a data, a descrição e o valor.",
+                            if (effective.isValid) Res.s(R.string.import_nenhuma_das_primeiras_linhas)
+                            else Res.s(R.string.import_escolha_data_descricao_valor),
                             style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     } else {
@@ -487,11 +487,11 @@ private fun guessHeaderRow(table: List<List<Cell>>): Int {
 @Composable
 private fun TablePreview(headers: List<String>, rows: List<List<Cell>>, map: ColumnMap) {
     fun role(i: Int): String? = when (i) {
-        map.date -> "Data"
-        map.description -> "Descrição"
-        map.amount -> "Valor"
-        map.credit -> "Entradas"
-        map.debit -> "Saídas"
+        map.date -> Res.s(R.string.wallet_data)
+        map.description -> Res.s(R.string.tx_descricao)
+        map.amount -> Res.s(R.string.amount_label)
+        map.credit -> Res.s(R.string.txs_entradas)
+        map.debit -> Res.s(R.string.txs_saidas)
         else -> null
     }
     val shape = MaterialTheme.shapes.medium
@@ -579,18 +579,18 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
 
     Scaffold(
         topBar = {
-            CryoTopBar("Conferir extrato", onBack = onBack, actions = {
-                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, "Mais opções") }
+            CryoTopBar(Res.s(R.string.import_conferir_extrato), onBack = onBack, actions = {
+                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, Res.s(R.string.import_mais_opcoes)) }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
-                    DropdownMenuItem(text = { Text("Marcar todas") }, onClick = { menu = false; vm.selectAll(true) })
-                    DropdownMenuItem(text = { Text("Desmarcar todas") }, onClick = { menu = false; vm.selectAll(false) })
+                    DropdownMenuItem(text = { Text(Res.s(R.string.import_marcar_todas)) }, onClick = { menu = false; vm.selectAll(true) })
+                    DropdownMenuItem(text = { Text(Res.s(R.string.import_desmarcar_todas)) }, onClick = { menu = false; vm.selectAll(false) })
                     DropdownMenuItem(
-                        text = { Text("Inverter entradas e saídas") }, onClick = { menu = false; vm.toggleInvert() },
+                        text = { Text(Res.s(R.string.import_inverter_entradas_saidas)) }, onClick = { menu = false; vm.toggleInvert() },
                         leadingIcon = { Icon(Icons.Rounded.SwapVert, null) },
                     )
                     if (devMode) {
                         DropdownMenuItem(
-                            text = { Text("Relatório da leitura") }, onClick = { menu = false; onReport() },
+                            text = { Text(Res.s(R.string.import_relatorio_leitura)) }, onClick = { menu = false; onReport() },
                             leadingIcon = { Icon(Icons.Rounded.Description, null) },
                         )
                     }
@@ -600,10 +600,9 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
         bottomBar = {
             BottomButton(
                 when {
-                    vm.busy -> "Importando..."
-                    count == 0 -> "Marque o que quer importar"
-                    count == 1 -> "Importar 1 movimentação"
-                    else -> "Importar $count movimentações"
+                    vm.busy -> Res.s(R.string.import_importando)
+                    count == 0 -> Res.s(R.string.import_marque_que_quer_importar)
+                    else -> Res.p(R.plurals.import_button, count, count)
                 },
                 enabled = count > 0 && !vm.busy && !vm.planning, busy = vm.busy, onClick = vm::import,
             )
@@ -615,7 +614,7 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
             item { ReviewHeader(vm.fileName, st) }
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
-                    FieldLabel("Para onde vão")
+                    FieldLabel(Res.s(R.string.import_para_onde_vao))
                     SourceChips(
                         l.activeAccounts, l.activeCards,
                         selected = t.cardId?.let { Source.Card(it) } ?: t.accountId?.let { Source.Acc(it) },
@@ -634,8 +633,7 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
                 item {
                     Banner(
                         Icons.Rounded.SwapVert,
-                        "As compras vieram com valor positivo, então o Cryo já virou os sinais. " +
-                            "Se não for o caso: menu › Inverter entradas e saídas.",
+                        Res.s(R.string.import_compras_vieram_com_valor),
                         MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
                         Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
                     )
@@ -646,8 +644,7 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
                 item {
                     Banner(
                         Icons.Rounded.ErrorOutline,
-                        if (repeated == 1) "1 linha marcada parece já estar no Cryo e vai ficar duplicada se entrar."
-                        else "$repeated linhas marcadas parecem já estar no Cryo e vão ficar duplicadas se entrarem.",
+                        Res.p(R.plurals.import_selected_duplicates, repeated, repeated),
                         MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer,
                         Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
                     )
@@ -696,25 +693,17 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
 
 private fun flaggedText(rows: List<ImportRow>): String {
     val parts = listOfNotNull(
-        rows.count { it.flag == RowFlag.IMPORTED_BEFORE && !it.selected }.takeIf { it > 0 }?.let { if (it == 1) "1 já importada" else "$it já importadas" },
-        rows.count { it.flag == RowFlag.LOOKS_DUPLICATE && !it.selected }.takeIf { it > 0 }?.let { if (it == 1) "1 parece repetida" else "$it parecem repetidas" },
+        rows.count { it.flag == RowFlag.IMPORTED_BEFORE && !it.selected }.takeIf { it > 0 }?.let { Res.p(R.plurals.import_flag_imported, it, it) },
+        rows.count { it.flag == RowFlag.LOOKS_DUPLICATE && !it.selected }.takeIf { it > 0 }?.let { Res.p(R.plurals.import_flag_duplicate, it, it) },
         rows.count { (it.flag == RowFlag.INVOICE_PAYMENT || it.flag == RowFlag.CARD_CREDIT) && !it.selected }.takeIf { it > 0 }
-            ?.let { if (it == 1) "1 pagamento de fatura" else "$it pagamentos de fatura" },
+            ?.let { Res.p(R.plurals.import_flag_invoice_payment, it, it) },
     )
-    return "Ficaram desmarcadas: ${parts.joinToString(", ")}. Toque numa linha para conferir."
+    return Res.s(R.string.import_flagged_summary, parts.joinToString(Res.s(R.string.list_separator)))
 }
 
 /** Pagamentos de fatura marcados sem o outro lado: o que vai acontecer e como resolver (se for o caso). */
-private fun unpairedText(n: Int, card: Boolean): String = when {
-    card && n == 1 -> "1 pagamento da fatura marcado vai entrar como crédito no cartão, sem sair de nenhuma conta. " +
-        "Se ele saiu de uma conta sua, toque na linha e escolha a conta."
-    card -> "$n pagamentos da fatura marcados vão entrar como crédito no cartão, sem sair de nenhuma conta. " +
-        "Se eles saíram de uma conta sua, toque em cada linha e escolha a conta."
-    n == 1 -> "1 pagamento de fatura marcado vai entrar como gasto comum. Se as compras desse cartão já estão no Cryo, " +
-        "o gasto conta duas vezes: toque na linha e escolha o cartão."
-    else -> "$n pagamentos de fatura marcados vão entrar como gasto comum. Se as compras desses cartões já estão no Cryo, " +
-        "o gasto conta duas vezes: toque em cada linha e escolha o cartão."
-}
+private fun unpairedText(n: Int, card: Boolean): String =
+    Res.p(if (card) R.plurals.import_unpaired_card else R.plurals.import_unpaired_account, n, n)
 
 @Composable
 private fun ReviewHeader(fileName: String, st: Statement) {
@@ -730,12 +719,12 @@ private fun ReviewHeader(fileName: String, st: Statement) {
                     if (first == last) Dates.full(first) else "${Dates.full(first)} a ${Dates.full(last)}"
                 } else ""
                 Text(
-                    listOf(st.format.label, if (st.lines.size == 1) "1 movimentação" else "${st.lines.size} movimentações", period)
+                    listOf(st.format.label, Res.p(R.plurals.count_transactions, st.lines.size, st.lines.size), period)
                         .filter { it.isNotEmpty() }.joinToString(" · "),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 st.accountHint?.let {
-                    Text("No arquivo: $it", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(Res.s(R.string.import_arquivo, it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
@@ -747,21 +736,20 @@ private fun InvoiceChooser(st: Statement, card: CreditCard, selected: Int?, toda
     val center = remember(st, card) { ImportPlanner.defaultInvoice(st, card) ?: CardMath.invoiceFor(card, today).let { it.year * 100 + it.monthValue } }
     val months = listOf(-1L, 0L, 1L).map { ymOf(center).plusMonths(it) }
     fun label(ym: java.time.YearMonth) = if (ym.year == today.year) Dates.monthName(ym) else "${Dates.monthShort(ym)} ${ym.year}"
-    FieldLabel("Em qual fatura")
+    FieldLabel(Res.s(R.string.import_qual_fatura))
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         months.forEach { ym ->
             val key = ym.year * 100 + ym.monthValue
             FilterChip(selected = selected == key, onClick = { onSelect(key) }, label = { Text(label(ym)) })
         }
-        FilterChip(selected = selected == null, onClick = { onSelect(null) }, label = { Text("Pela data de cada compra") })
+        FilterChip(selected = selected == null, onClick = { onSelect(null) }, label = { Text(Res.s(R.string.import_pela_data_cada_compra)) })
     }
     val chosen = selected?.let { ymOf(it) }
     Text(
         if (chosen != null) {
-            "Fatura de ${label(chosen).lowercase()}, que vence em ${Dates.full(CardMath.dueDate(card, chosen))}: todas as compras do " +
-                "arquivo entram nela, o certo para uma fatura fechada."
+            Res.s(R.string.import_fatura_que_vence_todas, label(chosen).lowercase(), Dates.full(CardMath.dueDate(card, chosen)))
         } else {
-            "Cada compra vai para a fatura da sua data, o certo para um arquivo com compras de vários meses."
+            Res.s(R.string.import_cada_compra_vai_para)
         },
         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.padding(top = 4.dp),
@@ -778,7 +766,7 @@ private fun Totals(rows: List<ImportRow>) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Text(
-            "${sel.size} de ${rows.size} marcadas", style = MaterialTheme.typography.titleSmall,
+            Res.s(R.string.import_marcadas, sel.size, rows.size), style = MaterialTheme.typography.titleSmall,
             modifier = Modifier.weight(1f),
         )
         if (income > 0) MoneyText(income, signed = true, style = MaterialTheme.typography.bodyMedium, color = incomeColor())
@@ -790,11 +778,11 @@ private fun Totals(rows: List<ImportRow>) {
 
 private fun flagLabel(r: ImportRow, t: ImportTarget, l: Ledger): String? = when {
     r.pairedId != null && r.canBeInvoicePayment ->
-        if (t.isCard) "Pagamento da fatura, saindo de ${l.accountName(r.pairedId)}" else "Pagamento da fatura do cartão ${l.cardName(r.pairedId)}"
-    r.flag == RowFlag.IMPORTED_BEFORE -> "Já importada antes"
-    r.flag == RowFlag.LOOKS_DUPLICATE -> r.match?.let { "Parece repetida: “${it.description.ifBlank { "sem descrição" }}” de ${Dates.short(it.date)}" } ?: "Parece repetida"
-    r.flag == RowFlag.CARD_CREDIT -> "Pagamento da fatura · toque para dizer de qual conta saiu"
-    r.flag == RowFlag.INVOICE_PAYMENT -> "Pagamento de fatura · toque para registrar no cartão"
+        if (t.isCard) Res.s(R.string.import_pagamento_fatura_saindo, l.accountName(r.pairedId)) else Res.s(R.string.import_pagamento_fatura_cartao, l.cardName(r.pairedId))
+    r.flag == RowFlag.IMPORTED_BEFORE -> Res.s(R.string.import_ja_importada_antes)
+    r.flag == RowFlag.LOOKS_DUPLICATE -> r.match?.let { Res.s(R.string.import_parece_repetida_2, it.description.ifBlank { Res.s(R.string.import_sem_descricao) }, Dates.short(it.date)) } ?: Res.s(R.string.import_parece_repetida)
+    r.flag == RowFlag.CARD_CREDIT -> Res.s(R.string.import_pagamento_fatura_toque_para_2)
+    r.flag == RowFlag.INVOICE_PAYMENT -> Res.s(R.string.import_pagamento_fatura_toque_para)
     else -> null
 }
 
@@ -812,7 +800,7 @@ private fun ReviewRow(r: ImportRow, l: Ledger, t: ImportTarget, onToggle: () -> 
         // A caixa é um toque à parte da linha (que abre a conferência): o leitor de tela precisa saber de qual linha ela é.
         Checkbox(
             checked = r.selected, onCheckedChange = { onToggle() },
-            modifier = Modifier.semantics { contentDescription = "Importar ${r.line.description}" },
+            modifier = Modifier.semantics { contentDescription = Res.s(R.string.import_importar, r.line.description) },
         )
         Row(Modifier.weight(1f).alpha(if (r.selected) 1f else 0.6f), verticalAlignment = Alignment.CenterVertically) {
             when {
@@ -860,7 +848,7 @@ private fun RowEditor(
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
-            Text("Conferir movimentação", style = MaterialTheme.typography.titleLarge)
+            Text(Res.s(R.string.import_conferir_movimentacao), style = MaterialTheme.typography.titleLarge)
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
                     "${Dates.full(r.line.date)} · ", style = MaterialTheme.typography.bodyMedium,
@@ -877,11 +865,11 @@ private fun RowEditor(
             }
             Spacer(Modifier.height(16.dp))
             OutlinedTextField(
-                description, { description = it }, label = { Text("Descrição") }, singleLine = true,
+                description, { description = it }, label = { Text(Res.s(R.string.tx_descricao)) }, singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
             if (r.canBeInvoicePayment) {
-                FieldLabel(if (t.isCard) "É o pagamento da fatura? De qual conta saiu?" else "É o pagamento de qual cartão?")
+                FieldLabel(if (t.isCard) Res.s(R.string.import_pagamento_fatura_qual_conta) else Res.s(R.string.import_pagamento_qual_cartao))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     if (t.isCard) {
                         l.activeAccounts.forEach { a ->
@@ -894,49 +882,46 @@ private fun RowEditor(
                     }
                     FilterChip(
                         selected = paired == null, onClick = { paired = null },
-                        label = { Text(if (t.isCard) "Não é pagamento (é estorno ou crédito)" else "Não, é um gasto comum") },
+                        label = { Text(if (t.isCard) Res.s(R.string.import_nao_pagamento_estorno_ou) else Res.s(R.string.import_nao_gasto_comum)) },
                     )
                 }
             }
             if (paired == null) {
-                FieldLabel("Categoria")
+                FieldLabel(Res.s(R.string.plan_categoria))
                 CategoryGrid(l.categories(kind), category, { category = it.id })
             }
             Spacer(Modifier.height(8.dp))
             Row(
                 Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
                     .toggleable(value = selected, role = Role.Checkbox, onValueChange = { selected = it })
-                    .semantics { stateDescription = if (selected) "Marcada" else "Desmarcada" }
+                    .semantics { stateDescription = if (selected) Res.s(R.string.import_marcada) else Res.s(R.string.import_desmarcada) }
                     .padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Checkbox(checked = selected, onCheckedChange = null)
                 Spacer(Modifier.width(8.dp))
-                Text("Importar esta movimentação", style = MaterialTheme.typography.bodyLarge)
+                Text(Res.s(R.string.import_importar_esta_movimentacao), style = MaterialTheme.typography.bodyLarge)
             }
             Spacer(Modifier.height(12.dp))
             Button(
                 onClick = { onSave(description, if (paired == null) category else null, kind, paired, selected) },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
-            ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text("Pronto") }
+            ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.import_pronto)) }
             Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text("Cancelar") }
+            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.wallet_cancelar)) }
         }
     }
 }
 
 private fun explanation(r: ImportRow, t: ImportTarget, l: Ledger): String? = when (r.flag) {
-    RowFlag.IMPORTED_BEFORE -> "Esta movimentação já veio numa importação anterior. Se importar de novo, ela fica duplicada."
+    RowFlag.IMPORTED_BEFORE -> Res.s(R.string.import_esta_movimentacao_ja_veio)
     RowFlag.LOOKS_DUPLICATE -> r.match?.let { m ->
-        "Parece com “${m.description.ifBlank { "sem descrição" }}”, de ${Dates.full(m.date)} (${Money.format(m.amount)}), " +
-            "que já está no Cryo${m.accountId?.let { " em ${l.accountName(it)}" } ?: m.cardId?.let { " no cartão ${l.cardName(it)}" } ?: ""}."
-    } ?: "Parece com algo que já está no Cryo."
+        Res.s(R.string.import_parece_com_que_ja, m.description.ifBlank { Res.s(R.string.import_sem_descricao) }, Dates.full(m.date), Money.format(m.amount), m.accountId?.let { " em ${l.accountName(it)}" } ?: m.cardId?.let { Res.s(R.string.import_cartao_2, l.cardName(it)) } ?: "")
+    } ?: Res.s(R.string.import_parece_com_algo_que)
     RowFlag.CARD_CREDIT ->
-        "Parece o pagamento da fatura. No Cryo, ele sai de uma conta e entra no cartão: diga de qual conta saiu. " +
-            "Se você já registrou esse pagamento, deixe esta linha desmarcada."
+        Res.s(R.string.import_parece_pagamento_fatura_cryo)
     RowFlag.INVOICE_PAYMENT ->
-        "Parece o pagamento de uma fatura de cartão. Para o gasto não contar duas vezes (as compras já estão no cartão), " +
-            "registre como pagamento do cartão. Se você já registrou esse pagamento, deixe esta linha desmarcada."
+        Res.s(R.string.import_parece_pagamento_fatura_cartao)
     RowFlag.NONE -> if (t.isCard && r.type == TxType.INCOME) "Crédito na fatura (estorno, reembolso ou ajuste): diminui o valor da fatura." else null
 }
 
@@ -946,10 +931,10 @@ private fun explanation(r: ImportRow, t: ImportTarget, l: Ledger): String? = whe
 private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, devMode: Boolean, onReport: () -> Unit) {
     val nav = LocalNav.current
     val t = step.target
-    val where = t.cardId?.let { "no cartão ${l.cardName(it)}" } ?: "na conta ${l.accountName(t.accountId)}"
+    val where = t.cardId?.let { Res.s(R.string.import_cartao, l.cardName(it)) } ?: Res.s(R.string.import_conta, l.accountName(t.accountId))
     val balance = vm.statement?.balance
     Scaffold(
-        topBar = { CryoTopBar("Importar extrato", onBack = nav::back) },
+        topBar = { CryoTopBar(Res.s(R.string.import_importar_extrato), onBack = nav::back) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->
         Column(
@@ -970,18 +955,16 @@ private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, de
             Spacer(Modifier.height(20.dp))
             Text(
                 when {
-                    step.undone -> "Importação desfeita"
-                    step.count == 1 -> "1 movimentação importada"
-                    else -> "${step.count} movimentações importadas"
+                    step.undone -> Res.s(R.string.import_importacao_desfeita)
+                    else -> Res.p(R.plurals.import_done_title, step.count, step.count)
                 },
                 style = MaterialTheme.typography.headlineSmall, textAlign = TextAlign.Center,
             )
             Spacer(Modifier.height(6.dp))
             Text(
                 when {
-                    step.undone -> "Nada deste arquivo ficou no Cryo."
-                    step.count == 1 -> "Entrou $where."
-                    else -> "Entraram $where."
+                    step.undone -> Res.s(R.string.import_nada_deste_arquivo_ficou)
+                    else -> Res.p(R.plurals.import_done_where, step.count, where)
                 },
                 style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
             )
@@ -989,17 +972,16 @@ private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, de
                 Spacer(Modifier.height(20.dp))
                 CryoCard {
                     Row(Modifier.fillMaxWidth()) {
-                        Text("Saldo no fim do extrato", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                        Text(Res.s(R.string.import_saldo_fim_extrato), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                         MoneyText(balance, style = MaterialTheme.typography.titleSmall)
                     }
                     Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                        Text("Saldo no Cryo agora", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                        Text(Res.s(R.string.import_saldo_cryo_agora), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
                         MoneyText(l.balance(t.accountId), style = MaterialTheme.typography.titleSmall)
                     }
                     if (balance != l.balance(t.accountId)) {
                         Text(
-                            "Estão diferentes: pode ser algo que ficou desmarcado na conferência ou que aconteceu antes do período " +
-                                "do arquivo, ou o saldo inicial da conta precisa de ajuste (edite a conta na Carteira).",
+                            Res.s(R.string.import_estao_diferentes_pode_ser),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(top = 8.dp),
                         )
@@ -1011,16 +993,16 @@ private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, de
                 Button(
                     onClick = { nav.go(t.cardId?.let { Routes.card(it) } ?: Routes.account(t.accountId ?: 0)) },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
-                ) { Text(if (t.isCard) "Ver o cartão" else "Ver a conta") }
+                ) { Text(if (t.isCard) Res.s(R.string.import_ver_cartao) else Res.s(R.string.import_ver_conta)) }
                 Spacer(Modifier.height(8.dp))
                 OutlinedButton(onClick = vm::undo, enabled = !vm.busy, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                     Icon(Icons.AutoMirrored.Rounded.Undo, null)
                     Spacer(Modifier.width(8.dp))
-                    Text("Desfazer importação")
+                    Text(Res.s(R.string.import_desfazer_importacao))
                 }
             }
-            TextButton(onClick = vm::reset, modifier = Modifier.padding(top = 8.dp)) { Text("Importar outro arquivo") }
-            if (devMode) TextButton(onClick = onReport) { Text("Relatório da leitura") }
+            TextButton(onClick = vm::reset, modifier = Modifier.padding(top = 8.dp)) { Text(Res.s(R.string.import_importar_outro_arquivo)) }
+            if (devMode) TextButton(onClick = onReport) { Text(Res.s(R.string.import_relatorio_leitura)) }
         }
     }
 }

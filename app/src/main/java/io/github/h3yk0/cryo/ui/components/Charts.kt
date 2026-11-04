@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.components
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -109,8 +111,7 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
     val measurer = rememberTextMeasurer()
     val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
     val endStyle = MaterialTheme.typography.labelLarge.copy(color = endColor, fontWeight = FontWeight.Bold)
-    val desc = "Gráfico da previsão do mês. Hoje o resultado é ${Money.format(f.currentResult)}. " +
-        "Previsão para o fim do mês: ${Money.format(f.projectedResult)}."
+    val desc = Res.s(R.string.chart_grafico_previsao_mes_hoje, Money.format(f.currentResult), Money.format(f.projectedResult))
     Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = desc }) {
         val pts = f.series
         if (pts.isEmpty()) return@Canvas
@@ -161,7 +162,7 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
         // valor previsto no fim: fixo no canto superior direito (área reservada), nunca encobre a linha
         val last = pts.last()
         val lastV = last.projected ?: last.actual ?: 0L
-        val txt = measurer.measure("Fim do mês: ${Money.compact(lastV)}", endStyle)
+        val txt = measurer.measure(Res.s(R.string.chart_fim_mes, Money.compact(lastV)), endStyle)
         drawText(txt, topLeft = Offset((size.width - txt.size.width).coerceAtLeast(0f), 0f))
         if (proj.size > 1 || last.actual != null) drawCircle(endColor, 4.dp.toPx(), Offset(x(last.day), y(lastV)))
 
@@ -185,7 +186,7 @@ fun MonthBarsChart(bars: List<MonthBar>, modifier: Modifier = Modifier, height: 
     val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
     var selected by remember(bars) { mutableIntStateOf(bars.lastIndex) }
     val desc = bars.joinToString(". ") {
-        "${Dates.monthName(it.ym)}: entrou ${Money.format(it.income)}, saiu ${Money.format(it.expense)}"
+        Res.s(R.string.chart_entrou_saiu, Dates.monthName(it.ym), Money.format(it.income), Money.format(it.expense))
     }
     Column(modifier) {
         bars.getOrNull(selected)?.let { b ->
@@ -296,7 +297,7 @@ fun HeatmapCalendar(
                                 else -> MaterialTheme.colorScheme.onSurface
                             }
                             val sel = selectedDay == day
-                            val label = if (daily[day] > 0) "Dia $day: gastou ${Money.format(daily[day])}" else "Dia $day: sem gastos"
+                            val label = if (daily[day] > 0) Res.s(R.string.chart_dia_gastou, day, Money.format(daily[day])) else Res.s(R.string.chart_dia_sem_gastos, day)
                             Box(
                                 Modifier
                                     .matchParentSizeCompat()
@@ -325,7 +326,7 @@ fun HeatmapCalendar(
         }
         Spacer(Modifier.height(8.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
-            Text("Menos", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(Res.s(R.string.chart_menos), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.width(6.dp))
             alphas.forEachIndexed { i, a ->
                 Box(
@@ -334,7 +335,7 @@ fun HeatmapCalendar(
                 )
             }
             Spacer(Modifier.width(6.dp))
-            Text("Mais", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text(Res.s(R.string.chart_mais), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }
@@ -370,8 +371,11 @@ fun SankeyChart(flow: MoneyFlow, modifier: Modifier = Modifier, height: Dp = 260
         FlowKind.FROM_BALANCE -> neutral
         else -> Color(raw)
     }
-    val desc = "Fluxo do dinheiro. Entradas: " + flow.sources.joinToString { "${it.label} ${Money.format(it.value)}" } +
-        ". Saídas: " + flow.destinations.joinToString { "${it.label} ${Money.format(it.value)}" }
+    val desc = Res.s(
+        R.string.chart_flow_a11y,
+        flow.sources.joinToString { "${it.label} ${Money.format(it.value)}" },
+        flow.destinations.joinToString { "${it.label} ${Money.format(it.value)}" },
+    )
     Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = desc }) {
         val total = flow.total.toFloat()
         if (total <= 0f) return@Canvas

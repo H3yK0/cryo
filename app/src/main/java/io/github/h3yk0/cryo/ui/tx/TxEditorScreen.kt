@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.tx
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -79,10 +81,10 @@ fun TxEditorScreen(
     Scaffold(
         topBar = {
             CryoTopBar(
-                title = if (draft.isEditing) "Editar lançamento" else "Novo lançamento",
+                title = if (draft.isEditing) Res.s(R.string.tx_editar_lancamento) else Res.s(R.string.tx_novo_lancamento),
                 onBack = onDone,
                 actions = {
-                    if (draft.isEditing) IconButton(onClick = { askDelete = true }) { Icon(Icons.Rounded.Delete, "Apagar") }
+                    if (draft.isEditing) IconButton(onClick = { askDelete = true }) { Icon(Icons.Rounded.Delete, Res.s(R.string.wallet_apagar)) }
                 },
             )
         },
@@ -98,7 +100,7 @@ fun TxEditorScreen(
                         onClick = {
                             c.launch {
                                 val r = saveDraft(draft, c.repo, l)
-                                c.message(r.alert ?: r.summary, "Desfazer") { r.undo() }
+                                c.message(r.alert ?: r.summary, Res.s(R.string.wallet_desfazer)) { r.undo() }
                             }
                             onDone()
                         },
@@ -107,7 +109,7 @@ fun TxEditorScreen(
                     ) {
                         Icon(Icons.Rounded.Check, null)
                         Spacer(Modifier.width(8.dp))
-                        Text(if (draft.isEditing) "Salvar alterações" else "Salvar")
+                        Text(if (draft.isEditing) Res.s(R.string.tx_salvar_alteracoes) else Res.s(R.string.wallet_salvar))
                     }
                 }
             }
@@ -131,13 +133,13 @@ fun TxEditorScreen(
         val group = o.installmentGroup?.let { g -> l.s.txs.filter { it.installmentGroup == g } }.orEmpty()
         AlertDialog(
             onDismissRequest = { askDelete = false },
-            title = { Text("Apagar lançamento?") },
+            title = { Text(Res.s(R.string.tx_apagar_lancamento)) },
             text = {
                 Text(
                     when {
-                        group.size > 1 -> "Esta é a parcela ${o.installmentNumber} de ${o.installmentTotal}. Você pode apagar só ela ou a compra inteira."
-                        o.billId != null -> "Ele está ligado a uma conta fixa, que voltará a aparecer como não paga neste mês."
-                        else -> "Você poderá desfazer logo em seguida."
+                        group.size > 1 -> Res.s(R.string.tx_esta_parcela_voce_pode, o.installmentNumber, o.installmentTotal)
+                        o.billId != null -> Res.s(R.string.tx_ele_esta_ligado_conta)
+                        else -> Res.s(R.string.tx_voce_podera_desfazer_logo)
                     },
                 )
             },
@@ -146,12 +148,12 @@ fun TxEditorScreen(
                     askDelete = false
                     c.launch {
                         c.repo.deleteTx(o, wholeGroup = group.size > 1)
-                        c.message(if (group.size > 1) "Compra parcelada apagada" else "Lançamento apagado", "Desfazer") {
+                        c.message(if (group.size > 1) Res.s(R.string.tx_compra_parcelada_apagada) else Res.s(R.string.tx_lancamento_apagado), Res.s(R.string.wallet_desfazer)) {
                             c.repo.restore(if (group.size > 1) group else listOf(o))
                         }
                     }
                     onDone()
-                }) { Text(if (group.size > 1) "Apagar todas" else "Apagar") }
+                }) { Text(if (group.size > 1) Res.s(R.string.tx_apagar_todas) else Res.s(R.string.wallet_apagar)) }
             },
             dismissButton = {
                 if (group.size > 1) {
@@ -159,12 +161,12 @@ fun TxEditorScreen(
                         askDelete = false
                         c.launch {
                             c.repo.deleteTx(o)
-                            c.message("Parcela apagada", "Desfazer") { c.repo.restore(listOf(o)) }
+                            c.message(Res.s(R.string.tx_parcela_apagada), Res.s(R.string.wallet_desfazer)) { c.repo.restore(listOf(o)) }
                         }
                         onDone()
-                    }) { Text("Só esta") }
+                    }) { Text(Res.s(R.string.tx_so_esta)) }
                 } else {
-                    TextButton(onClick = { askDelete = false }) { Text("Cancelar") }
+                    TextButton(onClick = { askDelete = false }) { Text(Res.s(R.string.wallet_cancelar)) }
                 }
             },
         )

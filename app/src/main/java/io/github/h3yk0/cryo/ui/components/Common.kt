@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.components
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -253,7 +255,7 @@ fun MoneyText(
     val max = if (style.fontSize.isSpecified) style.fontSize else 16.sp
     BasicText(
         text,
-        modifier = modifier.semantics { if (hide) contentDescription = "Valor escondido" },
+        modifier = modifier.semantics { if (hide) contentDescription = Res.s(R.string.common_valor_escondido) },
         style = style.merge(
             TextStyle(color = c, fontWeight = fontWeight, textAlign = textAlign ?: TextAlign.Unspecified),
         ),
@@ -272,15 +274,15 @@ fun expenseColor() = CryoTheme.colors.expense
 /* ============================ Movimentações ============================ */
 
 fun typeLabel(t: TxType): String = when (t) {
-    TxType.EXPENSE -> "Despesa"
-    TxType.INCOME -> "Receita"
-    TxType.TRANSFER -> "Transferência"
-    TxType.CARD_PAYMENT -> "Pagamento de fatura"
-    TxType.INVEST_IN -> "Aporte"
-    TxType.INVEST_OUT -> "Resgate"
-    TxType.GOAL_IN -> "Guardado em meta"
-    TxType.GOAL_OUT -> "Retirado de meta"
-    TxType.DEBT_IN -> "Empréstimo recebido"
+    TxType.EXPENSE -> Res.s(R.string.wallet_despesa)
+    TxType.INCOME -> Res.s(R.string.wallet_receita)
+    TxType.TRANSFER -> Res.s(R.string.common_transferencia)
+    TxType.CARD_PAYMENT -> Res.s(R.string.common_pagamento_fatura)
+    TxType.INVEST_IN -> Res.s(R.string.wallet_aporte)
+    TxType.INVEST_OUT -> Res.s(R.string.wallet_resgate)
+    TxType.GOAL_IN -> Res.s(R.string.common_guardado_meta)
+    TxType.GOAL_OUT -> Res.s(R.string.common_retirado_meta)
+    TxType.DEBT_IN -> Res.s(R.string.common_emprestimo_recebido)
 }
 
 fun typeIcon(t: TxType): ImageVector = when (t) {
@@ -309,18 +311,18 @@ fun txSubtitle(t: Tx, l: Ledger): String {
     when (t.type) {
         TxType.EXPENSE, TxType.INCOME -> {
             t.categoryId?.let { l.category[it]?.name }?.let { parts += it }
-            if (t.cardId != null) parts += "Cartão ${l.cardName(t.cardId)}" else t.accountId?.let { parts += l.accountName(it) }
-            if (t.installmentTotal > 1) parts += "parcela ${t.installmentNumber}/${t.installmentTotal}"
+            if (t.cardId != null) parts += Res.s(R.string.home_card_title, l.cardName(t.cardId)) else t.accountId?.let { parts += l.accountName(it) }
+            if (t.installmentTotal > 1) parts += Res.s(R.string.common_parcela, t.installmentNumber, t.installmentTotal)
         }
         TxType.TRANSFER -> parts += "${l.accountName(t.accountId)} → ${l.accountName(t.toAccountId)}"
-        TxType.CARD_PAYMENT -> parts += "${l.accountName(t.accountId)} → cartão ${l.cardName(t.cardId)}"
+        TxType.CARD_PAYMENT -> parts += Res.s(R.string.common_cartao, l.accountName(t.accountId), l.cardName(t.cardId))
         TxType.INVEST_IN -> parts += "${l.accountName(t.accountId)} → ${t.investmentId?.let { l.investment[it]?.name } ?: "investimento"}"
         TxType.INVEST_OUT -> parts += "${t.investmentId?.let { l.investment[it]?.name } ?: "investimento"} → ${l.accountName(t.accountId)}"
         TxType.GOAL_IN -> parts += "${l.accountName(t.accountId)} → ${t.goalId?.let { l.goal[it]?.name } ?: "meta"}"
         TxType.GOAL_OUT -> parts += "${t.goalId?.let { l.goal[it]?.name } ?: "meta"} → ${l.accountName(t.accountId)}"
         TxType.DEBT_IN -> parts += "${t.debtId?.let { l.debt[it]?.name } ?: "dívida"} → ${l.accountName(t.accountId)}"
     }
-    if (t.billId != null) parts += "conta fixa"
+    if (t.billId != null) parts += Res.s(R.string.common_conta_fixa)
     return parts.joinToString(" · ")
 }
 
@@ -357,7 +359,7 @@ fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier, 
         Column(Modifier.weight(1f)) {
             Text(txTitle(t, l), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                datePart + txSubtitle(t, l) + if (future) " · agendado" else "",
+                datePart + txSubtitle(t, l) + if (future) Res.s(R.string.common_agendado) else "",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
@@ -461,12 +463,12 @@ fun UsageBar(
 @Composable
 fun MonthSelector(label: String, onPrev: () -> Unit, onNext: () -> Unit, modifier: Modifier = Modifier, nextEnabled: Boolean = true) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-        IconButton(onClick = onPrev) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, "Mês anterior") }
+        IconButton(onClick = onPrev) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, Res.s(R.string.common_mes_anterior)) }
         Text(
             label, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp),
         )
-        IconButton(onClick = onNext, enabled = nextEnabled) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, "Próximo mês") }
+        IconButton(onClick = onNext, enabled = nextEnabled) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, Res.s(R.string.common_proximo_mes)) }
     }
 }
 
@@ -480,7 +482,7 @@ fun CryoTopBar(
     TopAppBar(
         title = { Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis) },
         navigationIcon = {
-            if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, "Voltar") }
+            if (onBack != null) IconButton(onClick = onBack) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, Res.s(R.string.onboarding_voltar)) }
         },
         actions = actions,
         scrollBehavior = scrollBehavior,
@@ -494,7 +496,7 @@ fun ConfirmDialog(
     confirmLabel: String,
     onConfirm: () -> Unit,
     onDismiss: () -> Unit,
-    dismissLabel: String = "Cancelar",
+    dismissLabel: String = Res.s(R.string.wallet_cancelar),
     extra: (@Composable () -> Unit)? = null,
 ) {
     AlertDialog(

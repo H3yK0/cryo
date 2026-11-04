@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.tx
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.app.Activity
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -102,7 +104,7 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
         try {
             voice.launch(intent)
         } catch (_: ActivityNotFoundException) {
-            c.message("Este aparelho não tem reconhecimento de voz disponível")
+            c.message(Res.s(R.string.quick_este_aparelho_nao_tem))
         }
     }
 
@@ -116,7 +118,7 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
             TextField(
                 value = text,
                 onValueChange = { text = it },
-                placeholder = { Text("Ex.: almoço 25 no débito") },
+                placeholder = { Text(Res.s(R.string.quick_ex_almoco_25_debito)) },
                 singleLine = true,
                 colors = TextFieldDefaults.colors(
                     focusedContainerColor = Color.Transparent, unfocusedContainerColor = Color.Transparent,
@@ -127,9 +129,9 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
                 modifier = Modifier.weight(1f),
             )
             if (text.isBlank()) {
-                FilledIconButton(onClick = { listen() }) { Icon(Icons.Rounded.Mic, "Registrar falando") }
+                FilledIconButton(onClick = { listen() }) { Icon(Icons.Rounded.Mic, Res.s(R.string.quick_registrar_falando)) }
             } else {
-                FilledIconButton(onClick = { submit(text) }) { Icon(Icons.AutoMirrored.Rounded.Send, "Registrar") }
+                FilledIconButton(onClick = { submit(text) }) { Icon(Icons.AutoMirrored.Rounded.Send, Res.s(R.string.debt_registrar)) }
             }
         }
     }
@@ -141,7 +143,7 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
 
 /** Folha de conferência: mostra o que o app entendeu, com tudo editável, e salva com um toque. */
 @Composable
-fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () -> Unit, title: String = "Confira o lançamento") {
+fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () -> Unit, title: String = Res.s(R.string.quick_confira_lancamento)) {
     val c = LocalContainer.current
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet) {
@@ -154,7 +156,7 @@ fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () 
         ) {
             Text(title, style = MaterialTheme.typography.titleLarge)
             Text(
-                "Foi isso que eu entendi. Ajuste o que precisar e salve.",
+                Res.s(R.string.quick_foi_isso_que_eu),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(16.dp))
@@ -169,7 +171,7 @@ fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () 
                 onClick = {
                     c.launch {
                         val r = saveDraft(d, c.repo, l)
-                        c.message(r.alert ?: r.summary, "Desfazer") { r.undo() }
+                        c.message(r.alert ?: r.summary, Res.s(R.string.wallet_desfazer)) { r.undo() }
                     }
                     onSaved()
                 },
@@ -178,10 +180,10 @@ fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () 
             ) {
                 Icon(Icons.Rounded.Check, null)
                 Spacer(Modifier.width(8.dp))
-                Text("Salvar")
+                Text(Res.s(R.string.wallet_salvar))
             }
             Spacer(Modifier.height(8.dp))
-            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text("Cancelar") }
+            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.wallet_cancelar)) }
         }
     }
 }
@@ -190,7 +192,7 @@ fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () 
 fun QuickEntryHint(modifier: Modifier = Modifier) {
     Column(modifier) {
         Text(
-            "Escreva ou fale do seu jeito: “recebi 3000 de salário”, “tv 1200 em 10x no cartão”.",
+            Res.s(R.string.quick_escreva_ou_fale_seu),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -198,5 +200,5 @@ fun QuickEntryHint(modifier: Modifier = Modifier) {
 
 @Composable
 fun SpeakButton(onClick: () -> Unit) {
-    IconButton(onClick = onClick) { Icon(Icons.Rounded.Mic, "Falar") }
+    IconButton(onClick = onClick) { Icon(Icons.Rounded.Mic, Res.s(R.string.quick_falar)) }
 }

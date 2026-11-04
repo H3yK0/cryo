@@ -2,6 +2,8 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import android.net.Uri
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -122,12 +124,12 @@ class ImportModel(
                 }
             }
             val (name, data) = read.getOrElse {
-                fail("Não consegui abrir esse arquivo. Tente baixar de novo ou escolher outro.", size = 0)
+                fail(Res.s(R.string.import_nao_consegui_abrir_esse), size = 0)
                 return@launch
             }
             if (data == null) {
                 fileName = name
-                fail("O arquivo é grande demais (mais de 20 MB). Peça ao banco um período menor.", size = StatementReader.MAX_BYTES.toLong() + 1)
+                fail(Res.s(R.string.import_arquivo_grande_demais_mais), size = StatementReader.MAX_BYTES.toLong() + 1)
                 return@launch
             }
             openBytes(name, data)
@@ -157,17 +159,17 @@ class ImportModel(
             is StatementReader.Result.Ok -> {
                 val st = result.statement
                 if (!c.sandbox && SampleFiles.isSample(st)) {
-                    fail("Este é um extrato de exemplo do Cryo (inventado). Ele só pode ser importado no modo de teste.", st)
+                    fail(Res.s(R.string.import_este_extrato_exemplo_cryo), st)
                     return
                 }
                 if (st.lines.isEmpty()) {
-                    report(st, "Nenhuma movimentação encontrada")
+                    report(st, Res.s(R.string.import_nenhuma_movimentacao_encontrada))
                     if (chosen != null) {
                         // Colunas escolhidas pela pessoa que não renderam nada: volta para ela escolher de novo.
-                        error = "Com essas colunas, nenhuma linha virou movimentação. Confira qual coluna tem a data e qual tem o valor."
+                        error = Res.s(R.string.import_com_essas_colunas_nenhuma)
                         step = lastColumns ?: Step.Pick
                     } else {
-                        fail("Não encontrei movimentações nesse arquivo.", st)
+                        fail(Res.s(R.string.import_nao_encontrei_movimentacoes_nesse), st)
                     }
                     return
                 }
@@ -175,7 +177,7 @@ class ImportModel(
                 startReview(st)
             }
             is StatementReader.Result.NeedsColumns -> {
-                report(null, "O Cryo pediu para escolher as colunas")
+                report(null, Res.s(R.string.import_cryo_pediu_para_escolher))
                 Step.Columns(result.table, result.format, result.guess).also { lastColumns = it; step = it }
             }
             StatementReader.Result.NeedsPassword -> {
@@ -257,7 +259,7 @@ class ImportModel(
             else -> null
         }
         if (t == null) {
-            fail("Crie uma conta ou um cartão na Carteira antes de importar.", st)
+            fail(Res.s(R.string.import_crie_conta_ou_cartao), st)
             return
         }
         edits.clear()
@@ -401,7 +403,7 @@ class ImportModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                c.message("Não consegui importar. Nada foi gravado.")
+                c.message(Res.s(R.string.import_nao_consegui_importar_nada))
             } finally {
                 busy = false
             }
@@ -420,7 +422,7 @@ class ImportModel(
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
-                c.message("Não consegui desfazer. Tente de novo.")
+                c.message(Res.s(R.string.import_nao_consegui_desfazer_tente))
             } finally {
                 busy = false
             }
