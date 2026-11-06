@@ -12,9 +12,9 @@
 |---|---|
 | Produto | Cryo · "Seu dinheiro, claro como gelo." |
 | Dono do produto | Hanry Franco (aprova tudo o que vai para o público) |
-| Versão do PRD | **2.3** (06/11/2026) |
-| Versão publicada do app | 1.2 (GitHub e F-Droid) · 1.3 pronta, aguardando teste · 1.4 em preparação |
-| Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) |
+| Versão do PRD | **2.4** (06/11/2026) |
+| Versão publicada do app | **1.4** no GitHub (06/11/2026; a 1.3 também, no mesmo dia) · F-Droid: 1.2, com a 1.4 entrando sozinha pela etiqueta `v1.4` |
+| Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) (em inglês; em português: [`docs/CHANGELOG.pt-BR.md`](CHANGELOG.pt-BR.md)) |
 
 **Hierarquia**: PRD → anexos → código. Os anexos detalham o que o PRD define; se algum anexo disser outra coisa, vale o PRD e o
 anexo é corrigido no mesmo commit.
@@ -44,6 +44,7 @@ anexo é corrigido no mesmo commit.
 | 2.0 | 04/11/2026 | PRD único com catálogo e códigos; processo de criação e manutenção; conformidade automática; design system 2.0 (visual de banco, cores do Cryo); licença AGPL. |
 | 2.1 | 04/11/2026 | Aprovados: piloto do Início, direção 2.0 em todas as telas, 4 abas, restaurar backup na apresentação. Novos: 10 línguas (RF-LNG) e moeda do app (RF-MOE), frases nas 10 línguas, importação de outros países; tudo na 1.4. |
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
+| 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
 | 2.3 | 06/11/2026 | Pedidos do Hanry depois de testar a 1.4: passeio animado "Como usar o Cryo" (RF-TOUR), movimento em todo o app (DS-MOV, ACS-08), página do GitHub nas 10 línguas com inglês como principal (RF-LNG-09, RF-LNG-10). Tudo na 1.4. |
 
 ---
@@ -457,7 +458,7 @@ Pedido do Hanry (05/11/2026): uma explicação animada de como usar o app, para 
 | RF-LNG-06 | Categorias na língua de quem instala | As categorias padrão (nomes e palavras-chave do registro rápido) são criadas na língua do app na primeira vez; as de quem já usa não mudam. | ✅ 1.4 |
 | RF-LNG-07 | Loja nas 10 línguas | Título, descrições e novidades do F-Droid (`fastlane/metadata/android/<língua>/`). | ✅ 1.4 |
 | RF-LNG-08 | Revisão por quem fala | Cada tradução revista por alguém que fala a língua (comunidade, por issue). | 🔵 contínuo |
-| RF-LNG-09 | **Página do GitHub nas 10 línguas** | `README.md` em **inglês** (a página principal do repositório), com uma linha de línguas no topo levando às outras 9: `docs/readme/README.<língua>.md` (pt-BR, es, fr, de, it, ja, ko, zh-CN, hi). Todas com as mesmas seções e as imagens das telas na própria língua (RF-LNG-10). Os documentos de trabalho (PRD, CLAUDE.md, VISUAL.md, IMPORTACAO.md) continuam em português, e o README avisa isso. As notas de cada Release no GitHub saem em inglês e em português (PRC-05). Pedido do Hanry (05/11/2026). | ✅ 1.4 |
+| RF-LNG-09 | **Página do GitHub nas 10 línguas** | `README.md` em **inglês** (a página principal do repositório), com uma linha de línguas no topo levando às outras 9: `docs/readme/README.<língua>.md` (pt-BR, es, fr, de, it, ja, ko, zh-CN, hi). Todas com as mesmas seções e as imagens das telas na própria língua (RF-LNG-10). Os documentos de trabalho (PRD, CLAUDE.md, VISUAL.md, IMPORTACAO.md) continuam em português, e o README avisa isso. As notas de cada Release no GitHub saem em inglês e em português (PRC-05). Pedido do Hanry (05/11/2026). **Tudo o que aparece na página inicial é em inglês** (06/11/2026): `CHANGELOG.md` em inglês, com a cópia em português em `docs/CHANGELOG.pt-BR.md` (as duas com a seção da versão, conferido), e as mensagens de commit (PRC-02). | ✅ 1.4 |
 | RF-LNG-10 | Imagens das telas em cada língua | `fastlane/metadata/android/<língua>/images/phoneScreenshots/` nas 10 línguas, com o visual da versão, geradas por `StoreAssetsTest` (`-PstoreAssets=true`) com os dados de exemplo na língua e na moeda de cada país. Servem à loja (F-Droid) e ao README da língua. | ✅ 1.4 |
 
 ### 6.19b Moeda — RF-MOE
@@ -693,7 +694,7 @@ Toda mudança, de um texto a uma tela nova, passa por estes passos, nesta ordem:
 
 ### 11.2 Rastreabilidade (PRC-02)
 
-- **Commit**: primeira linha `<versão>: <resumo>`; no corpo, `PRD: RF-IMP-07, DS-COMP-14` com os IDs tocados.
+- **Commit**: primeira linha `<versão>: <resumo>`; no corpo, `PRD: RF-IMP-07, DS-COMP-14` com os IDs tocados. A partir de 06/11/2026, **em inglês** (a mensagem do último commit aparece na página inicial do repositório, RF-LNG-09).
 - **Código**: comentário cita o ID quando a regra vem do PRD e não é óbvia (ex.: `// RF-BLQ-03: bloqueado, o app sai da tela`).
 - **Teste**: KDoc ou comentário cita o ID que o teste garante.
 - **PRD → código**: cada módulo lista arquivos e testes; caminhos citados existem (conferido por `PrdConformanceTest`).
@@ -719,19 +720,21 @@ Uma mudança só está pronta quando **tudo** abaixo é verdade:
 - [ ] Sem permissão nova, sem biblioteca nova sem decisão registrada (PRC-07).
 - [ ] Banco mudou? Migração + `MigrationTest` + schema exportado + backup antigo abrindo.
 - [ ] Textos revistos (plural, verbo no botão, sem jargão).
-- [ ] CHANGELOG e, em versão nova, `fastlane/.../changelogs/<versionCode>.txt` (≤ 500 caracteres, pt-BR e en-US).
+- [ ] `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md` e, em versão nova, `fastlane/.../changelogs/<versionCode>.txt` nas 10 línguas (≤ 500 caracteres).
 - [ ] VISUAL.md / IMPORTACAO.md / CLAUDE.md atualizados quando o assunto é deles.
 
 ### 11.5 Publicar uma versão (PRC-05)
 
-1. Subir `versionCode`/`versionName`; CHANGELOG; changelogs do fastlane.
+1. Subir `versionCode`/`versionName`; `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`; changelogs do fastlane nas 10 línguas.
 2. Testes passando; commit com a identidade pública.
 3. APK de clone limpo (PRC-06) e entregar ao Hanry.
 4. Com o "pode publicar": merge em `main`, push, Release `vX.Y` com o arquivo **exatamente** `Cryo-X.Y.apk`. As notas da
-   Release saem em inglês primeiro e depois em português (RF-LNG-09).
+   Release saem em inglês primeiro e depois em português (RF-LNG-09). **Primeiro o push, depois a Release**: a etiqueta
+   `vX.Y` precisa apontar para o commit do APK (no site, "Target" = o branch da versão). Uma Release criada antes do push
+   prende a etiqueta no código antigo, e o F-Droid compilaria a versão errada (aconteceu com a 1.3 e a 1.4, corrigido em 06/11/2026).
 5. F-Droid: a receita (`docs/fdroid/io.github.h3yk0.cryo.yml`) acha a tag sozinha. **Mudou a receita** (ex.: licença na 1.4)?
    Abrir merge request no fdroiddata com a mudança.
-6. Imagens da loja (`fastlane/`) geradas de novo quando o visual muda (`StoreAssetsTest -PstoreAssets=true`).
+6. Imagens da loja (`fastlane/`) geradas de novo quando o visual muda (`StoreScreenshotsTest` e `StoreAssetsTest` com `-PstoreAssets=true`).
 7. Fechamento (PRC-01, passo 10).
 
 ### 11.6 APK de teste e verificação (PRC-06)
@@ -776,7 +779,7 @@ conferir sozinho:
 | As línguas dos `values-*` são as 10 do RF-LNG-01, iguais às da loja (fastlane) | RF-LNG-01, RF-LNG-07 |
 | Todo caminho de arquivo citado no PRD existe; IDs do PRD não se repetem | PRC-02 |
 | Existe o schema do Room da versão atual do banco | DAD-03 |
-| `CHANGELOG.md` tem a seção da versão atual; changelogs do fastlane com no máximo 500 caracteres | PRC-04 |
+| `CHANGELOG.md` e `docs/CHANGELOG.pt-BR.md` têm a seção da versão atual; changelogs do fastlane com no máximo 500 caracteres | PRC-04, RF-LNG-09 |
 | Nenhuma animação infinita (`rememberInfiniteTransition`, `infiniteRepeatable`) nas telas e componentes | DS-MOV-10 |
 | Todas as rotas usam as transições do `Motion` (nenhum `NavHost` sem elas) | DS-MOV-02, DS-MOV-03 |
 | `README.md` em inglês e os 9 `docs/readme/README.<língua>.md` existem, cada um com a linha das 10 línguas, e toda imagem ou arquivo que citam existe | RF-LNG-09 |
@@ -801,8 +804,8 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.0 | ✅ 01/10/2026 | Registro por frase e voz, visão geral, previsão, calendário, fluxo, cartões e parcelas, contas fixas, orçamentos, metas, investimentos, bloqueio, backup em arquivo. |
 | 1.1 | ✅ 02/10/2026 | Dívidas, arquivo, compilação reproduzível. |
 | 1.2 | ✅ 03/10/2026 | Backup automático (pasta e nuvem). |
-| 1.3 | Pronta, aguardando teste do Hanry | Importar extrato, modo desenvolvedor, correções de bloqueio. |
-| **1.4** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
+| 1.3 | ✅ 06/11/2026 (GitHub) | Importar extrato, modo desenvolvedor, correções de bloqueio. |
+| **1.4** | ✅ 06/11/2026 (GitHub; F-Droid pela etiqueta) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
 | 1.5 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
 
 ## 13. Glossário

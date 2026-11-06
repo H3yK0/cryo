@@ -106,7 +106,10 @@ class PrdConformanceTest {
         val gradle = File(app, "build.gradle.kts").readText()
         val code = Regex("""versionCode = (\d+)""").find(gradle)!!.groupValues[1]
         val name = Regex("""versionName = "([^"]+)"""").find(gradle)!!.groupValues[1]
-        assertTrue("CHANGELOG.md sem a seção ## $name", Regex("""(?m)^## ${Regex.escape(name)}\b""").containsMatchIn(File(root, "CHANGELOG.md").readText()))
+        // RF-LNG-09: o CHANGELOG.md (inglês, o da página inicial) e a cópia em português têm a seção da versão.
+        for (log in listOf("CHANGELOG.md", "docs/CHANGELOG.pt-BR.md")) {
+            assertTrue("$log sem a seção ## $name", Regex("""(?m)^## ${Regex.escape(name)}\b""").containsMatchIn(File(root, log).readText()))
+        }
         for (lang in STORE_LANGS) {
             val dir = File(root, "fastlane/metadata/android/$lang/changelogs")
             assertTrue("Falta o changelog $lang/$code.txt", File(dir, "$code.txt").exists())

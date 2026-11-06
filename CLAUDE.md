@@ -46,9 +46,9 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 |---|---|---|
 | 1.0 | 1 | Publicada (GitHub, tag `v1.0`) |
 | 1.1 | 2 | Publicada (GitHub) |
-| 1.2 | 3 | **Publicada no GitHub e no F-Droid** (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). É o que está em `main`. |
-| 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada** (branch enviado ao GitHub como cópia de segurança em 01/11/2026). Revisão final feita; APK de teste entregue ao Hanry em 01/11/2026. Falta: o teste e a aprovação dele, publicar. |
-| 1.4 | 5 | **Pronta no branch `versao-1.4`** (só local, sem push: o Hanry pediu para não enviar cópia da 1.4). Primeiro APK de teste em 04/11/2026; o Hanry testou ("tá muito daora") e pediu passeio animado, animações suaves e GitHub em 10 línguas (feitos); APK novo em 06/11/2026. Falta: o teste e a aprovação dele (a 1.3 é publicada antes). |
+| 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
+| 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
+| 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: entra sozinha pela etiqueta `v1.4` (alguns dias). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -91,13 +91,12 @@ código anterior. Todos os testes passam.
 
 ### Próximos passos imediatos
 
-1. O Hanry testa o APK 1.3 no celular dele, com os extratos reais do banco dele (ele ainda não disse quais bancos usa: perguntar).
-   Se algo mudar depois do teste, gerar o APK de novo (mesmo versionCode 4, de um clone limpo) e entregar outra vez.
-2. Só depois da aprovação dele: push do branch, merge em `main`, push, Release `v1.3` com `Cryo-1.3.apk`. O F-Droid pega a versão
-   nova sozinho.
-3. Depois, a 1.4 (APK `Cryo-1.4.apk`, versionCode 5): o Hanry testa (inclusive trocar a língua e a moeda em Ajustes), aprova, e a
-   publicação segue a seção 11. A licença mudou para AGPL: a receita do F-Droid (`License:`) precisa de merge request no fdroiddata.
-   As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
+1. **F-Droid**: acompanhar a entrada da 1.4 (o robô acha a etiqueta `v1.4`, compila e compara com o APK da Release). A licença
+   mudou para AGPL: o Hanry abre o merge request no fdroiddata trocando `License: GPL-3.0-or-later` por `AGPL-3.0-or-later`
+   (a cópia em `docs/fdroid/` já está com AGPL).
+2. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
+3. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
+4. 1.5: detalhar com o Hanry (widgets, notificações especiais, sons).
 
 ---
 
@@ -120,8 +119,10 @@ código anterior. Todos os testes passam.
   para atualizar o app (nem no F-Droid, nem por cima da instalação das pessoas).
 - Compilação reproduzível: o APK do GitHub precisa ser idêntico ao que o F-Droid compila. Não mexer em `vcsInfo`,
   `dependenciesInfo` nem reativar as tarefas de ArtProfile em `app/build.gradle.kts` sem entender o efeito (seção 11).
-- Toda versão nova: subir `versionCode` e `versionName`, escrever `CHANGELOG.md` e
-  `fastlane/metadata/android/{pt-BR,en-US}/changelogs/<versionCode>.txt` (máximo 500 caracteres cada).
+- Toda versão nova: subir `versionCode` e `versionName`, escrever `CHANGELOG.md` (em inglês) e `docs/CHANGELOG.pt-BR.md`, e
+  `fastlane/metadata/android/<língua>/changelogs/<versionCode>.txt` nas 10 línguas (máximo 500 caracteres cada).
+- **O que aparece na página inicial do GitHub é em inglês** (pedido do Hanry, 06/11/2026): README, CHANGELOG, notas das Releases
+  (inglês primeiro, depois português) e **mensagens de commit**. Comentários do código e documentos de trabalho continuam em português.
 - Mudança no banco de dados = nova versão do Room com migração e teste em `MigrationTest` (os schemas ficam em `app/schemas/`).
   Backups antigos precisam continuar abrindo (`Backup.import` lê todas as versões).
 
@@ -298,7 +299,8 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 
 ## 11. Publicar uma versão
 
-1. Subir `versionCode`/`versionName` em `app/build.gradle.kts`; `CHANGELOG.md`; changelogs do fastlane (pt-BR e en-US, ≤ 500 caracteres).
+1. Subir `versionCode`/`versionName` em `app/build.gradle.kts`; `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`; changelogs do
+   fastlane nas 10 línguas (≤ 500 caracteres).
 2. Testes passando. Commit com a identidade noreply.
 3. **APK a partir de um clone limpo** (o F-Droid compila do commit exato; arquivos soltos na pasta mudam o resultado):
    ```bash
@@ -309,8 +311,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
    ```
    Conferir a assinatura: `apksigner verify --print-certs Cryo-<versão>.apk` (SHA-256 da seção 2).
 4. **Entregar o APK ao Hanry e esperar a aprovação.**
-5. Push do commit em `main`. Criar a **Release `v<versão>`** no GitHub (ela cria a tag) com o arquivo **exatamente**
-   `Cryo-<versão>.apk`. O nome importa: o F-Droid baixa
+5. Push do commit em `main` **antes** de criar a Release. Criar a **Release `v<versão>`** no GitHub (ela cria a tag; "Target" =
+   o branch da versão, nunca um `main` ainda sem o código novo) com o arquivo **exatamente** `Cryo-<versão>.apk` e as notas em
+   inglês e português. (Em 04/11/2026 as Releases v1.3 e v1.4 foram criadas antes do push e prenderam as etiquetas no código da
+   1.2; foram refeitas em 06/11/2026.) O nome importa: o F-Droid baixa
    `https://github.com/H3yK0/cryo/releases/download/v%v/Cryo-%v.apk` para comparar com o que ele compilou.
 6. F-Droid: **não precisa abrir merge request** para versões novas. A receita (`docs/fdroid/io.github.h3yk0.cryo.yml`, cópia da
    que está no fdroiddata) tem `UpdateCheckMode: Tags` e `AutoUpdateMode: Version`: o robô do F-Droid acha a tag nova, compila,
@@ -325,11 +329,11 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
   fluxo do dinheiro, cartões e parcelas, contas fixas com lembrete, orçamentos, metas, investimentos, bloqueio, backup em arquivo.
 - **1.1** (02/10/2026): área de Dívidas, arquivo de metas e de contas/cartões/investimentos, compilação reproduzível (pedido do revisor do F-Droid).
 - **1.2** (03/10/2026): backup automático em pasta e/ou nuvem, com proteções contra sobrescrever o que não é dele.
-- **1.3** (branch `versao-1.3`, não publicada): importar extrato, modo desenvolvedor, correção do bloqueio.
-- **1.4** (branch `versao-1.4`, não publicada): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas,
-  restaurar na apresentação, licença AGPL, PRD.
+- **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
+- **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
+  animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
 
-Detalhes de cada uma em `CHANGELOG.md`.
+Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 
 ## 13. Decisões e porquês
 
@@ -380,8 +384,8 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 
 ## 14. Roadmap (prioridades do Hanry)
 
-1. **1.3**: concluir e publicar (seção 3).
-2. **1.4**: pronta (seção 3), aguardando o teste do Hanry.
+1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); acompanhar o F-Droid e o merge request da licença.
+2. Revisão das traduções por quem fala cada língua (RF-LNG-08).
 3. **1.5**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
    Detalhar com o Hanry antes de começar (quais widgets, quais momentos, quais sons).
 4. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
@@ -392,10 +396,10 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 |---|---|
 | `docs/PRD.md` | **Documento de requisitos: manda em tudo** (catálogo de telas e requisitos, design system, processo) |
 | `README.md` | Apresentação pública (GitHub), em inglês; as outras 9 línguas em `docs/readme/` |
-| `CHANGELOG.md` | Novidades de cada versão |
+| `CHANGELOG.md` | Novidades de cada versão, em inglês (em português: `docs/CHANGELOG.pt-BR.md`) |
 | `docs/VISUAL.md` | Guia visual: cores, tipografia, componentes, telas, textos |
 | `docs/IMPORTACAO.md` | Importação de extratos e modo desenvolvedor (para usuários e programadores) |
 | `docs/visual/` | Imagens atuais das telas (as do guia visual) |
 | `docs/fdroid/io.github.h3yk0.cryo.yml` | Cópia da receita publicada no F-Droid |
-| `fastlane/metadata/android/` | Textos e imagens da página do F-Droid (pt-BR e en-US) |
+| `fastlane/metadata/android/` | Textos e imagens da página do F-Droid, nas 10 línguas |
 | `app/schemas/` | Schemas do Room (não apagar: as migrações dependem deles) |
