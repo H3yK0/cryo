@@ -697,11 +697,7 @@
     <string name="settings_categoria_apagada">Categoría borrada</string>
     <string name="onboarding_bem_vindo_ao_cryo">Te damos la bienvenida a Cryo</string>
     <string name="onboarding_seu_dinheiro_claro_como">Tu dinero, claro como el hielo.</string>
-    <string name="onboarding_diga_almoco_25_debito">Di “almuerzo 25 con débito” y listo.</string>
-    <string name="onboarding_registre_falando">Registra hablando</string>
-    <string name="onboarding_previsao_calendario_gastos_caminho">Previsión, calendario de gastos y el camino de tu dinero.</string>
     <string name="onboarding_saiba_como_mes_vai">Sabe cómo va a terminar el mes</string>
-    <string name="onboarding_tudo_fica_so_neste">Todo queda solo en este móvil, sin registro y sin internet.</string>
     <string name="onboarding_seus_dados_sao_seus">Tus datos son tuyos</string>
     <string name="onboarding_como_quer_ser_chamado">¿Cómo quieres que te llamen? (opcional)</string>
     <string name="onboarding_ja_uso_cryo_restaurar">Ya uso Cryo: restaurar una copia</string>
@@ -1403,4 +1399,28 @@
     <string name="backup_err_cant_open_folder">No pude abrir esa carpeta. Inténtalo de nuevo o elige otra.</string>
     <string name="backup_err_read_data">No pude leer los datos de Cryo ahora. Lo intentaré de nuevo más tarde.</string>
     <string name="backup_err_cant_check">No pude abrir el archivo para revisarlo antes de grabar (puede que la nube no tenga conexión o que se haya borrado). Lo intentaré más tarde; si sigue así, vuelve a elegir el lugar.</string>
+
+    <!-- Como usar o Cryo (RF-TOUR) -->
+    <string name="tour_how_to_use">Cómo usar Cryo</string>
+    <string name="tour_how_to_use_sub">Un recorrido rápido por la app, con animaciones</string>
+    <string name="tour_1_title">Registra en segundos</string>
+    <string name="tour_1_text">Escribe o habla a tu manera. Cryo entiende el monto, la categoría y la cuenta: tú solo revisas y guardas.</string>
+    <string name="tour_1_phrase">almuerzo %1$s con débito</string>
+    <string name="tour_1_lunch">Almuerzo</string>
+    <string name="tour_2_text">Al ritmo de tus gastos, Cryo muestra cuánto debería sobrar a fin de mes y cuánto puedes gastar por día.</string>
+    <string name="tour_2_per_day">Puedes gastar %1$s por día</string>
+    <string name="tour_3_title">Tarjetas y cuotas sin sustos</string>
+    <string name="tour_3_text">¿Compraste en cuotas? Cada cuota cae en la factura correcta y ves cuánto te queda del límite.</string>
+    <string name="tour_3_phrase">tele %1$s en 10 cuotas con tarjeta</string>
+    <string name="tour_3_installments">10 cuotas de %1$s</string>
+    <string name="tour_4_title">Planifica y no olvides nada</string>
+    <string name="tour_4_text">Pagos fijos con recordatorio, límite de gastos por categoría y metas para ahorrar dinero.</string>
+    <string name="tour_5_text">Sin internet, sin registro y sin anuncios. Todo queda en tu móvil, con bloqueo y copias de seguridad cuando quieras.</string>
+    <string name="tour_5_offline">Sin internet</string>
+    <string name="tour_5_on_device">Solo en tu móvil</string>
+    <string name="tour_5_lock">Bloqueo con huella</string>
+    <string name="tour_next">Siguiente</string>
+    <string name="tour_done">Entendido</string>
+    <string name="tour_start">Vamos</string>
+    <string name="tour_page">Página %1$d de %2$d</string>
 </resources>

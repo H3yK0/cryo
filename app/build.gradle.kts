@@ -73,6 +73,8 @@ android {
             it.systemProperty("robolectric.pixelCopyRenderMode", "hardware")
             // Imagens da página do F-Droid: ./gradlew testDebugUnitTest --tests '*StoreAssetsTest' -PstoreAssets=true
             it.systemProperty("cryo.storeAssets", (project.findProperty("storeAssets") ?: "false").toString())
+            // Quadros das animações do passeio, para montar GIFs: ./gradlew testDebugUnitTest --tests '*TourTest' -PtourGif=true
+            it.systemProperty("cryo.tourGif", (project.findProperty("tourGif") ?: "false").toString())
             it.maxHeapSize = "1536m"
         }
     }

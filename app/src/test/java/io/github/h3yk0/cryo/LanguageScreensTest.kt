@@ -22,6 +22,7 @@ import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.screens.InsightsScreen
 import io.github.h3yk0.cryo.ui.screens.OnboardingScreen
+import io.github.h3yk0.cryo.ui.screens.Tour
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -34,7 +35,7 @@ import org.robolectric.annotation.GraphicsMode
 import java.time.LocalDate
 
 /**
- * Imagens das telas principais em cada língua (RF-LNG-01), com a língua e a moeda que o celular de cada país teria.
+ * Imagens das telas principais e do passeio em cada língua (RF-LNG-01, RF-TOUR-04), com a língua e a moeda que o celular de cada país teria.
  * Os dados de exemplo são os mesmos para todas (nomes de contas como a pessoa digitou), só a interface muda.
  * Saem em `app/screenshots/linguas/`.
  */
@@ -70,6 +71,8 @@ class LanguageScreensTest {
         captureRoboImage("screenshots/linguas/${lang}_1_inicio.png") { Wrap(false) { CryoRoot(null) } }
         captureRoboImage("screenshots/linguas/${lang}_2_analises.png") { Wrap(false) { InsightsScreen() } }
         captureRoboImage("screenshots/linguas/${lang}_3_boas_vindas.png") { Wrap(true) { OnboardingScreen() } }
+        // RF-TOUR-04: o passeio na língua e na moeda do país.
+        captureRoboImage("screenshots/linguas/${lang}_4_passeio.png") { Wrap(true) { Tour(lastLabel = "", onFinish = {}, onBackFromFirst = {}) } }
     }
 
     @Config(qualifiers = "+en-rUS") @Test fun ingles() = shots("en", "USD")

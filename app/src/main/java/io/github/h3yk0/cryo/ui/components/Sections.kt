@@ -3,7 +3,11 @@
 package io.github.h3yk0.cryo.ui.components
 
 import android.app.Activity
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -35,6 +39,8 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,6 +49,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
@@ -52,6 +59,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.view.WindowCompat
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 
 /*
@@ -187,14 +195,17 @@ fun Shortcuts(items: List<ShortcutItem>, modifier: Modifier = Modifier) {
 /** Um atalho: círculo de 64 dp com o ícone na cor do Cryo e o nome embaixo. O toque inteiro (círculo e nome) é um botão. */
 @Composable
 fun Shortcut(item: ShortcutItem) {
+    // DS-MOV-08: o círculo encolhe de leve enquanto o dedo está nele.
+    val interaction = remember { MutableInteractionSource() }
     Column(
         Modifier.width(80.dp).clip(MaterialTheme.shapes.medium)
-            .clickable(onClick = item.onClick).semantics { role = Role.Button }
+            .clickable(interactionSource = interaction, indication = androidx.compose.material3.ripple(), onClick = item.onClick)
+            .semantics { role = Role.Button }
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Box(
-            Modifier.size(64.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            Modifier.pressScale(interaction).size(64.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHigh),
             contentAlignment = Alignment.Center,
         ) {
             Icon(item.icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
@@ -286,6 +297,29 @@ fun InfoCard(icon: ImageVector, text: String, tint: Color, modifier: Modifier = 
             if (onClick != null) {
                 Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+    }
+}
+
+/**
+ * DS-COMP-21: pontos de página (passeio, RF-TOUR-05). O da página atual vira uma pílula na cor do Cryo; a troca é animada
+ * (DS-MOV-01). O leitor de tela lê "Página 2 de 5".
+ */
+@Composable
+fun PageDots(current: Int, count: Int, modifier: Modifier = Modifier) {
+    val desc = Res.s(R.string.tour_page, current + 1, count)
+    Row(
+        modifier.semantics { contentDescription = desc },
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        repeat(count) { i ->
+            val on = i == current
+            val w by animateDpAsState(if (on) 24.dp else 8.dp, tween(Motion.MEDIUM, easing = Motion.Emphasized), label = "dot")
+            val color by animateColorAsState(
+                if (on) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant, tween(Motion.MEDIUM), label = "dotColor",
+            )
+            Box(Modifier.size(width = w, height = 8.dp).clip(CircleShape).background(color))
         }
     }
 }

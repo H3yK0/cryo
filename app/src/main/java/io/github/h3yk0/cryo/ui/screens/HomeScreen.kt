@@ -344,12 +344,12 @@ private fun BalanceBlock(l: Ledger, onClick: () -> Unit) {
     // Sem recorte de canto: ele cortava a primeira letra de "Saldo" e "Patrimônio", que ficam rente à margem.
     Column(Modifier.fillMaxWidth().clickable(onClick = onClick)) {
         Text(stringResource(R.string.home_balance), style = MaterialTheme.typography.labelLarge, color = LocalContentColor.current.copy(alpha = 0.85f))
-        MoneyText(l.totalBalance, style = MaterialTheme.typography.displaySmall, color = LocalContentColor.current)
+        MoneyText(l.totalBalance, style = MaterialTheme.typography.displaySmall, color = LocalContentColor.current, animate = true)
         Spacer(Modifier.height(4.dp))
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(stringResource(R.string.home_net_worth), style = MaterialTheme.typography.bodyMedium, color = LocalContentColor.current.copy(alpha = 0.85f))
             Spacer(Modifier.width(6.dp))
-            MoneyText(l.netWorth, style = MaterialTheme.typography.titleSmall, color = LocalContentColor.current)
+            MoneyText(l.netWorth, style = MaterialTheme.typography.titleSmall, color = LocalContentColor.current, animate = true)
             Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, Modifier.size(18.dp))
         }
     }

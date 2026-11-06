@@ -683,11 +683,7 @@
     <string name="settings_categoria_apagada">カテゴリを削除しました</string>
     <string name="onboarding_bem_vindo_ao_cryo">Cryoへようこそ</string>
     <string name="onboarding_seu_dinheiro_claro_como">あなたのお金を、氷のようにクリアに。</string>
-    <string name="onboarding_diga_almoco_25_debito">「ランチ 1200円 カードで」と話すだけ。</string>
-    <string name="onboarding_registre_falando">話して記録</string>
-    <string name="onboarding_previsao_calendario_gastos_caminho">見通し、支出カレンダー、お金の流れ。</string>
     <string name="onboarding_saiba_como_mes_vai">月末がどうなるかわかる</string>
-    <string name="onboarding_tudo_fica_so_neste">すべてこのスマホの中だけ。登録もインターネットも不要です。</string>
     <string name="onboarding_seus_dados_sao_seus">あなたのデータはあなたのもの</string>
     <string name="onboarding_como_quer_ser_chamado">何と呼べばいいですか？（任意）</string>
     <string name="onboarding_ja_uso_cryo_restaurar">Cryoを使ったことがある: バックアップから復元</string>
@@ -1377,4 +1373,28 @@
     <string name="backup_err_cant_open_folder">このフォルダを開けませんでした。もう一度試すか、別のフォルダを選んでください。</string>
     <string name="backup_err_read_data">今はCryoのデータを読み込めませんでした。あとでもう一度試します。</string>
     <string name="backup_err_cant_check">書き込む前の確認のためにファイルを開けませんでした（クラウドが接続されていないか、ファイルが削除された可能性があります）。あとでもう一度試します。続く場合は保存先を選び直してください。</string>
+
+    <!-- Como usar o Cryo (RF-TOUR) -->
+    <string name="tour_how_to_use">Cryoの使い方</string>
+    <string name="tour_how_to_use_sub">アニメーションでアプリを簡単にご紹介</string>
+    <string name="tour_1_title">数秒で記録</string>
+    <string name="tour_1_text">いつもの言葉で書くか話してください。Cryoが金額・カテゴリ・口座を読み取ります。あとは確認して保存するだけです。</string>
+    <string name="tour_1_phrase">ランチ %1$s</string>
+    <string name="tour_1_lunch">ランチ</string>
+    <string name="tour_2_text">今の支出ペースから、月末にいくら残りそうか、1日あたりいくら使えるかをCryoが表示します。</string>
+    <string name="tour_2_per_day">1日あたり%1$sまで使えます</string>
+    <string name="tour_3_title">カードも分割払いも安心</string>
+    <string name="tour_3_text">分割払いで買いましたか？各回の支払いは正しい請求月に入り、利用可能枠の残りもひと目でわかります。</string>
+    <string name="tour_3_phrase">テレビ %1$s 10回払い カードで</string>
+    <string name="tour_3_installments">10回 × %1$s</string>
+    <string name="tour_4_title">計画して、忘れずに</string>
+    <string name="tour_4_text">固定費のリマインダー、カテゴリごとの予算、お金を貯めるための目標。</string>
+    <string name="tour_5_text">インターネット不要、登録不要、広告なし。すべてあなたのスマホの中だけに保存され、ロックやバックアップもいつでも使えます。</string>
+    <string name="tour_5_offline">インターネット不要</string>
+    <string name="tour_5_on_device">スマホの中だけ</string>
+    <string name="tour_5_lock">指紋でロック</string>
+    <string name="tour_next">次へ</string>
+    <string name="tour_done">わかりました</string>
+    <string name="tour_start">はじめる</string>
+    <string name="tour_page">%2$dページ中%1$dページ目</string>
 </resources>

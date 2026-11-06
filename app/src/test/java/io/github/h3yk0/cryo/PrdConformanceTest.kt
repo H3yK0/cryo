@@ -203,7 +203,54 @@ class PrdConformanceTest {
         assertEquals("Textos da loja (F-Droid) nas 10 línguas", emptyList<String>(), problems)
     }
 
+    @Test fun semAnimacaoInfinita() { // DS-MOV-10
+        val ui = File(main, "ui")
+        val found = kotlinFiles(ui).flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                if (Regex("""rememberInfiniteTransition|infiniteRepeatable""").containsMatchIn(line)) "${f.relativeTo(root).path}:${i + 1}" else null
+            }
+        }
+        assertEquals("Animação infinita numa tela (DS-MOV-10)", emptyList<String>(), found)
+    }
+
+    @Test fun telasComAsTransicoesDoMotion() { // DS-MOV-02, DS-MOV-03
+        val nav = File(main, "ui/Nav.kt").readText()
+        val hosts = Regex("""NavHost\(""").findAll(nav).count()
+        assertEquals("Um NavHost só, em Nav.kt", 1, hosts)
+        listOf("Motion.forwardEnter()", "Motion.forwardExit()", "Motion.backEnter()", "Motion.backExit()", "Motion.tabEnter()", "Motion.tabExit()")
+            .forEach { assertTrue("Nav.kt sem $it (DS-MOV-02/03)", it in nav) }
+        val others = kotlinFiles(main).filter { it.name != "Nav.kt" && "NavHost(" in it.readText() }
+        assertEquals("NavHost fora de Nav.kt", emptyList<File>(), others)
+    }
+
+    @Test fun readmeNasDezLinguas() { // RF-LNG-09
+        val pages = listOf(File(root, "README.md")) + README_LANGS.map { File(root, "docs/readme/README.$it.md") }
+        val names = listOf("English", "Português", "Español", "Français", "Deutsch", "Italiano", "日本語", "한국어", "中文", "हिन्दी")
+        val link = Regex("""(?:href|src)="([^"]+)"|\]\(([^)\s]+)\)""")
+        val problems = pages.flatMap { f ->
+            val name = f.relativeTo(root).path
+            if (!f.exists()) return@flatMap listOf("falta $name")
+            val text = f.readText()
+            val missingLang = names.filter { it !in text }.map { "$name sem a língua $it na linha de línguas" }
+            val broken = link.findAll(text).map { it.groupValues[1].ifEmpty { it.groupValues[2] } }
+                .filter { !it.startsWith("http") && !it.startsWith("#") }
+                .map { it.substringBefore('#') }
+                .filter { !File(f.parentFile, it).exists() }
+                .map { "$name aponta para $it, que não existe" }
+            missingLang + broken
+        }
+        assertEquals("README nas 10 línguas (RF-LNG-09)", emptyList<String>(), problems)
+        assertTrue("README.md (a página principal) em inglês", "## What it does" in File(root, "README.md").readText())
+    }
+
+    @Test fun imagensDasTelasNasDezLinguas() { // RF-LNG-10
+        val base = File(root, "fastlane/metadata/android")
+        val missing = STORE_LANGS.flatMap { lang -> (1..6).map { "$lang/images/phoneScreenshots/$it.png" } }.filter { !File(base, it).exists() }
+        assertEquals("Imagens das telas da loja em cada língua (StoreScreenshotsTest)", emptyList<String>(), missing)
+    }
+
     private companion object {
+        val README_LANGS = listOf("pt-BR", "es", "fr", "de", "it", "ja", "ko", "zh-CN", "hi")
         val APP_LANGS = setOf("values", "values-en", "values-es", "values-fr", "values-de", "values-it", "values-ja", "values-ko", "values-zh-rCN", "values-hi")
         val STORE_LANGS = listOf("pt-BR", "en-US", "es-ES", "fr-FR", "de-DE", "it-IT", "ja-JP", "ko-KR", "zh-CN", "hi-IN")
     }

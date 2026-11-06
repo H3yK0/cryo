@@ -35,6 +35,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -42,6 +47,7 @@ import io.github.h3yk0.cryo.data.LocaleSettings
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.notify.Reminders
 import io.github.h3yk0.cryo.ui.CryoRoot
+import io.github.h3yk0.cryo.ui.components.Motion
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.screens.LockScreen
@@ -125,13 +131,22 @@ class MainActivity : FragmentActivity() {
                                 LockScreen(onUnlock = ::authenticate)
                             } else {
                                 appState.SaveableStateProvider("app") {
-                                    when {
-                                        !s.onboardingDone && container.sandbox -> Column(Modifier.fillMaxSize()) {
-                                            TestModeStrip(insetTop = true)
-                                            Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.statusBars)) { OnboardingScreen() }
+                                    // DS-MOV-09: da apresentação para o app, fade. (O bloqueio, logo acima, nunca anima: DS-MOV-10.)
+                                    AnimatedContent(
+                                        s.onboardingDone,
+                                        transitionSpec = {
+                                            fadeIn(tween(Motion.MEDIUM, delayMillis = Motion.SHORT / 2)) togetherWith fadeOut(tween(Motion.SHORT))
+                                        },
+                                        label = "inicio",
+                                    ) { done ->
+                                        when {
+                                            !done && container.sandbox -> Column(Modifier.fillMaxSize()) {
+                                                TestModeStrip(insetTop = true)
+                                                Box(Modifier.weight(1f).consumeWindowInsets(WindowInsets.statusBars)) { OnboardingScreen() }
+                                            }
+                                            !done -> OnboardingScreen()
+                                            else -> CryoRoot(openOnStart)
                                         }
-                                        !s.onboardingDone -> OnboardingScreen()
-                                        else -> CryoRoot(openOnStart)
                                     }
                                 }
                             }

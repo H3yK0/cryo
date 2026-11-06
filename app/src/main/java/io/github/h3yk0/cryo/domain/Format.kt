@@ -53,6 +53,19 @@ object Money {
         return synchronized(nf) { nf.format(units(cents)) }
     }
 
+    /**
+     * Como a pessoa digitaria o valor numa frase do registro rápido: só o número, sem separador de milhar
+     * ("32,50", "12.50", "1200"); valor redondo sem as casas ("1300", não "1300,00"). Usado nos exemplos do passeio
+     * (RF-TOUR-04).
+     */
+    fun typed(cents: Long): String {
+        val nf = (formats().plain.clone() as NumberFormat).apply {
+            isGroupingUsed = false
+            if (cents % 100 == 0L) { minimumFractionDigits = 0; maximumFractionDigits = 0 }
+        }
+        return nf.format(units(cents))
+    }
+
     /** Com sinal explícito: "+ R$ 10,00" / "− R$ 10,00" (menos de verdade e espaço que não quebra, TXT-07). */
     fun signed(cents: Long): String = when {
         cents > 0 -> "+$NBSP${format(cents)}"

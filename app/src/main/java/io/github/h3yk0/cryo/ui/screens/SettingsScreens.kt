@@ -35,6 +35,7 @@ import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Payments
@@ -277,6 +278,8 @@ fun SettingsScreen() {
 
             item { Header(Res.s(R.string.settings_sobre)) }
             item {
+                // RF-AJU-11, RF-TOUR-03: o passeio animado, para ver de novo quando quiser.
+                SettingLink(Icons.Rounded.Explore, Res.s(R.string.tour_how_to_use), Res.s(R.string.tour_how_to_use_sub)) { nav.go(Routes.TOUR) }
                 SettingLink(Icons.Rounded.Code, Res.s(R.string.settings_codigo_fonte), Res.s(R.string.settings_github_com_h3yk0_cryo)) {
                     openLink(ctx, SOURCE_URL)
                 }

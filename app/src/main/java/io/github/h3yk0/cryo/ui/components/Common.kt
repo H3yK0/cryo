@@ -4,6 +4,8 @@ package io.github.h3yk0.cryo.ui.components
 
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -233,7 +235,10 @@ fun EmojiBadge(emoji: String, color: Color, size: Dp = 40.dp) {
 
 /* ================================ Dinheiro ================================ */
 
-/** Valor em R$. [hideable] respeita o modo "esconder valores". */
+/**
+ * DS-COMP-03: um valor na moeda do app. [hideable] respeita o modo "esconder valores". [animate]: conta até o novo valor
+ * quando ele muda (DS-MOV-05), para os números de destaque (saldo do Início).
+ */
 @Composable
 fun MoneyText(
     cents: Long,
@@ -244,12 +249,14 @@ fun MoneyText(
     hideable: Boolean = true,
     fontWeight: FontWeight? = null,
     textAlign: TextAlign? = null,
+    animate: Boolean = false,
 ) {
     val hide = hideable && LocalSettings.current.hideValues
+    val shown = if (animate) animateMoney(cents, enabled = !hide) else cents
     val text = when {
         hide -> Money.HIDDEN
-        signed -> Money.signed(cents)
-        else -> Money.format(cents)
+        signed -> Money.signed(shown)
+        else -> Money.format(shown)
     }
     val c = color.takeOrElse { style.color.takeOrElse { LocalContentColor.current } }
     val max = if (style.fontSize.isSpecified) style.fontSize else 16.sp
@@ -449,8 +456,11 @@ fun UsageBar(
         ratio >= 0.8f -> CryoTheme.colors.warning
         else -> baseColor
     }
+    // DS-MOV-06: cresce ao aparecer e vai até o novo valor quando muda.
+    val appear by rememberAppear()
+    val value by animateFloatAsState(ratio.coerceIn(0f, 1f), tween(Motion.LONG, easing = Motion.Emphasized), label = "uso")
     LinearProgressIndicator(
-        progress = { ratio.coerceIn(0f, 1f) },
+        progress = { value * appear },
         modifier = modifier.fillMaxWidth().height(height),
         color = color,
         trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,

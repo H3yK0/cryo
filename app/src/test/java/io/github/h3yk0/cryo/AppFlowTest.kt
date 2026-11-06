@@ -28,6 +28,11 @@ import org.robolectric.annotation.GraphicsMode
 class AppFlowTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 
+    private fun back() {
+        rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
+        rule.waitForIdle()
+    }
+
     private fun waitText(t: String, ms: Long = 8000) =
         rule.waitUntil(ms) { rule.onAllNodesWithText(t, substring = true).fetchSemanticsNodes().isNotEmpty() }
 
@@ -36,6 +41,19 @@ class AppFlowTest {
         runBlocking { (rule.activity.application as CryoApp).real.settings.clear() }
         waitText("Bem-vindo ao Cryo")
         rule.onNodeWithText("Começar").performClick()
+        // RF-TOUR-02, RF-TOUR-05: o passeio vem depois das boas-vindas; o Voltar do celular volta uma página e, na
+        // primeira, às boas-vindas.
+        waitText("Registre em segundos")
+        rule.onNodeWithText("Próximo").performClick()
+        waitText("Saiba como o mês vai terminar")
+        back()
+        waitText("Registre em segundos")
+        back()
+        waitText("Bem-vindo ao Cryo")
+        rule.onNodeWithText("Começar").performClick()
+        waitText("Registre em segundos")
+        // "Pular" vai direto ao cadastro da conta.
+        rule.onNodeWithText("Pular").performClick()
         waitText("Sua conta principal")
         rule.onNodeWithText("Continuar").performClick()
         waitText("Cartão de crédito")

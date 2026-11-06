@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -190,7 +191,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                             )
                         }
                     }
-                    items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }) }
+                    items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.animateItem()) }
                 }
             } else {
                 item {
@@ -221,8 +222,9 @@ fun TransactionsScreen(categoryFilter: Long?) {
                 } else {
                     val groups = txs.groupBy { it.date }.toSortedMap(compareByDescending { it })
                     groups.forEach { (date, list) ->
-                        item(key = "h$date") { DayHeader(date, list, l) }
-                        items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }) }
+                        // DS-MOV-07: o que entra, sai ou muda de dia desliza e aparece com fade.
+                        item(key = "h$date") { Box(Modifier.animateItem()) { DayHeader(date, list, l) } }
+                        items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.animateItem()) }
                     }
                 }
             }

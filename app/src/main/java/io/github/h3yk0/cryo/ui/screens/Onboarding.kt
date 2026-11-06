@@ -6,7 +6,15 @@ import android.Manifest
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -28,13 +36,11 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.Language
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.SettingsBackupRestore
-import androidx.compose.material.icons.rounded.Shield
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
@@ -55,6 +61,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -75,12 +82,28 @@ import io.github.h3yk0.cryo.ui.components.AmountField
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.LocalContainer
+import io.github.h3yk0.cryo.ui.components.Motion
+import io.github.h3yk0.cryo.ui.components.Motion.steps
+import io.github.h3yk0.cryo.ui.components.rememberAppear
 import io.github.h3yk0.cryo.ui.components.Stepper
 import io.github.h3yk0.cryo.ui.components.SwitchRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/** Primeira abertura: nome, conta principal, cartão (opcional) e lembretes. */
+/** Passos da apresentação (RF-BOA-08). */
+private object Step {
+    const val WELCOME = 0
+    const val TOUR = 1
+    const val ACCOUNT = 2
+    const val CARD = 3
+    const val DONE = 4
+    const val COUNT = 5
+}
+
+/**
+ * Primeira abertura (RF-BOA-08): boas-vindas (nome, língua, moeda, restaurar), o passeio "Como usar o Cryo" (RF-TOUR-02),
+ * conta principal, cartão (opcional) e lembretes.
+ */
 @Composable
 fun OnboardingScreen() {
     val c = LocalContainer.current
@@ -132,30 +155,45 @@ fun OnboardingScreen() {
         }
     }
 
+    // O Voltar do celular volta um passo (no passeio, uma página: RF-TOUR-05).
+    BackHandler(enabled = step > Step.WELCOME && step != Step.TOUR) { step-- }
     Column(
         Modifier.fillMaxSize().statusBarsPadding().navigationBarsPadding().imePadding(),
     ) {
-        LinearProgressIndicator(progress = { (step + 1) / 4f }, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp))
-        AnimatedContent(step, modifier = Modifier.weight(1f), label = "onboarding") { s ->
+        // DS-MOV-09: a barra de progresso anda com suavidade.
+        val progress by animateFloatAsState((step + 1f) / Step.COUNT, tween(Motion.MEDIUM, easing = Motion.Emphasized), label = "progresso")
+        LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 12.dp))
+        AnimatedContent(step, modifier = Modifier.weight(1f), transitionSpec = { steps() }, label = "onboarding") { s ->
+            if (s == Step.TOUR) {
+                // RF-TOUR-02: o passeio, já na língua e na moeda escolhidas. "Pular" vai direto ao cadastro.
+                Tour(
+                    lastLabel = Res.s(R.string.tour_start), onFinish = { step = Step.ACCOUNT },
+                    onBackFromFirst = { step = Step.WELCOME }, onSkip = { step = Step.ACCOUNT },
+                )
+                return@AnimatedContent
+            }
             Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 8.dp)) {
                 when (s) {
-                    0 -> {
-                        Spacer(Modifier.height(24.dp))
+                    Step.WELCOME -> {
+                        Spacer(Modifier.height(32.dp))
+                        // RF-BOA-01: a marca chega girando de leve e crescendo; o texto vem logo depois.
+                        val mark by rememberAppear(durationMillis = 900)
+                        val words by rememberAppear(durationMillis = 700, delayMillis = 250)
                         Box(
-                            Modifier.size(96.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer).align(Alignment.CenterHorizontally),
+                            Modifier.size(104.dp).align(Alignment.CenterHorizontally)
+                                .graphicsLayer { alpha = mark; val k = 0.6f + 0.4f * mark; scaleX = k; scaleY = k; rotationZ = -40f * (1f - mark) }
+                                .clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
                             contentAlignment = Alignment.Center,
-                        ) { Icon(painterResource(R.drawable.ic_cryo_mark), null, Modifier.size(56.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer) }
-                        Spacer(Modifier.height(20.dp))
-                        Text(Res.s(R.string.onboarding_bem_vindo_ao_cryo), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
-                        Text(
-                            Res.s(R.string.onboarding_seu_dinheiro_claro_como), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(),
-                        )
+                        ) { Icon(painterResource(R.drawable.ic_cryo_mark), null, Modifier.size(60.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer) }
                         Spacer(Modifier.height(24.dp))
-                        Feature(Icons.Rounded.Mic, Res.s(R.string.onboarding_registre_falando), Res.s(R.string.onboarding_diga_almoco_25_debito))
-                        Feature(Icons.AutoMirrored.Rounded.ShowChart, Res.s(R.string.onboarding_saiba_como_mes_vai), Res.s(R.string.onboarding_previsao_calendario_gastos_caminho))
-                        Feature(Icons.Rounded.Shield, Res.s(R.string.onboarding_seus_dados_sao_seus), Res.s(R.string.onboarding_tudo_fica_so_neste))
-                        Spacer(Modifier.height(16.dp))
+                        Column(Modifier.graphicsLayer { alpha = words; translationY = (1f - words) * 16.dp.toPx() }) {
+                            Text(Res.s(R.string.onboarding_bem_vindo_ao_cryo), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
+                            Text(
+                                Res.s(R.string.onboarding_seu_dinheiro_claro_como), style = MaterialTheme.typography.bodyLarge, textAlign = TextAlign.Center,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.fillMaxWidth(),
+                            )
+                        }
+                        Spacer(Modifier.height(32.dp))
                         OutlinedTextField(
                             name, { name = it }, label = { Text(Res.s(R.string.onboarding_como_quer_ser_chamado)) }, singleLine = true,
                             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Words), modifier = Modifier.fillMaxWidth(),
@@ -172,7 +210,7 @@ fun OnboardingScreen() {
                             Icon(Icons.Rounded.SettingsBackupRestore, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.onboarding_ja_uso_cryo_restaurar))
                         }
                     }
-                    1 -> {
+                    Step.ACCOUNT -> {
                         Text(Res.s(R.string.onboarding_sua_conta_principal), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
                         Text(
                             Res.s(R.string.onboarding_onde_fica_maior_parte),
@@ -189,7 +227,7 @@ fun OnboardingScreen() {
                         SwitchRow(Res.s(R.string.onboarding_saldo_esta_negativo), negative, { negative = it })
                         SwitchRow(Res.s(R.string.onboarding_tambem_uso_dinheiro_vivo), cash, { cash = it }, Res.s(R.string.onboarding_cria_carteira_para_gastos))
                     }
-                    2 -> {
+                    Step.CARD -> {
                         Text(Res.s(R.string.onboarding_cartao_credito), style = MaterialTheme.typography.headlineSmall, modifier = Modifier.semantics { heading() })
                         Text(
                             Res.s(R.string.onboarding_com_cartao_cadastrado_cryo),
@@ -197,7 +235,12 @@ fun OnboardingScreen() {
                         )
                         Spacer(Modifier.height(8.dp))
                         SwitchRow(Res.s(R.string.onboarding_uso_cartao_credito), hasCard, { hasCard = it })
-                        if (hasCard) {
+                        // DS-MOV-09: os campos do cartão se abrem com a altura animada.
+                        AnimatedVisibility(
+                            hasCard,
+                            enter = expandVertically(tween(Motion.MEDIUM, easing = Motion.Emphasized)) + fadeIn(tween(Motion.MEDIUM)),
+                            exit = shrinkVertically(tween(Motion.MEDIUM, easing = Motion.Emphasized)) + fadeOut(tween(Motion.SHORT)),
+                        ) { Column {
                             OutlinedTextField(
                                 cardName, { cardName = it }, label = { Text(Res.s(R.string.wallet_nome_cartao)) }, singleLine = true,
                                 placeholder = { Text(Res.s(R.string.onboarding_ex_nubank)) },
@@ -212,7 +255,7 @@ fun OnboardingScreen() {
                                 Res.s(R.string.onboarding_para_ver_essas_datas),
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
-                        }
+                        } }
                     }
                     else -> {
                         Spacer(Modifier.height(24.dp))
@@ -230,18 +273,19 @@ fun OnboardingScreen() {
                 }
             }
         }
-        Row(Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            if (step > 0) TextButton(onClick = { step-- }, modifier = Modifier.height(56.dp)) { Text(Res.s(R.string.onboarding_voltar)) }
+        // O passeio tem os próprios botões.
+        if (step != Step.TOUR) Row(Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (step > Step.WELCOME) TextButton(onClick = { step-- }, modifier = Modifier.height(56.dp)) { Text(Res.s(R.string.onboarding_voltar)) }
             Button(
-                onClick = { if (step < 3) step++ else finish() },
-                enabled = step != 2 || !hasCard || (cardName.isNotBlank() && limit > 0),
+                onClick = { if (step < Step.DONE) step++ else finish() },
+                enabled = step != Step.CARD || !hasCard || (cardName.isNotBlank() && limit > 0),
                 modifier = Modifier.weight(1f).height(56.dp),
             ) {
                 Text(
                     when (step) {
-                        0 -> Res.s(R.string.onboarding_comecar)
-                        2 -> if (hasCard) Res.s(R.string.onboarding_continuar) else Res.s(R.string.onboarding_pular)
-                        3 -> Res.s(R.string.onboarding_ir_para_cryo)
+                        Step.WELCOME -> Res.s(R.string.onboarding_comecar)
+                        Step.CARD -> if (hasCard) Res.s(R.string.onboarding_continuar) else Res.s(R.string.onboarding_pular)
+                        Step.DONE -> Res.s(R.string.onboarding_ir_para_cryo)
                         else -> Res.s(R.string.onboarding_continuar)
                     },
                 )

@@ -2,10 +2,12 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInHorizontally
-import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -31,6 +33,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.annotation.StringRes
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.h3yk0.cryo.R
@@ -46,6 +49,7 @@ import androidx.navigation.navArgument
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.ui.components.LocalContainer
+import io.github.h3yk0.cryo.ui.components.Motion
 import io.github.h3yk0.cryo.ui.screens.AccountDetailScreen
 import io.github.h3yk0.cryo.ui.screens.AccountEditorScreen
 import io.github.h3yk0.cryo.ui.screens.AutoBackupScreen
@@ -70,6 +74,7 @@ import io.github.h3yk0.cryo.ui.screens.InvestmentDetailScreen
 import io.github.h3yk0.cryo.ui.screens.InvestmentEditorScreen
 import io.github.h3yk0.cryo.ui.screens.PlanScreen
 import io.github.h3yk0.cryo.ui.screens.SettingsScreen
+import io.github.h3yk0.cryo.ui.screens.TourScreen
 import io.github.h3yk0.cryo.ui.screens.TransactionsScreen
 import io.github.h3yk0.cryo.ui.screens.WalletScreen
 import io.github.h3yk0.cryo.ui.tx.TxEditorScreen
@@ -102,6 +107,7 @@ object Routes {
     const val DEV = "settings/dev"
     const val CATEGORIES = "categories"
     const val CATEGORY_EDIT = "category/edit/{id}?kind={kind}"
+    const val TOUR = "tour"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
@@ -155,6 +161,9 @@ private val tabs = listOf(
     TabItem(Routes.INSIGHTS, Routes.INSIGHTS, R.string.tab_insights, Icons.Rounded.Insights),
 )
 
+/** DS-MOV-03: entre duas abas a troca é "fade through"; o resto desliza no eixo X (DS-MOV-02). */
+private fun isTab(route: String?) = tabs.any { it.pattern == route }
+
 @Composable
 fun CryoRoot(openOnStart: String?) {
     val nav = rememberNavController()
@@ -192,7 +201,14 @@ fun CryoRoot(openOnStart: String?) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
-                if (showBar) {
+                // DS-MOV-04: a barra some e volta deslizando, junto com a troca de tela.
+                AnimatedVisibility(
+                    showBar,
+                    enter = expandVertically(tween(Motion.MEDIUM, easing = Motion.EmphasizedDecelerate), expandFrom = Alignment.Top) +
+                        fadeIn(tween(Motion.MEDIUM)),
+                    exit = shrinkVertically(tween(Motion.MEDIUM, easing = Motion.EmphasizedAccelerate), shrinkTowards = Alignment.Top) +
+                        fadeOut(tween(Motion.SHORT)),
+                ) {
                     Column {
                         // Modo de teste (modo desenvolvedor): sempre à vista nas abas, para ninguém confundir com os dados de verdade.
                         if (c.sandbox) TestModeStrip()
@@ -214,10 +230,18 @@ fun CryoRoot(openOnStart: String?) {
                 navController = nav,
                 startDestination = Routes.HOME,
                 modifier = Modifier.padding(bottom = pad.calculateBottomPadding()),
-                enterTransition = { fadeIn() + slideInHorizontally { it / 12 } },
-                exitTransition = { fadeOut() },
-                popEnterTransition = { fadeIn() },
-                popExitTransition = { fadeOut() + slideOutHorizontally { it / 12 } },
+                enterTransition = {
+                    if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabEnter() else Motion.forwardEnter()
+                },
+                exitTransition = {
+                    if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabExit() else Motion.forwardExit()
+                },
+                popEnterTransition = {
+                    if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabEnter() else Motion.backEnter()
+                },
+                popExitTransition = {
+                    if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabExit() else Motion.backExit()
+                },
             ) {
                 composable(Routes.HOME) { HomeScreen() }
                 composable(
@@ -309,6 +333,7 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.IMPORT_REPORT) { ImportReportScreen() }
                 composable(Routes.DEV) { DevScreen() }
                 composable(Routes.CATEGORIES) { CategoriesScreen() }
+                composable(Routes.TOUR) { TourScreen() }
                 composable(
                     Routes.CATEGORY_EDIT,
                     arguments = listOf(

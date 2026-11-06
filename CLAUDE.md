@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **04/11/2026**.
+Situação descrita aqui: **06/11/2026**.
 
 ---
 
@@ -48,7 +48,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.1 | 2 | Publicada (GitHub) |
 | 1.2 | 3 | **Publicada no GitHub e no F-Droid** (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). É o que está em `main`. |
 | 1.3 | 4 | **Pronta no branch `versao-1.3`, NÃO publicada** (branch enviado ao GitHub como cópia de segurança em 01/11/2026). Revisão final feita; APK de teste entregue ao Hanry em 01/11/2026. Falta: o teste e a aprovação dele, publicar. |
-| 1.4 | 5 | **Pronta no branch `versao-1.4`** (só local, sem push: o Hanry pediu para não enviar cópia da 1.4). APK de teste entregue em 04/11/2026. Falta: o teste e a aprovação dele (a 1.3 é publicada antes). |
+| 1.4 | 5 | **Pronta no branch `versao-1.4`** (só local, sem push: o Hanry pediu para não enviar cópia da 1.4). Primeiro APK de teste em 04/11/2026; o Hanry testou ("tá muito daora") e pediu passeio animado, animações suaves e GitHub em 10 línguas (feitos); APK novo em 06/11/2026. Falta: o teste e a aprovação dele (a 1.3 é publicada antes). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -80,6 +80,13 @@ código anterior. Todos os testes passam.
   Shift_JIS/CP949/GB18030, PDF em outros formatos, pagamento de fatura e categorias em outras línguas.
 - **Visual 2.0** em todas as telas, **4 abas** (Carteira dentro do Início), **restaurar backup na apresentação**, licença **AGPL**,
   **PRD** (`docs/PRD.md`) com conformidade automática (`PrdConformanceTest`).
+- **Passeio animado "Como usar o Cryo"** (RF-TOUR, `ui/screens/Tour.kt`): 5 páginas depois das boas-vindas e em Ajustes › Sobre,
+  com ilustrações animadas feitas com os próprios componentes, na língua e na moeda de quem usa.
+- **Movimento** (DS-MOV, `ui/components/Motion.kt`): telas deslizam (eixo X), abas com fade-through, barra de abas animada, saldo
+  que conta, barras e gráficos que crescem, itens do Extrato animados, atalhos que encolhem ao toque. Respeita "Remover animações".
+- **GitHub nas 10 línguas** (RF-LNG-09): `README.md` em inglês (principal) e `docs/readme/README.<língua>.md`; imagens das telas em
+  cada língua no fastlane (RF-LNG-10, `StoreScreenshotsTest`), usadas pela loja e pelos READMEs.
+- Dados de exemplo na escala de cada moeda (`SampleData.m()`): salário de R$ 4.200 vira ¥210.000, ₩2.520.000.
 - Loja (fastlane) nas 10 línguas. Banco de dados continua na versão 3 (sem migração nova).
 
 ### Próximos passos imediatos
@@ -147,7 +154,8 @@ Requisitos: **JDK 21** (o mesmo do F-Droid) e Android SDK com a plataforma 36. G
 ./gradlew assembleRelease               # APK de lançamento (assinado se existir keystore/keystore.properties)
 ./gradlew testDebugUnitTest             # todos os testes (regras, banco, backup, importação, telas)
 ./gradlew testDebugUnitTest --tests '*StatementImportTest'     # um conjunto só
-./gradlew testDebugUnitTest --tests '*StoreAssetsTest' -PstoreAssets=true   # gera de novo as imagens da loja (fastlane/)
+./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true   # imagens da loja e dos READMEs, nas 10 línguas
+./gradlew testDebugUnitTest --tests '*TourTest' -PtourGif=true   # quadros das animações do passeio (app/screenshots/passeio_gif/), para montar GIFs
 ```
 
 - Os testes de tela salvam imagens em `app/screenshots/` (fora do git). É assim que se confere o visual sem celular.
@@ -169,7 +177,8 @@ app/src/main/java/io/github/h3yk0/cryo/
 │                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
 ├── notify/             Lembretes de contas e parcelas (diário, ~9h) e worker do backup automático (a cada 6h), via WorkManager
-└── ui/                 Nav.kt (rotas e barra de abas), components/ (peças reutilizáveis), screens/ (telas), tx/ (lançamento), theme/
+└── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento),
+                        screens/ (telas; Tour.kt = passeio), tx/ (lançamento), theme/
 ```
 
 **Como os dados andam**
@@ -241,11 +250,13 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Importar extrato | `ui/screens/ImportScreen.kt`, `ui/screens/ImportModel.kt`, `importer/` |
 | Modo desenvolvedor / modo de teste | `ui/screens/DevScreens.kt`, `data/Dev.kt`, `data/SampleData.kt`, `CryoApp.kt` |
 | Apresentação inicial, tela de bloqueio | `ui/screens/Onboarding.kt` |
+| Passeio "Como usar o Cryo" | `ui/screens/Tour.kt` (primeiro uso e rota `tour` pelos Ajustes) |
+| Movimento (transições, contagem, aparecer) | `ui/components/Motion.kt`, `ui/Nav.kt` |
 | Lembretes | `notify/Reminders.kt` |
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 230 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 255 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -257,7 +268,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `ImportCountriesTest` | Extratos inventados de outros países (EUA, Reino Unido, Alemanha, França, Japão, Coreia, China, Índia) |
 | `PrdConformanceTest` | Regras do PRD conferidas sozinhas (PRC-09): licença, permissões, cores fixas, catálogo de telas, IDs, schema, changelogs, 10 línguas completas, nenhum texto no código, loja nas 10 línguas |
 | `DevModeFlowTest`, `AppFlowTest`, `DebtFlowTest` | App de verdade (Activity): modo de teste, bloqueio, primeiro uso |
-| `ScreensTest`, `StoreAssetsTest`, `LanguageScreensTest` | Imagens das telas e da loja; Início, Análises e apresentação em cada língua (`app/screenshots/linguas/`) |
+| `ScreensTest`, `LanguageScreensTest` | Imagens das telas; Início, Análises, apresentação e passeio em cada língua (`app/screenshots/linguas/`) |
+| `TourTest`, `TourPhrasesTest` | Passeio: 5 páginas com imagens, Ajustes › Como usar, frases do passeio entendidas nas 10 línguas, quadros para GIF |
+| `MotionTest` | Saldo que conta até o valor exato; "Remover animações" mostra o final |
+| `StoreScreenshotsTest`, `StoreAssetsTest` | Imagens da loja e dos READMEs nas 10 línguas; ícone e banner (só com `-PstoreAssets=true`) |
 
 **Armadilhas já descobertas (economizam horas):**
 - O DataStore é um singleton por processo e o Robolectric **não zera entre testes**: testes que usam a Activity começam com
@@ -267,7 +281,11 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio.
+- Animações: o ambiente de teste do Compose **ignora a escala de animação do sistema** (por isso `animationsOn()` lê
+  `Settings.Global.ANIMATOR_DURATION_SCALE` sozinho). Com `mainClock.autoAdvance = false`, mudar um estado de fora pede
+  `rule.runOnUiThread { ...; Snapshot.sendApplyNotifications() }`. Animações finitas terminam antes das imagens (inclusive no
+  `captureRoboImage { }`); infinitas travam o "idle" e são proibidas (DS-MOV-10).
 - O `BiometricPrompt` não roda no Robolectric: desbloquear com `MainActivity.unlock()` (`@VisibleForTesting`). Para simular
   mais de 1 minuto em segundo plano: `scenario.moveToState(CREATED)`, `ShadowSystemClock.advanceBy(...)`, `moveToState(RESUMED)`
   (veja `DevModeFlowTest.bloqueioTiraOAppDaTelaEVoltaParaOndeEstava`).
@@ -337,6 +355,13 @@ Detalhes de cada uma em `CHANGELOG.md`.
 - **Categorias padrão na língua de quem instala**, com palavras-chave do país; as de quem já usa não são traduzidas (são dados da pessoa).
 - **Extratos de exemplo continuam brasileiros** (servem para testar a importação do Brasil); os rótulos deles são traduzidos.
 - **Traduções feitas pelo Claude**, conferidas por `PrdConformanceTest` (chaves e marcadores) e por imagens; revisão humana pendente (RF-LNG-08).
+- **Passeio desenhado com os componentes do app** (sem Lottie, vídeo ou arquivos de animação): não pesa no APK, segue tema, língua
+  e moeda, e não traz biblioteca nova (PRC-07). Cada página tem uma linha do tempo finita (2,8 s).
+- **Movimento sempre pelas APIs do Compose** (nunca `delay()`): elas seguem "Remover animações". O bloqueio nunca anima.
+- **README em inglês na raiz** (é o que o GitHub mostra) e as outras 9 línguas em `docs/readme/`; os documentos de trabalho
+  (PRD, CLAUDE.md, VISUAL.md, IMPORTACAO.md) continuam em português. As imagens de cada README são as da loja daquela língua.
+- **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
+  libra e as outras de valor parecido ficam com os mesmos números.
 
 Correções da primeira revisão da 1.3 (todas feitas e conferidas na revisão final): pagamento de fatura importado duas vezes; chaves
 globais escondendo movimentações; ano errado em datas sem ano; vazamentos no relatório anônimo (cabeçalhos, nome do arquivo);
@@ -366,7 +391,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 | Arquivo | Para quê |
 |---|---|
 | `docs/PRD.md` | **Documento de requisitos: manda em tudo** (catálogo de telas e requisitos, design system, processo) |
-| `README.md` | Apresentação pública (GitHub) |
+| `README.md` | Apresentação pública (GitHub), em inglês; as outras 9 línguas em `docs/readme/` |
 | `CHANGELOG.md` | Novidades de cada versão |
 | `docs/VISUAL.md` | Guia visual: cores, tipografia, componentes, telas, textos |
 | `docs/IMPORTACAO.md` | Importação de extratos e modo desenvolvedor (para usuários e programadores) |

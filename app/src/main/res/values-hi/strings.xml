@@ -697,11 +697,7 @@
     <string name="settings_categoria_apagada">श्रेणी मिटा दी</string>
     <string name="onboarding_bem_vindo_ao_cryo">Cryo में आपका स्वागत है</string>
     <string name="onboarding_seu_dinheiro_claro_como">आपका पैसा, बर्फ़ जैसा साफ़।</string>
-    <string name="onboarding_diga_almoco_25_debito">बोलिए “चाय 20 रुपये नकद” और हो गया।</string>
-    <string name="onboarding_registre_falando">बोलकर दर्ज करें</string>
-    <string name="onboarding_previsao_calendario_gastos_caminho">अनुमान, खर्च का कैलेंडर और आपके पैसे का रास्ता।</string>
     <string name="onboarding_saiba_como_mes_vai">जानें महीना कैसे खत्म होगा</string>
-    <string name="onboarding_tudo_fica_so_neste">सब कुछ सिर्फ़ इसी फ़ोन में, बिना साइन-अप और बिना इंटरनेट।</string>
     <string name="onboarding_seus_dados_sao_seus">आपका डेटा आपका है</string>
     <string name="onboarding_como_quer_ser_chamado">आपको क्या कहकर बुलाएँ? (वैकल्पिक)</string>
     <string name="onboarding_ja_uso_cryo_restaurar">मैं पहले से Cryo इस्तेमाल करता हूँ: बैकअप वापस लाएँ</string>
@@ -1403,4 +1399,28 @@
     <string name="backup_err_cant_open_folder">यह फ़ोल्डर नहीं खुल सका। फिर से कोशिश करें या दूसरा चुनें।</string>
     <string name="backup_err_read_data">अभी Cryo का डेटा पढ़ा नहीं जा सका। बाद में फिर कोशिश करूँगा।</string>
     <string name="backup_err_cant_check">लिखने से पहले जाँचने के लिए फ़ाइल नहीं खुल सकी (शायद क्लाउड ऑफ़लाइन है या फ़ाइल मिट गई)। बाद में फिर कोशिश करूँगा; ऐसा होता रहे तो जगह फिर से चुनें।</string>
+
+    <!-- Como usar o Cryo (RF-TOUR) -->
+    <string name="tour_how_to_use">Cryo कैसे इस्तेमाल करें</string>
+    <string name="tour_how_to_use_sub">ऐप की एक छोटी एनिमेटेड सैर</string>
+    <string name="tour_1_title">सेकंडों में दर्ज करें</string>
+    <string name="tour_1_text">अपने तरीके से लिखें या बोलें। Cryo रकम, श्रेणी और खाता समझ लेता है: आप बस जाँचें और सेव करें।</string>
+    <string name="tour_1_phrase">लंच %1$s</string>
+    <string name="tour_1_lunch">लंच</string>
+    <string name="tour_2_text">आपके खर्च की रफ़्तार से, Cryo दिखाता है कि महीने के आख़िर में कितना बचेगा और रोज़ कितना खर्च कर सकते हैं।</string>
+    <string name="tour_2_per_day">आप रोज़ %1$s खर्च कर सकते हैं</string>
+    <string name="tour_3_title">कार्ड और किस्तें, बिना झंझट</string>
+    <string name="tour_3_text">किस्तों में ख़रीदा? हर किस्त सही बिल में जाती है, और आप देखते हैं कि लिमिट में कितना बचा है।</string>
+    <string name="tour_3_phrase">टीवी %1$s 10 किस्तों में क्रेडिट कार्ड से</string>
+    <string name="tour_3_installments">10 × %1$s</string>
+    <string name="tour_4_title">योजना बनाएँ, कुछ न भूलें</string>
+    <string name="tour_4_text">याद दिलाने वाले तय खर्च, हर श्रेणी का बजट और पैसे जोड़ने के लक्ष्य।</string>
+    <string name="tour_5_text">न इंटरनेट, न साइन-अप, न विज्ञापन। सब कुछ आपके फ़ोन में ही रहता है, लॉक और बैकअप के साथ, जब चाहें।</string>
+    <string name="tour_5_offline">बिना इंटरनेट</string>
+    <string name="tour_5_on_device">सिर्फ़ आपके फ़ोन में</string>
+    <string name="tour_5_lock">फ़िंगरप्रिंट लॉक</string>
+    <string name="tour_next">आगे</string>
+    <string name="tour_done">ठीक है</string>
+    <string name="tour_start">चलें</string>
+    <string name="tour_page">पेज %1$d / %2$d</string>
 </resources>

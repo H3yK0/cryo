@@ -123,10 +123,13 @@ Valores usam `MoneyText`: uma linha só, diminui sozinho até 10 sp para caber, 
 
 ## 5. Como as telas são montadas
 
-- **Barra de abas** (5): Início · Extrato · Planejar · Carteira · Análises. Botão flutuante **"Lançar"** nas abas.
-  Ícones: `Home`, `ReceiptLong`, `EventNote`, `AccountBalanceWallet`, `Insights` (estilo Rounded).
-- **Início**: saudação grande ("Olá!") e data, olho (esconder valores) e engrenagem (Ajustes) no topo; cartão de saldo em
-  `primaryContainer`; campo de registro rápido em pílula com microfone; resumo do mês; alertas; previsão.
+- **Barra de abas** (4, desde a 1.4): Início · Extrato · Planejar · Análises. A Carteira abre pelo Início.
+  Ícones: `Home`, `ReceiptLong`, `EventNote`, `Insights` (estilo Rounded).
+- **Início** (2.0): cabeçalho colorido (`HomeHeader`: saudação, data, olho, engrenagem, saldo e patrimônio), atalhos redondos,
+  campo de registro rápido em pílula com microfone, avisos discretos e seções planas (mês, cartão, contas, dívidas, investimentos).
+- **Passeio "Como usar o Cryo"** (RF-TOUR): 5 páginas com uma ilustração animada em cima (cartão `surfaceContainerLow`, cantos
+  28 dp, montada com os próprios componentes), título `headlineSmall`, texto `bodyLarge` em `onSurfaceVariant`, pontos de página e
+  botão de 56 dp embaixo; "Pular" no topo no primeiro uso. Aparece depois das boas-vindas e em Ajustes › Sobre.
 - **Telas internas**: `CryoTopBar` com seta de voltar e título; conteúdo rolando; **ação principal fixa embaixo** (`Surface` com
   `tonalElevation = 3.dp` + botão de 56 dp, com `navigationBarsPadding()` e `imePadding()`).
 - **Edição rápida**: `ModalBottomSheet` aberto por inteiro (`skipPartiallyExpanded = true`), título `titleLarge`, campos, botão
@@ -135,7 +138,31 @@ Valores usam `MoneyText`: uma linha só, diminui sozinho até 10 sp para caber, 
 - **Confirmação**: `ConfirmDialog`, título em forma de pergunta, texto com a consequência, botão com o verbo.
 - **Tela inteira, de ponta a ponta** (edge-to-edge): barras do sistema transparentes; `Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0))`.
 - **Modo de teste**: faixa `tertiaryContainer` acima da barra de abas ("Modo de teste: dados de exemplo · Sair") e avisos nas telas de importação.
-- **Bloqueio**: tela própria por cima do app (marca do Cryo, "Cryo bloqueado", botão "Desbloquear").
+- **Bloqueio**: tela própria no lugar do app (marca do Cryo, "Cryo bloqueado", botão "Desbloquear"). Aparece e some **sem
+  animação** (DS-MOV-10).
+
+### 5.1 Movimento (DS-MOV)
+
+Suave e com propósito: o movimento mostra de onde a tela veio, para onde foi e o que mudou. Tudo vem de
+`ui/components/Motion.kt`.
+
+| O quê | Como | Tempo |
+|---|---|---|
+| Abrir uma tela interna | Desliza 1/10 da largura da direita, com fade (eixo X) | 300 ms |
+| Voltar | A tela sai para a direita; a de baixo volta da esquerda | 300 ms |
+| Trocar de aba | "Fade through": some rápido (90 ms) e a nova aparece crescendo de 94% a 100% | 300 ms |
+| Barra de abas | Some e volta com a altura animada, junto com a troca de tela | 300 ms |
+| Saldo e patrimônio do Início | Contam até o novo valor quando mudam (na primeira vez aparecem prontos) | 600 ms |
+| Barras de uso, previsão, rosca, barras dos meses | Crescem / se desenham ao aparecer; vão até o novo valor quando mudam | 600–900 ms |
+| Extrato | O que entra, sai ou muda de dia desliza e aparece com fade (`animateItem`) | padrão |
+| Atalhos do Início | Encolhem para 92% enquanto o dedo está neles | 150 ms |
+| Apresentação | Passos deslizam para a frente ou para trás; barra de progresso anda suave; campos do cartão abrem com a altura animada | 300 ms |
+| Passeio | Cada página tem uma linha do tempo de 2,8 s que começa quando a página para na tela e termina no quadro final | 2,8 s |
+
+Curvas: "emphasized" do Material 3 (`Motion.Emphasized`, `EmphasizedDecelerate` para entrar, `EmphasizedAccelerate` para sair).
+
+Regras: **nada infinito** (conferido por `PrdConformanceTest`); só as APIs de animação do Compose, nunca `delay()` para
+animar; com **"Remover animações"** do Android, tudo aparece direto no estado final (`animationsOn()`).
 
 ## 6. Componentes
 
@@ -151,7 +178,14 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt). Antes de criar alg
 | `Banner` | Aviso, erro, dica | Ícone 20 dp + texto, cantos 16 dp, cor pelo tipo (seção 2.3) |
 | `Pill` | Status curto ("Paga", "Atrasada") | Cápsula `labelMedium` |
 | `EmptyState` | Lista vazia | Círculo 72 dp `secondaryContainer`, título, explicação, ação |
-| `UsageBar` | Uso de orçamento, progresso | 10 dp; cor normal, âmbar a partir de 80%, vermelho a partir de 100% |
+| `UsageBar` | Uso de orçamento, progresso | 10 dp; cor normal, âmbar a partir de 80%, vermelho a partir de 100%; cresce ao aparecer |
+| `CryoSection` | Seção plana (2.0) | Título `titleMedium` + "›", conteúdo, linha fina embaixo; margem 20 dp |
+| `CryoListRow` / `FlatItem` / `HeroBlock` | Linhas e destaques planos (2.0) | Sem cartão em volta; linha fina entre itens |
+| `Shortcuts` / `Shortcut` | Atalhos do Início | Círculo 64 dp `surfaceContainerHigh`, ícone `primary`, rótulo `labelMedium`; encolhe ao toque |
+| `HomeHeader` | Cabeçalho do Início | `primary` no claro, `primaryContainer` no escuro; saldo `displaySmall` que conta até o novo valor |
+| `InfoCard` | Aviso discreto | `surfaceContainerLow`, cantos 16, ícone colorido pelo tipo |
+| `PageDots` | Pontos de página (passeio) | Pontos de 8 dp; o atual vira pílula de 24 dp na cor `primary`; lido como "Página 2 de 5" |
+| `Motion` | Tempos, curvas e transições | Seção 5.1 |
 | `CryoTopBar` | Barra de título | Voltar + título + ações |
 | `ConfirmDialog` | Confirmar algo importante | Pergunta, consequência, verbo |
 | `AmountField` | Digitar valor | Estilo caixa eletrônico: só números, centavos se ajustam sozinhos (1 → R$ 0,01) |
@@ -217,6 +251,8 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 - Valor escondido é lido como "Valor escondido".
 - Contraste: as cores de significado foram escolhidas com bom contraste no claro e no escuro; nunca só cor para dizer algo.
 - Textos crescem com a fonte do sistema; valores usam auto-ajuste em vez de cortar.
+- "Remover animações" do Android: tudo aparece direto no estado final, inclusive o passeio (ACS-08). As ilustrações do passeio
+  são decorativas para o leitor de tela (o título e o texto dizem tudo).
 
 ## 11. Telas atuais
 
@@ -228,6 +264,12 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 | <img src="visual/analises.png" width="220"><br>Análises | <img src="visual/dividas.png" width="220"><br>Dívidas | <img src="visual/divida-detalhe.png" width="220"><br>Detalhe da dívida |
 | <img src="visual/ajustes.png" width="220"><br>Ajustes | <img src="visual/backup-automatico.png" width="220"><br>Backup automático | <img src="visual/backup-encontrado.png" width="220"><br>Backup encontrado |
 | <img src="visual/boas-vindas.png" width="220"><br>Boas-vindas | <img src="visual/inicio-escuro.png" width="220"><br>Tema escuro | <img src="visual/inicio-material-you.png" width="220"><br>Material You |
+
+**Como usar o Cryo (passeio, 1.4)**: cada página anima a ilustração e para no quadro final (aqui, o final).
+
+| | | | | |
+|---|---|---|---|---|
+| <img src="visual/passeio-1.png" width="150"><br>Registrar | <img src="visual/passeio-2.png" width="150"><br>Previsão | <img src="visual/passeio-3.png" width="150"><br>Cartões | <img src="visual/passeio-4.png" width="150"><br>Planejar | <img src="visual/passeio-5.png" width="150"><br>Privacidade |
 
 **Importar extrato (1.3)**
 
@@ -245,11 +287,12 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 
 ## 12. Página da loja (F-Droid)
 
-Em `fastlane/metadata/android/{pt-BR,en-US}/`: título, descrição curta e completa, changelogs por `versionCode` e imagens:
-`icon.png` (512 px), `featureGraphic.png` (1024 × 500, gradiente da marca + "Cryo" + slogan) e 10 telas em `phoneScreenshots/`
-(1 Início, 2 Registro rápido, 3 Análises/previsão, 4 Fluxo do dinheiro, 5 Calendário, 6 Orçamentos, 7 Metas, 8 Cartão,
-9 Tema escuro, 10 Dívidas). Tudo é gerado por `StoreAssetsTest` com dados de exemplo:
-`./gradlew testDebugUnitTest --tests '*StoreAssetsTest' -PstoreAssets=true`.
+Em `fastlane/metadata/android/<língua>/` (as 10 línguas): título, descrição curta e completa, changelogs por `versionCode` e
+6 telas em `images/phoneScreenshots/` na própria língua e moeda (1 Início, 2 Registro rápido, 3 Análises/previsão,
+4 Orçamentos, 5 Cartão, 6 Tema escuro), geradas por `StoreScreenshotsTest` (360 × 780 dp, xhdpi). Em `en-US/` também
+`icon.png` (512 px) e `featureGraphic.png` (1024 × 500, gradiente da marca + "Cryo" + slogan), gerados por `StoreAssetsTest`
+(`pt-BR/` tem o próprio banner). As mesmas telas aparecem no README de cada língua (RF-LNG-09):
+`./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true`.
 
 ## 13. Conferir o visual sem celular
 

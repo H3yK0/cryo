@@ -8,8 +8,12 @@
 - **Importar extratos de outros países**: colunas com nomes nas 10 línguas, datas com o mês antes do dia (EUA) descobertas pelo próprio arquivo, valores no formato de cada país, arquivos em Shift_JIS, EUC-KR/CP949 e GB18030, PDF em outros formatos e pagamento de fatura reconhecido também em outras línguas
 - **Visual novo**, mais organizado, com as cores do Cryo: cabeçalho colorido no Início, seções limpas e atalhos. Agora são 4 abas: Início, Extrato, Planejar e Análises; a Carteira (contas, cartões, investimentos e dívidas) abre pelo Início
 - **Restaurar backup na primeira abertura**: quem troca de celular já começa com os seus dados
+- **Como usar o Cryo**: um passeio animado de 5 páginas mostra, na primeira abertura, como registrar por frase, a previsão do mês, cartões e parcelas, o planejamento e a privacidade, na língua e na moeda de quem usa. Dá para ver de novo em Ajustes › Sobre
+- **Animações suaves**: as telas deslizam ao abrir e voltar, as abas trocam com um fade, o saldo conta até o novo valor, barras e gráficos crescem ao aparecer e o Extrato anima o que entra e sai. Com "Remover animações" ligado no Android, tudo aparece direto
 - As categorias padrão são criadas na língua do app, com palavras-chave do país; as de quem já usa não mudam
-- A loja (F-Droid) também está nas 10 línguas
+- A loja (F-Droid) também está nas 10 línguas, com as imagens das telas em cada uma
+- **Página do GitHub nas 10 línguas**, com o inglês como principal
+- Os dados de exemplo do modo de teste ficam na escala de cada moeda (um salário em ienes ou wons parece de verdade)
 - **Licença**: a partir desta versão, o Cryo é distribuído sob a GNU AGPL v3 ou posterior (até a 1.3, GNU GPL v3 ou posterior). Continua software livre, sem anúncios e sem internet
 
 ## 1.3 — importar extrato e modo desenvolvedor

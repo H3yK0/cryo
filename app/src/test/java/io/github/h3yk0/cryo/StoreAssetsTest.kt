@@ -80,7 +80,7 @@ import java.io.FileOutputStream
 import java.time.LocalDate
 
 /**
- * Gera as imagens da página do app no F-Droid (pasta fastlane/), com dados de exemplo.
+ * Gera o ícone e o banner da página do app no F-Droid (pasta fastlane/).
  * Só roda quando pedido:  ./gradlew testDebugUnitTest --tests '*StoreAssetsTest' -PstoreAssets=true
  */
 @RunWith(RobolectricTestRunner::class)
@@ -89,78 +89,14 @@ import java.time.LocalDate
 class StoreAssetsTest {
     @get:Rule val rule = createAndroidComposeRule<ComponentActivity>()
 
-    private lateinit var c: AppContainer
-    private val day = LocalDate.of(2026, 9, 25)
     private val images = File("../fastlane/metadata/android/en-US/images")
-    private val settings = AppSettings(onboardingDone = true, defaultAccountId = 1, dynamicColor = false)
 
     @Before
     fun setUp() {
         assumeTrue(System.getProperty("cryo.storeAssets") == "true")
-        c = AppContainer(ApplicationProvider.getApplicationContext())
-        runBlocking { seed(c, day) }
-        rule.waitUntil(10_000) { (c.repo.snapshot.value?.txs?.size ?: 0) > 50 }
     }
 
-    private fun show(dark: Boolean = false, content: @Composable () -> Unit) {
-        rule.setContent {
-            CryoTheme(mode = if (dark) ThemeMode.DARK else ThemeMode.LIGHT, dynamicColor = false) {
-                val nav = rememberNavController()
-                val navigator = remember { Navigator(nav) }
-                CompositionLocalProvider(
-                    LocalContainer provides c, LocalSettings provides settings,
-                    LocalNav provides navigator, LocalFixedToday provides day,
-                ) {
-                    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) { content() }
-                }
-            }
-        }
-        rule.waitForIdle()
-    }
-
-    private fun shot(n: Int) {
-        rule.waitForIdle()
-        File(images, "phoneScreenshots").mkdirs()
-        captureScreenRoboImage(File(images, "phoneScreenshots/$n.png").path)
-    }
-
-    private fun waitText(t: String) =
-        rule.waitUntil(8_000) { rule.onAllNodesWithText(t, substring = true).fetchSemanticsNodes().isNotEmpty() }
-
-    @Test fun s1Inicio() { show { CryoRoot(null) }; shot(1) }
-
-    @Test fun s2RegistroRapido() {
-        show { CryoRoot(null) }
-        rule.onNode(hasSetTextAction() and hasText("Ex.: almoço 25 no débito")).performTextInput("tv 1200 em 10x no cartão")
-        rule.onNodeWithContentDescription("Registrar").performClick()
-        waitText("Confira o lançamento")
-        shot(2)
-    }
-
-    @Test fun s3Previsao() { show { InsightsScreen() }; shot(3) }
-
-    @Test fun s4Fluxo() {
-        show { InsightsScreen() }
-        rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Fluxo do dinheiro"))
-        shot(4)
-    }
-
-    @Test fun s5Calendario() {
-        show { TransactionsScreen(null) }
-        rule.onNodeWithText("Calendário").performClick()
-        rule.onNodeWithContentDescription("Dia 18:", substring = true).performClick()
-        shot(5)
-    }
-
-    @Test fun s6Orcamentos() { show { PlanScreen(0) }; shot(6) }
-
-    @Test fun s7Metas() { show { PlanScreen(2) }; shot(7) }
-
-    @Test fun s8Cartao() { show { CardDetailScreen(1) }; shot(8) }
-
-    @Test fun s9Escuro() { show(dark = true) { CryoRoot(null) }; shot(9) }
-
-    @Test fun s10Dividas() { show { DebtsScreen() }; shot(10) }
+    // As imagens das telas, em cada língua, saem do StoreScreenshotsTest (RF-LNG-10).
 
     /** Ícone 512×512 a partir do mesmo desenho do ícone do app (cantos arredondados, fundo transparente). */
     @Test fun icone() {

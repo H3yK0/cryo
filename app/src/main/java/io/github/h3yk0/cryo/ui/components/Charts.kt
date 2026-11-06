@@ -29,6 +29,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -78,6 +79,8 @@ fun DonutChart(
     center: @Composable BoxScope.() -> Unit = {},
 ) {
     val track = MaterialTheme.colorScheme.surfaceContainerHighest
+    // DS-MOV-06: a rosca gira até as fatias ao aparecer.
+    val appear by rememberAppear(durationMillis = 800)
     Box(modifier.aspectRatio(1f).semantics { contentDescription = description }, contentAlignment = Alignment.Center) {
         Canvas(Modifier.fillMaxWidth().aspectRatio(1f)) {
             val stroke = thickness.toPx()
@@ -88,10 +91,13 @@ fun DonutChart(
             if (total <= 0f) return@Canvas
             val gap = if (values.count { it > 0 } > 1) 1.6f else 0f
             var start = -90f
+            val end = -90f + 360f * appear
             values.forEachIndexed { i, v ->
                 val sweep = v / total * 360f
-                if (sweep > 0f) {
-                    drawArc(colors[i], start + gap / 2, max(0.4f, sweep - gap), false, tl, Size(d, d), style = Stroke(stroke))
+                // Só a parte da fatia que a volta já alcançou.
+                val visible = min(sweep, end - start)
+                if (sweep > 0f && visible > 0f) {
+                    drawArc(colors[i], start + gap / 2, max(0.4f, min(sweep - gap, visible)), false, tl, Size(d, d), style = Stroke(stroke))
                 }
                 start += sweep
             }
@@ -112,6 +118,8 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
     val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
     val endStyle = MaterialTheme.typography.labelLarge.copy(color = endColor, fontWeight = FontWeight.Bold)
     val desc = Res.s(R.string.chart_grafico_previsao_mes_hoje, Money.format(f.currentResult), Money.format(f.projectedResult))
+    // DS-MOV-06: a linha se desenha da esquerda para a direita ao aparecer.
+    val appear by rememberAppear(durationMillis = 900)
     Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = desc }) {
         val pts = f.series
         if (pts.isEmpty()) return@Canvas
@@ -131,31 +139,33 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
         val zy = y(0)
         drawLine(grid, Offset(0f, zy), Offset(w, zy), strokeWidth = 1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f)))
 
-        // área + linha do realizado
+        // área + linha do realizado e projeção, cortadas até onde o desenho já chegou
         val actual = pts.filter { it.actual != null }
-        if (actual.isNotEmpty()) {
-            val line = Path()
-            val area = Path()
-            actual.forEachIndexed { i, p ->
-                val px = x(p.day); val py = y(p.actual!!)
-                if (i == 0) { line.moveTo(px, py); area.moveTo(px, zy); area.lineTo(px, py) } else { line.lineTo(px, py); area.lineTo(px, py) }
-            }
-            area.lineTo(x(actual.last().day), zy); area.close()
-            drawPath(area, primary.copy(alpha = 0.12f))
-            drawPath(line, primary, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
-        }
-        // projeção tracejada
         val proj = pts.filter { it.projected != null }
-        if (proj.size > 1) {
-            val p = Path()
-            proj.forEachIndexed { i, pt -> if (i == 0) p.moveTo(x(pt.day), y(pt.projected!!)) else p.lineTo(x(pt.day), y(pt.projected!!)) }
-            drawPath(
-                p, endColor,
-                style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))),
-            )
+        clipRect(right = size.width * appear) {
+            if (actual.isNotEmpty()) {
+                val line = Path()
+                val area = Path()
+                actual.forEachIndexed { i, p ->
+                    val px = x(p.day); val py = y(p.actual!!)
+                    if (i == 0) { line.moveTo(px, py); area.moveTo(px, zy); area.lineTo(px, py) } else { line.lineTo(px, py); area.lineTo(px, py) }
+                }
+                area.lineTo(x(actual.last().day), zy); area.close()
+                drawPath(area, primary.copy(alpha = 0.12f))
+                drawPath(line, primary, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+            }
+            // projeção tracejada
+            if (proj.size > 1) {
+                val p = Path()
+                proj.forEachIndexed { i, pt -> if (i == 0) p.moveTo(x(pt.day), y(pt.projected!!)) else p.lineTo(x(pt.day), y(pt.projected!!)) }
+                drawPath(
+                    p, endColor,
+                    style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))),
+                )
+            }
         }
         // ponto de hoje
-        actual.lastOrNull()?.let { t ->
+        if (appear >= 1f) actual.lastOrNull()?.let { t ->
             drawCircle(primary, 5.dp.toPx(), Offset(x(t.day), y(t.actual!!)))
             drawCircle(Color.White, 2.dp.toPx(), Offset(x(t.day), y(t.actual)))
         }
@@ -164,7 +174,7 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
         val lastV = last.projected ?: last.actual ?: 0L
         val txt = measurer.measure(Res.s(R.string.chart_fim_mes, Money.compact(lastV)), endStyle)
         drawText(txt, topLeft = Offset((size.width - txt.size.width).coerceAtLeast(0f), 0f))
-        if (proj.size > 1 || last.actual != null) drawCircle(endColor, 4.dp.toPx(), Offset(x(last.day), y(lastV)))
+        if ((proj.size > 1 || last.actual != null) && appear >= 1f) drawCircle(endColor, 4.dp.toPx(), Offset(x(last.day), y(lastV)))
 
         // dias no eixo X
         listOf(1, 10, 20, f.daysInMonth).distinct().forEach { d ->
@@ -185,6 +195,8 @@ fun MonthBarsChart(bars: List<MonthBar>, modifier: Modifier = Modifier, height: 
     val measurer = rememberTextMeasurer()
     val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
     var selected by remember(bars) { mutableIntStateOf(bars.lastIndex) }
+    // DS-MOV-06: as barras sobem ao aparecer.
+    val appear by rememberAppear()
     val desc = bars.joinToString(". ") {
         Res.s(R.string.chart_entrou_saiu, Dates.monthName(it.ym), Money.format(it.income), Money.format(it.expense))
     }
@@ -219,8 +231,8 @@ fun MonthBarsChart(bars: List<MonthBar>, modifier: Modifier = Modifier, height: 
             bars.forEachIndexed { i, b ->
                 val cx = gw * i + gw / 2
                 if (i == selected) drawRoundRect(selColor, Offset(gw * i + 2, 0f), Size(gw - 4, h), CornerRadius(12f, 12f))
-                val ih = b.income / maxV * (h - 8.dp.toPx())
-                val eh = b.expense / maxV * (h - 8.dp.toPx())
+                val ih = b.income / maxV * (h - 8.dp.toPx()) * appear
+                val eh = b.expense / maxV * (h - 8.dp.toPx()) * appear
                 drawRoundRect(inc, Offset(cx - bw - 2, h - ih), Size(bw, ih), CornerRadius(bw / 2, bw / 2))
                 drawRoundRect(exp, Offset(cx + 2, h - eh), Size(bw, eh), CornerRadius(bw / 2, bw / 2))
                 val l = measurer.measure(Dates.monthShort(b.ym), labelStyle)

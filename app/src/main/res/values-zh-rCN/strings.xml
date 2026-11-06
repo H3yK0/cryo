@@ -683,11 +683,7 @@
     <string name="settings_categoria_apagada">已删除分类</string>
     <string name="onboarding_bem_vindo_ao_cryo">欢迎使用 Cryo</string>
     <string name="onboarding_seu_dinheiro_claro_como">你的钱，像冰一样清澈。</string>
-    <string name="onboarding_diga_almoco_25_debito">说一句“午饭50元信用卡”就好。</string>
-    <string name="onboarding_registre_falando">语音记账</string>
-    <string name="onboarding_previsao_calendario_gastos_caminho">预测、支出日历和资金流向。</string>
     <string name="onboarding_saiba_como_mes_vai">提前知道月底结余</string>
-    <string name="onboarding_tudo_fica_so_neste">一切只保存在这台手机上，无需注册，无需联网。</string>
     <string name="onboarding_seus_dados_sao_seus">你的数据属于你</string>
     <string name="onboarding_como_quer_ser_chamado">想让我怎么称呼你？（可选）</string>
     <string name="onboarding_ja_uso_cryo_restaurar">我用过 Cryo：从备份恢复</string>
@@ -1377,4 +1373,28 @@
     <string name="backup_err_cant_open_folder">无法打开这个文件夹。请重试或换一个。</string>
     <string name="backup_err_read_data">现在无法读取 Cryo 的数据，稍后会再试。</string>
     <string name="backup_err_cant_check">写入前无法打开文件进行检查（云盘可能没有联网，或文件已被删除）。稍后会再试；如果一直这样，请重新选择位置。</string>
+
+    <!-- Como usar o Cryo (RF-TOUR) -->
+    <string name="tour_how_to_use">如何使用 Cryo</string>
+    <string name="tour_how_to_use_sub">用动画快速了解这个应用</string>
+    <string name="tour_1_title">几秒钟就能记账</string>
+    <string name="tour_1_text">随口写或说。Cryo 能听懂金额、分类和账户，你只需确认并保存。</string>
+    <string name="tour_1_phrase">午饭 %1$s</string>
+    <string name="tour_1_lunch">午饭</string>
+    <string name="tour_2_text">按你现在的花钱速度，Cryo 会显示月底大概还剩多少，以及每天还能花多少。</string>
+    <string name="tour_2_per_day">每天可以花 %1$s</string>
+    <string name="tour_3_title">信用卡和分期，心里有数</string>
+    <string name="tour_3_text">分期买的东西？每一期都会记到正确的账单里，还能看到剩余额度。</string>
+    <string name="tour_3_phrase">电视 %1$s 分10期 信用卡</string>
+    <string name="tour_3_installments">10 期 × %1$s</string>
+    <string name="tour_4_title">提前规划，什么都不忘</string>
+    <string name="tour_4_text">带提醒的固定支出、按分类的预算，以及攒钱的目标。</string>
+    <string name="tour_5_text">无需联网、无需注册、没有广告。一切只保存在你的手机上，可以加锁，也能随时备份。</string>
+    <string name="tour_5_offline">无需联网</string>
+    <string name="tour_5_on_device">只在你的手机上</string>
+    <string name="tour_5_lock">指纹锁</string>
+    <string name="tour_next">下一步</string>
+    <string name="tour_done">知道了</string>
+    <string name="tour_start">开始吧</string>
+    <string name="tour_page">第 %1$d 页，共 %2$d 页</string>
 </resources>

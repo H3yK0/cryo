@@ -12,7 +12,7 @@
 |---|---|
 | Produto | Cryo · "Seu dinheiro, claro como gelo." |
 | Dono do produto | Hanry Franco (aprova tudo o que vai para o público) |
-| Versão do PRD | **2.1** (04/11/2026) |
+| Versão do PRD | **2.3** (06/11/2026) |
 | Versão publicada do app | 1.2 (GitHub e F-Droid) · 1.3 pronta, aguardando teste · 1.4 em preparação |
 | Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) |
 
@@ -44,6 +44,7 @@ anexo é corrigido no mesmo commit.
 | 2.0 | 04/11/2026 | PRD único com catálogo e códigos; processo de criação e manutenção; conformidade automática; design system 2.0 (visual de banco, cores do Cryo); licença AGPL. |
 | 2.1 | 04/11/2026 | Aprovados: piloto do Início, direção 2.0 em todas as telas, 4 abas, restaurar backup na apresentação. Novos: 10 línguas (RF-LNG) e moeda do app (RF-MOE), frases nas 10 línguas, importação de outros países; tudo na 1.4. |
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
+| 2.3 | 06/11/2026 | Pedidos do Hanry depois de testar a 1.4: passeio animado "Como usar o Cryo" (RF-TOUR), movimento em todo o app (DS-MOV, ACS-08), página do GitHub nas 10 línguas com inglês como principal (RF-LNG-09, RF-LNG-10). Tudo na 1.4. |
 
 ---
 
@@ -160,7 +161,8 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | TELA-DEV | Modo desenvolvedor | `settings/dev` | `ui/screens/DevScreens.kt` |
 | TELA-CATEGORIAS | Categorias | `categories` | `ui/screens/SettingsScreens.kt` |
 | TELA-CATEGORIA-EDITAR | Nova/editar categoria | `category/edit/{id}?kind={kind}` | `ui/screens/SettingsScreens.kt` |
-| TELA-BOAS-VINDAS | Apresentação inicial (sem rota: antes do app) | — | `ui/screens/Onboarding.kt` |
+| TELA-TOUR | Como usar o Cryo (passeio animado, aberto pelos Ajustes) | `tour` | `ui/screens/Tour.kt` |
+| TELA-BOAS-VINDAS | Apresentação inicial (sem rota: antes do app); inclui o passeio (RF-TOUR-02) | — | `ui/screens/Onboarding.kt`, `ui/screens/Tour.kt` |
 | TELA-BLOQUEIO | Cryo bloqueado (sem rota: no lugar do app) | — | `ui/screens/Onboarding.kt` (`LockScreen`) |
 
 Folhas e diálogos que fazem parte de uma tela (registro rápido, pagar dívida, conferir linha da importação) seguem o padrão
@@ -404,18 +406,34 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-AJU-08 | Modo desenvolvedor | 7 toques na versão (RF-DEV). | ✅ 1.3 |
 | RF-AJU-09 | Idioma | Ajustes › Idioma: "Do celular" (padrão) ou uma das 10 línguas; muda na hora (RF-LNG-02). | ✅ 1.4 |
 | RF-AJU-10 | Moeda | Ajustes › Moeda: lista de moedas; a do país do celular vem marcada (RF-MOE-02). | ✅ 1.4 |
+| RF-AJU-11 | Como usar o Cryo | Ajustes › Sobre › "Como usar o Cryo" abre o passeio animado (RF-TOUR-03). | ✅ 1.4 |
 
 ### 6.17 Primeiro uso — RF-BOA (TELA-BOAS-VINDAS)
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-BOA-01 | Boas-vindas | O que o Cryo faz e que os dados ficam no celular. | ✅ 1.0 |
+| RF-BOA-01 | Boas-vindas | O que o Cryo faz e que os dados ficam no celular. Na 1.4, a primeira tela mostra a marca (com uma animação curta), o slogan, a língua e a moeda; o que o Cryo faz fica no passeio (RF-TOUR). | ✅ 1.0 · ✅ 1.4 |
 | RF-BOA-02 | Nome | Opcional. | ✅ 1.0 |
 | RF-BOA-03 | Conta principal | Nome e saldo de hoje (pode ser negativo). | ✅ 1.0 |
 | RF-BOA-04 | Dinheiro vivo e cartão | Opcionais. | ✅ 1.0 |
 | RF-BOA-05 | Notificações | Pedir permissão (Android 13+). | ✅ 1.0 |
 | RF-BOA-06 | Restaurar no primeiro uso | Na primeira tela da apresentação, "Já uso o Cryo: restaurar um backup" abre o arquivo, mostra o que tem nele e restaura, pulando o resto da apresentação. | ✅ 1.4 |
 | RF-BOA-07 | Língua e moeda no primeiro uso | A apresentação mostra a língua e a moeda escolhidas pelo celular e deixa trocar ali mesmo (RF-LNG-02, RF-MOE-02). | ✅ 1.4 |
+| RF-BOA-08 | Ordem da apresentação | Boas-vindas (nome, língua, moeda, restaurar) › passeio (RF-TOUR-02) › conta principal › cartão › tudo pronto. A barra de progresso no topo anda com suavidade (DS-MOV-09). | ✅ 1.4 |
+
+### 6.17a Como usar o Cryo — RF-TOUR (TELA-TOUR, TELA-BOAS-VINDAS)
+
+Pedido do Hanry (05/11/2026): uma explicação animada de como usar o app, para quem nunca ouviu falar do Cryo.
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-TOUR-01 | **Passeio animado** | 5 páginas, uma ideia por página, cada uma com título, texto curto e uma animação que mostra a função funcionando: (1) registrar por frase (a frase é digitada e vira um lançamento); (2) previsão do mês (a linha se desenha até o fim do mês); (3) cartões e parcelas (uma compra em 10x se espalha pelas faturas); (4) contas fixas, orçamentos e metas (o lembrete toca, a barra e a meta enchem); (5) privacidade (sem internet, só no celular, bloqueio). | ✅ 1.4 |
+| RF-TOUR-02 | No primeiro uso | Depois das boas-vindas (já na língua e na moeda escolhidas) e antes do cadastro da conta. "Pular" vai direto ao cadastro. Quem restaura um backup não passa pelo passeio. | ✅ 1.4 |
+| RF-TOUR-03 | De novo quando quiser | Ajustes › Sobre › "Como usar o Cryo" abre o passeio (TELA-TOUR); na última página, "Entendi" volta aos Ajustes. | ✅ 1.4 |
+| RF-TOUR-04 | Na língua e na moeda da pessoa | Frases, nomes e valores na língua e na moeda do app, em valores típicos de cada moeda (um almoço: R$ 32,50 · $12.50 · 12,50 € · ¥1,200 · ₩12,000 · ₹250). As frases de exemplo são entendidas pelo registro rápido daquela língua (conferido em teste). | ✅ 1.4 |
+| RF-TOUR-05 | Navegar | Deslizar para os lados ou tocar em "Próximo"; pontos mostram a página (o leitor de tela lê "Página 2 de 5"); o Voltar do celular volta uma página (na primeira, volta às boas-vindas ou aos Ajustes). | ✅ 1.4 |
+| RF-TOUR-06 | Animação que termina | Cada animação dura até cerca de 3 s, começa quando a página aparece, recomeça ao voltar a ela e para no quadro final: nada fica rodando sem parar. Com "Remover animações" do Android, aparece direto o quadro final (ACS-08). A ilustração é decorativa para o leitor de tela: o título e o texto dizem tudo. | ✅ 1.4 |
+
 
 ### 6.18 Modo desenvolvedor e modo de teste — RF-DEV (TELA-DEV, TELA-RELATORIO)
 
@@ -439,6 +457,8 @@ Testes: `DevModeFlowTest` (bloqueio).
 | RF-LNG-06 | Categorias na língua de quem instala | As categorias padrão (nomes e palavras-chave do registro rápido) são criadas na língua do app na primeira vez; as de quem já usa não mudam. | ✅ 1.4 |
 | RF-LNG-07 | Loja nas 10 línguas | Título, descrições e novidades do F-Droid (`fastlane/metadata/android/<língua>/`). | ✅ 1.4 |
 | RF-LNG-08 | Revisão por quem fala | Cada tradução revista por alguém que fala a língua (comunidade, por issue). | 🔵 contínuo |
+| RF-LNG-09 | **Página do GitHub nas 10 línguas** | `README.md` em **inglês** (a página principal do repositório), com uma linha de línguas no topo levando às outras 9: `docs/readme/README.<língua>.md` (pt-BR, es, fr, de, it, ja, ko, zh-CN, hi). Todas com as mesmas seções e as imagens das telas na própria língua (RF-LNG-10). Os documentos de trabalho (PRD, CLAUDE.md, VISUAL.md, IMPORTACAO.md) continuam em português, e o README avisa isso. As notas de cada Release no GitHub saem em inglês e em português (PRC-05). Pedido do Hanry (05/11/2026). | ✅ 1.4 |
+| RF-LNG-10 | Imagens das telas em cada língua | `fastlane/metadata/android/<língua>/images/phoneScreenshots/` nas 10 línguas, com o visual da versão, geradas por `StoreAssetsTest` (`-PstoreAssets=true`) com os dados de exemplo na língua e na moeda de cada país. Servem à loja (F-Droid) e ao README da língua. | ✅ 1.4 |
 
 ### 6.19b Moeda — RF-MOE
 
@@ -559,7 +579,7 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 |---|---|---|---|
 | DS-COMP-01 | `CryoCard` | Destaque com fundo próprio (cantos 24). Na 2.0, só para destaques e avisos. | ✅ |
 | DS-COMP-02 | `IconBadge` | Ícone de categoria/conta/cartão em círculo 40 dp com a cor da paleta. | ✅ |
-| DS-COMP-03 | `MoneyText` | Qualquer valor em reais. | ✅ |
+| DS-COMP-03 | `MoneyText` | Qualquer valor na moeda do app. Com `animate = true`, conta até o novo valor quando ele muda (DS-MOV-05). | ✅ · conta ✅ 1.4 |
 | DS-COMP-04 | `TxRow` | Linha de movimentação. | ✅ |
 | DS-COMP-05 | `SectionTitle` | Título de seção com ação. | ✅ |
 | DS-COMP-06 | `Banner` | Aviso, erro ou dica dentro de telas de passo. | ✅ |
@@ -577,6 +597,8 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | DS-COMP-18 | **`CryoListRow`** | Linha de lista plana: ícone à esquerda, título e subtítulo, valor ou ação à direita, toque opcional; conteúdo extra embaixo (barra de uso). Margem 20 dp. | ✅ 1.4 |
 | DS-COMP-19 | **`HeroBlock`** | Destaque plano no topo das telas de detalhe (conta, cartão, dívida, investimento): valor principal em `displaySmall` e informações abaixo, sem cartão em volta. | ✅ 1.4 |
 | DS-COMP-20 | **`FlatItem`** | Item plano tocável das listas de Planejar, Dívidas e Análises, com opção de aparecer apagado (pago, arquivado). | ✅ 1.4 |
+| DS-COMP-21 | **`PageDots`** | Pontos de página (passeio): o da página atual vira uma pílula na cor do Cryo, com a largura animada; lido como "Página 2 de 5". | ✅ 1.4 |
+| DS-COMP-22 | **`Motion`** (`ui/components/Motion.kt`) | Tempos, curvas e transições do DS-MOV num lugar só: transições de tela e de aba, `animateMoney`, `rememberAppear` (0 → 1 uma vez, ao aparecer), `pressScale`. Animação nova usa estas peças. | ✅ 1.4 |
 
 ### 9.6 Padrões de tela (DS-PAD)
 
@@ -596,6 +618,24 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 |---|---|
 | DS-ICO-01 | Material Icons estilo **Rounded** (`Icons.Rounded.*`; setas `Icons.AutoMirrored.Rounded.*`). |
 | DS-ICO-02 | Ícone do app: gradiente da marca `#0A4F66 → #29B6D6`, hexágono aberto com estrela; versão monocromática. |
+
+### 9.8 Movimento (DS-MOV)
+
+Pedido do Hanry (05/11/2026): animações suaves ao navegar e usar o Cryo. **Direção**: o movimento é suave e tem propósito:
+mostra de onde a tela veio, para onde foi e o que mudou; nunca enfeita, nunca faz a pessoa esperar.
+
+| ID | Regra | Status |
+|---|---|---|
+| DS-MOV-01 | **Tempos e curvas**: curta 150 ms (toque, algo pequeno que aparece ou some), média 300 ms (trocar de tela, abrir uma parte), longa 600 ms (números e gráficos). Curvas "emphasized" do Material 3. Tudo vem de `Motion` (DS-COMP-22). | ✅ 1.4 |
+| DS-MOV-02 | **Abrir e voltar telas**: a tela interna entra deslizando um pouco da direita com fade; ao voltar, sai para a direita e a anterior volta da esquerda (eixo X do Material). | ✅ 1.4 |
+| DS-MOV-03 | **Trocar de aba**: "fade through": a aba atual some rápido e a nova aparece com fade, crescendo de leve (94% → 100%). | ✅ 1.4 |
+| DS-MOV-04 | **Barra de abas**: some e volta deslizando, junto com a troca de tela, quando se entra e sai de uma tela interna. | ✅ 1.4 |
+| DS-MOV-05 | **Números que mudam**: o saldo e o patrimônio do Início contam até o novo valor quando ele muda (depois de um lançamento, por exemplo). Na primeira vez aparecem prontos. O número que fica é sempre o exato. | ✅ 1.4 |
+| DS-MOV-06 | **Barras e gráficos**: ao aparecer, as barras de uso crescem até o valor, a linha da previsão se desenha da esquerda para a direita, a rosca gira até as fatias e as barras dos meses sobem. Quando o valor muda, vão até o novo valor. | ✅ 1.4 |
+| DS-MOV-07 | **Listas**: itens que entram, saem ou mudam de lugar no Extrato deslizam e aparecem com fade. | ✅ 1.4 |
+| DS-MOV-08 | **Toque**: os atalhos do Início encolhem de leve (92%) ao toque e voltam. | ✅ 1.4 |
+| DS-MOV-09 | **Passos e partes**: a apresentação desliza para a frente ao avançar e para trás ao voltar; a barra de progresso anda suave; partes de um formulário que aparecem (ex.: dados do cartão na apresentação) se abrem com a altura animada. Da apresentação para o app, fade. | ✅ 1.4 |
+| DS-MOV-10 | **Limites**: nenhuma animação infinita (só o indicador de "carregando", que já é do sistema); animação só com as APIs de animação do Compose, que seguem "Remover animações" (nunca `delay()` para animar); o **bloqueio aparece e some sem animação** (o app bloqueado não pode ficar à vista nem por um instante, RF-BLQ). | ✅ 1.4 |
 
 ## 10. Conteúdo e acessibilidade
 
@@ -624,6 +664,7 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | ACS-05 | Contraste das cores de significado no claro e no escuro; nunca só a cor. |
 | ACS-06 | Textos crescem com a fonte do sistema; valores com auto-ajuste. |
 | ACS-07 | Alvo de toque mínimo 48 dp. |
+| ACS-08 | **Remover animações**: com a opção do Android ligada (Acessibilidade › Remover animações, ou escala de animação 0), tudo aparece direto no estado final, inclusive o passeio (DS-MOV-10, RF-TOUR-06). |
 
 ---
 
@@ -686,7 +727,8 @@ Uma mudança só está pronta quando **tudo** abaixo é verdade:
 1. Subir `versionCode`/`versionName`; CHANGELOG; changelogs do fastlane.
 2. Testes passando; commit com a identidade pública.
 3. APK de clone limpo (PRC-06) e entregar ao Hanry.
-4. Com o "pode publicar": merge em `main`, push, Release `vX.Y` com o arquivo **exatamente** `Cryo-X.Y.apk`.
+4. Com o "pode publicar": merge em `main`, push, Release `vX.Y` com o arquivo **exatamente** `Cryo-X.Y.apk`. As notas da
+   Release saem em inglês primeiro e depois em português (RF-LNG-09).
 5. F-Droid: a receita (`docs/fdroid/io.github.h3yk0.cryo.yml`) acha a tag sozinha. **Mudou a receita** (ex.: licença na 1.4)?
    Abrir merge request no fdroiddata com a mudança.
 6. Imagens da loja (`fastlane/`) geradas de novo quando o visual muda (`StoreAssetsTest -PstoreAssets=true`).
@@ -735,6 +777,10 @@ conferir sozinho:
 | Todo caminho de arquivo citado no PRD existe; IDs do PRD não se repetem | PRC-02 |
 | Existe o schema do Room da versão atual do banco | DAD-03 |
 | `CHANGELOG.md` tem a seção da versão atual; changelogs do fastlane com no máximo 500 caracteres | PRC-04 |
+| Nenhuma animação infinita (`rememberInfiniteTransition`, `infiniteRepeatable`) nas telas e componentes | DS-MOV-10 |
+| Todas as rotas usam as transições do `Motion` (nenhum `NavHost` sem elas) | DS-MOV-02, DS-MOV-03 |
+| `README.md` em inglês e os 9 `docs/readme/README.<língua>.md` existem, cada um com a linha das 10 línguas, e toda imagem ou arquivo que citam existe | RF-LNG-09 |
+| As 10 pastas da loja têm as imagens das telas (`phoneScreenshots/`) | RF-LNG-10 |
 
 Regra nova que dá para conferir sozinha **entra nesse teste**.
 
@@ -756,7 +802,7 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.1 | ✅ 02/10/2026 | Dívidas, arquivo, compilação reproduzível. |
 | 1.2 | ✅ 03/10/2026 | Backup automático (pasta e nuvem). |
 | 1.3 | Pronta, aguardando teste do Hanry | Importar extrato, modo desenvolvedor, correções de bloqueio. |
-| **1.4** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20). |
+| **1.4** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
 | 1.5 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
 
 ## 13. Glossário

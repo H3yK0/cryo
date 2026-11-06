@@ -683,11 +683,7 @@
     <string name="settings_categoria_apagada">카테고리를 삭제했어요</string>
     <string name="onboarding_bem_vindo_ao_cryo">Cryo에 오신 걸 환영해요</string>
     <string name="onboarding_seu_dinheiro_claro_como">내 돈을 얼음처럼 투명하게.</string>
-    <string name="onboarding_diga_almoco_25_debito">“점심 12000원 카드로”라고 말하면 끝.</string>
-    <string name="onboarding_registre_falando">말로 기록</string>
-    <string name="onboarding_previsao_calendario_gastos_caminho">예측, 지출 달력, 돈의 흐름.</string>
     <string name="onboarding_saiba_como_mes_vai">이번 달이 어떻게 끝날지 알아보세요</string>
-    <string name="onboarding_tudo_fica_so_neste">모든 것이 이 휴대폰에만 있어요. 가입도 인터넷도 필요 없어요.</string>
     <string name="onboarding_seus_dados_sao_seus">내 데이터는 내 것</string>
     <string name="onboarding_como_quer_ser_chamado">뭐라고 불러 드릴까요? (선택)</string>
     <string name="onboarding_ja_uso_cryo_restaurar">Cryo를 써 봤어요: 백업 복원</string>
@@ -1377,4 +1373,28 @@
     <string name="backup_err_cant_open_folder">이 폴더를 열지 못했어요. 다시 시도하거나 다른 폴더를 고르세요.</string>
     <string name="backup_err_read_data">지금은 Cryo 데이터를 읽지 못했어요. 나중에 다시 시도할게요.</string>
     <string name="backup_err_cant_check">저장하기 전에 확인하려고 파일을 열었지만 열지 못했어요(클라우드가 연결되지 않았거나 파일이 삭제됐을 수 있어요). 나중에 다시 시도할게요. 계속 이러면 위치를 다시 고르세요.</string>
+
+    <!-- Como usar o Cryo (RF-TOUR) -->
+    <string name="tour_how_to_use">Cryo 사용법</string>
+    <string name="tour_how_to_use_sub">애니메이션으로 보는 빠른 앱 소개</string>
+    <string name="tour_1_title">몇 초 만에 기록</string>
+    <string name="tour_1_text">편하게 쓰거나 말하세요. Cryo가 금액, 카테고리, 계좌를 알아들어요. 확인하고 저장만 하면 돼요.</string>
+    <string name="tour_1_phrase">점심 %1$s</string>
+    <string name="tour_1_lunch">점심</string>
+    <string name="tour_2_text">지금 지출 속도라면 월말에 얼마가 남을지, 하루에 얼마까지 써도 되는지 Cryo가 보여 줘요.</string>
+    <string name="tour_2_per_day">하루 %1$s까지 쓸 수 있어요</string>
+    <string name="tour_3_title">카드와 할부도 걱정 없이</string>
+    <string name="tour_3_text">할부로 샀나요? 회차마다 맞는 청구서에 들어가고, 남은 한도도 한눈에 보여요.</string>
+    <string name="tour_3_phrase">TV %1$s 10개월 할부</string>
+    <string name="tour_3_installments">10개월 × %1$s</string>
+    <string name="tour_4_title">계획하고 잊지 마세요</string>
+    <string name="tour_4_text">알림이 있는 고정 지출, 카테고리별 예산, 돈을 모으는 목표.</string>
+    <string name="tour_5_text">인터넷도, 가입도, 광고도 없어요. 모든 것이 내 휴대폰에만 있고, 잠금과 백업은 원할 때 언제든지.</string>
+    <string name="tour_5_offline">인터넷 없음</string>
+    <string name="tour_5_on_device">내 휴대폰에만</string>
+    <string name="tour_5_lock">지문 잠금</string>
+    <string name="tour_next">다음</string>
+    <string name="tour_done">알겠어요</string>
+    <string name="tour_start">시작하기</string>
+    <string name="tour_page">%2$d페이지 중 %1$d페이지</string>
 </resources>

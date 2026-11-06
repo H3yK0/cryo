@@ -1,89 +1,102 @@
 <p align="center">
-  <img src="fastlane/metadata/android/en-US/images/icon.png" width="96" alt="Ícone do Cryo">
+  <img src="fastlane/metadata/android/en-US/images/icon.png" width="96" alt="Cryo icon">
 </p>
 
 <h1 align="center">Cryo</h1>
 
-<p align="center"><b>Seu dinheiro, claro como gelo.</b><br>
-App Android de finanças pessoais: simples de usar, completo, offline e de código aberto.</p>
+<p align="center"><b>Your money, crystal clear.</b><br>
+A personal finance app for Android: simple to use, complete, offline and open source.</p>
 
 <p align="center">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="19%" alt="Início">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="19%" alt="Registro rápido">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="19%" alt="Previsão do mês">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/10.png" width="19%" alt="Dívidas">
-  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/9.png" width="19%" alt="Modo escuro">
+  <b>English</b> ·
+  <a href="docs/readme/README.pt-BR.md">Português</a> ·
+  <a href="docs/readme/README.es.md">Español</a> ·
+  <a href="docs/readme/README.fr.md">Français</a> ·
+  <a href="docs/readme/README.de.md">Deutsch</a> ·
+  <a href="docs/readme/README.it.md">Italiano</a> ·
+  <a href="docs/readme/README.ja.md">日本語</a> ·
+  <a href="docs/readme/README.ko.md">한국어</a> ·
+  <a href="docs/readme/README.zh-CN.md">中文</a> ·
+  <a href="docs/readme/README.hi.md">हिन्दी</a>
 </p>
 
-## O que ele faz
+<p align="center">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="19%" alt="Home">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="19%" alt="Quick entry">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="19%" alt="End-of-month forecast">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="19%" alt="Budgets">
+  <img src="fastlane/metadata/android/en-US/images/phoneScreenshots/6.png" width="19%" alt="Dark mode">
+</p>
 
-- **Registro por frase ou voz.** Escreva ou fale "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cryo entende o valor, a categoria, a conta, a data e as parcelas. Você só confere e salva.
-- **Previsão do fim do mês.** Mostra quanto deve sobrar no ritmo atual e quanto dá para gastar por dia.
-- **Calendário de calor e fluxo do dinheiro.** Veja em quais dias você mais gasta, de onde o dinheiro veio e para onde foi.
-- **Importar extrato do banco.** OFX, CSV, planilha (XLSX) ou PDF: você confere a lista antes de entrar, com categorias sugeridas, o que já está no Cryo desmarcado e o pagamento da fatura do cartão reconhecido. Detalhes em [docs/IMPORTACAO.md](docs/IMPORTACAO.md).
-- **Cartões de crédito.** Faturas, limite disponível e compras parceladas, cada parcela na fatura certa.
-- **Dívidas.** Empréstimos, financiamentos, acordos e dinheiro que você deve a alguém, separados do resto: quanto falta, parcelas atrasadas, quanto da renda vai para parcelas e quando você fica livre.
-- **Planejamento.** Contas fixas com lembrete, orçamento por categoria e metas com valor mensal sugerido (as concluídas vão para o arquivo).
-- **Investimentos e transferências** entre contas.
-- **10 línguas e a sua moeda.** Português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês e hindi, com a moeda que você escolher (real, dólar, euro, iene, won, rúpia e outras). O registro por frase e a importação de extratos funcionam em todas elas.
-- **Material You**, tema claro e escuro.
+## What it does
 
-## Privacidade
+- **Log by typing or speaking.** Type or say "lunch 12.50 on debit" or "tv 500 in 10 installments on credit card". Cryo understands the amount, the category, the account, the date and the installments. You just check and save.
+- **End-of-month forecast.** See how much should be left at your current pace and how much you can spend per day.
+- **Spending heatmap and money flow.** See which days you spend the most, where the money came from and where it went.
+- **Import bank statements.** OFX, CSV, spreadsheet (XLSX) or PDF: you review the list before anything goes in, with suggested categories, what is already in Cryo unchecked and credit card bill payments recognized.
+- **Credit cards.** Bills, available limit and installment purchases, each installment on the right bill.
+- **Debts.** Loans, financing, agreements and money you owe someone, kept apart from the rest: how much is left, late installments, how much of your income goes to installments and when you will be debt-free.
+- **Planning.** Recurring bills with reminders, a budget per category and savings goals with a suggested monthly amount.
+- **Investments and transfers** between accounts.
+- **10 languages and your currency.** English, Portuguese, Spanish, French, German, Italian, Japanese, Korean, Chinese and Hindi, in the currency you choose (dollar, euro, pound, yen, won, rupee, real and more). Logging by phrase and importing statements work in all of them.
+- **A quick animated tour** shows how to use the app the first time you open it (and again whenever you want, in Settings).
+- **Material You**, light and dark themes and smooth animations that follow your phone's "Remove animations" setting.
 
-- Os dados ficam só no celular. **O app não tem permissão de internet.**
-- Sem cadastro, sem anúncios e sem rastreamento.
-- Bloqueio com digital, rosto ou senha do aparelho.
-- **Backup automático** numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras), todo dia, toda semana ou todo mês. O Cryo grava o arquivo pelo seletor de arquivos do Android, e quem envia para a internet é o app da nuvem.
-- Backup em arquivo `.json` e exportação para planilha `.csv`, quando você quiser.
+## Privacy
 
-O registro por voz usa o reconhecimento de fala que já está instalado no celular. Digitar a frase funciona sempre.
+- Your data stays on your phone. **The app has no internet permission.**
+- No sign-up, no ads, no tracking.
+- Lock with fingerprint, face or your phone's screen lock.
+- **Automatic backup** to a folder on your phone or to your cloud (Google Drive, Nextcloud and others), daily, weekly or monthly. Cryo writes the file through Android's file picker, and the cloud app is the one that uploads it.
+- Backup to a `.json` file and export to a `.csv` spreadsheet, whenever you want.
 
-## Instalação
+Voice entry uses the speech recognition already installed on your phone. Typing the phrase always works.
+
+## Install
 
 - **F-Droid:** [f-droid.org/packages/io.github.h3yk0.cryo](https://f-droid.org/packages/io.github.h3yk0.cryo/)
-- **GitHub:** baixe o `Cryo-<versão>.apk` na página de [Releases](https://github.com/H3yK0/cryo/releases).
+- **GitHub:** download `Cryo-<version>.apk` from the [Releases](https://github.com/H3yK0/cryo/releases) page.
 
-Os dois são o mesmo arquivo, assinado pela mesma chave: o F-Droid compila o código de novo e só publica se o resultado for idêntico ao APK daqui (compilação reproduzível). Por isso dá para atualizar por qualquer um dos dois sem desinstalar.
+Both are the same file, signed with the same key: F-Droid builds the code again and only publishes it if the result is identical to the APK here (reproducible build). So you can update from either one without uninstalling.
 
-## Compilar a partir do código
+## Build from source
 
-Requisitos: JDK 21 e o Android SDK (plataforma 36). O APK publicado é compilado com o JDK 21, o mesmo usado pelo F-Droid.
-
-```bash
-./gradlew assembleRelease     # APK sem assinatura em app/build/outputs/apk/release/
-./gradlew testDebugUnitTest   # testes automáticos (regras, banco de dados, backup e telas)
-```
-
-Para assinar com a sua própria chave, crie `keystore/keystore.properties` com `storeFile`, `storePassword`, `keyAlias` e `keyPassword`. A pasta `keystore/` nunca vai para o repositório.
-
-Para gerar de novo as imagens da página do F-Droid (pasta `fastlane/`):
+Requirements: JDK 21 and the Android SDK (platform 36). The published APK is built with JDK 21, the same one F-Droid uses.
 
 ```bash
-./gradlew testDebugUnitTest --tests '*StoreAssetsTest' -PstoreAssets=true
+./gradlew assembleRelease     # unsigned APK in app/build/outputs/apk/release/
+./gradlew testDebugUnitTest   # automated tests (rules, database, backup, import and screens)
 ```
 
-### Como o código está organizado
+To sign with your own key, create `keystore/keystore.properties` with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`. The `keystore/` folder never goes into the repository.
 
-| Pasta | Conteúdo |
+To regenerate the screenshots of the F-Droid page and of these READMEs (`fastlane/` folder), in the 10 languages:
+
+```bash
+./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true
+```
+
+### How the code is organized
+
+| Folder | Contents |
 |---|---|
-| `domain/` | Regras sem Android: saldos, faturas e parcelas, dívidas, previsão, fluxo do dinheiro e o interpretador de frases (`PhraseParser.kt`) |
-| `importer/` | Leitura de extratos (OFX, CSV, XLSX, PDF e o JSON de teste) e a conferência antes de importar |
-| `data/` | Banco de dados (Room), ajustes, backup, categorias padrão e dados de exemplo |
-| `ui/` | Telas em Jetpack Compose com Material 3 |
-| `notify/` | Lembretes de contas fixas e parcelas de dívidas (WorkManager) |
+| `domain/` | Rules without Android: balances, bills and installments, debts, forecast, money flow, the phrase interpreter (`PhraseParser.kt`, `PhraseLang.kt`), languages and currencies |
+| `importer/` | Statement reading (OFX, CSV, XLSX, PDF and the test JSON) and the review before importing |
+| `data/` | Database (Room), settings, backup, default categories and sample data |
+| `ui/` | Screens in Jetpack Compose with Material 3 |
+| `notify/` | Reminders for recurring bills and debt installments (WorkManager) |
 
-## Contribuir
+The project documents (requirements in [docs/PRD.md](docs/PRD.md), visual guide, statement import) are written in Portuguese, the author's language.
 
-Sugestões e relatos de problemas são bem-vindos na aba [Issues](https://github.com/H3yK0/cryo/issues).
+## Contributing
 
-O app tem um **modo desenvolvedor** (7 toques na versão, em Ajustes › Sobre) com um modo de teste que usa um banco de dados separado e dados de exemplo, extratos de exemplo em todos os formatos e um relatório de leitura que pode ser compartilhado em versão anônima. Se o extrato do seu banco não for lido direito, veja como ajudar sem mandar os seus dados em [docs/IMPORTACAO.md](docs/IMPORTACAO.md#ajudar-a-melhorar-a-leitura).
+Suggestions and bug reports are welcome in [Issues](https://github.com/H3yK0/cryo/issues), in any of the 10 languages.
 
-## English
+- **Translations:** the 9 translations were made with the help of AI. If you speak one of these languages and find something odd, please open an issue: native review is very welcome.
+- **Statements from your bank:** the app has a **developer mode** (tap the version 7 times in Settings › About) with a test mode that uses a separate database and sample data, sample statements in every format and a reading report that can be shared in an anonymous version. If your bank's statement is not read correctly, you can help without sending your data: see [docs/IMPORTACAO.md](docs/IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (in Portuguese).
 
-Cryo is a simple yet complete personal finance app for Android: log expenses by typing or speaking a phrase, import bank statements (OFX, CSV, XLSX or PDF) after reviewing them, see an end-of-month forecast, a spending heatmap and a money-flow chart, and manage credit cards with installments, debts, recurring bills, budgets, savings goals and investments. Everything stays on the device: the app has no internet permission, no ads and no tracking. The interface is currently in Brazilian Portuguese only.
-
-## Licença
+## License
 
 Copyright © 2026 Hanry Franco
 
-Este programa é software livre: você pode redistribuí-lo e/ou modificá-lo sob os termos da [GNU Affero General Public License](LICENSE), publicada pela Free Software Foundation, versão 3 da licença ou (a seu critério) qualquer versão posterior. Até a versão 1.3, o Cryo foi distribuído sob a GNU General Public License v3 ou posterior. Ele é distribuído na esperança de ser útil, mas **sem nenhuma garantia**.
+This program is free software: you can redistribute it and/or modify it under the terms of the [GNU Affero General Public License](LICENSE) as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version. Up to version 1.3, Cryo was distributed under the GNU General Public License v3 or later. It is distributed in the hope that it will be useful, but **without any warranty**.
