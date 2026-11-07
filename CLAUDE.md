@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **06/11/2026**.
+Situação descrita aqui: **07/11/2026**.
 
 ---
 
@@ -48,7 +48,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.1 | 2 | Publicada (GitHub) |
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
-| 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: entra sozinha pela etiqueta `v1.4` (alguns dias). |
+| 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) aberto em 07/11/2026, com todos os testes verdes (inclusive o `fdroid build`); aguarda um mantenedor. |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -91,9 +91,9 @@ código anterior. Todos os testes passam.
 
 ### Próximos passos imediatos
 
-1. **F-Droid**: acompanhar a entrada da 1.4 (o robô acha a etiqueta `v1.4`, compila e compara com o APK da Release). A licença
-   mudou para AGPL: o Hanry abre o merge request no fdroiddata trocando `License: GPL-3.0-or-later` por `AGPL-3.0-or-later`
-   (a cópia em `docs/fdroid/` já está com AGPL).
+1. **F-Droid**: acompanhar o merge request https://gitlab.com/fdroid/fdroiddata/-/merge_requests/56186 (licença AGPL e build da
+   1.4; testes verdes em 07/11/2026). Responder se um mantenedor perguntar algo. Depois do merge, a 1.4 aparece na loja em alguns
+   dias. A cópia em `docs/fdroid/` já é o arquivo do pedido.
 2. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 3. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
 4. 1.5: detalhar com o Hanry (widgets, notificações especiais, sons).
@@ -316,7 +316,9 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
    inglês e português. (Em 04/11/2026 as Releases v1.3 e v1.4 foram criadas antes do push e prenderam as etiquetas no código da
    1.2; foram refeitas em 06/11/2026.) O nome importa: o F-Droid baixa
    `https://github.com/H3yK0/cryo/releases/download/v%v/Cryo-%v.apk` para comparar com o que ele compilou.
-6. F-Droid: **não precisa abrir merge request** para versões novas. A receita (`docs/fdroid/io.github.h3yk0.cryo.yml`, cópia da
+6. F-Droid: **não precisa abrir merge request** para versões novas. Se a receita mudar (ex.: licença), o merge request precisa
+   **incluir também o build da versão nova** quando a etiqueta já existe: o teste `checkupdates` do fdroiddata roda o robô e
+   reprova se ele ainda acharia algo para acrescentar (aconteceu no !56186, 07/11/2026). A receita (`docs/fdroid/io.github.h3yk0.cryo.yml`, cópia da
    que está no fdroiddata) tem `UpdateCheckMode: Tags` e `AutoUpdateMode: Version`: o robô do F-Droid acha a tag nova, compila,
    compara com o APK da Release e publica (pode levar alguns dias). Só é preciso MR se a receita mudar (ex.: novo passo de build).
 
