@@ -49,7 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.5 | 6 | **Pronta no branch local `versao-1.5`, sem push** (07/11/2026): ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` entregue para ele testar. Só publicar depois da aprovação (seção 11). |
+| 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -115,14 +115,17 @@ código anterior. Todos os testes passam.
 
 ### Próximos passos imediatos
 
-1. **1.5**: esperar o Hanry testar o `Cryo-1.5.apk`. Com a aprovação: push de `versao-1.5` e de `main`, Release `v1.5` (seção 11).
-   O F-Droid pega sozinho pela etiqueta (a receita não muda).
+1. **1.5**: guardada para lançar por volta de 07/12/2026 (pedido do Hanry). Se esta sessão não existir mais, recuperar o código do
+   `git bundle` que o Hanry guardou (`git fetch cryo-1.5.bundle versao-1.5:versao-1.5`, sobre o `main` do GitHub). Na data, com o
+   "pode publicar": push de `versao-1.5` e de `main`, Release `v1.5` (seção 11). O F-Droid pega sozinho pela etiqueta.
 2. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
    receita oficial. Conferir em https://f-droid.org/packages/io.github.h3yk0.cryo/ que a 1.4 apareceu (alguns dias). Se não
    aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
 3. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-5. 1.6: detalhar com o Hanry (widgets, notificações especiais, sons).
+5. **1.6**: o Hanry quer melhorar o **registro por voz** com algo local (07/11/2026). Proposta em discussão: reconhecimento de fala
+   no próprio aparelho (sem mandar áudio para fora), resultado ao vivo enquanto fala e um entendimento de frases faladas mais
+   esperto, sem modelo de linguagem grande. Widgets, notificações especiais e sons: detalhar depois.
 
 ---
 
@@ -466,10 +469,10 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
-2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta, aguardando o teste e a aprovação do Hanry.
+2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta e guardada; lançamento por volta de 07/12/2026.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. **1.6**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
-   Detalhar com o Hanry antes de começar (quais widgets, quais momentos, quais sons).
+4. **1.6**: **voz melhor e no aparelho** (prioridade do Hanry); depois widgets na tela inicial, notificações especiais (popups) e
+   sons personalizados. Detalhar com o Hanry antes de começar.
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
 ## 15. Arquivos de referência
