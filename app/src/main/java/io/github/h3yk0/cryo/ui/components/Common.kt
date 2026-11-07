@@ -2,6 +2,11 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.components
 
+import io.github.h3yk0.cryo.domain.engine.EngineRunner
+import io.github.h3yk0.cryo.domain.engine.EngineReport
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import androidx.compose.runtime.produceState
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.animation.core.animateFloatAsState
@@ -153,6 +158,24 @@ fun rememberLedger(): Ledger? {
     val today = rememberToday()
     val s = snap ?: return null
     return remember(s, today) { Ledger(s, today) }
+}
+
+/**
+ * RF-MOT-13: o resultado do motor financeiro para os dados e o dia de agora. Calcula fora da linha principal e, enquanto
+ * calcula, devolve o último resultado (ou null na primeira vez). Todas as telas dividem o mesmo cálculo (cache).
+ */
+@Composable
+fun rememberEngine(): EngineReport? {
+    val c = LocalContainer.current
+    val snap by c.repo.snapshot.collectAsStateWithLifecycle()
+    val today = rememberToday()
+    val options by c.engineStore.options.collectAsStateWithLifecycle()
+    val s = snap ?: return null
+    if (EngineRunner.inline) return remember(s, today, options) { c.engine.runBlocking(s, today, options) }
+    val report by produceState(c.engine.cached(s, today, options) ?: c.engine.latest, s, today, options) {
+        value = withContext(Dispatchers.Default) { c.engine.run(s, today, options) }
+    }
+    return report
 }
 
 /* ================================ Ícones ================================ */

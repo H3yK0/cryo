@@ -6,7 +6,7 @@ Type or say a phrase like "lunch 32.50 on debit" or "tv 1200 in 10 installments 
 <b>Features</b>
 <ul>
 <li>Overview: account balances, net worth, and what came in and went out this month</li>
-<li>End-of-month forecast: how much should be left at the current pace, and a daily spending allowance</li>
+<li>On-device financial engine: end-of-month forecast with a range, recurring payments found automatically, balance for the next 12 months, unusual charges, financial health score, debt payoff plan and real investment returns</li>
 <li>Spending heatmap calendar: each day is colored by how much you spent</li>
 <li>Money flow chart: where your money came from and where it went</li>
 <li>Bank statement import (OFX, CSV, XLSX spreadsheet or PDF): review the list before anything is added, and entries already in the app are left out</li>
@@ -26,6 +26,7 @@ Type or say a phrase like "lunch 32.50 on debit" or "tv 1200 in 10 installments 
 <li>Lock with fingerprint, face or your device PIN</li>
 <li>Option to hide amounts on screen</li>
 <li>Automatic backup to a folder on your phone or to your cloud (Google Drive, Nextcloud and others): the cloud app does the uploading</li>
+<li>Password-protected backups (AES-256), with the key kept in Android's secure keystore</li>
 <li>File backup and spreadsheet (CSV) export</li>
 </ul>
 

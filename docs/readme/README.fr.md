@@ -31,7 +31,7 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
 ## Ce qu'elle fait
 
 - **Saisie par phrase ou à la voix.** Écrivez ou dites « déjeuner 12,50 par carte bancaire » ou « télé 500 en 10 fois avec la carte de crédit ». Cryo comprend le montant, la catégorie, le compte, la date et les échéances. Vous n'avez qu'à vérifier et enregistrer.
-- **Prévision de fin de mois.** Voyez ce qu'il devrait rester à votre rythme actuel et combien vous pouvez dépenser par jour.
+- **Un moteur financier dans votre téléphone.** La prévision de fin de mois est désormais accompagnée d'une fourchette et du risque de finir dans le rouge (2 000 scénarios simulés à partir de votre propre historique). Cryo trouve aussi tout seul votre salaire, votre loyer et vos abonnements, projette votre solde sur les 12 prochains mois, signale les dépenses inhabituelles et les prélèvements en double, donne une note de santé financière avec des conseils, montre les intérêts intégrés à vos dettes avec un plan de remboursement et le rendement réel de vos placements. Tout est calculé hors ligne.
 - **Calendrier de chaleur et flux de l'argent.** Voyez les jours où vous dépensez le plus, d'où vient l'argent et où il est allé.
 - **Import de relevés bancaires.** OFX, CSV, tableur (XLSX) ou PDF : vous vérifiez la liste avant qu'elle n'entre, avec des catégories suggérées, ce qui est déjà dans Cryo décoché et le paiement de la carte reconnu.
 - **Cartes de crédit.** Relevés, plafond disponible et achats en plusieurs fois, chaque échéance sur le bon relevé.
@@ -48,6 +48,7 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
 - Sans inscription, sans publicité et sans pistage.
 - Verrouillage par empreinte, visage ou verrouillage d'écran du téléphone.
 - **Sauvegarde automatique** dans un dossier du téléphone ou dans votre cloud (Google Drive, Nextcloud et d'autres), chaque jour, chaque semaine ou chaque mois. Cryo écrit le fichier via le sélecteur de fichiers d'Android, et c'est l'app du cloud qui l'envoie.
+- **Sauvegardes protégées par mot de passe** (facultatif) : les fichiers sont chiffrés en AES-256 et illisibles sans votre mot de passe. La clé reste dans le coffre sécurisé d'Android.
 - Sauvegarde dans un fichier `.json` et export vers un tableur `.csv`, quand vous voulez.
 
 La saisie à la voix utilise la reconnaissance vocale déjà installée sur votre téléphone. Écrire la phrase fonctionne toujours.

@@ -46,6 +46,7 @@ anexo é corrigido no mesmo commit.
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 | 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
+| 2.6 | 07/11/2026 | Pedido do Hanry depois de testar a 1.5: **motor financeiro** robusto e todo no aparelho (RF-MOT-01..15, seção 6.12a), com **500 testes de garantia**, e **proteção dos dados** com hash e criptografia (RF-SEG, seção 6.15a); Rust e criptografia do banco avaliados e deixados para depois. Aprovado e unido ao visual: tudo na **1.5**. |
 | 2.3 | 06/11/2026 | Pedidos do Hanry depois de testar a 1.4: passeio animado "Como usar o Cryo" (RF-TOUR), movimento em todo o app (DS-MOV, ACS-08), página do GitHub nas 10 línguas com inglês como principal (RF-LNG-09, RF-LNG-10). Tudo na 1.4. |
 
 ---
@@ -140,7 +141,7 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | TELA-EXTRATO | Extrato (movimentações por mês, busca, calendário) | `txs?category={category}` | `ui/screens/TransactionsScreen.kt` |
 | TELA-PLANEJAR | Planejar (abas Orçamentos, Contas fixas, Metas) | `plan?tab={tab}` | `ui/screens/PlanScreens.kt` |
 | TELA-CARTEIRA | Carteira completa (patrimônio, contas, cartões, dívidas, investimentos); aba até a 1.3, tela interna na 1.4 | `wallet` | `ui/screens/WalletScreens.kt` |
-| TELA-ANALISES | Análises (previsão, calendário de calor, fluxo, categorias, 6 meses) | `insights` | `ui/screens/InsightsScreen.kt` |
+| TELA-ANALISES | Análises (saúde financeira, previsão com faixa, percepções, próximos meses, recorrências, fora do padrão, fluxo, categorias, calendário de calor, 6 meses) | `insights` | `ui/screens/InsightsScreen.kt` |
 | TELA-LANCAR | Novo lançamento | `tx/new?type={type}&account={account}&card={card}` | `ui/tx/TxEditorScreen.kt`, `ui/tx/TxForm.kt` |
 | TELA-LANC-EDITAR | Editar lançamento | `tx/edit/{id}` | `ui/tx/TxEditorScreen.kt` |
 | TELA-CONTA | Conta (saldo, movimentações) | `account/{id}` | `ui/screens/WalletScreens.kt` |
@@ -164,6 +165,9 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | TELA-CATEGORIAS | Categorias | `categories` | `ui/screens/SettingsScreens.kt` |
 | TELA-CATEGORIA-EDITAR | Nova/editar categoria | `category/edit/{id}?kind={kind}` | `ui/screens/SettingsScreens.kt` |
 | TELA-TOUR | Como usar o Cryo (passeio animado, aberto pelos Ajustes) | `tour` | `ui/screens/Tour.kt` |
+| TELA-SAUDE | Saúde financeira: a nota de 0 a 100 e as 6 partes (RF-MOT-06) | `insights/health` | `ui/screens/EngineScreens.kt` |
+| TELA-RECORRENCIAS | O que se repete: recorrências descobertas pelo motor (RF-MOT-02) | `insights/recurring` | `ui/screens/EngineScreens.kt` |
+| TELA-PLANO-DIVIDAS | Plano para quitar as dívidas (RF-MOT-08) | `debts/plan` | `ui/screens/EngineScreens.kt` |
 | TELA-BOAS-VINDAS | Apresentação inicial (sem rota: antes do app); inclui o passeio (RF-TOUR-02) | — | `ui/screens/Onboarding.kt`, `ui/screens/Tour.kt` |
 | TELA-BLOQUEIO | Cryo bloqueado (sem rota: no lugar do app) | — | `ui/screens/Onboarding.kt` (`LockScreen`) |
 
@@ -333,6 +337,68 @@ Código: `domain/Debts.kt`. Testes: `DebtsTest`, `DebtFlowTest`.
 
 Código: `domain/Analytics.kt`, `ui/components/Charts.kt`.
 
+### 6.12a Motor financeiro — RF-MOT (TELA-ANALISES, TELA-DIVIDAS, TELA-INVEST, TELA-PLANEJAR)
+
+Pedido do Hanry (07/11/2026): "um algoritmo pesado para a parte financeira, para o cálculo e as análises, tudo dentro do
+próprio aplicativo; algo robusto". **Aprovado em 07/11/2026** e unido ao visual da 1.5: sai tudo numa versão só, a **1.5**
+(a 1.5 ainda não tinha sido publicada).
+
+**Princípios do motor**
+- **Tudo no aparelho**, só Kotlin, sem biblioteca nova e sem internet (RNF-PRIV-01, PRC-07). Sem mudança no banco de dados.
+- **Robusto de verdade**: estatística que não se deixa enganar por um gasto fora da curva (mediana em vez de média, cortes nos
+  extremos, mais peso no que é recente), simulação de milhares de cenários para dar uma **faixa** e não um número mágico, e
+  métodos numéricos com plano B (nunca "dá erro" nem número absurdo).
+- **Comprovado**: cada parte é testada com históricos inventados de pessoas diferentes (estável, irregular, recém-chegada,
+  endividada) e a previsão é **testada contra o passado** (backtest): ela precisa errar menos que a da 1.5.
+- **Explicável**: cada número tem "Como cheguei nesse número" em linguagem simples (de onde veio, de quanto tempo, quanta
+  certeza). Nada de caixa-preta e nada de "inteligência artificial" que não se explica (PRI-05).
+- **Previsível**: os sorteios da simulação usam uma semente tirada dos próprios dados: os mesmos dados dão sempre o mesmo resultado.
+- **Dinheiro em centavos** (`Long`) na entrada e na saída; números com vírgula só dentro das contas, arredondados no fim.
+- **Honesto quando sabe pouco**: com menos de 60 dias de dados, mostra "Ainda conhecendo você" em vez de inventar.
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-MOT-01 | **Núcleo de estatística robusta**: mediana, quantis, desvio robusto (MAD), corte de extremos (winsorização), média com peso pelo tempo (meia-vida de 90 dias), tendência resistente a extremos (Theil–Sen), sorteio com semente (SplitMix64). | Testes com valores conhecidos; um gasto 100× maior não muda a mediana; mesma semente, mesmo sorteio. | ✅ 1.5 |
+| RF-MOT-02 | **Recorrências**: descobre sozinho o que se repete (salário, aluguel, assinaturas, academia): descrição normalizada (sem números, datas, acentos e "parcela 3/10"), valor parecido, intervalo regular (semanal, quinzenal, mensal, anual), pelo menos 3 vezes (anual: 2). Mostra a próxima data e o valor esperado, "valor varia" (conta de luz), **ficou mais cara**, **atrasou** (salário que não veio) e **parou**. Sugere virar conta fixa; "Não é recorrente" esconde. | Histórico inventado com salário, Netflix, academia, luz e 300 compras soltas: acha todas as recorrentes e **nenhuma** compra solta; aumento de preço e atraso apontados no dia certo. | ✅ 1.5 |
+| RF-MOT-03 | **Previsão do mês 2.0** (evolui RF-ANA-01): ritmo do dia a dia aprendido em até 12 meses (dia da semana, começo e fim do mês, peso maior no recente), misturado com o mês atual conforme a confiança; recorrências esperadas e ainda não lançadas entram (sem contar duas vezes as contas fixas); **2.000 cenários** simulados dão a **faixa de 80%** ("entre R$ X e R$ Y") e a **chance de fechar no vermelho**. | Backtest em 24 meses inventados de 4 perfis, nos dias 5, 10, 15, 20 e 25: erro médio menor que o da 1.5; a faixa de 80% contém o valor real em 70%–90% dos casos. | ✅ 1.5 |
+| RF-MOT-04 | **Próximos meses** (3, 6 e 12): saldo das contas dia a dia com salários e recorrências, contas fixas, faturas (no vencimento, na conta que paga), parcelas futuras, dívidas e o gasto do dia a dia com faixa. Mostra o **dia mais apertado**, o saldo no fim de cada mês e a chance de ficar negativo. | Dados inventados: faturas e parcelas no dia certo; dia mais apertado igual ao calculado à mão; sem dados futuros, a linha segue o ritmo com a faixa abrindo. | ✅ 1.5 |
+| RF-MOT-05 | **Fora do padrão**: gasto muito acima do normal da categoria (desvio robusto > 3,5 e mais que o dobro do comum, com pelo menos 8 gastos na categoria), **cobrança repetida** (mesma descrição e valor em até 2 dias, sem ser parcela), assinatura que subiu e categoria do mês que, até o mesmo dia, já passou de todos os meses anteriores e está pelo menos 60% acima do normal (com 6 meses para comparar). Os gastos são comparados na escala dos logaritmos (gastos têm "cauda longa"). | Dados inventados: aponta a compra fora da curva e a cobrança em dobro; **zero alarmes** num histórico normal de 12 meses. | ✅ 1.5 |
+| RF-MOT-06 | **Saúde financeira**: nota de 0 a 100 com 6 partes, cada uma explicada e com uma sugestão do que fazer: **sobra do mês** (25 pontos: 0% → 0, 20% ou mais → 25), **reserva de emergência** (25: meses de gastos essenciais cobertos por contas, caixinhas e investimentos resgatáveis; 0 → 0, 6 meses → 25), **compromissos** (20: parcelas e dívidas ÷ renda; até 10% → 20, 50% ou mais → 0), **cartão** (10: uso do limite; até 30% → 10, 90% → 0), **em dia** (10: contas e dívidas sem atraso nos últimos 3 meses) e **estabilidade** (10: quanto os gastos variam de um mês para o outro). Faixas com palavras gentis: Atenção · Em construção · Bem · Ótima. | Contas da nota conferidas com perfis inventados (cada parte separada); com menos de 60 dias ou sem renda: "Ainda conhecendo você". Texto diz que não é conselho financeiro. | ✅ 1.5 |
+| RF-MOT-07 | **Ritmo das categorias e orçamento inteligente**: aprende como cada categoria costuma andar no mês (mercado no começo, lazer no fim de semana) e avisa "no ritmo atual, Alimentação passa do limite por volta do dia 24"; sugere limites pelo histórico (60º percentil de 6 meses, com a tendência), arredondados. | Dados inventados: aviso no dia certo; sem alarme falso no começo do mês para categorias que gastam tudo no dia 1–5. | ✅ 1.5 |
+| RF-MOT-08 | **Dívidas: juros e plano para quitar**: descobre os **juros embutidos** de cada dívida parcelada (a taxa que faz as parcelas restantes valerem o saldo: método de Newton com bissecção de reserva), ao mês e ao ano; compara **avalanche** (maior juro primeiro) e **bola de neve** (menor saldo primeiro) com um valor extra por mês: quando fica livre e quanto economiza; "antecipar parcelas" mostra o desconto justo. | Casos conhecidos (Tabela Price) com taxa exata até 0,01%; dívida sem juros dá 0%; simulação mês a mês confere com a conta fechada. | ✅ 1.5 |
+| RF-MOT-09 | **Investimentos: rendimento real**: rentabilidade ao ano considerando cada aporte e resgate na sua data (TIR/XIRR, Newton com bissecção), no total da carteira e em cada investimento; comparação opcional com a inflação que a pessoa informar (sem internet não há índice). | Casos conhecidos (aporte único, aportes mensais, resgate no meio) com erro < 0,01%; menos de 30 dias de histórico: não mostra taxa ao ano. | ✅ 1.5 |
+| RF-MOT-10 | **Metas: quando chega lá**: ritmo de depósitos (mediana dos últimos 6 meses), data provável, chance de bater o prazo (simulação) e quanto por mês precisaria, com rendimento opcional. | Casos conhecidos; meta sem depósitos: explica em vez de prever. | ✅ 1.5 |
+| RF-MOT-11 | **"O Cryo percebeu" 2.0** (evolui RF-ANA-06): cada percepção ganha uma nota de importância (quanto dinheiro envolve × certeza × novidade); mostra as 3 a 5 mais importantes, sem repetir a mesma ideia. | Dados inventados: a ordem segue a nota; nenhuma frase repetida. | ✅ 1.5 |
+| RF-MOT-12 | **Categoria aprendida**: aprende com as próprias movimentações da pessoa qual categoria cada descrição costuma ter (classificador bayesiano simples, com peso no recente e no que ela corrigiu); ajuda o registro por frase e a importação quando as palavras-chave não bastam. Só sugere com certeza de pelo menos 60%. | Dados inventados: acerta 85% ou mais em movimentações separadas para teste; nunca troca uma categoria escolhida pela pessoa. | ✅ 1.5 |
+| RF-MOT-13 | **Rápido e sem travar**: tudo calculado fora da linha principal, com cache pela versão dos dados; 5 anos de dados (~10 mil movimentações) em menos de 300 ms num celular médio; a tela mostra o resultado anterior enquanto recalcula. | Teste de desempenho com 10 mil movimentações (limite folgado na JVM); nenhuma conta do motor na composição das telas. | ✅ 1.5 |
+| RF-MOT-15 | **500 testes de garantia** (tabela abaixo): estabilidade, escalabilidade, desempenho, economia de recursos e segurança, 100 casos cada. | Os 500 passam em `./gradlew testDebugUnitTest`. | ✅ 1.5 |
+| RF-MOT-14 | **Onde aparece**: Análises ganha, no topo, **Saúde financeira** e **Próximos meses**, e as seções **Recorrências** e **Fora do padrão**; a previsão do mês mostra a faixa; Dívidas ganha **Plano para quitar**; Investimento mostra o **rendimento ao ano**; Metas mostra **quando chega lá**; o Início mostra a faixa da previsão e o aviso mais importante. Telas novas: TELA-SAUDE, TELA-RECORRENCIAS e TELA-PLANO-DIVIDAS (os próximos meses ficam num cartão de Análises, com 3, 6 ou 12 meses). Planejar usa os limites sugeridos e o ritmo de cada categoria; a importação e o registro por frase usam a categoria aprendida quando nada mais acha a categoria. | Imagens das telas nos dois temas (DS-PAD-07); textos nas 10 línguas (RF-LNG). | ✅ 1.5 |
+
+Ordem de construção: **(1)** núcleo, recorrências, previsão 2.0 e próximos meses (RF-MOT-01..04, 13); **(2)** fora do padrão,
+saúde financeira, ritmo das categorias e percepções 2.0 (RF-MOT-05..07, 11); **(3)** dívidas, investimentos, metas e categoria
+aprendida (RF-MOT-08..10, 12). As telas (RF-MOT-14) usam o visual da 1.5 (DS-PROF).
+Código: `domain/engine/Engine.kt` (motor, cache e percepções), `domain/engine/Stats.kt`, `domain/engine/Recurrences.kt`,
+`domain/engine/Outlook.kt`, `domain/engine/Projection.kt`, `domain/engine/Signals.kt`, `domain/engine/Health.kt`,
+`domain/engine/Wealth.kt`, `domain/engine/CategoryModel.kt`; telas em `ui/screens/EngineScreens.kt`.
+Testes: `EngineTest` (um ou mais por requisito, com o teste contra o passado), `EngineStabilityTest`, `EngineScalabilityTest`,
+`EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` (os 500 de garantia), com os históricos inventados de `EngineFixtures`.
+
+**Resultado do teste contra o passado** (450 casos, 3 perfis × 3 sementes × 10 meses × 5 dias): erro médio 38% menor que a
+previsão da 1.4 (perfil estável −21%, renda irregular −42%, endividado −26%); a faixa de 80% conteve o valor real em 78% dos casos.
+Desempenho medido na JVM: 50 mil movimentações em ~85 ms; ~9 mil em 56–90 ms; ~4 MB de memória por cálculo.
+
+**Os 500 testes de garantia (RF-MOT-15)** rodam depois que o motor fica pronto: 5 blocos de 100 casos, cada bloco com um tipo
+de teste, cada caso com dados diferentes (semente própria, perfil e tamanho):
+
+| Bloco | Casos | O que cada caso confere |
+|---|---|---|
+| **Estabilidade** | 1–100 | Dados estranhos ou extremos (vazio, uma movimentação só, valores enormes, datas em ano bissexto, saldo negativo, sem renda, textos em outras escritas): o motor nunca quebra, nunca dá "NaN" nem infinito, as faixas ficam em ordem (mínimo ≤ provável ≤ máximo), notas entre 0 e 100, chances entre 0% e 100%, e o mesmo dado dá sempre o mesmo resultado. |
+| **Escalabilidade** | 101–200 | De 100 a 50 mil movimentações, de 1 a 40 contas, de 1 a 10 anos: o tempo cresce no máximo na proporção dos dados (sem explodir), e os resultados continuam válidos. |
+| **Desempenho** | 201–300 | Perfis realistas (até 5 anos, ~10 mil movimentações): o motor inteiro dentro do limite de tempo (RF-MOT-13), cada parte dentro do seu limite, e o recálculo com os mesmos dados vem do cache. |
+| **Economia de recursos** | 301–400 | Memória usada por cálculo dentro do limite, nada fica preso na memória depois de muitos cálculos seguidos (sem vazamento), número de cenários fixo, nenhuma thread nova, cache que não cresce sem parar. |
+| **Segurança** | 401–500 | Textos maliciosos (enormes, com caracteres de controle, de inversão de escrita, "%s", padrões que travam expressões regulares) terminam rápido e sem erro; o que o motor guarda é hash (HMAC-SHA256) e não contém nenhuma descrição, valor ou nome; backup com senha não deixa nada legível, recusa senha errada e arquivo adulterado; nada do motor fala com rede. |
+
+
 ### 6.13 Importação de extratos — RF-IMP (TELA-IMPORTAR, TELA-RELATORIO)
 
 Detalhe completo em [`docs/IMPORTACAO.md`](IMPORTACAO.md).
@@ -393,6 +459,28 @@ Testes: `AutoBackupTest`, `BackupFlowTest`, `RepositoryTest`.
 | RF-BLQ-06 | Não prender a pessoa fora | Sem trava no aparelho ou sem biometria, libera. | ✅ 1.0 |
 
 Testes: `DevModeFlowTest` (bloqueio).
+
+### 6.15a Proteção dos dados — RF-SEG (hash + criptografia)
+
+Pedido do Hanry (07/11/2026): "segurança de dados (o que está sendo armazenado)... não quero nenhum dado sensível sendo
+vazado". Decidido: **hash + criptografia**, só com o que o próprio Android já traz (sem biblioteca nova).
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-SEG-01 | **Cofre do aparelho**: as chaves do Cryo ficam no cofre do Android (Android Keystore), que não deixa a chave sair do aparelho (nem para o próprio app). Se o cofre falhar (aparelho com defeito), as funções que dependem dele avisam e não guardam nada sem proteção. | Revisão; teste com cofre falso. | ✅ 1.5 |
+| RF-SEG-02 | **Motor sem rastro**: os resultados do motor ficam só na memória; o pouco que ele guarda (recorrências que a pessoa escondeu) vira **HMAC-SHA256** com a chave do cofre: um código que não revela a descrição e não dá para desfazer. | Bloco de segurança dos 500 testes: o que fica guardado não contém descrição, valor nem nome. | ✅ 1.5 |
+| RF-SEG-03 | **Backup com senha** (opcional, em Backup automático e em "Salvar uma cópia agora"): **AES-256-GCM** com chave tirada da senha por **PBKDF2-HMAC-SHA256** (310 mil voltas, sal aleatório); só o começo do arquivo fica legível (app, versão, data), o resto é ilegível; arquivo adulterado é recusado. A senha nunca é guardada: para o backup automático, guarda-se a chave já derivada, trancada pelo cofre (RF-SEG-01). Sem a senha não há como abrir: o app avisa antes de ligar. | Testes: ida e volta, senha errada, arquivo adulterado, nada legível no arquivo, backups antigos (sem senha) continuam abrindo. | ✅ 1.5 |
+| RF-SEG-04 | **Restaurar com senha**: Ajustes e apresentação (RF-BOA-06) pedem a senha quando o arquivo é protegido (neste aparelho, abre sozinho com a chave guardada); senha errada explica e deixa tentar de novo. No "backup encontrado" do backup automático, um arquivo de outra senha é explicado ("restaure por Ajustes") em vez de oferecido. | `EngineSecurityTest`, revisão. | ✅ 1.5 |
+| RF-SEG-05 | **Tela de bloqueio do celular**: lembretes aparecem só como "Você tem uma conta para pagar" quando o celular está bloqueado (sem nome nem valor); o texto completo só com o celular desbloqueado. | Teste da notificação (versão pública sem dados). | ✅ 1.5 |
+| RF-SEG-06 | **Área de transferência**: o relatório completo copiado no modo desenvolvedor é marcado como sensível (Android 13+ não mostra a prévia); o anônimo não tem dados. | Revisão. | ✅ 1.5 |
+| RF-SEG-07 | **Nada em logs**: o app não escreve dados no registro do sistema (sem `Log`, `println` nem `printStackTrace`). | `PrdConformanceTest`. | ✅ 1.5 |
+Código: `data/Vault.kt` (cofre), `data/BackupCrypto.kt` (backup com senha e `BackupProtection`), `data/EngineStore.kt`
+(o que o motor guarda), `ui/screens/SecurityUi.kt`. Testes: `EngineSecurityTest`, `PrdConformanceTest`.
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-SEG-08 | **Banco de dados**: fica na área privada do app, protegida pela criptografia do próprio Android e fora do backup do Android (RNF-PRIV-03). Criptografia extra do banco inteiro (SQLCipher) avaliada e **deixada de fora** por enquanto: biblioteca nativa de vários MB que o F-Droid não compila do código-fonte, o que quebraria a compilação reproduzível (RNF-REP-01). | Decisão registrada (CLAUDE.md, seção 13). | ⛔ |
+| RF-SEG-09 | **Rust**: avaliado a pedido do Hanry (07/11/2026). Não entra agora: o Kotlin já protege a memória, Rust não impede vazamento de dados, e código nativo aumentaria o APK (uma cópia por tipo de processador) e complicaria a compilação reproduzível. Faz sentido **no futuro**, se o Cryo ganhar versões para outros sistemas (computador, iPhone): o motor em Rust seria um só para todos. | Decisão registrada (CLAUDE.md, seção 13). | ⛔ |
 
 ### 6.16 Ajustes e categorias — RF-AJU (TELA-AJUSTES, TELA-CATEGORIAS, TELA-CATEGORIA-EDITAR)
 
@@ -525,6 +613,7 @@ Pedido do Hanry (05/11/2026): uma explicação animada de como usar o app, para 
 | DAD-08 | Datas sem ano: ano da data completa mais recente do arquivo, voltando um ano se cairiam mais de 31 dias depois. |
 | DAD-09 | Chave de importação: `a<conta>|<formato>.id:<FITID>` ou `c<cartão>|<formato>.h:<hash>`, `#n` para linhas repetidas. |
 | DAD-10 | Backup JSON `{"app":"Cryo","version":2,...}`; backups de todas as versões abrem (`Backup.import`); campo novo só aparece quando usado. |
+| DAD-11 | Backup protegido (RF-SEG-03): envelope `{"app":"Cryo","version":3,"exportedAt":…,"cipher":"AES-256-GCM","kdf":"PBKDF2-HMAC-SHA256","iterations":…,"salt":…,"iv":…,"data":…}`; `data` = JSON do backup compactado (gzip) e trancado; o começo legível entra no GCM como dado associado (mexer nele também é recusado). A versão 3 faz a 1.4 dizer "backup de uma versão mais nova". |
 
 ---
 
@@ -602,6 +691,7 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | DS-COMP-21 | **`PageDots`** | Pontos de página (passeio): o da página atual vira uma pílula na cor do Cryo, com a largura animada; lido como "Página 2 de 5". | ✅ 1.4 |
 | DS-COMP-23 | **`Depth`** (`ui/components/Depth.kt`) | Peças da profundidade (DS-PROF): `Modifier.depthCard()` (cartão com sombra suave e fio de luz), `Modifier.groupedRow()` (linha de lista agrupada: só a primeira e a última com cantos), `Modifier.raised()` (volume de círculos e botões), `CryoBadge` (o ícone dentro do app), `BottomBarSurface` (barra de ação fixa elevada), `rememberHaptics()` (vibrações com nome: confirmar, recusar, ligar/desligar, tique, toque). As cores do fundo agrupado, dos cartões, das sombras e do cabeçalho ficam em `CryoTheme.depth` (`ui/theme/Theme.kt`). | ✅ 1.5 |
 | DS-COMP-24 | **`CryoButton`** | Botão principal com volume (DS-PROF-05); mesmos parâmetros do `Button`. | ✅ 1.5 |
+| DS-COMP-25 | **Gráficos do motor** (`ui/components/Charts.kt`) | `ForecastChart` com a faixa (P10–P90) e a linha do mais provável; `ProjectionChart` (saldo dos próximos meses, faixa, dia mais apertado marcado); `ScoreRing` (anel da nota de 0 a 100, cor pela faixa). Todos aparecem com o movimento DS-MOV e têm descrição para leitor de tela. | ✅ 1.5 |
 | DS-COMP-22 | **`Motion`** (`ui/components/Motion.kt`) | Tempos, curvas e transições do DS-MOV num lugar só: transições de tela e de aba, `animateMoney`, `rememberAppear` (0 → 1 uma vez, ao aparecer), `pressScale`. Animação nova usa estas peças. | ✅ 1.4 |
 
 ### 9.6 Padrões de tela (DS-PAD)
@@ -806,6 +896,8 @@ conferir sozinho:
 | `CHANGELOG.md` e `docs/CHANGELOG.pt-BR.md` têm a seção da versão atual; changelogs do fastlane com no máximo 500 caracteres | PRC-04, RF-LNG-09 |
 | Nenhuma animação infinita (`rememberInfiniteTransition`, `infiniteRepeatable`) nas telas e componentes | DS-MOV-10 |
 | Botão principal sempre com volume: nenhum `Button(` direto nas telas, só `CryoButton` | DS-PROF-05 |
+| Nada em logs: nenhum `Log`, `println` ou `printStackTrace` no app | RF-SEG-07 |
+| Motor sem Android e sem rede: `domain/engine` não importa `android.*` nem `java.net` | RF-MOT, RF-SEG-02 |
 | O ícone e o selo não têm mais a estrela (G4) | DS-ICO-02 |
 | Todas as rotas usam as transições do `Motion` (nenhum `NavHost` sem elas) | DS-MOV-02, DS-MOV-03 |
 | `README.md` em inglês e os 9 `docs/readme/README.<língua>.md` existem, cada um com a linha das 10 línguas, e toda imagem ou arquivo que citam existe | RF-LNG-09 |
@@ -832,7 +924,7 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.2 | ✅ 03/10/2026 | Backup automático (pasta e nuvem). |
 | 1.3 | ✅ 06/11/2026 (GitHub) | Importar extrato, modo desenvolvedor, correções de bloqueio. |
 | **1.4** | ✅ 06/11/2026 (GitHub; F-Droid pela etiqueta) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
-| **1.5** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **Ícone novo G4** (DS-ICO-02..05) · **Profundidade** em todo o app, com peso de app de iPhone (DS-PROF-01..09) · vibração ao toque. |
+| **1.5** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **Ícone novo G4** (DS-ICO-02..05) · **Profundidade** em todo o app, com peso de app de iPhone (DS-PROF-01..09) · vibração ao toque · **Motor financeiro** robusto, todo no aparelho (RF-MOT-01..15): recorrências, previsão com faixa, próximos meses, fora do padrão, saúde financeira, ritmo das categorias, juros e plano das dívidas, rendimento real, metas, categoria aprendida, 500 testes de garantia · **Proteção dos dados** com hash e criptografia (RF-SEG). |
 | 1.6 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
 
 ## 13. Glossário

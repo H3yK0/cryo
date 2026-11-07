@@ -268,7 +268,7 @@ class ImportModel(
         target = nt
         invert = inv
         autoInverted = inv
-        val result = withContext(Dispatchers.Default) { ImportPlanner.plan(st, nt, snap, Ledger(snap, today()).learnedCategories, inv) }
+        val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, nt, snap, lg.learnedCategories, inv, lg.categoryModel) } }
         planned = result
         rows = result.map(::applyEdit)
         planning = false
@@ -295,7 +295,7 @@ class ImportModel(
         planning = true
         planJob = viewModelScope.launch {
             val snap = snapshot()
-            val result = withContext(Dispatchers.Default) { ImportPlanner.plan(st, t, snap, Ledger(snap, today()).learnedCategories, inv) }
+            val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, t, snap, lg.learnedCategories, inv, lg.categoryModel) } }
             planned = result
             rows = result.map(::applyEdit)
             planning = false

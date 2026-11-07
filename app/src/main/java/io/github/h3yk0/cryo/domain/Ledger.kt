@@ -387,6 +387,11 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
         m
     }
 
+    /** RF-MOT-12: a categoria aprendida com as movimentações da pessoa (só na memória, feita quando alguém pede). */
+    val categoryModel: io.github.h3yk0.cryo.domain.engine.CategoryModel by lazy {
+        io.github.h3yk0.cryo.domain.engine.CategoryModel.train(s.txs, today)
+    }
+
     /** Descrições recentes (para sugestões ao digitar). */
     fun recentDescriptions(type: TxType, limit: Int = 30): List<Tx> =
         s.txs.asSequence().filter { it.type == type && it.description.isNotBlank() && it.debtId == null && !it.description.contains(" · ") }

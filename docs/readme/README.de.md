@@ -31,7 +31,7 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
 ## Was sie kann
 
 - **Erfassen per Satz oder Sprache.** Schreib oder sag „Mittagessen 12,50 mit Karte“ oder „Fernseher 500 in 10 Raten mit Kreditkarte“. Cryo versteht Betrag, Kategorie, Konto, Datum und Raten. Du prüfst nur noch und speicherst.
-- **Prognose zum Monatsende.** Sieh, wie viel bei deinem Tempo übrig bleiben sollte und wie viel du pro Tag ausgeben kannst.
+- **Ein Finanz-Rechenkern auf deinem Handy.** Die Prognose zum Monatsende kommt jetzt mit einer Spanne und der Wahrscheinlichkeit, im Minus zu landen (2.000 Szenarien, simuliert aus deinem eigenen Verlauf). Cryo findet außerdem selbst Gehalt, Miete und Abos, berechnet deinen Saldo für die nächsten 12 Monate, warnt vor ungewöhnlichen und doppelten Abbuchungen, gibt eine Note für deine finanzielle Gesundheit mit Tipps, zeigt die eingerechneten Zinsen deiner Schulden mit Tilgungsplan und die tatsächliche Jahresrendite deiner Anlagen. Alles offline berechnet.
 - **Ausgaben-Heatmap und Geldfluss.** Sieh, an welchen Tagen du am meisten ausgibst, woher das Geld kam und wohin es ging.
 - **Kontoauszüge importieren.** OFX, CSV, Tabelle (XLSX) oder PDF: Du prüfst die Liste, bevor etwas übernommen wird, mit vorgeschlagenen Kategorien, schon Vorhandenem abgewählt und erkannter Kreditkartenzahlung.
 - **Kreditkarten.** Abrechnungen, verfügbares Limit und Ratenkäufe, jede Rate in der richtigen Abrechnung.
@@ -48,6 +48,7 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
 - Keine Anmeldung, keine Werbung, kein Tracking.
 - Sperre per Fingerabdruck, Gesicht oder Displaysperre des Handys.
 - **Automatische Sicherung** in einem Ordner auf dem Handy oder in deiner Cloud (Google Drive, Nextcloud und andere), täglich, wöchentlich oder monatlich. Cryo schreibt die Datei über die Dateiauswahl von Android, und die Cloud-App lädt sie hoch.
+- **Passwortgeschützte Sicherungen** (optional): Die Dateien werden mit AES-256 verschlüsselt und sind ohne dein Passwort nicht lesbar. Der Schlüssel bleibt im sicheren Schlüsselspeicher von Android.
 - Sicherung in eine `.json`-Datei und Export als `.csv`-Tabelle, wann du willst.
 
 Die Spracheingabe nutzt die Spracherkennung, die schon auf deinem Handy installiert ist. Den Satz zu tippen funktioniert immer.

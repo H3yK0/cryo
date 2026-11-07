@@ -2,6 +2,9 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.domain.Num
+import io.github.h3yk0.cryo.domain.engine.GoalOutlook
+import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import android.Manifest
@@ -147,7 +150,10 @@ private fun BudgetsTab(l: Ledger) {
     val ym = l.today.ym()
     val usages = l.budgetUsages(ym)
     var editing by remember { mutableStateOf<Pair<Long?, Long>?>(null) } // categoria, valor sugerido
-    val suggestions = remember(l) { budgetSuggestions(l) }
+    // RF-MOT-07: limites sugeridos e ritmo de cada categoria vêm do motor (enquanto ele calcula, a sugestão simples).
+    val engine = rememberEngine()
+    val suggestions = engine?.budgetSuggestions?.mapNotNull { sg -> l.category[sg.categoryId]?.let { it to sg.amount } } ?: remember(l) { budgetSuggestions(l) }
+    val pace = engine?.pace?.associateBy { it.categoryId }.orEmpty()
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (usages.isNotEmpty()) {
@@ -181,7 +187,7 @@ private fun BudgetsTab(l: Ledger) {
                 )
             }
         }
-        items(usages, key = { it.category.id }) { u -> BudgetRow(u, hide) { editing = u.category.id to u.limit } }
+        items(usages, key = { it.category.id }) { u -> BudgetRow(u, hide, pace[u.category.id]?.crossDay) { editing = u.category.id to u.limit } }
         if (suggestions.isNotEmpty()) {
             item {
                 Column {
@@ -226,7 +232,7 @@ private fun budgetSuggestions(l: Ledger): List<Pair<io.github.h3yk0.cryo.data.db
 }
 
 @Composable
-private fun BudgetRow(u: BudgetUsage, hide: Boolean, onClick: () -> Unit) {
+private fun BudgetRow(u: BudgetUsage, hide: Boolean, crossDay: Int?, onClick: () -> Unit) {
     FlatItem(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(categoryIcon(u.category.icon), Color(u.category.color), 36.dp)
@@ -253,6 +259,9 @@ private fun BudgetRow(u: BudgetUsage, hide: Boolean, onClick: () -> Unit) {
             color = if (u.remaining >= 0) MaterialTheme.colorScheme.onSurfaceVariant else CryoTheme.colors.expense,
             modifier = Modifier.padding(top = 4.dp),
         )
+        if (crossDay != null) {
+            Text(Res.s(R.string.engine_pace_row, crossDay), style = MaterialTheme.typography.bodySmall, color = CryoTheme.colors.warning)
+        }
     }
 }
 
@@ -582,6 +591,7 @@ private fun GoalsTab(l: Ledger) {
     val archived = l.s.goals.filter { it.archived }
     val archivedSaved = archived.sumOf { l.goalSaved(it.id) }
     var action by remember { mutableStateOf<Pair<Goal, Boolean>?>(null) } // meta, guardar?
+    val engine = rememberEngine()
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (l.activeGoals.isEmpty()) {
             item {
@@ -618,6 +628,7 @@ private fun GoalsTab(l: Ledger) {
             GoalCard(
                 g, l, hide,
                 onClick = { nav.go(Routes.goalEdit(g.id)) },
+                outlook = engine?.goals?.get(g.id),
                 actions = { saved ->
                     FilledTonalButton(onClick = { action = g to true }) { Text(Res.s(R.string.plan_guardar)) }
                     OutlinedButton(onClick = { action = g to false }, enabled = saved > 0) { Text(Res.s(R.string.plan_retirar)) }
@@ -660,6 +671,7 @@ private fun GoalCard(
     hide: Boolean,
     onClick: () -> Unit,
     faded: Boolean = false,
+    outlook: GoalOutlook? = null,
     actions: @Composable androidx.compose.foundation.layout.FlowRowScope.(saved: Long) -> Unit,
 ) {
     val saved = l.goalSaved(g.id)
@@ -694,6 +706,15 @@ private fun GoalCard(
             else -> Res.s(R.string.plan_faltam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
         }
         Text(info, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
+        // RF-MOT-10: no ritmo dos depósitos, quando chega lá e a chance de bater o prazo.
+        val eta = outlook?.etaYm
+        if (outlook != null && !g.archived && !outlook.done && eta != null && outlook.pace > 0) {
+            val chance = outlook.chanceByDeadline?.let { " · " + Res.s(R.string.engine_goal_chance, Num.percent((it * 100).toInt())) }.orEmpty()
+            Text(
+                Res.s(R.string.engine_goal_eta, if (hide) Money.HIDDEN else Money.format(outlook.pace), Dates.monthYearInSentence(eta, l.today)) + chance,
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 2.dp),
+            )
+        }
         FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { actions(saved) }
     }
 }

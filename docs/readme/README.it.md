@@ -31,7 +31,7 @@ App Android per le finanze personali: semplice, completa, offline e open source.
 ## Cosa fa
 
 - **Registrazione a frase o a voce.** Scrivi o di' "pranzo 12,50 con bancomat" o "tv 500 in 10 rate con carta di credito". Cryo capisce l'importo, la categoria, il conto, la data e le rate. Tu controlli e salvi.
-- **Previsione di fine mese.** Vedi quanto dovrebbe restare al ritmo attuale e quanto puoi spendere al giorno.
+- **Un motore finanziario nel tuo telefono.** La previsione di fine mese ora arriva con un intervallo e la probabilità di chiudere in rosso (2.000 scenari simulati dalla tua cronologia). Cryo trova anche da solo stipendio, affitto e abbonamenti, proietta il saldo dei prossimi 12 mesi, segnala spese insolite e addebiti ripetuti, dà un punteggio di salute finanziaria con consigli, mostra gli interessi inclusi nei debiti con un piano per estinguerli e il rendimento reale degli investimenti. Tutto calcolato senza internet.
 - **Calendario delle spese e flusso del denaro.** Vedi in quali giorni spendi di più, da dove sono arrivati i soldi e dove sono andati.
 - **Importa gli estratti conto.** OFX, CSV, foglio di calcolo (XLSX) o PDF: controlli la lista prima che entri, con categorie suggerite, quello che è già in Cryo deselezionato e il pagamento della carta riconosciuto.
 - **Carte di credito.** Estratti conto, plafond disponibile e acquisti a rate, ogni rata nell'estratto giusto.
@@ -48,6 +48,7 @@ App Android per le finanze personali: semplice, completa, offline e open source.
 - Niente registrazione, niente pubblicità, niente tracciamento.
 - Blocco con impronta, volto o blocco schermo del telefono.
 - **Backup automatico** in una cartella del telefono o nel tuo cloud (Google Drive, Nextcloud e altri), ogni giorno, ogni settimana o ogni mese. Cryo scrive il file tramite il selettore di file di Android, ed è l'app del cloud a caricarlo.
+- **Backup protetti da password** (facoltativo): i file sono cifrati con AES-256 e nessuno può leggerli senza la tua password. La chiave resta nell'archivio sicuro di Android.
 - Backup in un file `.json` ed esportazione in un foglio `.csv`, quando vuoi.
 
 La registrazione a voce usa il riconoscimento vocale già installato sul telefono. Scrivere la frase funziona sempre.

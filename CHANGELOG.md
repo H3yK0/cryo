@@ -2,8 +2,17 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
-## 1.5 — new icon and depth
+## 1.5 — financial engine, protected backups and a new look
 
+- **Financial engine on your phone** (all offline): the end-of-month forecast now shows a range and the chance of ending in the red, from 2,000 scenarios simulated with your own history, and makes ~38% smaller errors than before when tested against past months
+- **Recurring payments found automatically**: salary, rent, subscriptions; Cryo warns when one gets more expensive or when your salary is late, and turns them into bills with one tap
+- **Coming months**: your balance day by day for 3, 6 or 12 months, with card bills, installments, bills and debts, the tightest day and the chance of going negative
+- **Financial health score** (0 to 100) in 6 explained parts, with what to do to improve; **out of the ordinary** spending and **repeated charges**; category pace ("at this pace, Food goes over the limit around day 24") and smarter budget suggestions
+- **Debts**: the interest built into each debt, a payoff plan (highest interest first or smallest debt first) with how much you save, and the fair price to pay installments early
+- **Investments**: real yearly return counting each deposit on its date, optionally compared with inflation; **goals** show when you'll get there
+- **Learned categories**: Cryo learns how you categorize and helps when importing statements and logging by phrase
+- **Password-protected backups** (optional, AES-256, key kept in Android's secure keystore); bill reminders show no names or amounts on the lock screen
+- 500 extra guarantee tests (stability, scalability, performance, resources and security)
 - **New icon**: the square C is now gold, with thickness and a touch of light, on the same Cryo blue. The little star is gone. Chosen by comparing 11 designs with research on visual attention
 - **Depth across the app**: content sits on cards with soft shadows over a "grouped" background, like the best iPhone apps; the Home header uses the icon's gradient; shortcuts and the main button have volume and shrink with a spring when touched
 - **Grouped lists**: each day in Activity, a card's bill and the account history form a single card; Settings is grouped like the iPhone's

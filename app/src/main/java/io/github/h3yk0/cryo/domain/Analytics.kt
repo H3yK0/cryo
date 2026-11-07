@@ -30,6 +30,11 @@ data class MonthForecast(
     val projectedVariable: Long,
     val usedHistory: Boolean,
     val series: List<ForecastPoint>,
+    /**
+     * O que já está combinado para cada dia que falta (agendados, contas fixas e parcelas de dívidas), em centavos: entrada
+     * positiva, saída negativa. Índice = dia do mês. O motor (RF-MOT-03) soma a isto o gasto do dia a dia simulado.
+     */
+    val plannedNet: List<Long> = emptyList(),
 ) {
     val projectedIncome: Long get() = incomeSoFar + scheduledIncome + pendingBillsIncome
     val projectedExpense: Long get() = expenseSoFar + scheduledExpense + pendingBillsExpense + pendingDebts + projectedVariable
@@ -96,6 +101,7 @@ fun Ledger.forecast(): MonthForecast {
         TxType.EXPENSE -> net[t.date.dayOfMonth] -= t.amount
         else -> {}
     }
+    val planned = LongArray(days + 1)
     val points = ArrayList<ForecastPoint>(days)
     var cum = 0L
     for (day in 1..d) {
@@ -105,18 +111,19 @@ fun Ledger.forecast(): MonthForecast {
     if (d < days) {
         val proj = DoubleArray(days + 1)
         for (t in future) when (t.type) {
-            TxType.INCOME -> proj[t.date.dayOfMonth] += t.amount.toDouble()
-            TxType.EXPENSE -> proj[t.date.dayOfMonth] -= t.amount.toDouble()
+            TxType.INCOME -> planned[t.date.dayOfMonth] += t.amount
+            TxType.EXPENSE -> planned[t.date.dayOfMonth] -= t.amount
             else -> {}
         }
         for (p in pending) {
             val day = max(p.due.dayOfMonth, d + 1).coerceAtMost(days)
-            proj[day] += if (p.bill.kind == CategoryKind.INCOME) p.bill.amount.toDouble() else -p.bill.amount.toDouble()
+            planned[day] += if (p.bill.kind == CategoryKind.INCOME) p.bill.amount else -p.bill.amount
         }
         for ((i, pend) in debtsDue) {
             val dueDay = if (i.overdueCount > 0) d + 1 else ym.dayClamped(i.debt.dueDay).dayOfMonth
-            proj[max(dueDay, d + 1).coerceAtMost(days)] -= pend.toDouble()
+            planned[max(dueDay, d + 1).coerceAtMost(days)] -= pend
         }
+        for (day in d + 1..days) proj[day] = planned[day].toDouble()
         var pc = cum.toDouble()
         for (day in d + 1..days) {
             pc += proj[day] - rate
@@ -134,7 +141,7 @@ fun Ledger.forecast(): MonthForecast {
         scheduledIncome = schedInc, scheduledExpense = schedExp,
         pendingBillsIncome = pendInc, pendingBillsExpense = pendExp, pendingDebts = pendDebts,
         dailyRate = rate.roundToLong(), projectedVariable = projectedVariable,
-        usedHistory = usedHistory, series = points,
+        usedHistory = usedHistory, series = points, plannedNet = planned.toList(),
     )
 }
 

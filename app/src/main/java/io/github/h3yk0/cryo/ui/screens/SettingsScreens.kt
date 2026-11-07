@@ -133,9 +133,14 @@ fun SettingsScreen() {
     val devMode by c.dev.enabledFlow.collectAsState(initial = c.dev.enabled)
     var versionTaps by remember { mutableIntStateOf(0) }
 
+    // RF-SEG-03: com a proteção ligada, a cópia sai trancada com a senha.
+    val protectedBackups by c.backupProtection.enabled.collectAsState()
+    var protecting by remember { mutableStateOf(false) }
+    var showProtect by remember { mutableStateOf(false) }
     val exportJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) c.launch {
-            val ok = writeText(ctx, uri, Backup.export(c.repo.loadOnce(), testMode = c.sandbox))
+            val now = System.currentTimeMillis()
+            val ok = writeText(ctx, uri, c.backupProtection.seal(Backup.export(c.repo.loadOnce(), exportedAt = now, testMode = c.sandbox), now, c.sandbox))
             c.message(if (ok) Res.s(R.string.settings_backup_salvo) else Res.s(R.string.settings_nao_foi_possivel_salvar))
         }
     }
@@ -145,16 +150,16 @@ fun SettingsScreen() {
             c.message(if (ok) Res.s(R.string.settings_planilha_exportada) else Res.s(R.string.settings_nao_foi_possivel_salvar))
         }
     }
+    // RF-SEG-04: backup protegido pede a senha (ou abre sozinho com a chave deste aparelho).
+    val openBackup = rememberBackupOpener { restored ->
+        if (restored.testMode && !c.sandbox) c.message(Res.s(R.string.settings_este_backup_modo_teste)) else pendingImport = restored
+    }
     val importJson = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) c.launch {
             try {
                 val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
                     ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
-                val restored = Backup.import(text)
-                if (restored.testMode && !c.sandbox) {
-                    throw IllegalArgumentException(Res.s(R.string.settings_este_backup_modo_teste))
-                }
-                pendingImport = restored
+                withContext(Dispatchers.Main) { openBackup(text) }
             } catch (e: Exception) {
                 c.message(e.message ?: Res.s(R.string.settings_arquivo_invalido))
             }
@@ -278,6 +283,11 @@ fun SettingsScreen() {
                 SettingLink(Icons.Rounded.FileUpload, Res.s(R.string.settings_restaurar_backup_2), Res.s(R.string.settings_substitui_dados_atuais_pelos)) {
                     importJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
                 }
+                SwitchRow(
+                    Res.s(R.string.sec_protect_title), protectedBackups,
+                    { on -> if (on) showProtect = true else { c.backupProtection.disable(); c.message(Res.s(R.string.sec_protect_disabled)) } },
+                    subtitle = Res.s(if (protectedBackups) R.string.sec_protect_on else R.string.sec_protect_off),
+                )
                 SettingLink(Icons.Rounded.TableChart, Res.s(R.string.settings_exportar_planilha_csv), Res.s(R.string.settings_abre_excel_ou_planilhas)) {
                     exportCsv.launch("cryo-movimentacoes-${LocalDate.now()}.csv")
                 }
@@ -367,6 +377,20 @@ fun SettingsScreen() {
             confirmButton = { TextButton(onClick = { editName = false; c.launch { c.settings.setName(name) } }) { Text(Res.s(R.string.wallet_salvar)) } },
             dismissButton = { TextButton(onClick = { editName = false }) { Text(Res.s(R.string.wallet_cancelar)) } },
         )
+    }
+    if (showProtect) {
+        ProtectBackupSheet(protecting, onDismiss = { showProtect = false }) { pw ->
+            protecting = true
+            c.launch {
+                val ok = runCatching { withContext(Dispatchers.Default) { c.backupProtection.enable(pw) } }.getOrDefault(false)
+                pw.fill(' ')
+                withContext(Dispatchers.Main) {
+                    protecting = false
+                    showProtect = false
+                    c.message(Res.s(if (ok) R.string.sec_protected_done else R.string.sec_protect_no_vault))
+                }
+            }
+        }
     }
     pendingImport?.let { restored ->
         val snap = restored.snapshot

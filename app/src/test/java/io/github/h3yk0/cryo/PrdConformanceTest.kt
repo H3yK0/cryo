@@ -226,6 +226,26 @@ class PrdConformanceTest {
         assertEquals("Botão principal sem volume: use CryoButton (DS-PROF-05)", emptyList<String>(), found)
     }
 
+    @Test fun nadaEmLogs() { // RF-SEG-07
+        val bad = kotlinFiles(main).flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                val code = line.substringBefore("//")
+                if (Regex("""(?<![A-Za-z])(Log\.[vdiwe]\(|println\(|printStackTrace\()""").containsMatchIn(code)) "${f.relativeTo(root).path}:${i + 1}" else null
+            }
+        }
+        assertEquals("O app não escreve dados no registro do sistema", emptyList<String>(), bad)
+    }
+
+    @Test fun motorSemAndroidESemRede() { // RF-MOT, RF-SEG-02, RNF-PRIV-01
+        val engine = File(main, "domain/engine")
+        assertTrue(engine.isDirectory)
+        val bad = kotlinFiles(engine).flatMap { f ->
+            f.readLines().filter { it.startsWith("import android.") || it.startsWith("import java.net") || it.startsWith("import javax.net") || it.contains("URL(") }
+                .map { "${f.name}: $it" }
+        }
+        assertEquals("O motor é puro Kotlin, sem Android e sem rede", emptyList<String>(), bad)
+    }
+
     @Test fun iconeSemEstrela() { // DS-ICO-02, DS-ICO-03
         val drawable = File(app, "src/main/res/drawable")
         val star = "M54,44.5"

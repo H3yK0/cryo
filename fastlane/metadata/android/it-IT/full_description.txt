@@ -6,7 +6,7 @@ Scrivi o di' "pranzo 14 con bancomat" o "tv 1000 in 10 rate con carta di credito
 <b>Cosa trovi</b>
 <ul>
 <li>Panoramica: saldo dei conti, patrimonio e quanto è entrato e uscito nel mese</li>
-<li>Previsione di fine mese: quanto dovrebbe avanzare a questo ritmo e quanto puoi spendere al giorno</li>
+<li>Motore finanziario sul telefono: previsione di fine mese con intervallo, pagamenti ricorrenti trovati da solo, saldo dei prossimi 12 mesi, spese insolite, punteggio di salute finanziaria, piano per estinguere i debiti e rendimento reale degli investimenti</li>
 <li>Calendario termico: ogni giorno ha un colore in base a quanto hai speso</li>
 <li>Flusso del denaro: da dove arrivano i soldi e dove vanno</li>
 <li>Importazione dell'estratto conto (OFX, CSV, foglio XLSX o PDF): controlli l'elenco prima, e quello che è già nell'app resta fuori</li>
@@ -26,6 +26,7 @@ Scrivi o di' "pranzo 14 con bancomat" o "tv 1000 in 10 rate con carta di credito
 <li>Blocco con impronta, volto o codice del telefono</li>
 <li>Opzione per nascondere gli importi sullo schermo</li>
 <li>Backup automatico in una cartella del telefono o nel tuo cloud (Google Drive, Nextcloud e altri): il caricamento lo fa l'app del cloud</li>
+<li>Backup protetti da password (AES-256), con la chiave nell'archivio sicuro di Android</li>
 <li>Backup su file ed esportazione in foglio di calcolo (CSV)</li>
 </ul>
 

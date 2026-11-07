@@ -6,7 +6,7 @@ Schreib oder sag „Mittagessen 12,50 mit Karte“ oder „Fernseher 900 in 6 Ra
 <b>Was du bekommst</b>
 <ul>
 <li>Übersicht: Kontostände, Vermögen und was diesen Monat rein- und rausging</li>
-<li>Prognose zum Monatsende: was bei diesem Tempo übrig bleibt und wie viel du pro Tag ausgeben kannst</li>
+<li>Finanz-Rechenkern auf dem Handy: Monatsprognose mit Spanne, automatisch erkannte wiederkehrende Zahlungen, Saldo der nächsten 12 Monate, ungewöhnliche Abbuchungen, Note für finanzielle Gesundheit, Tilgungsplan und tatsächliche Rendite</li>
 <li>Heatmap-Kalender: Jeder Tag bekommt eine Farbe je nach Ausgaben</li>
 <li>Geldfluss: woher das Geld kam und wohin es ging</li>
 <li>Import von Kontoauszügen (OFX, CSV, XLSX-Tabelle oder PDF): Du prüfst die Liste vorher, und was schon in der App ist, bleibt draußen</li>
@@ -26,6 +26,7 @@ Schreib oder sag „Mittagessen 12,50 mit Karte“ oder „Fernseher 900 in 6 Ra
 <li>Sperre mit Fingerabdruck, Gesicht oder PIN des Handys</li>
 <li>Option, Beträge auf dem Bildschirm auszublenden</li>
 <li>Automatische Sicherung in einem Ordner auf dem Handy oder in deiner Cloud (Google Drive, Nextcloud und andere): Das Hochladen übernimmt die App der Cloud</li>
+<li>Passwortgeschützte Sicherungen (AES-256), der Schlüssel liegt im sicheren Schlüsselspeicher von Android</li>
 <li>Sicherung als Datei und Export als Tabelle (CSV)</li>
 </ul>
 

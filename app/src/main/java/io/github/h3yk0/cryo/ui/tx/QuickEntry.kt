@@ -66,6 +66,9 @@ fun Ledger.parseContext(settings: AppSettings) = ParseContext(
     today = today, accounts = s.accounts, cards = s.cards, categories = s.categories,
     investments = s.investments, goals = s.goals, learned = learnedCategories,
     defaultAccountId = settings.defaultAccountId, debts = s.debts,
+    categoryGuess = { kind, desc ->
+        categoryModel.guess(if (kind == io.github.h3yk0.cryo.data.db.CategoryKind.INCOME) io.github.h3yk0.cryo.data.db.TxType.INCOME else io.github.h3yk0.cryo.data.db.TxType.EXPENSE, desc)?.categoryId
+    },
 )
 
 /**

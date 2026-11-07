@@ -228,6 +228,9 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt, Sections.kt, Motion
 | `InfoCard` | Aviso discreto | Cartão com profundidade, cantos 24, ícone colorido pelo tipo |
 | `PageDots` | Pontos de página (passeio) | Pontos de 8 dp; o atual vira pílula de 24 dp na cor `primary`; lido como "Página 2 de 5" |
 | `Motion` | Tempos, curvas e transições | Seção 5.1 |
+| `ScoreRing` | Nota de 0 a 100 (saúde financeira, 1.5) | Anel que se desenha ao aparecer; número no meio; cor pela faixa da nota |
+| `ProjectionChart` | Saldo dos próximos meses (1.5) | Faixa clara (8 em cada 10 cenários), linha do mais provável, ponto no dia mais apertado; o zero só entra na escala quando o saldo chega perto dele |
+| `HealthCard`, `ProjectionCard`, `RecurringCard`, `AnomaliesCard` | Cartões do motor em Análises (1.5) | Em `ui/screens/EngineScreens.kt`; cada um com "Como cheguei" em texto pequeno |
 | `CryoTopBar` | Barra de título | Voltar + título + ações |
 | `ConfirmDialog` | Confirmar algo importante | Pergunta, consequência, verbo |
 | `AmountField` | Digitar valor | Estilo caixa eletrônico: só números, centavos se ajustam sozinhos (1 → R$ 0,01) |
@@ -240,7 +243,7 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt, Sections.kt, Motion
 | `ChoiceRow` | Escolha única com explicação | Botão redondo + título + texto |
 | `Stepper` | Número com − e + | Parcelas, dia do mês |
 | `ColorChooser` / `IconChooser` / `EmojiChooser` | Personalizar itens | Círculos selecionáveis |
-| Gráficos (`Charts.kt`) | Ver seção 8 | Desenhados à mão em Canvas, sem biblioteca |
+| Gráficos (`Charts.kt`) | Ver seção 8 | Desenhados à mão em Canvas, sem biblioteca; `ForecastChart` mostra a faixa do motor (1.5) |
 
 ## 7. Ícones e marca
 
@@ -271,7 +274,11 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt, Sections.kt, Motion
 Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 
 - **Previsão do mês** (`ForecastChart`): linha do saldo; cheia até hoje, **tracejada** na projeção; o valor do fim do mês fica
-  verde se fecha no azul e vermelho se fecha no vermelho.
+  verde se fecha no azul e vermelho se fecha no vermelho. Com o motor (1.5), a projeção ganha a **faixa** (área clara: 8 em
+  cada 10 cenários) e a linha tracejada é o mais provável.
+- **Próximos meses** (`ProjectionChart`, 1.5): saldo das contas por 3, 6 ou 12 meses, faixa e linha do mais provável; o dia mais
+  apertado ganha um ponto (vermelho se negativo).
+- **Nota de saúde** (`ScoreRing`, 1.5): anel de 0 a 100.
 - **Calendário de calor** (`HeatmapCalendar`): um quadradinho por dia; quanto mais gasto, mais forte a cor `primary`
   (5 níveis: 0, 22%, 42%, 70%, 100%); dias futuros apagados.
 - **Fluxo do dinheiro** (`SankeyChart`): de onde o dinheiro veio e para onde foi.
@@ -313,6 +320,13 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 | <img src="visual/analises.png" width="220"><br>Análises | <img src="visual/dividas.png" width="220"><br>Dívidas | <img src="visual/divida-detalhe.png" width="220"><br>Detalhe da dívida |
 | <img src="visual/ajustes.png" width="220"><br>Ajustes | <img src="visual/backup-automatico.png" width="220"><br>Backup automático | <img src="visual/backup-encontrado.png" width="220"><br>Backup encontrado |
 | <img src="visual/boas-vindas.png" width="220"><br>Boas-vindas | <img src="visual/inicio-escuro.png" width="220"><br>Tema escuro | <img src="visual/inicio-material-you.png" width="220"><br>Material You |
+
+**Motor financeiro (1.5)**: os números vêm com a explicação de onde saíram e, quando são previsão, com a faixa (8 em cada 10
+cenários). A nota de saúde usa verde (Bem/Ótima), âmbar (Em construção) e vermelho (Atenção), sempre com a palavra junto.
+
+| | | |
+|---|---|---|
+| <img src="visual/saude-financeira.png" width="220"><br>Saúde financeira | <img src="visual/recorrencias.png" width="220"><br>O que se repete | <img src="visual/plano-dividas.png" width="220"><br>Plano para quitar |
 
 **Como usar o Cryo (passeio, 1.4)**: cada página anima a ilustração e para no quadro final (aqui, o final).
 

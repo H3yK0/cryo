@@ -48,6 +48,8 @@ class LanguageScreensTest {
 
     @Before
     fun setUp() {
+        // O motor (RF-MOT) roda na hora nas imagens.
+        io.github.h3yk0.cryo.domain.engine.EngineRunner.inline = true
         c = AppContainer(ApplicationProvider.getApplicationContext())
         runBlocking { seed(c, today); c.autoBackup.clear() }
         val deadline = System.currentTimeMillis() + 10_000

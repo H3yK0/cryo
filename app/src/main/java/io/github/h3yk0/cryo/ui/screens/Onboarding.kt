@@ -125,16 +125,16 @@ fun OnboardingScreen() {
     var showCurrency by rememberSaveable { mutableStateOf(false) }
     var restoring by remember { mutableStateOf<Backup.Restored?>(null) }
     // RF-BOA-06: quem já usa o Cryo (celular novo) restaura um backup e pula a apresentação.
+    // RF-SEG-04: um backup protegido pede a senha antes de restaurar.
+    val openBackup = rememberBackupOpener { restored ->
+        if (restored.testMode && !c.sandbox) c.message(Res.s(R.string.settings_este_backup_modo_teste)) else restoring = restored
+    }
     val pickBackup = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) c.launch {
             try {
                 val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
                     ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
-                val restored = Backup.import(text)
-                if (restored.testMode && !c.sandbox) {
-                    throw IllegalArgumentException(Res.s(R.string.settings_este_backup_modo_teste))
-                }
-                restoring = restored
+                withContext(Dispatchers.Main) { openBackup(text) }
             } catch (e: Exception) {
                 c.message(e.message ?: Res.s(R.string.settings_arquivo_invalido))
             }

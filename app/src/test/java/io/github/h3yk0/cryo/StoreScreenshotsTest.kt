@@ -74,6 +74,8 @@ class StoreScreenshotsTest {
     @Before
     fun setUp() {
         assumeTrue(System.getProperty("cryo.storeAssets") == "true")
+        // O motor (RF-MOT) roda na hora nas imagens.
+        io.github.h3yk0.cryo.domain.engine.EngineRunner.inline = true
         c = AppContainer(ApplicationProvider.getApplicationContext())
         runBlocking { seed(c, day); c.autoBackup.clear() }
         val deadline = System.currentTimeMillis() + 10_000

@@ -2,6 +2,11 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import kotlin.math.roundToInt
+import io.github.h3yk0.cryo.ui.components.rememberEngine
+import io.github.h3yk0.cryo.domain.Num
+import io.github.h3yk0.cryo.domain.engine.Certainty
+import io.github.h3yk0.cryo.domain.engine.MonthOutlook
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.clickable
@@ -82,9 +87,12 @@ fun InsightsScreen() {
     val flow = remember(l, ymKey) { l.moneyFlow(ym) }
     val cats = remember(l, ymKey) { l.byCategory(ym, CategoryKind.EXPENSE) }
     val bars = remember(l, ymKey) { l.lastMonths(6, if (ym.isAfter(l.today.ym())) l.today.ym() else ym) }
-    val insights = remember(l) { l.insights() }
+    val classic = remember(l) { l.insights() }
     val summary = remember(l, ymKey) { l.monthSummary(ym) }
     val nav = LocalNav.current
+    // RF-MOT: o motor calcula fora da linha principal; enquanto não chega, a tela mostra o que já tinha.
+    val engine = rememberEngine()
+    val insights = engine?.insights?.map { it.toInsight() } ?: classic
 
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.tab_insights)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
@@ -100,7 +108,8 @@ fun InsightsScreen() {
             }
 
             if (isCurrent) {
-                item { ForecastCard(forecast) }
+                engine?.let { e -> item { HealthCard(e.health) { nav.go(Routes.HEALTH) } } }
+                item { ForecastCard(forecast, engine?.outlook) }
                 if (insights.isNotEmpty()) {
                     item {
                         // Direção 2.0: as observações como avisos discretos (DS-COMP-17), como no Início.
@@ -111,6 +120,11 @@ fun InsightsScreen() {
                             }
                         }
                     }
+                }
+                engine?.let { e ->
+                    item { ProjectionCard(e.projection) }
+                    item { RecurringCard(e, l) { nav.go(Routes.RECURRING) } }
+                    if (e.anomalies.isNotEmpty()) item { AnomaliesCard(e.anomalies) { id -> nav.go(Routes.txEdit(id)) } }
                 }
             } else {
                 item {
@@ -223,23 +237,37 @@ fun InsightsScreen() {
 }
 
 @Composable
-private fun ForecastCard(f: MonthForecast) {
+private fun ForecastCard(f: MonthForecast, o: MonthOutlook?) {
     val hide = LocalSettings.current.hideValues
+    // RF-MOT-03: com o motor, o número é o mais provável dos cenários e vem com a faixa; sem ele, a conta da 1.4.
+    val result = o?.mid ?: f.projectedResult
     FlatItem {
         Text(Res.s(R.string.insights_previsao_fim_mes), style = MaterialTheme.typography.titleMedium)
         Row(verticalAlignment = Alignment.Bottom) {
             MoneyText(
-                f.projectedResult, signed = true, style = MaterialTheme.typography.headlineMedium,
-                color = if (f.projectedResult >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+                result, signed = true, style = MaterialTheme.typography.headlineMedium,
+                color = if (result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
             )
             Text(
-                if (f.projectedResult >= 0) Res.s(R.string.insights_devem_sobrar) else Res.s(R.string.insights_devem_faltar),
+                if (result >= 0) Res.s(R.string.insights_devem_sobrar) else Res.s(R.string.insights_devem_faltar),
                 style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp),
             )
         }
+        if (o != null && f.remainingDays > 0) {
+            Text(
+                Res.s(R.string.engine_between_80, if (hide) Money.HIDDEN else Money.format(o.low), if (hide) Money.HIDDEN else Money.format(o.high)),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (o.chanceNegative >= 0.05) {
+                Text(
+                    Res.s(R.string.engine_ins_chance_red, Num.percent((o.chanceNegative * 100).roundToInt())),
+                    style = MaterialTheme.typography.bodySmall, color = CryoTheme.colors.warning,
+                )
+            }
+        }
         Spacer(Modifier.height(8.dp))
-        ForecastChart(f)
+        ForecastChart(f, band = o?.band, endValue = o?.mid)
         Text(
             Res.s(R.string.insights_linha_cheia_que_ja, f.daysInMonth),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -253,12 +281,30 @@ private fun ForecastCard(f: MonthForecast) {
         if (f.pendingBillsExpense > 0) Line(Res.s(R.string.insights_contas_fixas_pagar), -f.pendingBillsExpense, CryoTheme.colors.expense)
         if (f.scheduledExpense > 0) Line(Res.s(R.string.insights_parcelas_agendados), -f.scheduledExpense, CryoTheme.colors.expense)
         if (f.pendingDebts > 0) Line(Res.s(R.string.insights_parcelas_dividas_pagar), -f.pendingDebts, CryoTheme.colors.expense)
-        if (f.remainingDays > 0) {
+        if (o != null) {
+            if (o.expectedIncome > 0) Line(Res.s(R.string.engine_line_expected_income), o.expectedIncome, CryoTheme.colors.income)
+            if (o.expectedExpense > 0) Line(Res.s(R.string.engine_line_expected_expense), -o.expectedExpense, CryoTheme.colors.expense)
+            if (f.remainingDays > 0) {
+                Line(Res.s(R.string.insights_dia_dia_dia_dias, if (hide) Money.HIDDEN else Money.format(o.dailyRate), f.remainingDays), -o.variableMid, CryoTheme.colors.expense)
+            }
+        } else if (f.remainingDays > 0) {
             Line(Res.s(R.string.insights_dia_dia_dia_dias, if (hide) Money.HIDDEN else Money.format(f.dailyRate), f.remainingDays), -f.projectedVariable, CryoTheme.colors.expense)
         }
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
-        Line(Res.s(R.string.insights_resultado_previsto), f.projectedResult, if (f.projectedResult >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
-        if (f.usedHistory) {
+        Line(
+            Res.s(if (o != null) R.string.engine_line_most_likely else R.string.insights_resultado_previsto), result,
+            if (result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true,
+        )
+        if (o != null) {
+            Text(
+                Res.s(R.string.engine_forecast_how, Num.int(o.scenarios.toLong()), o.historyDays),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
+            )
+            if (o.certainty == Certainty.LOW) {
+                Text(Res.s(R.string.engine_forecast_low), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        } else if (f.usedHistory) {
             Text(
                 Res.s(R.string.insights_como_mes_esta_comeco),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,

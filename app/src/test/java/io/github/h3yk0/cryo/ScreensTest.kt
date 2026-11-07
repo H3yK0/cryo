@@ -2,14 +2,15 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo
 
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.height
 import android.app.Application
 import android.content.Context
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
@@ -103,6 +104,8 @@ class ScreensTest {
 
     @Before
     fun setUp() {
+        // O motor (RF-MOT) roda na hora nas imagens, para elas já saírem com o resultado.
+        io.github.h3yk0.cryo.domain.engine.EngineRunner.inline = true
         c = AppContainer(ApplicationProvider.getApplicationContext())
         runBlocking {
             seed(c, today)
@@ -197,6 +200,19 @@ class ScreensTest {
 
     @Config(qualifiers = "+w393dp-h1500dp-xxhdpi")
     @Test fun autoBackupEmpty() = shot("29_backup_automatico") { AutoBackupScreen() }
+
+    // RF-MOT-14: as telas do motor financeiro.
+    @Test fun health() = shot("53_saude_financeira") { io.github.h3yk0.cryo.ui.screens.HealthScreen() }
+
+    @Test fun healthDark() = shot("54_saude_financeira_escuro", dark = true) { io.github.h3yk0.cryo.ui.screens.HealthScreen() }
+
+    @Test fun recurring() = shot("55_recorrencias") { io.github.h3yk0.cryo.ui.screens.RecurringScreen() }
+
+    @Test fun debtPlan() = shot("56_plano_dividas") { io.github.h3yk0.cryo.ui.screens.DebtPlanScreen() }
+
+    /** Análises inteira (tela bem alta), para ver todos os cartões do motor de uma vez. */
+    @Config(qualifiers = "+w393dp-h2600dp-xxhdpi")
+    @Test fun insightsEngine() = shot("57_analises_motor") { InsightsScreen() }
 
     @Config(qualifiers = "+w393dp-h1900dp-xxhdpi")
     @Test fun autoBackupConfigured() {

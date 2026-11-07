@@ -143,6 +143,12 @@ object Money {
 object Num {
     fun percent(p: Int): String = NumberFormat.getPercentInstance(AppLocale.locale).format(p / 100.0)
     fun int(n: Long): String = NumberFormat.getIntegerInstance(AppLocale.locale).format(n)
+
+    /** Porcentagem com uma casa (0,1234 → "12,3%"), para juros e rendimentos (RF-MOT-08, RF-MOT-09). */
+    fun percent1(x: Double): String = NumberFormat.getPercentInstance(AppLocale.locale).apply {
+        minimumFractionDigits = 1
+        maximumFractionDigits = 1
+    }.format(x)
     fun decimal(x: Double, digits: Int = 1): String = NumberFormat.getNumberInstance(AppLocale.locale).apply {
         minimumFractionDigits = digits
         maximumFractionDigits = digits

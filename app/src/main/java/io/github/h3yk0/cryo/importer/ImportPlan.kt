@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.importer
 
+import io.github.h3yk0.cryo.domain.engine.CategoryModel
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
@@ -64,7 +65,12 @@ data class ImportRow(
 }
 
 /** Sugere a categoria pela descrição: o que você já usou antes e as palavras-chave de cada categoria. */
-class CategoryGuesser(categories: List<Category>, private val learned: Map<String, Long>) {
+class CategoryGuesser(
+    categories: List<Category>,
+    private val learned: Map<String, Long>,
+    /** RF-MOT-12: a categoria aprendida, usada só quando nenhuma regra acha a categoria. */
+    private val model: ((CategoryKind, String) -> Long?)? = null,
+) {
     private class NameRule(val category: Category, val regex: Regex, val score: Double)
     private class KeywordRule(val category: Category, val keyword: String, val regex: Regex)
 
@@ -103,6 +109,7 @@ class CategoryGuesser(categories: List<Category>, private val learned: Map<Strin
                 kw.length >= 6 && !kw.contains(' ') && text.contains(kw) -> offer(r.category.id, 3.0 + kw.length / 100.0)
             }
         }
+        if (bestId == null) model?.invoke(kind, description)?.let { offer(it, 1.0) }
         return bestId ?: cats.firstOrNull { it.icon == "more" }?.id
     }
 
@@ -198,8 +205,13 @@ object ImportPlanner {
         snapshot: Snapshot,
         learned: Map<String, Long>,
         invert: Boolean,
+        model: CategoryModel? = null,
     ): List<ImportRow> {
-        val guesser = CategoryGuesser(snapshot.categories, learned)
+        val guesser = CategoryGuesser(snapshot.categories, learned, model?.let { m ->
+            { kind: CategoryKind, desc: String ->
+                m.guess(if (kind == CategoryKind.INCOME) TxType.INCOME else TxType.EXPENSE, desc, accountId = target.accountId, cardId = target.cardId)?.categoryId
+            }
+        })
         val imported = snapshot.txs.filter { it.importKey != null }.groupBy { it.importKey!! }
         val candidates = snapshot.txs.mapNotNull { t -> effect(t, target)?.let { t to it } }
         val scope = scopeOf(target)

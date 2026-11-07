@@ -31,7 +31,7 @@ App de finanzas personales para Android: fácil de usar, completa, sin conexión
 ## Qué hace
 
 - **Registro por frase o voz.** Escribe o di "almuerzo 12,50 con débito" o "tele 500 en 10 cuotas con tarjeta". Cryo entiende el monto, la categoría, la cuenta, la fecha y las cuotas. Tú solo revisas y guardas.
-- **Previsión de fin de mes.** Muestra cuánto debería sobrar al ritmo actual y cuánto puedes gastar por día.
+- **Un motor financiero en tu móvil.** La previsión de fin de mes ahora viene con un rango y la probabilidad de cerrar en rojo (2.000 escenarios simulados con tu propio historial). Cryo también encuentra solo tu sueldo, alquiler y suscripciones, proyecta tu saldo para los próximos 12 meses, avisa de gastos inusuales y cobros repetidos, da una nota de salud financiera con consejos, muestra el interés incluido en tus deudas con un plan para pagarlas y el rendimiento real de tus inversiones. Todo calculado sin internet.
 - **Calendario de calor y flujo del dinero.** Mira qué días gastas más, de dónde vino el dinero y a dónde fue.
 - **Importar extractos del banco.** OFX, CSV, hoja de cálculo (XLSX) o PDF: revisas la lista antes de que entre, con categorías sugeridas, lo que ya está en Cryo desmarcado y el pago de la tarjeta reconocido.
 - **Tarjetas de crédito.** Facturas, límite disponible y compras en cuotas, cada cuota en la factura correcta.
@@ -48,6 +48,7 @@ App de finanzas personales para Android: fácil de usar, completa, sin conexión
 - Sin registro, sin anuncios y sin rastreo.
 - Bloqueo con huella, rostro o el bloqueo de pantalla del móvil.
 - **Copia de seguridad automática** en una carpeta del móvil o en tu nube (Google Drive, Nextcloud y otras), cada día, cada semana o cada mes. Cryo guarda el archivo con el selector de archivos de Android, y es la app de la nube la que lo sube.
+- **Copias protegidas con contraseña** (opcional): los archivos se cifran con AES-256 y nadie puede leerlos sin tu contraseña. La clave queda en el almacén seguro de Android.
 - Copia en un archivo `.json` y exportación a una hoja `.csv`, cuando quieras.
 
 El registro por voz usa el reconocimiento de voz que ya está instalado en tu móvil. Escribir la frase siempre funciona.

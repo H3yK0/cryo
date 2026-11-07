@@ -31,7 +31,7 @@ A personal finance app for Android: simple to use, complete, offline and open so
 ## What it does
 
 - **Log by typing or speaking.** Type or say "lunch 12.50 on debit" or "tv 500 in 10 installments on credit card". Cryo understands the amount, the category, the account, the date and the installments. You just check and save.
-- **End-of-month forecast.** See how much should be left at your current pace and how much you can spend per day.
+- **A financial engine on your phone.** The end-of-month forecast now comes with a range and the chance of ending in the red (2,000 scenarios simulated from your own history). Cryo also finds your salary, rent and subscriptions on its own, projects your balance for the next 12 months, flags unusual and repeated charges, gives a financial health score with tips, shows the interest built into your debts with a payoff plan, and the real yearly return of your investments. All calculated offline.
 - **Spending heatmap and money flow.** See which days you spend the most, where the money came from and where it went.
 - **Import bank statements.** OFX, CSV, spreadsheet (XLSX) or PDF: you review the list before anything goes in, with suggested categories, what is already in Cryo unchecked and credit card bill payments recognized.
 - **Credit cards.** Bills, available limit and installment purchases, each installment on the right bill.
@@ -48,6 +48,7 @@ A personal finance app for Android: simple to use, complete, offline and open so
 - No sign-up, no ads, no tracking.
 - Lock with fingerprint, face or your phone's screen lock.
 - **Automatic backup** to a folder on your phone or to your cloud (Google Drive, Nextcloud and others), daily, weekly or monthly. Cryo writes the file through Android's file picker, and the cloud app is the one that uploads it.
+- **Password-protected backups** (optional): the files are encrypted with AES-256 and can't be read without your password. The key stays in Android's secure keystore.
 - Backup to a `.json` file and export to a `.csv` spreadsheet, whenever you want.
 
 Voice entry uses the speech recognition already installed on your phone. Typing the phrase always works.

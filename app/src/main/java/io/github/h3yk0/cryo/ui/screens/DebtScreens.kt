@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.domain.engine.DebtPlanner
 import androidx.annotation.PluralsRes
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
@@ -233,6 +234,21 @@ fun DebtsScreen() {
                     }
                 }
                 if (ov.monthlyInstallments > 0) item { IncomeShareCard(ov, l.averageIncome, hide) }
+                // RF-MOT-08: o plano para quitar (juros embutidos, avalanche ou bola de neve).
+                if (ov.open.isNotEmpty()) {
+                    item {
+                        FlatItem(onClick = { nav.go(Routes.DEBT_PLAN) }) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                IconBadge(PlanIcon, MaterialTheme.colorScheme.primary, 40.dp)
+                                Spacer(Modifier.width(12.dp))
+                                Column(Modifier.weight(1f)) {
+                                    Text(Res.s(R.string.engine_plan_title), style = MaterialTheme.typography.titleSmall)
+                                    Text(Res.s(R.string.engine_plan_teaser), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                            }
+                        }
+                    }
+                }
                 if (ov.open.isNotEmpty()) item { SectionTitle(Res.s(R.string.debt_aberto)) }
                 items(ov.open, key = { it.debt.id }) { info -> DebtCard(info, l, hide, onPay = { paying = info }) }
                 if (ov.open.isEmpty()) {
@@ -484,6 +500,23 @@ fun DebtDetailScreen(id: Long) {
                             }
                             nav.back()
                         }) { Icon(Icons.Rounded.Archive, null, tint = fg); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.wallet_arquivar), color = fg) }
+                    }
+                }
+            }
+            // RF-MOT-08: juros embutidos e quanto vale antecipar as últimas parcelas.
+            if (!paidOff) {
+                item {
+                    val rate = remember(l) { DebtPlanner.rates(l).firstOrNull { it.debtId == id } }
+                    val ant = remember(l) { if ((rate?.monthly ?: 0.0) > 0) DebtPlanner.anticipate(l, id, minOf(3, info.installmentsLeft)) else null }
+                    FlatItem(Modifier.padding(horizontal = 16.dp)) {
+                        Text(Res.s(R.string.engine_rate_title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(rateText(rate), style = MaterialTheme.typography.titleSmall)
+                        if (ant != null && ant.saving > 0) {
+                            Text(
+                                Res.p(R.plurals.engine_anticipate, ant.installments, ant.installments, fmt(ant.fair, hide), fmt(ant.saving, hide)),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
                     }
                 }
             }

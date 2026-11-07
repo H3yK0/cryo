@@ -2,8 +2,17 @@
 
 [English](../CHANGELOG.md) · **Português**
 
-## 1.5 — ícone novo e profundidade
+## 1.5 — motor financeiro, backups protegidos e visual novo
 
+- **Motor financeiro no celular** (tudo sem internet): a previsão do fim do mês agora mostra uma faixa e a chance de fechar no vermelho, com 2.000 cenários simulados a partir do seu histórico, e erra ~38% menos que antes no teste com meses passados
+- **Recorrências achadas sozinhas**: salário, aluguel, assinaturas; o Cryo avisa quando uma fica mais cara ou quando o salário atrasa, e vira conta fixa com um toque
+- **Próximos meses**: o saldo dia a dia por 3, 6 ou 12 meses, com faturas, parcelas, contas fixas e dívidas, o dia mais apertado e a chance de ficar negativo
+- **Nota de saúde financeira** (0 a 100) em 6 partes explicadas, com o que fazer para melhorar; gastos **fora do padrão** e **cobranças repetidas**; ritmo das categorias ("no ritmo atual, Alimentação passa do limite por volta do dia 24") e sugestões de limite mais espertas
+- **Dívidas**: os juros embutidos de cada uma, um plano para quitar (maior juro primeiro ou menor dívida primeiro) com quanto você economiza, e o valor justo para antecipar parcelas
+- **Investimentos**: rendimento real ao ano, contando cada aporte na sua data, com comparação opcional com a inflação; **metas** mostram quando você chega lá
+- **Categoria aprendida**: o Cryo aprende como você classifica e ajuda na importação de extratos e no registro por frase
+- **Backups protegidos com senha** (opcional, AES-256, chave no cofre seguro do Android); os lembretes de contas não mostram nome nem valor com o celular bloqueado
+- 500 testes de garantia a mais (estabilidade, escalabilidade, desempenho, economia de recursos e segurança)
 - **Ícone novo**: o C quadrado agora é dourado, com espessura e um fio de luz, sobre o mesmo azul do Cryo. A estrelinha saiu. Escolhido comparando 11 desenhos com pesquisa sobre atenção visual
 - **Profundidade em todo o app**: o conteúdo fica em cartões com sombra suave sobre um fundo "agrupado", como nos melhores apps de iPhone; o cabeçalho do Início usa o degradê do ícone; atalhos e o botão principal têm volume e encolhem com mola ao toque
 - **Listas agrupadas**: cada dia do Extrato, a fatura de um cartão e o histórico de uma conta formam um cartão só; os Ajustes ficam agrupados como no iPhone

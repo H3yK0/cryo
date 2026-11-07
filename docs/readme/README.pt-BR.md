@@ -31,7 +31,7 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 ## O que ele faz
 
 - **Registro por frase ou voz.** Escreva ou fale "almoço 32,50 no débito" ou "tv 1300 em 10x no cartão". O Cryo entende o valor, a categoria, a conta, a data e as parcelas. Você só confere e salva.
-- **Previsão do fim do mês.** Mostra quanto deve sobrar no ritmo atual e quanto dá para gastar por dia.
+- **Um motor financeiro no seu celular.** A previsão do fim do mês agora vem com uma faixa e a chance de fechar no vermelho (2.000 cenários simulados com o seu próprio histórico). O Cryo também acha sozinho salário, aluguel e assinaturas, projeta o saldo dos próximos 12 meses, avisa de gastos fora do comum e cobranças repetidas, dá uma nota de saúde financeira com dicas, mostra os juros embutidos nas dívidas com um plano para quitar e o rendimento real dos investimentos. Tudo calculado sem internet.
 - **Calendário de calor e fluxo do dinheiro.** Veja em quais dias você mais gasta, de onde o dinheiro veio e para onde foi.
 - **Importar extrato do banco.** OFX, CSV, planilha (XLSX) ou PDF: você confere a lista antes de entrar, com categorias sugeridas, o que já está no Cryo desmarcado e o pagamento da fatura do cartão reconhecido.
 - **Cartões de crédito.** Faturas, limite disponível e compras parceladas, cada parcela na fatura certa.
@@ -48,6 +48,7 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 - Sem cadastro, sem anúncios e sem rastreamento.
 - Bloqueio com digital, rosto ou senha do aparelho.
 - **Backup automático** numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras), todo dia, toda semana ou todo mês. O Cryo grava o arquivo pelo seletor de arquivos do Android, e quem envia para a internet é o app da nuvem.
+- **Backups protegidos com senha** (opcional): os arquivos ficam criptografados com AES-256 e ninguém lê sem a sua senha. A chave fica no cofre seguro do Android.
 - Backup em arquivo `.json` e exportação para planilha `.csv`, quando você quiser.
 
 O registro por voz usa o reconhecimento de fala que já está instalado no celular. Digitar a frase funciona sempre.

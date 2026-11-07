@@ -2,6 +2,12 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.ui.components.FlatItem
+import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.runtime.collectAsState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import io.github.h3yk0.cryo.domain.Num
+import io.github.h3yk0.cryo.domain.engine.Returns
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.layout.Box
@@ -230,6 +236,14 @@ fun WalletScreen() {
                                     color = if (l.totalYield >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
                                 )
                             }
+                        }
+                        // RF-MOT-09: a carteira toda, ao ano, contando cada aporte e resgate na sua data.
+                        val portfolio = remember(l) { Returns.of(l, null) }
+                        portfolio?.annual?.let {
+                            Text(
+                                Res.s(R.string.engine_return_portfolio, Num.percent1(it)), style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp),
+                            )
                         }
                     }
                     l.activeInvestments.forEach { i ->
@@ -827,6 +841,7 @@ fun InvestmentDetailScreen(id: Long) {
                     }
                 }
             }
+            item { ReturnCard(l, id) }
             item {
                 FlowRow(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilledTonalButton(onClick = { action = "in" }) { Text(Res.s(R.string.wallet_aportar)) }
@@ -973,4 +988,68 @@ fun InvestmentEditorScreen(id: Long?) {
 @Composable
 fun EmptyWallet() {
     EmptyState(Icons.Rounded.Savings, Res.s(R.string.wallet_nada_aqui), Res.s(R.string.wallet_cadastre_suas_contas_para))
+}
+
+
+/**
+ * RF-MOT-09: quanto o investimento rende ao ano de verdade (TIR com as datas de cada aporte e resgate) e, se a pessoa
+ * informou a inflação, quanto rende acima dela. Sem internet não há índice: a inflação é digitada pela pessoa.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ReturnCard(l: Ledger, id: Long) {
+    val c = LocalContainer.current
+    val r = remember(l, id) { Returns.of(l, id) } ?: return
+    val inflation by c.engineStore.inflationFlow.collectAsState()
+    var editing by remember { mutableStateOf(false) }
+    FlatItem(Modifier.padding(horizontal = 16.dp)) {
+        Text(Res.s(R.string.engine_return_title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        val annual = r.annual
+        if (annual == null) {
+            Text(Res.s(R.string.engine_return_wait), style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Text(
+                Res.s(R.string.engine_return_year, Num.percent1(annual)), style = MaterialTheme.typography.titleMedium,
+                color = if (annual >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+            )
+            val inf = inflation
+            if (inf != null) {
+                val real = r.real(inf) ?: 0.0
+                Text(
+                    Res.s(if (real >= 0) R.string.engine_return_above else R.string.engine_return_below, Num.percent1(kotlin.math.abs(real)), Num.percent1(inf)),
+                    style = MaterialTheme.typography.bodyMedium, color = if (real >= 0) CryoTheme.colors.income else CryoTheme.colors.warning,
+                )
+            }
+            TextButton(onClick = { editing = true }, contentPadding = PaddingValues(0.dp)) {
+                Text(if (inf == null) Res.s(R.string.engine_inflation_compare) else Res.s(R.string.engine_inflation_change))
+            }
+        }
+        Text(Res.s(R.string.engine_return_how), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    if (editing) {
+        var text by remember { mutableStateOf(inflation?.let { Num.decimal(it * 100, 1) } ?: "") }
+        ModalBottomSheet(onDismissRequest = { editing = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+            Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+                Text(Res.s(R.string.engine_inflation_title), style = MaterialTheme.typography.titleLarge)
+                Text(Res.s(R.string.engine_inflation_help), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
+                OutlinedTextField(
+                    text, { t -> text = t.filter { it.isDigit() || it == ',' || it == '.' }.take(6) },
+                    label = { Text(Res.s(R.string.engine_inflation_label)) }, singleLine = true,
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal), modifier = Modifier.fillMaxWidth(),
+                )
+                Spacer(Modifier.height(16.dp))
+                CryoButton(
+                    onClick = {
+                        val v = text.replace(',', '.').toDoubleOrNull()
+                        c.engineStore.inflation = v?.takeIf { it in 0.0..100.0 }?.div(100)
+                        editing = false
+                    },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                ) { Text(Res.s(R.string.engine_save)) }
+                if (inflation != null) {
+                    TextButton(onClick = { c.engineStore.inflation = null; editing = false }, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.engine_inflation_remove)) }
+                }
+            }
+        }
+    }
 }

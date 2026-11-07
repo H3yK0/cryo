@@ -49,7 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.5 | 6 | **Pronta no branch local `versao-1.5`, sem push** (07/11/2026): APK `Cryo-1.5.apk` entregue ao Hanry para testar. Só publicar depois da aprovação dele (seção 11). |
+| 1.5 | 6 | **Pronta no branch local `versao-1.5`, sem push** (07/11/2026): ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` entregue para ele testar. Só publicar depois da aprovação (seção 11). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -99,6 +99,18 @@ código anterior. Todos os testes passam.
   cartões de sombra suave, listas agrupadas, cabeçalho do Início em degradê que pousa sobre a tela, atalhos e botão principal
   (`CryoButton`) com volume, barras elevadas, molas e **vibração ao toque** (sem permissão nova).
 - Ajustes no estilo do iPhone (grupos em cartões, ícone em Sobre); ícone do app na apresentação e no bloqueio.
+- **Motor financeiro** (RF-MOT, `domain/engine/`, puro Kotlin, tudo no aparelho): estatística robusta (mediana, desvio robusto,
+  pesos pelo tempo, Theil–Sen), **recorrências** descobertas sozinhas (salário, aluguel, assinaturas, preço novo, atraso),
+  **previsão do mês com faixa** (2.000 cenários; erra 38% menos que a da 1.4 no teste contra o passado), **próximos 3/6/12 meses**
+  (400 cenários, faturas, parcelas, contas, dívidas, dia mais apertado), **fora do padrão** e cobranças repetidas, **saúde
+  financeira** (0–100 em 6 partes), **ritmo das categorias** e limites sugeridos, **juros embutidos e plano para quitar**,
+  **rendimento real** (TIR com datas) com inflação opcional, **metas** (quando chega lá), **categoria aprendida** (naive Bayes) na
+  importação e no registro por frase, **percepções** com nota de importância. Telas: Saúde financeira, O que se repete, Plano
+  para quitar, cartões novos em Análises, faixa no Início.
+- **Proteção dos dados** (RF-SEG): cofre do Android (Keystore) com HMAC-SHA256 (o motor só guarda hashes) e AES-256-GCM;
+  **backup com senha** opcional (PBKDF2 310 mil voltas, envelope DAD-11), restauração pedindo a senha, lembretes sem nome nem
+  valor na tela de bloqueio, nada em logs. Rust e criptografia do banco inteiro avaliados e deixados para depois (seção 13).
+- **500 testes de garantia** (RF-MOT-15): estabilidade, escalabilidade, desempenho, economia de recursos e segurança, 100 cada.
 - Imagens da loja e do guia visual refeitas. Banco de dados continua na versão 3 (sem migração nova).
 
 ### Próximos passos imediatos
@@ -123,6 +135,8 @@ código anterior. Todos os testes passam.
 - `android:allowBackup="false"`; `data_extraction_rules.xml` só permite transferência direta entre aparelhos e exclui as
   permissões do backup automático e tudo do modo de teste.
 - **Nunca** colocar extratos reais de banco no repositório (nem em testes). Testes usam arquivos inventados.
+- O motor financeiro **não grava resultados**; o pouco que guarda é **HMAC** (RF-SEG-02). A senha dos backups **nunca** é
+  guardada (só a chave derivada, trancada pelo cofre do Android). Nada de `Log`, `println` ou `printStackTrace` (RF-SEG-07).
 
 **Processo**
 - **O Hanry quer baixar e testar o APK antes de qualquer push** (GitHub, GitLab, F-Droid). Nunca dar push, criar tag ou release
@@ -188,10 +202,13 @@ app/src/main/java/io/github/h3yk0/cryo/
 ├── MainActivity.kt     Tema, bloqueio (camada por cima do app), apresentação inicial ou CryoRoot
 ├── data/               Room (db/), Repository.kt (FinanceRepository + SettingsRepository), Backup.kt (JSON e CSV),
 │                       AutoBackup.kt (backup automático), DefaultData.kt (categorias, paleta, ícones),
-│                       SampleData.kt (dados de exemplo), Dev.kt (modo desenvolvedor), LocaleSettings.kt (língua e moeda)
+│                       SampleData.kt (dados de exemplo), Dev.kt (modo desenvolvedor), LocaleSettings.kt (língua e moeda),
+│                       Vault.kt (cofre: Keystore, HMAC, AES), BackupCrypto.kt (backup com senha), EngineStore.kt
 ├── domain/             Regras sem Android: Ledger.kt (saldos, faturas, contas fixas, orçamentos), Analytics.kt (previsão,
 │                       calendário, fluxo), Debts.kt (dívidas), PhraseParser.kt + PhraseLang.kt (registro por frase e as
-│                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res)
+│                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res),
+│                       engine/ (o motor financeiro: Engine.kt junta tudo; Stats, Recurrences, Outlook, Projection,
+│                       Signals, Health, Wealth, CategoryModel, TxKey)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
 ├── notify/             Lembretes de contas e parcelas (diário, ~9h) e worker do backup automático (a cada 6h), via WorkManager
 └── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento,
@@ -207,6 +224,9 @@ app/src/main/java/io/github/h3yk0/cryo/
    (saldo, fatura, previsão, dívidas) saem do `Ledger`, nunca de consultas soltas.
 4. Para gravar: métodos do repositório, chamados em `c.launch { }` (escopo do app, sobrevive à troca de tela).
 5. Mensagens rápidas: `c.message("texto", "Desfazer") { ... }` mostra a snackbar.
+6. **Motor**: `rememberEngine()` devolve o `EngineReport` (calculado fora da linha principal por `c.engine`, um `EngineRunner`
+   com cache do último resultado; enquanto calcula, a tela mostra o anterior). O motor usa um `Ledger` próprio (os mapas de
+   cache do `Ledger` não são feitos para duas threads). Nas imagens de teste, `EngineRunner.inline = true` faz rodar na hora.
 
 **Pontos importantes**
 - `CryoApp.real` = dados de verdade (lembretes e backup **sempre** usam este). `CryoApp.container` = o que as telas mostram
@@ -273,10 +293,12 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Profundidade (cartões, volume, sombras, vibração) | `ui/components/Depth.kt`, `ui/theme/Theme.kt` (`CryoDepth`) |
 | Ícone do app e marca | `res/drawable/ic_launcher_*.xml`, `ic_notification.xml`, `ic_cryo_badge.xml`, `ic_cryo_mark.xml` |
 | Lembretes | `notify/Reminders.kt` |
+| Motor financeiro (previsão com faixa, recorrências, próximos meses, saúde, dívidas, rendimento) | `domain/engine/`, `ui/screens/EngineScreens.kt`, cartões em `InsightsScreen.kt` |
+| Proteção dos dados (cofre, HMAC, backup com senha) | `data/Vault.kt`, `data/BackupCrypto.kt`, `data/EngineStore.kt`, `ui/screens/SecurityUi.kt` |
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 255 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 790 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -292,6 +314,8 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `TourTest`, `TourPhrasesTest` | Passeio: 5 páginas com imagens, Ajustes › Como usar, frases do passeio entendidas nas 10 línguas, quadros para GIF |
 | `MotionTest` | Saldo que conta até o valor exato; "Remover animações" mostra o final |
 | `StoreScreenshotsTest`, `StoreAssetsTest` | Imagens da loja e dos READMEs nas 10 línguas; ícone e banner (só com `-PstoreAssets=true`) |
+| `EngineTest` | Motor: um teste por requisito RF-MOT, inclusive o **teste contra o passado** (backtest) da previsão; dados de `EngineFixtures` (`Personas`) |
+| `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
 - O DataStore é um singleton por processo e o Robolectric **não zera entre testes**: testes que usam a Activity começam com
@@ -301,7 +325,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor.
 - Animações: o ambiente de teste do Compose **ignora a escala de animação do sistema** (por isso `animationsOn()` lê
   `Settings.Global.ANIMATOR_DURATION_SCALE` sozinho). Com `mainClock.autoAdvance = false`, mudar um estado de fora pede
   `rule.runOnUiThread { ...; Snapshot.sendApplyNotifications() }`. Animações finitas terminam antes das imagens (inclusive no
@@ -316,6 +340,12 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - **Vetores com `<clip-path>`**: o leitor de vetores do Compose (`painterResource`) desloca os desenhos que vêm depois de um
   `clip-path` (o C saía dobrado). Desenhe o contorno como um caminho em vez de recortar (veja `ic_cryo_badge.xml`).
 - Sombras (`Modifier.dropShadow`) aparecem nas imagens do Robolectric; a vibração (`HapticFeedback`) não faz nada lá, sem erro.
+- O Robolectric **não tem o cofre do Android** (AndroidKeyStore): o `Vault` cai na chave da área privada para o HMAC, e o `wrap`
+  só funciona nos testes com `Vault.softwareWrapForTests = true`. O caminho do Keystore de verdade só roda no celular.
+- `org.json` nos testes JVM puros devolve valores vazios (`unitTests.isReturnDefaultValues`): o que usa JSON (backup, criptografia)
+  é testado no Robolectric. `java.lang.management` não está na biblioteca do Android que compila os testes: use reflexão.
+- PBKDF2 com 310 mil voltas leva ~0,3 s na JVM e ~1 s no celular: nos testes, passe menos voltas (`iterations = 1_000`).
+- Imagens das telas do motor: sem `EngineRunner.inline = true` no `@Before`, a primeira composição sai sem o resultado do motor.
 - Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos). Um init script local em
   `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google resolve; ele fica fora do projeto e não muda o APK.
 
@@ -356,7 +386,8 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
-- **1.5** (pronta em 07/11/2026, aguardando o teste do Hanry): ícone novo G4 (C dourado com volume) e profundidade em todo o app.
+- **1.5** (pronta em 07/11/2026, aguardando o teste do Hanry): ícone novo G4 (C dourado com volume), profundidade em todo o app,
+  motor financeiro no aparelho, backup com senha e proteção dos dados, 500 testes de garantia.
 
 Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 
@@ -396,6 +427,24 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 - **Profundidade por peças centrais** (`Depth.kt` + `CryoTheme.depth`) e não sombra por tela: o mesmo peso em todo o app, nos dois
   temas e com Material You. Sombras largas e claras (nunca bordas escuras), luz vinda de cima, volume só na ação principal.
 - **Vibração pelo `HapticFeedback` do Compose**: segue o ajuste do celular e não precisa da permissão `VIBRATE` (RNF-PRIV-03).
+- **Motor sem rede neural** (07/11/2026): cada pessoa tem poucos dados (centenas de movimentações), o app não tem internet e
+  cada número precisa ser explicável (PRI-05). Por isso: estatística robusta, simulação de cenários com semente tirada dos
+  dados (mesmo dado, mesmo resultado), métodos numéricos com plano B (Newton com bissecção) e teste contra o passado.
+- **Previsão por cenários e não por média**: a média se deixa levar por uma compra grande e dá um número só. Os cenários sorteiam
+  dias parecidos do histórico (mesmo dia da semana, peso maior no recente) e dão a faixa de 80%. Entradas avulsas (freelas)
+  também são sorteadas: sem isso, quem tem renda irregular via a faixa errar em 83% dos meses.
+- **Juros embutidos pelo contrato**: o `DebtMath` conta as parcelas que faltam como saldo ÷ parcela; o motor usa as parcelas que
+  faltam no contrato (total − pagas), que é o que mostra os juros quando a pessoa cadastrou o saldo para quitar do banco.
+- **Hash + criptografia, só com o Android** (pedido do Hanry, 07/11/2026): o motor guarda só HMAC-SHA256 (chave no Keystore);
+  backup com senha em AES-256-GCM com PBKDF2. Sem biblioteca nova. A senha nunca é guardada: só a chave derivada, trancada pelo
+  cofre (para o backup automático funcionar sozinho).
+- **Sem SQLCipher** (criptografia do banco inteiro): biblioteca nativa de vários MB que o F-Droid não compila do código-fonte,
+  o que quebraria a compilação reproduzível; o banco já fica na área privada, protegido pela criptografia do próprio Android.
+- **Sem Rust por enquanto** (o Hanry pediu para avaliar): o Kotlin já protege a memória e o motor é rápido (50 mil movimentações
+  em ~85 ms na JVM); Rust não impede vazamento de dados, e código nativo aumentaria o APK (uma cópia por processador) e
+  complicaria a compilação reproduzível. Faz sentido se um dia houver Cryo para computador ou iPhone: um motor só para todos.
+- **1.5 unida**: o Hanry gostou da 1.5 (ícone e profundidade) e pediu o motor; como ela não tinha sido publicada, saiu tudo junto
+  como 1.5 (versionCode 6). Widgets, notificações especiais e sons ficaram para a 1.6.
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 
@@ -417,7 +466,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
-2. **1.5** (ícone G4 + profundidade): pronta, aguardando o teste e a aprovação do Hanry.
+2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta, aguardando o teste e a aprovação do Hanry.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
 4. **1.6**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
    Detalhar com o Hanry antes de começar (quais widgets, quais momentos, quais sons).

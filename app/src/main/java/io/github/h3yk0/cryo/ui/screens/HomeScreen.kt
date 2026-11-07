@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.ui.components.rememberEngine
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -98,7 +99,11 @@ fun HomeScreen() {
     val hide = settings.hideValues
     val forecast = remember(l) { l.forecast() }
     val month = remember(l) { l.monthSummary(l.today.ym()) }
-    val insights = remember(l) { l.insights() }
+    val classic = remember(l) { l.insights() }
+    // RF-MOT: o motor traz a faixa da previsão e as percepções em ordem de importância (RF-MOT-11).
+    val engine = rememberEngine()
+    val outlook = engine?.outlook
+    val insights = engine?.insights?.map { it.toInsight() } ?: classic
 
     // RF-INI-16: sem botão flutuante; "Lançar" é o primeiro atalho.
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
@@ -144,7 +149,10 @@ fun HomeScreen() {
 
             item {
                 CryoSection(Dates.monthName(l.today.ym()), onClick = { nav.tab(Routes.INSIGHTS) }) {
-                    MonthContent(month.income, month.expense, forecast.projectedResult, forecast.dailyAllowance, forecast.remainingDays, hide)
+                    MonthContent(
+                        month.income, month.expense, outlook?.mid ?: forecast.projectedResult, outlook?.allowance ?: forecast.dailyAllowance,
+                        forecast.remainingDays, hide, band = outlook?.takeIf { forecast.remainingDays > 0 }?.let { it.low to it.high },
+                    )
                 }
             }
 
@@ -357,7 +365,7 @@ private fun BalanceBlock(l: Ledger, onClick: () -> Unit) {
 
 /** RF-INI-05: entrou, saiu, fim do mês previsto e a frase com quanto dá para gastar por dia. */
 @Composable
-private fun MonthContent(income: Long, expense: Long, projected: Long, allowance: Long, remainingDays: Int, hide: Boolean) {
+private fun MonthContent(income: Long, expense: Long, projected: Long, allowance: Long, remainingDays: Int, hide: Boolean, band: Pair<Long, Long>? = null) {
     Column {
         Row(Modifier.fillMaxWidth()) {
             Stat(stringResource(R.string.month_in), income, CryoTheme.colors.income, Icons.AutoMirrored.Rounded.TrendingUp, Modifier.weight(1f))
@@ -366,6 +374,14 @@ private fun MonthContent(income: Long, expense: Long, projected: Long, allowance
                 stringResource(R.string.month_end), projected,
                 if (projected >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
                 Icons.Rounded.AutoAwesome, Modifier.weight(1f),
+            )
+        }
+        // RF-MOT-03: o fim do mês vem com a faixa (8 em cada 10 cenários).
+        band?.let { (lo, hi) ->
+            Text(
+                stringResource(R.string.engine_month_band, fmt(lo, hide), fmt(hi, hide)),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 6.dp),
             )
         }
         Spacer(Modifier.height(12.dp))

@@ -508,6 +508,8 @@ class AutoBackupRunner(
     private val zone: () -> ZoneId = ZoneId::systemDefault,
     /** Falso no modo de teste: os dados de exemplo nunca vão para os lugares de backup de verdade. */
     val enabled: Boolean = true,
+    /** RF-SEG-03: com a proteção ligada, os backups saem trancados com a senha (e são abertos com a chave guardada). */
+    private val protection: BackupProtection? = null,
 ) {
     private val mutex = Mutex()
 
@@ -560,7 +562,8 @@ class AutoBackupRunner(
         }
         if (!BackupPolicy.hasData(snap)) return due.map { BackupOutcome(it, BackupStatus.NOTHING_TO_SAVE) }
         val hash = BackupPolicy.dataHash(snap)
-        val json = Backup.export(snap, exportedAt = now)
+        // A impressão digital é sempre dos dados abertos: ligar ou desligar a senha não faz gravar cópia igual à toa.
+        val json = Backup.export(snap, exportedAt = now).let { protection?.seal(it, now) ?: it }
         val localNow = LocalDateTime.ofInstant(Instant.ofEpochMilli(now), zone())
         return due.map { t -> backupOne(t, st, force, snap, hash, json, now, localNow) }
     }
@@ -676,6 +679,8 @@ class AutoBackupRunner(
                 when (val p = parse(text)) {
                     is Parsed.Ok -> if (differs(p.restored)) return@withContext found(p.restored, true)
                     is Parsed.Broken -> return@withContext PlaceCheck.CantRead(p.reason)
+                    // Protegido com outra senha (ou de outro aparelho): restaurar é por Ajustes, que pede a senha.
+                    Parsed.Locked -> return@withContext PlaceCheck.CantRead(BackupErrors.LOCKED)
                     // Na nuvem, o seletor do Android já perguntou se podia substituir esse arquivo; na pasta, não.
                     Parsed.NotCryo -> if (t == BackupTarget.FOLDER) return@withContext PlaceCheck.CantRead(BackupErrors.NOT_CRYO)
                 }
@@ -694,12 +699,18 @@ class AutoBackupRunner(
         data class Ok(val restored: Backup.Restored) : Parsed
         data class Broken(val reason: String) : Parsed
         data object NotCryo : Parsed
+        data object Locked : Parsed
     }
 
-    private fun parse(text: String): Parsed = try {
+    private fun parse(raw: String): Parsed = try {
+        // Protegido com senha: abre com a chave deste aparelho; se não abrir, é de outra senha.
+        val text = if (BackupCrypto.isEncrypted(raw)) {
+            protection?.key()?.let { BackupCrypto.decryptWithKey(raw, it) } ?: return Parsed.Locked
+        } else raw
         // Uma cópia dos dados de teste (modo desenvolvedor) nunca é oferecida para restaurar nem é substituída sozinha.
         Backup.import(text).let { if (it.testMode) Parsed.NotCryo else Parsed.Ok(it) }
     } catch (e: Exception) {
+        val text = raw
         when {
             // O começo do arquivo diz que é do Cryo: é um backup, só que não deu para ler.
             !text.take(300).contains("\"Cryo\"") -> Parsed.NotCryo
@@ -717,6 +728,7 @@ object BackupErrors {
     val NEWER: String get() = Res.s(R.string.backup_err_newer)
     val DAMAGED: String get() = Res.s(R.string.backup_err_damaged)
     val NOT_CRYO: String get() = Res.s(R.string.backup_err_not_cryo)
+    val LOCKED: String get() = Res.s(R.string.sec_backup_locked_found)
     val CANT_OPEN_FOLDER: String get() = Res.s(R.string.backup_err_cant_open_folder)
     val READ_DATA: String get() = Res.s(R.string.backup_err_read_data)
     val CANT_CHECK: String get() = Res.s(R.string.backup_err_cant_check)

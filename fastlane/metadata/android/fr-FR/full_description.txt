@@ -6,7 +6,7 @@ Cryo est une appli de gestion de budget simple et complète. Elle suit revenus, 
 <b>Ce que vous trouverez</b>
 <ul>
 <li>Vue d'ensemble : solde des comptes, patrimoine, entrées et sorties du mois</li>
-<li>Prévision de fin de mois : ce qu'il devrait rester à ce rythme et combien dépenser par jour</li>
+<li>Moteur financier sur le téléphone : prévision de fin de mois avec fourchette, paiements récurrents trouvés automatiquement, solde des 12 prochains mois, dépenses inhabituelles, note de santé financière, plan de remboursement et rendement réel des placements</li>
 <li>Calendrier thermique : chaque jour prend une couleur selon vos dépenses</li>
 <li>Flux de l'argent : d'où vient l'argent et où il va</li>
 <li>Import de relevés bancaires (OFX, CSV, tableur XLSX ou PDF) : vous vérifiez la liste avant, et ce qui est déjà dans l'appli reste de côté</li>
@@ -26,6 +26,7 @@ Cryo est une appli de gestion de budget simple et complète. Elle suit revenus, 
 <li>Verrouillage par empreinte, visage ou code du téléphone</li>
 <li>Option pour masquer les montants à l'écran</li>
 <li>Sauvegarde automatique dans un dossier du téléphone ou dans votre cloud (Google Drive, Nextcloud…) : c'est l'appli du cloud qui envoie le fichier</li>
+<li>Sauvegardes protégées par mot de passe (AES-256), avec la clé dans le coffre sécurisé d'Android</li>
 <li>Sauvegarde dans un fichier et export en tableur (CSV)</li>
 </ul>
 

@@ -6,7 +6,7 @@ Escribe o di "almuerzo 12,50 con débito" o "tele 600 en 12 cuotas con tarjeta".
 <b>Lo que encontrarás</b>
 <ul>
 <li>Resumen: saldo de las cuentas, patrimonio y lo que entró y salió en el mes</li>
-<li>Previsión de fin de mes: cuánto te sobrará al ritmo actual y cuánto puedes gastar al día</li>
+<li>Motor financiero en el móvil: previsión de fin de mes con rango, pagos recurrentes encontrados solos, saldo de los próximos 12 meses, gastos inusuales, nota de salud financiera, plan para pagar deudas y rendimiento real de las inversiones</li>
 <li>Calendario de calor: cada día se colorea según lo que gastaste</li>
 <li>Flujo del dinero: de dónde vino el dinero y adónde fue</li>
 <li>Importar el extracto del banco (OFX, CSV, hoja XLSX o PDF): revisas la lista antes de que entre, y lo que ya está en la app queda fuera</li>
@@ -26,6 +26,7 @@ Escribe o di "almuerzo 12,50 con débito" o "tele 600 en 12 cuotas con tarjeta".
 <li>Bloqueo con huella, rostro o el PIN del móvil</li>
 <li>Opción para ocultar los importes en pantalla</li>
 <li>Copia automática en una carpeta del móvil o en tu nube (Google Drive, Nextcloud y otras): la subida la hace la app de la nube</li>
+<li>Copias protegidas con contraseña (AES-256), con la clave en el almacén seguro de Android</li>
 <li>Copia en archivo y exportación a hoja de cálculo (CSV)</li>
 </ul>
 

@@ -61,6 +61,8 @@ import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.MonthBar
 import io.github.h3yk0.cryo.domain.MonthForecast
 import io.github.h3yk0.cryo.domain.MoneyFlow
+import io.github.h3yk0.cryo.domain.engine.BandPoint
+import io.github.h3yk0.cryo.domain.engine.Projection
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import java.time.LocalDate
 import java.time.YearMonth
@@ -109,21 +111,29 @@ fun DonutChart(
 /* ===================== Previsão do fim do mês ===================== */
 
 @Composable
-fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 180.dp) {
+fun ForecastChart(
+    f: MonthForecast,
+    modifier: Modifier = Modifier,
+    height: Dp = 180.dp,
+    /** RF-MOT-03: a faixa do motor (P10 a P90) e a linha do meio (P50); sem ela, a projeção simples da 1.4. */
+    band: List<BandPoint>? = null,
+    endValue: Long? = null,
+) {
     val primary = MaterialTheme.colorScheme.primary
     val grid = MaterialTheme.colorScheme.outlineVariant
     val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
-    val endColor = if (f.projectedResult >= 0) CryoTheme.colors.income else CryoTheme.colors.expense
+    val end = endValue ?: f.projectedResult
+    val endColor = if (end >= 0) CryoTheme.colors.income else CryoTheme.colors.expense
     val measurer = rememberTextMeasurer()
     val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
     val endStyle = MaterialTheme.typography.labelLarge.copy(color = endColor, fontWeight = FontWeight.Bold)
-    val desc = Res.s(R.string.chart_grafico_previsao_mes_hoje, Money.format(f.currentResult), Money.format(f.projectedResult))
+    val desc = Res.s(R.string.chart_grafico_previsao_mes_hoje, Money.format(f.currentResult), Money.format(end))
     // DS-MOV-06: a linha se desenha da esquerda para a direita ao aparecer.
     val appear by rememberAppear(durationMillis = 900)
     Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = desc }) {
         val pts = f.series
         if (pts.isEmpty()) return@Canvas
-        val values = pts.flatMap { listOfNotNull(it.actual, it.projected) } + 0L
+        val values = pts.flatMap { listOfNotNull(it.actual, it.projected) } + 0L + band.orEmpty().flatMap { listOf(it.low, it.high) }
         var minV = values.min().toFloat()
         var maxV = values.max().toFloat()
         if (maxV - minV < 1f) { maxV += 100f; minV -= 100f }
@@ -154,8 +164,18 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
                 drawPath(area, primary.copy(alpha = 0.12f))
                 drawPath(line, primary, style = Stroke(3.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
             }
-            // projeção tracejada
-            if (proj.size > 1) {
+            if (band != null && band.size > 1) {
+                // A faixa: 8 em cada 10 cenários do motor ficam dentro dela; a linha tracejada é o mais provável.
+                val area = Path()
+                band.forEachIndexed { i, b -> if (i == 0) area.moveTo(x(b.day), y(b.high)) else area.lineTo(x(b.day), y(b.high)) }
+                band.asReversed().forEach { b -> area.lineTo(x(b.day), y(b.low)) }
+                area.close()
+                drawPath(area, endColor.copy(alpha = 0.14f))
+                val mid = Path()
+                band.forEachIndexed { i, b -> if (i == 0) mid.moveTo(x(b.day), y(b.mid)) else mid.lineTo(x(b.day), y(b.mid)) }
+                drawPath(mid, endColor, style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round, pathEffect = PathEffect.dashPathEffect(floatArrayOf(14f, 10f))))
+            } else if (proj.size > 1) {
+                // projeção tracejada
                 val p = Path()
                 proj.forEachIndexed { i, pt -> if (i == 0) p.moveTo(x(pt.day), y(pt.projected!!)) else p.lineTo(x(pt.day), y(pt.projected!!)) }
                 drawPath(
@@ -171,7 +191,7 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
         }
         // valor previsto no fim: fixo no canto superior direito (área reservada), nunca encobre a linha
         val last = pts.last()
-        val lastV = last.projected ?: last.actual ?: 0L
+        val lastV = if (band != null && band.isNotEmpty()) end else last.projected ?: last.actual ?: 0L
         val txt = measurer.measure(Res.s(R.string.chart_fim_mes, Money.compact(lastV)), endStyle)
         drawText(txt, topLeft = Offset((size.width - txt.size.width).coerceAtLeast(0f), 0f))
         if ((proj.size > 1 || last.actual != null) && appear >= 1f) drawCircle(endColor, 4.dp.toPx(), Offset(x(last.day), y(lastV)))
@@ -181,6 +201,94 @@ fun ForecastChart(f: MonthForecast, modifier: Modifier = Modifier, height: Dp = 
             val l = measurer.measure(d.toString(), labelStyle)
             drawText(l, topLeft = Offset((x(d) - l.size.width / 2).coerceIn(0f, size.width - l.size.width), size.height - l.size.height))
         }
+    }
+}
+
+/* ======================= Próximos meses (RF-MOT-04) ======================= */
+
+/**
+ * O saldo das contas nos próximos [days] dias: a faixa (8 em cada 10 cenários) e a linha do mais provável. O dia mais
+ * apertado ganha um ponto.
+ */
+@Composable
+fun ProjectionChart(p: Projection, days: Int, modifier: Modifier = Modifier, height: Dp = 170.dp) {
+    val primary = MaterialTheme.colorScheme.primary
+    val grid = MaterialTheme.colorScheme.outlineVariant
+    val labelColor = MaterialTheme.colorScheme.onSurfaceVariant
+    val negative = CryoTheme.colors.expense
+    val measurer = rememberTextMeasurer()
+    val labelStyle = MaterialTheme.typography.labelSmall.copy(color = labelColor)
+    val n = days.coerceIn(1, p.horizonDays)
+    val (tightDate, tightValue) = p.tightestWithin(n)
+    val desc = Res.s(R.string.chart_projection_desc, Money.format(p.mid[n]), Dates.dayMonth(tightDate), Money.format(tightValue))
+    val appear by rememberAppear(durationMillis = 900)
+    Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = desc }) {
+        var minV = Float.MAX_VALUE; var maxV = -Float.MAX_VALUE
+        for (i in 0..n) { minV = min(minV, p.low[i].toFloat()); maxV = max(maxV, p.high[i].toFloat()) }
+        // O zero só entra na escala quando o saldo chega perto dele (senão a linha fica achatada no alto).
+        if (minV < 0.25f * maxV) { minV = min(minV, 0f); maxV = max(maxV, 0f) }
+        val padV = (maxV - minV) * 0.08f
+        minV -= padV; maxV += padV
+        if (maxV - minV < 1f) { maxV += 100f; minV -= 100f }
+        val padTop = 8.dp.toPx(); val padBottom = 18.dp.toPx()
+        val w = size.width
+        val h = size.height - padTop - padBottom
+        fun x(i: Int) = i.toFloat() / n * w
+        fun y(v: Long) = padTop + (maxV - v) / (maxV - minV) * h
+        if (minV <= 0f && maxV >= 0f) {
+            val zy = y(0)
+            drawLine(grid, Offset(0f, zy), Offset(w, zy), strokeWidth = 1.dp.toPx(), pathEffect = PathEffect.dashPathEffect(floatArrayOf(6f, 6f)))
+        }
+        // Um ponto a cada poucos dias basta (até 12 meses).
+        val step = max(1, n / 120)
+        val idx = (0..n step step).toMutableList().also { if (it.last() != n) it += n }
+        clipRect(right = size.width * appear) {
+            val area = Path()
+            idx.forEachIndexed { k, i -> if (k == 0) area.moveTo(x(i), y(p.high[i])) else area.lineTo(x(i), y(p.high[i])) }
+            idx.asReversed().forEach { i -> area.lineTo(x(i), y(p.low[i])) }
+            area.close()
+            drawPath(area, primary.copy(alpha = 0.14f))
+            val line = Path()
+            idx.forEachIndexed { k, i -> if (k == 0) line.moveTo(x(i), y(p.mid[i])) else line.lineTo(x(i), y(p.mid[i])) }
+            drawPath(line, primary, style = Stroke(2.5.dp.toPx(), cap = StrokeCap.Round, join = StrokeJoin.Round))
+        }
+        if (appear >= 1f) {
+            val ti = java.time.temporal.ChronoUnit.DAYS.between(p.start, tightDate).toInt()
+            val c = if (tightValue < 0) negative else primary
+            drawCircle(c, 5.dp.toPx(), Offset(x(ti), y(tightValue)))
+            drawCircle(Color.White, 2.dp.toPx(), Offset(x(ti), y(tightValue)))
+        }
+        // Meses no eixo X (o primeiro dia de cada mês).
+        var m = YearMonth.from(p.start).plusMonths(1)
+        val endDate = p.start.plusDays(n.toLong())
+        val every = if (n > 200) 3 else if (n > 100) 2 else 1
+        var k = 0
+        while (!m.atDay(1).isAfter(endDate)) {
+            if (k++ % every == 0) {
+                val i = java.time.temporal.ChronoUnit.DAYS.between(p.start, m.atDay(1)).toInt()
+                val l = measurer.measure(Dates.monthShort(m), labelStyle)
+                drawText(l, topLeft = Offset((x(i) - l.size.width / 2).coerceIn(0f, size.width - l.size.width), size.height - l.size.height))
+            }
+            m = m.plusMonths(1)
+        }
+    }
+}
+
+/* ===================== Anel da saúde financeira (RF-MOT-06) ===================== */
+
+@Composable
+fun ScoreRing(score: Int, color: Color, modifier: Modifier = Modifier, size: Dp = 88.dp, stroke: Dp = 10.dp) {
+    val track = MaterialTheme.colorScheme.surfaceContainerHighest
+    val appear by rememberAppear(durationMillis = 900)
+    Box(modifier.size(size), contentAlignment = Alignment.Center) {
+        Canvas(Modifier.size(size)) {
+            val sw = stroke.toPx()
+            val inset = sw / 2
+            val arcSize = Size(this.size.width - sw, this.size.height - sw)
+            drawArc(track, -90f, 360f, false, Offset(inset, inset), arcSize, style = Stroke(sw, cap = StrokeCap.Round))
+            drawArc(color, -90f, 360f * score / 100f * appear, false, Offset(inset, inset), arcSize, style = Stroke(sw, cap = StrokeCap.Round))
+        }
+        Text(score.toString(), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.SemiBold)
     }
 }
 

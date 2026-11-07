@@ -114,11 +114,15 @@ class BillReminderWorker(context: Context, params: WorkerParameters) : Coroutine
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
         val pi = PendingIntent.getActivity(applicationContext, 0, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
 
+        // RF-SEG-05: com o celular bloqueado, aparece só a versão sem nome e sem valor.
+        val hidden = publicVersion()
         for (s in statuses) {
             val n = NotificationCompat.Builder(applicationContext, Reminders.CHANNEL)
                 .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle(reminderTitle(s, today))
                 .setContentText(Res.s(R.string.reminder_toque_para_marcar_como, Money.format(s.bill.amount)))
+                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                .setPublicVersion(hidden)
                 .setContentIntent(pi)
                 .setAutoCancel(true)
                 .build()
@@ -139,6 +143,8 @@ class BillReminderWorker(context: Context, params: WorkerParameters) : Coroutine
                     .setSmallIcon(R.drawable.ic_notification)
                     .setContentTitle(debtReminderTitle(r, today))
                     .setContentText(debtReminderText(r))
+                    .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
+                    .setPublicVersion(hidden)
                     .setContentIntent(debtPi)
                     .setAutoCancel(true)
                     .build()
@@ -151,6 +157,13 @@ class BillReminderWorker(context: Context, params: WorkerParameters) : Coroutine
         }
         return Result.success()
     }
+
+    /** O que a tela de bloqueio do celular mostra: só que há uma conta, sem nome nem valor. */
+    private fun publicVersion() = NotificationCompat.Builder(applicationContext, Reminders.CHANNEL)
+        .setSmallIcon(R.drawable.ic_notification)
+        .setContentTitle(Res.s(R.string.sec_notif_public_title))
+        .setContentText(Res.s(R.string.sec_notif_public_text))
+        .build()
 
     private companion object {
         const val DEBT_NOTIFICATION_BASE = 1_000_000_000L

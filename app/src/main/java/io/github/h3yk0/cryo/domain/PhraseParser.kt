@@ -38,6 +38,8 @@ data class ParseContext(
     val language: AppLanguage = AppLocale.language,
     /** Para a ordem de "11/03" (dia/mês ou mês/dia): o locale do app. */
     val locale: Locale = AppLocale.locale,
+    /** RF-MOT-12: a categoria aprendida (só quando nada mais acha a categoria). */
+    val categoryGuess: ((CategoryKind, String) -> Long?)? = null,
 )
 
 data class ParsedEntry(
@@ -829,6 +831,8 @@ class PhraseParser(private val ctx: ParseContext) {
                 offer(c.id, (if (k.contains(' ')) 9.0 else 4.0) + k.length / 100.0)
             }
         }
+        // 5. RF-MOT-12: o que a pessoa costuma fazer com descrições parecidas (classificador aprendido).
+        if (bestId == null && descNorm.isNotEmpty()) ctx.categoryGuess?.invoke(kind, descNorm)?.let { offer(it, 1.0) }
         return bestId ?: cats.firstOrNull { it.icon == "more" }?.id
     }
 

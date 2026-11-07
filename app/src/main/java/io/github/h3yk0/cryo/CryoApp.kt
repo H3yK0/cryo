@@ -9,6 +9,10 @@ import io.github.h3yk0.cryo.data.AutoBackupRunner
 import io.github.h3yk0.cryo.data.AutoBackupStore
 import io.github.h3yk0.cryo.data.BackupPlaces
 import io.github.h3yk0.cryo.data.DevSettings
+import io.github.h3yk0.cryo.data.EngineStore
+import io.github.h3yk0.cryo.data.BackupProtection
+import io.github.h3yk0.cryo.data.Vault
+import io.github.h3yk0.cryo.domain.engine.EngineRunner
 import io.github.h3yk0.cryo.data.FinanceRepository
 import io.github.h3yk0.cryo.data.SafBackupStorage
 import io.github.h3yk0.cryo.data.SettingsRepository
@@ -45,10 +49,20 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
     /** O bloqueio vale para o app inteiro, inclusive no modo de teste. */
     val lockSettings: SettingsRepository = lockFrom ?: settings
     val autoBackup = AutoBackupStore(app)
-    val backupRunner = AutoBackupRunner(repo, autoBackup, SafBackupStorage(app), enabled = !sandbox)
 
     /** Modo desenvolvedor (ligado com 7 toques na versão, em Ajustes). */
     val dev = DevSettings(app)
+
+    /** RF-SEG-01: o cofre (chaves no Android Keystore), separado para o modo de teste. */
+    val vault = Vault(app, if (sandbox) "cryo-teste" else "cryo")
+
+    /** RF-MOT: o motor financeiro e o pouco que ele guarda (como HMAC: RF-SEG-02). */
+    val engineStore = EngineStore(app, sandbox, vault)
+    val engine = EngineRunner(engineStore::hash)
+
+    /** RF-SEG-03: backups protegidos com senha (a chave fica trancada pelo cofre). */
+    val backupProtection = BackupProtection(app, sandbox, vault)
+    val backupRunner = AutoBackupRunner(repo, autoBackup, SafBackupStorage(app), enabled = !sandbox, protection = backupProtection)
 
     /** Como foi a leitura do último extrato (para o relatório do modo desenvolvedor). */
     val lastImport = MutableStateFlow<ImportReport?>(null)

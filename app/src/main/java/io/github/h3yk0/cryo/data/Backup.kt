@@ -119,8 +119,12 @@ object Backup {
     /** Backup de uma versão mais nova do Cryo (a mensagem é a de cada língua; quem precisa saber o motivo olha o tipo). */
     class NewerVersion : IllegalArgumentException(Res.s(R.string.backup_newer_version))
 
+    /** RF-SEG-04: o arquivo é protegido com senha; quem chama pede a senha e abre com [BackupCrypto]. */
+    class PasswordNeeded : IllegalArgumentException(Res.s(R.string.sec_password_needed))
+
     /** Lê um backup (de qualquer versão do Cryo). Lança exceção com mensagem amigável se o arquivo não for do Cryo. */
     fun import(json: String): Restored {
+        if (BackupCrypto.isEncrypted(json)) throw PasswordNeeded()
         val root = try { JSONObject(json) } catch (e: Exception) { throw IllegalArgumentException(Res.s(R.string.backup_invalid_file)) }
         if (root.optString("app") != "Cryo") throw IllegalArgumentException(Res.s(R.string.backup_not_cryo_file))
         val version = root.optInt("version", 1)

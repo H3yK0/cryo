@@ -6,7 +6,7 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <b>O que você encontra</b>
 <ul>
 <li>Visão geral: saldo das contas, patrimônio e quanto entrou e saiu no mês</li>
-<li>Previsão do fim do mês: quanto deve sobrar no ritmo atual e quanto dá para gastar por dia</li>
+<li>Motor financeiro no celular: previsão do fim do mês com faixa, recorrências achadas sozinhas, saldo dos próximos 12 meses, gastos fora do comum, nota de saúde financeira, plano para quitar dívidas e rendimento real dos investimentos</li>
 <li>Calendário de calor: cada dia ganha uma cor conforme o quanto você gastou</li>
 <li>Fluxo do dinheiro: de onde o dinheiro veio e para onde foi</li>
 <li>Importar extrato do banco (OFX, CSV, planilha XLSX ou PDF): você confere a lista antes de entrar, e o que já está no app fica de fora</li>
@@ -26,6 +26,7 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <li>Bloqueio com digital, rosto ou senha do celular</li>
 <li>Modo para esconder os valores da tela</li>
 <li>Backup automático numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras): quem envia o arquivo é o app da nuvem</li>
+<li>Backups protegidos com senha (AES-256), com a chave guardada no cofre seguro do Android</li>
 <li>Backup em arquivo e exportação para planilha (CSV)</li>
 </ul>
 

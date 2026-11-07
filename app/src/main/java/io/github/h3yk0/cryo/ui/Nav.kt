@@ -82,6 +82,9 @@ import io.github.h3yk0.cryo.ui.screens.InvestmentEditorScreen
 import io.github.h3yk0.cryo.ui.screens.PlanScreen
 import io.github.h3yk0.cryo.ui.screens.SettingsScreen
 import io.github.h3yk0.cryo.ui.screens.TourScreen
+import io.github.h3yk0.cryo.ui.screens.DebtPlanScreen
+import io.github.h3yk0.cryo.ui.screens.RecurringScreen
+import io.github.h3yk0.cryo.ui.screens.HealthScreen
 import io.github.h3yk0.cryo.ui.screens.TransactionsScreen
 import io.github.h3yk0.cryo.ui.screens.WalletScreen
 import io.github.h3yk0.cryo.ui.tx.TxEditorScreen
@@ -115,6 +118,9 @@ object Routes {
     const val CATEGORIES = "categories"
     const val CATEGORY_EDIT = "category/edit/{id}?kind={kind}"
     const val TOUR = "tour"
+    const val HEALTH = "insights/health"
+    const val RECURRING = "insights/recurring"
+    const val DEBT_PLAN = "debts/plan"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
@@ -348,6 +354,9 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.DEV) { DevScreen() }
                 composable(Routes.CATEGORIES) { CategoriesScreen() }
                 composable(Routes.TOUR) { TourScreen() }
+                composable(Routes.HEALTH) { HealthScreen() }
+                composable(Routes.RECURRING) { RecurringScreen() }
+                composable(Routes.DEBT_PLAN) { DebtPlanScreen() }
                 composable(
                     Routes.CATEGORY_EDIT,
                     arguments = listOf(
