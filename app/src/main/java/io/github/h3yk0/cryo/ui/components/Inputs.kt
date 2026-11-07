@@ -299,11 +299,12 @@ fun DatePickerDialogField(initial: LocalDate?, onDismiss: () -> Unit, onPick: (L
 
 @Composable
 fun <T> Segmented(options: List<Pair<T, String>>, selected: T, onSelect: (T) -> Unit, modifier: Modifier = Modifier) {
+    val haptics = rememberHaptics()
     SingleChoiceSegmentedButtonRow(modifier.fillMaxWidth()) {
         options.forEachIndexed { i, (value, label) ->
             SegmentedButton(
                 selected = value == selected,
-                onClick = { onSelect(value) },
+                onClick = { if (value != selected) haptics.tick(); onSelect(value) },
                 shape = SegmentedButtonDefaults.itemShape(index = i, count = options.size),
                 label = { Text(label, maxLines = 1, overflow = TextOverflow.Ellipsis) },
             )
@@ -390,11 +391,13 @@ fun Stepper(
 
 @Composable
 fun SwitchRow(title: String, checked: Boolean, onChange: (Boolean) -> Unit, subtitle: String? = null, modifier: Modifier = Modifier) {
+    val haptics = rememberHaptics()
     Row(
         modifier
             .fillMaxWidth()
             .clip(MaterialTheme.shapes.medium)
-            .toggleable(value = checked, role = Role.Switch, onValueChange = onChange)
+            // DS-PROF-07: vibra ao ligar e desligar.
+            .toggleable(value = checked, role = Role.Switch, onValueChange = { haptics.toggle(it); onChange(it) })
             .padding(vertical = 10.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {

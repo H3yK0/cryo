@@ -6,6 +6,7 @@ import androidx.annotation.PluralsRes
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -44,7 +45,6 @@ import androidx.compose.material.icons.rounded.MoneyOff
 import androidx.compose.material.icons.rounded.People
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Unarchive
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
@@ -117,6 +117,7 @@ import io.github.h3yk0.cryo.ui.components.Segmented
 import io.github.h3yk0.cryo.ui.components.Stepper
 import io.github.h3yk0.cryo.ui.components.SwitchRow
 import io.github.h3yk0.cryo.ui.components.TxRow
+import io.github.h3yk0.cryo.ui.components.groupedRow
 import io.github.h3yk0.cryo.ui.components.UsageBar
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
@@ -125,6 +126,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import kotlin.math.max
 import kotlin.math.roundToInt
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 /* ============================== Textos e ícones ============================== */
 
@@ -217,7 +219,7 @@ fun DebtsScreen() {
                         Icons.Rounded.RequestQuote, Res.s(R.string.debt_organize_suas_dividas),
                         Res.s(R.string.debt_cadastre_emprestimos_financiamentos_acordos) +
                             Res.s(R.string.debt_cryo_mostra_quanto_falta),
-                    ) { Button(onClick = { nav.go(Routes.debtEdit()) }) { Text(Res.s(R.string.debt_cadastrar_divida)) } }
+                    ) { CryoButton(onClick = { nav.go(Routes.debtEdit()) }) { Text(Res.s(R.string.debt_cadastrar_divida)) } }
                 }
             } else {
                 item { DebtHero(ov, hide) }
@@ -515,7 +517,7 @@ fun DebtDetailScreen(id: Long) {
                     verticalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
                     if (!info.isPaidOff) {
-                        Button(onClick = { action = "pay" }) { Text(if (info.hasInstallments) Res.s(R.string.debt_pagar_parcela) else Res.s(R.string.debt_pagar_2)) }
+                        CryoButton(onClick = { action = "pay" }) { Text(if (info.hasInstallments) Res.s(R.string.debt_pagar_parcela) else Res.s(R.string.debt_pagar_2)) }
                         FilledTonalButton(onClick = { action = "payoff" }) { Text(Res.s(R.string.debt_quitar_2)) }
                     }
                     FilledTonalButton(onClick = { action = "adjust" }) { Text(Res.s(R.string.debt_atualizar_saldo)) }
@@ -559,11 +561,13 @@ fun DebtDetailScreen(id: Long) {
                 }
             }
             items(hist.size) { i ->
+                Box(Modifier.groupedRow(i, hist.size)) {
                 when (val h = hist[i]) {
                     is Tx -> TxRow(h, l, onClick = { nav.go(Routes.txEdit(h.id)) }, showDate = true)
                     is DebtAdjustment -> AdjustmentRow(h, hide, l.today, onDelete = {
                         c.launch { c.repo.deleteDebtAdjustment(h); c.message(Res.s(R.string.debt_ajuste_removido)) }
                     })
+                }
                 }
             }
         }
@@ -750,9 +754,9 @@ fun DebtPaySheet(info: DebtInfo, l: Ledger, payoff: Boolean, onDismiss: () -> Un
             FieldLabel(Res.s(R.string.wallet_data))
             DateChooser(date, l.today, { date = it })
             Spacer(Modifier.height(20.dp))
-            Button(
+            CryoButton(
                 onClick = {
-                    val account = acc ?: return@Button
+                    val account = acc ?: return@CryoButton
                     onDismiss()
                     c.launch {
                         val u = when {

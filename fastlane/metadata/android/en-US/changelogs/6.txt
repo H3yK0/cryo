@@ -1,0 +1,1 @@
+New icon: the square C is now gold, with volume. Depth across the app: cards with soft shadows on a grouped background, a Home header with the icon's gradient, shortcuts and a main button with volume that shrink with a spring when touched. Activity lists and Settings grouped like on the iPhone. Haptic feedback when confirming, switching and changing tabs, with no new permission.

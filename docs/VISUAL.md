@@ -3,7 +3,8 @@
 Como o Cryo é e deve continuar parecendo: cores, letras, formas, componentes, telas e o jeito de escrever.
 
 > Este guia é um anexo do **[PRD](PRD.md)** (seções 9 e 10, códigos DS-, TXT- e ACS-). Ele detalha as regras de lá; em caso de
-> conflito, vale o PRD. A direção visual 2.0 (1.4: organização de app de banco, cores do Cryo) está no PRD, seção 9.1.
+> conflito, vale o PRD. A direção visual 2.0 (1.4: organização de app de banco, cores do Cryo) está no PRD, seção 9.1; a
+> **profundidade** (1.5: cartões sobre fundo agrupado, sombras suaves, volume, vibração) na seção 9.9.
 As imagens ficam em [`docs/visual/`](visual/) e são as telas reais do app (geradas pelos testes, com dados de exemplo).
 
 <p>
@@ -25,6 +26,8 @@ As imagens ficam em [`docs/visual/`](visual/) e são as telas reais do app (gera
 - **Explica em vez de esconder**: cada aviso diz o que aconteceu e o que fazer, em português simples.
 - **Respeita a privacidade**: o olho no Início esconde todos os valores (`R$ ••••`); nada de dados sensíveis em notificações.
 - **Material You de verdade**: no Android 12 ou mais novo, as cores acompanham o papel de parede (pode desligar em Ajustes › Aparência).
+- **Peso de app bem construído** (1.5): cada coisa tem matéria. Cartões pousam sobre o fundo com sombra suave, o botão principal
+  e os atalhos têm volume, a luz vem de cima, os toques respondem com mola e uma vibração leve (seção 4.1).
 
 ## 2. Cores
 
@@ -85,6 +88,10 @@ pouco mais escura (mais clara no escuro).
 ### 2.5 Marca
 
 - Gradiente da marca: `#0A4F66` → `#29B6D6` (diagonal). Usado no ícone e na imagem de destaque da loja.
+- **Dourado da marca** (1.5, `CryoTheme.colors.gold` / `goldDeep`): `#F0A81E` / `#B9780A` (claro), `#FFC94D` / `#B9780A` (escuro);
+  no ícone, degradê `#FFD866 → #F0A81E`. É a cor do símbolo: **nunca** usar para entrada ou saída de dinheiro (verde e vermelho
+  continuam sendo só isso).
+- Cabeçalho do Início (1.5): degradê `#0A4F66 → #168FAD` (o do ícone), com brilho suave atrás do saldo.
 - `brand_dark` `#0B5C73`, `brand_light` `#22A6C9`. Fundo da janela antes do app desenhar: `#F6FAFD` / `#0F1417`.
 
 ## 3. Letras
@@ -112,6 +119,7 @@ Valores usam `MoneyText`: uma linha só, diminui sozinho até 10 sp para caber, 
 ## 4. Formas e espaços
 
 **Cantos** (`CryoShapes`): extraSmall 8 dp · small 12 · **medium 16** (banners, campos, caixas) · **large 24** (cartões) · extraLarge 32.
+Listas agrupadas: 20 dp na primeira e na última linha. Cabeçalho do Início: 28 dp embaixo.
 
 **Espaços** (múltiplos de 4): 4 · 8 · 12 · 16 · 20 · 24 · 32.
 - Margem lateral: **16 dp** em listas, **20 dp** em formulários, folhas e telas de passo.
@@ -121,25 +129,54 @@ Valores usam `MoneyText`: uma linha só, diminui sozinho até 10 sp para caber, 
 - Ícones: 24 dp; 18 dp dentro de chips; 20 dp em banners.
 - Toque: tudo que é clicável tem pelo menos 48 dp.
 
+### 4.1 Profundidade (DS-PROF, 1.5)
+
+A ideia: o app parece feito de **matéria leve sob uma luz que vem de cima**, como os apps bem acabados do iPhone. Nada de bordas
+escuras nem sombras duras: a profundidade vem de contraste suave entre o fundo e o que está em cima dele.
+
+| Camada | Claro | Escuro |
+|---|---|---|
+| Fundo da tela ("agrupado", `depth.grouped`) | `surfaceContainer` (cinza-gelo) | `surfaceContainerLowest` (quase preto) |
+| Cartão (`depth.card`) | `surfaceContainerLowest` (branco) | `surfaceContainer` (grafite) |
+| Sombra (`depth.shadow`) | azul-petróleo 12% (`#1F0A3A4A`) | preto 60% |
+| Fio de luz (`depth.highlight`) | — (o branco já basta) | branco 12% na borda de cima |
+
+- **Cartões** (`Modifier.depthCard()`): cantos 24 dp, margem 16 dp, 18 dp por dentro; duas sombras (uma larga e difusa, 18 dp
+  de raio e 6 dp para baixo; uma curta de contato, 2 dp). `lifted = false` para itens apagados (metas arquivadas).
+- **Listas** (Extrato, histórico de conta, cartão e dívida): uma folha só, com cantos apenas na primeira e na última linha
+  (`Modifier.groupedRow(i, total)`), como as listas agrupadas do iPhone.
+- **Volume** (`Modifier.raised()`): degradê vertical (mais claro em cima), fio de luz branco e sombra da própria cor. Usado no
+  **botão principal** (`CryoButton`, sombra colorida da cor `primary`) e nos **atalhos** do Início. Botões secundários e de apagar
+  ficam sem volume: o volume chama para a ação principal.
+- **Barras elevadas**: barra de abas e barra de ação fixa (`BottomBarSurface`) na cor dos cartões, com sombra para cima.
+- **Molas**: toques encolhem com mola (amortecimento 0,55); com "Remover animações", nada se move.
+- **Vibração** (`rememberHaptics()`): `confirm` (salvar, importar: todo `CryoButton`), `toggle` (interruptores), `tick` (abas,
+  segmentos, página do passeio), `tap` (atalhos). Usa o `HapticFeedback` do sistema, que segue o ajuste do celular e **não pede
+  permissão**.
+- **Números**: saldos em `SemiBold`, algarismos de largura igual e `displaySmall` com espaçamento levemente fechado (−0,5 sp).
+- Com **Material You**, as mesmas regras valem sobre as cores do papel de parede (o cabeçalho usa um degradê da cor `primary`).
+
 ## 5. Como as telas são montadas
 
 - **Barra de abas** (4, desde a 1.4): Início · Extrato · Planejar · Análises. A Carteira abre pelo Início.
   Ícones: `Home`, `ReceiptLong`, `EventNote`, `Insights` (estilo Rounded).
-- **Início** (2.0): cabeçalho colorido (`HomeHeader`: saudação, data, olho, engrenagem, saldo e patrimônio), atalhos redondos,
-  campo de registro rápido em pílula com microfone, avisos discretos e seções planas (mês, cartão, contas, dívidas, investimentos).
+- **Início** (2.0, profundidade na 1.5): cabeçalho em degradê que pousa sobre a tela (`HomeHeader`: saudação, data, olho,
+  engrenagem, saldo e patrimônio; cantos de baixo 28 dp e sombra), atalhos redondos com volume, campo de registro rápido em pílula
+  com microfone, avisos discretos e seções em cartões (mês, cartão, contas, dívidas, investimentos).
+- **Ajustes** (1.5): grupos em cartões, como os Ajustes do iPhone; em Sobre, o ícone do app (`CryoBadge`) ao lado do nome.
 - **Passeio "Como usar o Cryo"** (RF-TOUR): 5 páginas com uma ilustração animada em cima (cartão `surfaceContainerLow`, cantos
   28 dp, montada com os próprios componentes), título `headlineSmall`, texto `bodyLarge` em `onSurfaceVariant`, pontos de página e
   botão de 56 dp embaixo; "Pular" no topo no primeiro uso. Aparece depois das boas-vindas e em Ajustes › Sobre.
-- **Telas internas**: `CryoTopBar` com seta de voltar e título; conteúdo rolando; **ação principal fixa embaixo** (`Surface` com
-  `tonalElevation = 3.dp` + botão de 56 dp, com `navigationBarsPadding()` e `imePadding()`).
+- **Telas internas**: `CryoTopBar` com seta de voltar e título; conteúdo rolando; **ação principal fixa embaixo**
+  (`BottomBarSurface` + `CryoButton` de 56 dp, com `navigationBarsPadding()` e `imePadding()`).
 - **Edição rápida**: `ModalBottomSheet` aberto por inteiro (`skipPartiallyExpanded = true`), título `titleLarge`, campos, botão
   principal e "Cancelar" contornado.
 - **Passo a passo** (ex.: importação): bolinha 64 dp com ícone, título `headlineSmall`, texto explicativo, cartões, botão fixo.
 - **Confirmação**: `ConfirmDialog`, título em forma de pergunta, texto com a consequência, botão com o verbo.
 - **Tela inteira, de ponta a ponta** (edge-to-edge): barras do sistema transparentes; `Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0))`.
 - **Modo de teste**: faixa `tertiaryContainer` acima da barra de abas ("Modo de teste: dados de exemplo · Sair") e avisos nas telas de importação.
-- **Bloqueio**: tela própria no lugar do app (marca do Cryo, "Cryo bloqueado", botão "Desbloquear"). Aparece e some **sem
-  animação** (DS-MOV-10).
+- **Bloqueio**: tela própria no lugar do app (ícone do Cryo, `CryoBadge`, "Cryo bloqueado", botão "Desbloquear"). Aparece e
+  some **sem animação** (DS-MOV-10).
 
 ### 5.1 Movimento (DS-MOV)
 
@@ -155,7 +192,7 @@ Suave e com propósito: o movimento mostra de onde a tela veio, para onde foi e 
 | Saldo e patrimônio do Início | Contam até o novo valor quando mudam (na primeira vez aparecem prontos) | 600 ms |
 | Barras de uso, previsão, rosca, barras dos meses | Crescem / se desenham ao aparecer; vão até o novo valor quando mudam | 600–900 ms |
 | Extrato | O que entra, sai ou muda de dia desliza e aparece com fade (`animateItem`) | padrão |
-| Atalhos do Início | Encolhem para 92% enquanto o dedo está neles | 150 ms |
+| Atalhos do Início e botão principal | Encolhem (92% e 97%) enquanto o dedo está neles e voltam com mola (1.5) | mola |
 | Apresentação | Passos deslizam para a frente ou para trás; barra de progresso anda suave; campos do cartão abrem com a altura animada | 300 ms |
 | Passeio | Cada página tem uma linha do tempo de 2,8 s que começa quando a página para na tela e termina no quadro final | 2,8 s |
 
@@ -166,11 +203,16 @@ animar; com **"Remover animações"** do Android, tudo aparece direto no estado 
 
 ## 6. Componentes
 
-Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt). Antes de criar algo novo, procure aqui.
+Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt, Sections.kt, Motion.kt, Depth.kt). Antes de criar algo novo, procure aqui.
 
 | Componente | Para quê | Detalhes |
 |---|---|---|
-| `CryoCard` | Agrupar conteúdo | `surfaceContainerLow`, cantos 24 dp, 16 dp por dentro; pode ser clicável |
+| `CryoCard` | Agrupar conteúdo | Cartão com profundidade (`depthCard`), cantos 24 dp, 16 dp por dentro; pode ser clicável |
+| `CryoButton` | Botão principal (1.5) | Mesmos parâmetros do `Button`; volume, sombra colorida, mola e vibração. **Nenhum `Button(` direto nas telas** (conferido por `PrdConformanceTest`) |
+| `CryoBadge` | O ícone do app dentro do app (1.5) | Apresentação, bloqueio, Ajustes › Sobre; com sombra suave |
+| `BottomBarSurface` | Barra da ação principal fixa (1.5) | Cor dos cartões, sombra para cima |
+| `depthCard` / `groupedRow` / `raised` | Profundidade (1.5) | Seção 4.1 |
+| `rememberHaptics` | Vibração ao toque (1.5) | `confirm`, `reject`, `toggle`, `tick`, `tap` |
 | `IconBadge` | Ícone de categoria, conta, cartão | Círculo 40 dp, cor da paleta com transparência |
 | `MoneyText` | Qualquer valor | Na moeda e no formato do app (R$ 1.234,56 · $1,234.56 · ¥1,235), sinal opcional, auto-ajuste, "esconder valores" |
 | `TxRow` | Linha de movimentação | Bolinha + título + "data · categoria · conta" + valor |
@@ -179,11 +221,11 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt). Antes de criar alg
 | `Pill` | Status curto ("Paga", "Atrasada") | Cápsula `labelMedium` |
 | `EmptyState` | Lista vazia | Círculo 72 dp `secondaryContainer`, título, explicação, ação |
 | `UsageBar` | Uso de orçamento, progresso | 10 dp; cor normal, âmbar a partir de 80%, vermelho a partir de 100%; cresce ao aparecer |
-| `CryoSection` | Seção plana (2.0) | Título `titleMedium` + "›", conteúdo, linha fina embaixo; margem 20 dp |
-| `CryoListRow` / `FlatItem` / `HeroBlock` | Linhas e destaques planos (2.0) | Sem cartão em volta; linha fina entre itens |
-| `Shortcuts` / `Shortcut` | Atalhos do Início | Círculo 64 dp `surfaceContainerHigh`, ícone `primary`, rótulo `labelMedium`; encolhe ao toque |
-| `HomeHeader` | Cabeçalho do Início | `primary` no claro, `primaryContainer` no escuro; saldo `displaySmall` que conta até o novo valor |
-| `InfoCard` | Aviso discreto | `surfaceContainerLow`, cantos 16, ícone colorido pelo tipo |
+| `CryoSection` | Seção (2.0; cartão na 1.5) | Cartão com título `titleMedium` + "›" e conteúdo; margem 16 dp, 18 dp por dentro |
+| `CryoListRow` / `FlatItem` / `HeroBlock` | Linhas e destaques | `FlatItem` e `HeroBlock` são cartões (1.5); `CryoListRow` vive dentro de um cartão |
+| `Shortcuts` / `Shortcut` | Atalhos do Início | Círculo 64 dp com volume (`raised`), ícone `primary`, rótulo `labelMedium`; encolhe com mola e vibra |
+| `HomeHeader` | Cabeçalho do Início | Degradê do ícone (`depth.headerStart → headerEnd`) com brilho atrás do saldo, cantos de baixo 28 dp e sombra; saldo `displaySmall` que conta até o novo valor |
+| `InfoCard` | Aviso discreto | Cartão com profundidade, cantos 24, ícone colorido pelo tipo |
 | `PageDots` | Pontos de página (passeio) | Pontos de 8 dp; o atual vira pílula de 24 dp na cor `primary`; lido como "Página 2 de 5" |
 | `Motion` | Tempos, curvas e transições | Seção 5.1 |
 | `CryoTopBar` | Barra de título | Voltar + título + ações |
@@ -207,10 +249,17 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt). Antes de criar alg
   restaurant, cart, car, bus, home, bolt, water, wifi, phone, health, fitness, school, movie, game, shopping, subscriptions,
   spa, pets, volunteer, gift, flight, receipt, coffee, gas, baby, build, work, laptop, sell, trending, undo, redeem, savings,
   debt, money, star, more. Cada um tem uma descrição em português para leitores de tela.
-- **Ícone do app** (ícone adaptativo, `res/drawable/ic_launcher_*.xml`): fundo com o gradiente da marca e uma onda clara bem
-  suave; na frente, um hexágono branco aberto (como um "C" de cristal de gelo, traço de 8 com pontas redondas) com uma estrela
-  de quatro pontas no meio. Tem versão monocromática (ícones temáticos do Android 13+).
-- `ic_cryo_mark`: a marca sozinha (tela de bloqueio, imagem da loja). `ic_notification`: ícone das notificações.
+- **Ícone do app (G4, 1.5)** (ícone adaptativo, `res/drawable/ic_launcher_*.xml`): fundo com o gradiente da marca e uma onda
+  clara bem suave; na frente, o **C quadrado** (hexágono aberto, traço de 8 com pontas redondas) **dourado** (`#FFD866 → #F0A81E`),
+  com **espessura** (três camadas `#B9780A` deslocadas para baixo, como uma moeda vista de lado) e um **fio de luz** claro nas
+  arestas de cima. **Sem a estrela** (até a 1.4 o C era branco com uma estrela de quatro pontas, que lembra o símbolo de "recurso
+  de IA"). Escolhido em 07/11/2026 pela pesquisa de psicologia da atenção: um ponto quente sobre o azul puxa o olho, e o C
+  continua o que as pessoas já conhecem.
+- Versões: **monocromático** só com o C (ícones temáticos do Android 13+); **notificação** (`ic_notification`) só com o C,
+  branco; **`ic_cryo_badge`** o ícone completo dentro do app (apresentação, bloqueio, Sobre); **`ic_cryo_mark`** só o C dourado
+  com volume (banner da loja).
+- Armadilha: o leitor de vetores do Compose desloca os desenhos que vêm depois de um `<clip-path>`. Por isso o `ic_cryo_badge`
+  desenha o fundo arredondado como um caminho, sem `clip-path`.
 
 <p>
   <img src="../fastlane/metadata/android/en-US/images/icon.png" width="96" alt="Ícone do Cryo">
@@ -290,7 +339,7 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 Em `fastlane/metadata/android/<língua>/` (as 10 línguas): título, descrição curta e completa, changelogs por `versionCode` e
 6 telas em `images/phoneScreenshots/` na própria língua e moeda (1 Início, 2 Registro rápido, 3 Análises/previsão,
 4 Orçamentos, 5 Cartão, 6 Tema escuro), geradas por `StoreScreenshotsTest` (360 × 780 dp, xhdpi). Em `en-US/` também
-`icon.png` (512 px) e `featureGraphic.png` (1024 × 500, gradiente da marca + "Cryo" + slogan), gerados por `StoreAssetsTest`
+`icon.png` (512 px) e `featureGraphic.png` (1024 × 500, gradiente da marca + C dourado + "Cryo" + slogan), gerados por `StoreAssetsTest`
 (`pt-BR/` tem o próprio banner). As mesmas telas aparecem no README de cada língua (RF-LNG-09):
 `./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true`.
 

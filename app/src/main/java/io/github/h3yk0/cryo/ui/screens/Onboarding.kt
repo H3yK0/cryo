@@ -41,7 +41,6 @@ import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.SettingsBackupRestore
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
@@ -89,6 +88,8 @@ import io.github.h3yk0.cryo.ui.components.Stepper
 import io.github.h3yk0.cryo.ui.components.SwitchRow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import io.github.h3yk0.cryo.ui.components.CryoBadge
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 /** Passos da apresentação (RF-BOA-08). */
 private object Step {
@@ -179,12 +180,11 @@ fun OnboardingScreen() {
                         // RF-BOA-01: a marca chega girando de leve e crescendo; o texto vem logo depois.
                         val mark by rememberAppear(durationMillis = 900)
                         val words by rememberAppear(durationMillis = 700, delayMillis = 250)
-                        Box(
+                        // DS-ICO-03: o próprio ícone (G4), com sombra, como os apps de iPhone mostram o ícone na apresentação.
+                        CryoBadge(
                             Modifier.size(104.dp).align(Alignment.CenterHorizontally)
-                                .graphicsLayer { alpha = mark; val k = 0.6f + 0.4f * mark; scaleX = k; scaleY = k; rotationZ = -40f * (1f - mark) }
-                                .clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
-                            contentAlignment = Alignment.Center,
-                        ) { Icon(painterResource(R.drawable.ic_cryo_mark), null, Modifier.size(60.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer) }
+                                .graphicsLayer { alpha = mark; val k = 0.6f + 0.4f * mark; scaleX = k; scaleY = k; rotationZ = -40f * (1f - mark) },
+                        )
                         Spacer(Modifier.height(24.dp))
                         Column(Modifier.graphicsLayer { alpha = words; translationY = (1f - words) * 16.dp.toPx() }) {
                             Text(Res.s(R.string.onboarding_bem_vindo_ao_cryo), style = MaterialTheme.typography.headlineMedium, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().semantics { heading() })
@@ -276,7 +276,7 @@ fun OnboardingScreen() {
         // O passeio tem os próprios botões.
         if (step != Step.TOUR) Row(Modifier.fillMaxWidth().padding(24.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             if (step > Step.WELCOME) TextButton(onClick = { step-- }, modifier = Modifier.height(56.dp)) { Text(Res.s(R.string.onboarding_voltar)) }
-            Button(
+            CryoButton(
                 onClick = { if (step < Step.DONE) step++ else finish() },
                 enabled = step != Step.CARD || !hasCard || (cardName.isNotBlank() && limit > 0),
                 modifier = Modifier.weight(1f).height(56.dp),
@@ -354,10 +354,7 @@ fun LockScreen(onUnlock: () -> Unit) {
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center,
     ) {
-        Box(
-            Modifier.size(88.dp).clip(CircleShape).background(MaterialTheme.colorScheme.primaryContainer),
-            contentAlignment = Alignment.Center,
-        ) { Icon(painterResource(R.drawable.ic_cryo_mark), null, Modifier.size(44.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer) }
+        CryoBadge(Modifier.size(88.dp))
         Spacer(Modifier.height(20.dp))
         Text(Res.s(R.string.onboarding_cryo_bloqueado), style = MaterialTheme.typography.headlineSmall)
         Text(
@@ -365,6 +362,6 @@ fun LockScreen(onUnlock: () -> Unit) {
             color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(24.dp))
-        Button(onClick = onUnlock, modifier = Modifier.height(52.dp)) { Text(Res.s(R.string.onboarding_desbloquear)) }
+        CryoButton(onClick = onUnlock, modifier = Modifier.height(52.dp)) { Text(Res.s(R.string.onboarding_desbloquear)) }
     }
 }

@@ -1,0 +1,1 @@
+Neues Symbol: Das eckige C ist jetzt golden und plastisch. Tiefe in der ganzen App: Karten mit weichem Schatten auf gruppiertem Hintergrund, ein Start-Kopf im Verlauf des Symbols, Verknüpfungen und Hauptknopf mit Volumen, die beim Tippen federnd nachgeben. Listen und Einstellungen gruppiert wie beim iPhone. Haptisches Feedback ohne neue Berechtigung.

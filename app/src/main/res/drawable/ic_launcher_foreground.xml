@@ -1,11 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- Ícone G4 (DS-ICO-02): o C quadrado dourado, com espessura (parte de baixo mais escura) e um fio de luz em cima. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
-    <path
-        android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65"
-        android:strokeColor="#FFFFFFFF" android:strokeWidth="8"
+    <group android:translateY="2.2">
+        <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeColor="#FFB9780A" android:strokeWidth="8"
+            android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+    <group android:translateY="1.6">
+        <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeColor="#FFB9780A" android:strokeWidth="8"
+            android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+    <group android:translateY="1.0">
+        <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeColor="#FFB9780A" android:strokeWidth="8"
+            android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+    <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeWidth="8"
+        android:strokeLineCap="round" android:strokeLineJoin="round">
+        <aapt:attr name="android:strokeColor">
+            <gradient android:type="linear" android:startX="0" android:startY="32" android:endX="0" android:endY="76">
+                <item android:offset="0" android:color="#FFFFD866" />
+                <item android:offset="1" android:color="#FFF0A81E" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path android:pathData="M69.6,40.4 L54,31.4 L38.4,40.4" android:strokeColor="#E6FFF1B8" android:strokeWidth="1.8"
         android:strokeLineCap="round" android:strokeLineJoin="round" />
-    <path android:fillColor="#FFFFFFFF"
-        android:pathData="M54,44.5 L56.6,51.4 L63.5,54 L56.6,56.6 L54,63.5 L51.4,56.6 L44.5,54 L51.4,51.4 Z" />
 </vector>

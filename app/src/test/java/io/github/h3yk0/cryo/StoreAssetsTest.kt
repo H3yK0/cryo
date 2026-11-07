@@ -136,7 +136,8 @@ class StoreAssetsTest {
                 contentAlignment = Alignment.CenterStart,
             ) {
                 Row(Modifier.padding(horizontal = 72.dp), verticalAlignment = Alignment.CenterVertically) {
-                    Icon(painterResource(R.drawable.ic_cryo_mark), null, tint = Color.White, modifier = Modifier.size(168.dp))
+                    // DS-ICO-04: o C dourado do ícone (G4), sem pintar por cima.
+                    androidx.compose.foundation.Image(painterResource(R.drawable.ic_cryo_mark), null, modifier = Modifier.size(width = 150.dp, height = 168.dp))
                     Spacer(Modifier.width(48.dp))
                     Column {
                         Text("Cryo", color = Color.White, fontSize = 104.sp, fontWeight = FontWeight.Bold, lineHeight = 108.sp)

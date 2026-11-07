@@ -8,6 +8,8 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
@@ -160,10 +162,14 @@ fun animateMoney(target: Long, enabled: Boolean = true): Long {
 private fun between(from: Long, to: Long, t: Float): Long =
     if (t >= 1f) to else from + ((to - from).toDouble() * t).roundToLong()
 
-/** DS-MOV-08: a peça encolhe de leve enquanto está pressionada e volta ao soltar. */
+/** DS-MOV-08, DS-PROF-08: a peça encolhe de leve enquanto está pressionada e volta ao soltar, com mola (como no iPhone). */
 @Composable
 fun Modifier.pressScale(interaction: InteractionSource, pressed: Float = 0.92f): Modifier {
     val isPressed by interaction.collectIsPressedAsState()
-    val scale by animateFloatAsState(if (isPressed) pressed else 1f, tween(Motion.SHORT, easing = Motion.Emphasized), label = "press")
+    val scale by animateFloatAsState(
+        if (isPressed) pressed else 1f,
+        spring(dampingRatio = 0.55f, stiffness = Spring.StiffnessMediumLow),
+        label = "press",
+    )
     return this.graphicsLayer { scaleX = scale; scaleY = scale }
 }

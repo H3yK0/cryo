@@ -4,6 +4,7 @@ package io.github.h3yk0.cryo.ui.screens
 
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
@@ -20,6 +21,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -36,7 +38,6 @@ import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Savings
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.Unarchive
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -106,6 +107,9 @@ import io.github.h3yk0.cryo.ui.components.SectionTitle
 import io.github.h3yk0.cryo.ui.components.Stepper
 import io.github.h3yk0.cryo.ui.components.SwitchRow
 import io.github.h3yk0.cryo.ui.components.TxRow
+import io.github.h3yk0.cryo.ui.components.Depth
+import io.github.h3yk0.cryo.ui.components.depthCard
+import io.github.h3yk0.cryo.ui.components.groupedRow
 import io.github.h3yk0.cryo.ui.components.UsageBar
 import io.github.h3yk0.cryo.ui.components.accountIcon
 import io.github.h3yk0.cryo.ui.components.rememberLedger
@@ -113,6 +117,8 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.LocalDate
 import java.time.YearMonth
+import io.github.h3yk0.cryo.ui.components.BottomBarSurface
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 /* =============================== Carteira =============================== */
 
@@ -128,7 +134,8 @@ fun WalletScreen() {
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.wallet_carteira), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 32.dp)) {
             item {
-                Column(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 4.dp, bottom = 16.dp)) {
+                // DS-PROF-02: o patrimônio é o destaque da tela, num cartão.
+                Column(Modifier.fillMaxWidth().padding(horizontal = Depth.Margin, vertical = 6.dp).depthCard().padding(18.dp)) {
                     Text(Res.s(R.string.home_net_worth), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     MoneyText(l.netWorth, style = MaterialTheme.typography.displaySmall)
                     Spacer(Modifier.height(12.dp))
@@ -138,7 +145,6 @@ fun WalletScreen() {
                     WorthLine(Res.s(R.string.wallet_cartoes_pagar), -l.s.cards.sumOf { l.cardOutstanding(it.id) })
                     if (l.totalDebts != 0L) WorthLine(Res.s(R.string.home_shortcut_debts), -l.totalDebts)
                 }
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
             }
 
             item {
@@ -437,7 +443,7 @@ fun MoneyActionSheet(
             FieldLabel(Res.s(R.string.wallet_data))
             DateChooser(date, l.today, { date = it })
             Spacer(Modifier.height(20.dp))
-            Button(
+            CryoButton(
                 onClick = { onConfirm(amount, acc, date) },
                 enabled = amount > 0 && (accountLabel == null || acc != null),
                 modifier = Modifier.fillMaxWidth().height(56.dp),
@@ -486,7 +492,7 @@ fun AccountDetailScreen(id: Long) {
             }
             item { SectionTitle(Res.s(R.string.wallet_movimentacoes), Modifier.padding(horizontal = 16.dp)) }
             if (list.isEmpty()) item { Text(Res.s(R.string.wallet_nada_por_aqui_ainda), Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true) }
+            itemsIndexed(list, key = { _, t -> t.id }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true, modifier = Modifier.groupedRow(i, list.size)) }
         }
     }
 }
@@ -582,8 +588,8 @@ fun EditorScaffold(
             })
         },
         bottomBar = {
-            Surface(tonalElevation = 3.dp) {
-                Button(
+            BottomBarSurface {
+                CryoButton(
                     onClick = onSave, enabled = canSave,
                     modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(16.dp).height(56.dp),
                 ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text(saveLabel) }
@@ -658,7 +664,7 @@ fun CardDetailScreen(id: Long) {
                     }
                     if (inv.remaining > 0 && st != InvoiceStatus.OPEN || (st == InvoiceStatus.OPEN && inv.total > inv.paid)) {
                         Spacer(Modifier.height(12.dp))
-                        Button(onClick = { paying = true }, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.wallet_pagar_fatura)) }
+                        CryoButton(onClick = { paying = true }, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.wallet_pagar_fatura)) }
                     }
                 }
             }
@@ -690,11 +696,12 @@ fun CardDetailScreen(id: Long) {
             if (inv.items.isEmpty()) {
                 item { Text(Res.s(R.string.wallet_nenhuma_compra_nesta_fatura), Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
             }
-            items(inv.items.sortedByDescending { it.date }, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true) }
+            val purchases = inv.items.sortedByDescending { it.date }
+            itemsIndexed(purchases, key = { _, t -> t.id }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true, modifier = Modifier.groupedRow(i, purchases.size)) }
             val payments = l.s.txs.filter { it.type == TxType.CARD_PAYMENT && it.cardId == id && it.invoiceYm == ymKey }
             if (payments.isNotEmpty()) {
                 item { SectionTitle(Res.s(R.string.wallet_pagamentos), Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
-                items(payments, key = { "p${it.id}" }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true) }
+                itemsIndexed(payments, key = { _, t -> "p${t.id}" }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true, modifier = Modifier.groupedRow(i, payments.size)) }
             }
         }
     }
@@ -838,11 +845,13 @@ fun InvestmentDetailScreen(id: Long) {
             val hist = l.investmentHistory(id)
             if (hist.isEmpty()) item { Text(Res.s(R.string.wallet_sem_movimentacoes_ainda), Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
             items(hist.size) { i ->
+                Box(Modifier.groupedRow(i, hist.size)) {
                 when (val h = hist[i]) {
                     is Tx -> TxRow(h, l, onClick = { nav.go(Routes.txEdit(h.id)) }, showDate = true)
                     is InvestmentYield -> YieldRow(h, onDelete = {
                         c.launch { c.repo.deleteYield(h); c.message(Res.s(R.string.wallet_atualizacao_removida)) }
                     })
+                }
                 }
             }
         }

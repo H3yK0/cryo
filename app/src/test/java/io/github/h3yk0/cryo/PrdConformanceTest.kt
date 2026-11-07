@@ -216,6 +216,24 @@ class PrdConformanceTest {
         assertEquals("Animação infinita numa tela (DS-MOV-10)", emptyList<String>(), found)
     }
 
+    @Test fun botaoPrincipalComVolume() { // DS-PROF-05, DS-COMP-24
+        val ui = File(main, "ui")
+        val found = kotlinFiles(ui).filter { it.name != "Depth.kt" }.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                if (Regex("""(?<![A-Za-z.])Button\(""").containsMatchIn(line)) "${f.relativeTo(root).path}:${i + 1}" else null
+            }
+        }
+        assertEquals("Botão principal sem volume: use CryoButton (DS-PROF-05)", emptyList<String>(), found)
+    }
+
+    @Test fun iconeSemEstrela() { // DS-ICO-02, DS-ICO-03
+        val drawable = File(app, "src/main/res/drawable")
+        val star = "M54,44.5"
+        val withStar = listOf("ic_launcher_foreground", "ic_launcher_monochrome", "ic_cryo_badge", "ic_cryo_mark")
+            .filter { File(drawable, "$it.xml").readText().contains(star) }
+        assertEquals("A estrela do ícone antigo voltou (DS-ICO-02)", emptyList<String>(), withStar)
+    }
+
     @Test fun telasComAsTransicoesDoMotion() { // DS-MOV-02, DS-MOV-03
         val nav = File(main, "ui/Nav.kt").readText()
         val hosts = Regex("""NavHost\(""").findAll(nav).count()

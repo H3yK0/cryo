@@ -139,7 +139,7 @@ fun HomeScreen() {
 
             item {
                 Spacer(Modifier.height(16.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                // DS-PROF-02: os cartões se separam pelo espaço entre eles; não há mais linha aqui.
             }
 
             item {

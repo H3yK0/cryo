@@ -18,6 +18,7 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -63,6 +64,7 @@ import io.github.h3yk0.cryo.ui.components.MoneyText
 import io.github.h3yk0.cryo.ui.components.MonthSelector
 import io.github.h3yk0.cryo.ui.components.Segmented
 import io.github.h3yk0.cryo.ui.components.TxRow
+import io.github.h3yk0.cryo.ui.components.groupedRow
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.components.txSignedAmount
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
@@ -191,7 +193,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                             )
                         }
                     }
-                    items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.animateItem()) }
+                    itemsIndexed(list, key = { _, t -> t.id }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.animateItem().groupedRow(i, list.size)) }
                 }
             } else {
                 item {
@@ -224,7 +226,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                     groups.forEach { (date, list) ->
                         // DS-MOV-07: o que entra, sai ou muda de dia desliza e aparece com fade.
                         item(key = "h$date") { Box(Modifier.animateItem()) { DayHeader(date, list, l) } }
-                        items(list, key = { it.id }) { t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.animateItem()) }
+                        itemsIndexed(list, key = { _, t -> t.id }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.animateItem().groupedRow(i, list.size)) }
                     }
                 }
             }

@@ -15,6 +15,8 @@ import androidx.biometric.BiometricManager
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -50,6 +52,7 @@ import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
@@ -89,7 +92,9 @@ import io.github.h3yk0.cryo.ui.Routes
 import io.github.h3yk0.cryo.ui.components.AccountChips
 import io.github.h3yk0.cryo.ui.components.ColorChooser
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
+import io.github.h3yk0.cryo.ui.components.CryoBadge
 import io.github.h3yk0.cryo.ui.components.CryoCard
+import io.github.h3yk0.cryo.ui.components.depthCard
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
@@ -163,17 +168,22 @@ fun SettingsScreen() {
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
             item { Header(Res.s(R.string.settings_perfil)) }
             item {
+                SettingsGroup {
                 SettingLink(Icons.Rounded.Person, Res.s(R.string.settings_seu_nome), s.userName.ifBlank { Res.s(R.string.settings_toque_para_dizer_como) }) { editName = true }
-            }
+                            }
+}
 
             item { Header(Res.s(R.string.settings_idioma_moeda)) }
             item {
+                SettingsGroup {
                 SettingLink(Icons.Rounded.Language, Res.s(R.string.locale_language_title), languageSummary(ctx)) { showLanguage = true }
                 SettingLink(Icons.Rounded.Payments, Res.s(R.string.locale_currency_title), currencySummary(ctx)) { showCurrency = true }
-            }
+                            }
+}
 
             item { Header(Res.s(R.string.settings_aparencia)) }
             item {
+                SettingsGroup {
                 FieldLabel(Res.s(R.string.settings_tema))
                 Segmented(
                     listOf(ThemeMode.SYSTEM to Res.s(R.string.settings_automatico), ThemeMode.LIGHT to Res.s(R.string.settings_claro), ThemeMode.DARK to Res.s(R.string.settings_escuro)), s.themeMode,
@@ -191,10 +201,12 @@ fun SettingsScreen() {
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-            }
+                            }
+}
 
             item { Header(Res.s(R.string.settings_privacidade_seguranca)) }
             item {
+                SettingsGroup {
                 SwitchRow(
                     Res.s(R.string.settings_bloquear_com_digital_ou), lock?.lockEnabled ?: s.lockEnabled,
                     { v ->
@@ -207,12 +219,14 @@ fun SettingsScreen() {
                     Res.s(R.string.settings_pede_desbloqueio_ao_abrir),
                 )
                 SwitchRow(Res.s(R.string.hide_values), s.hideValues, { v -> c.launch { c.settings.setHideValues(v) } }, Res.s(R.string.settings_hide_values_hint, Money.HIDDEN))
-            }
+                            }
+}
 
             item { Header(Res.s(R.string.settings_lembretes)) }
             if (c.sandbox) {
                 item { TestModeNote(Res.s(R.string.settings_modo_teste_lembretes_continuam)) }
             } else item {
+                SettingsGroup {
                 SwitchRow(
                     Res.s(R.string.settings_avisar_contas_vencer), s.remindersEnabled,
                     { v ->
@@ -223,18 +237,22 @@ fun SettingsScreen() {
                     },
                     Res.s(R.string.settings_notificacao_dia_que_voce),
                 )
-            }
+                            }
+}
 
             item { Header(Res.s(R.string.settings_registro_rapido)) }
             item {
+                SettingsGroup {
                 FieldLabel(Res.s(R.string.settings_conta_principal_usada_quando))
                 AccountChips(l.activeAccounts, s.defaultAccountId, { id -> c.launch { c.settings.setDefaultAccount(id) } })
                 Spacer(Modifier.height(8.dp))
                 SettingLink(Icons.Rounded.Category, Res.s(R.string.settings_categorias), Res.s(R.string.settings_nomes_icones_cores_palavras)) { nav.go(Routes.CATEGORIES) }
-            }
+                            }
+}
 
             item { Header(Res.s(R.string.settings_seus_dados)) }
             item {
+                SettingsGroup {
                 if (c.sandbox) {
                     TestModeNote(
                         Res.s(R.string.settings_modo_teste_dados_abaixo),
@@ -264,20 +282,24 @@ fun SettingsScreen() {
                     exportCsv.launch("cryo-movimentacoes-${LocalDate.now()}.csv")
                 }
                 SettingLink(Icons.Rounded.DeleteForever, Res.s(R.string.settings_apagar_todos_dados), Res.s(R.string.settings_comecar_zero), danger = true) { confirmErase = true }
-            }
+                            }
+}
 
             if (devMode) {
                 item { Header(Res.s(R.string.settings_desenvolvedor)) }
                 item {
+                SettingsGroup {
                     SettingLink(
                         Icons.Rounded.Science, Res.s(R.string.settings_modo_desenvolvedor),
                         if (c.sandbox) Res.s(R.string.settings_usando_dados_teste_arquivos) else Res.s(R.string.settings_dados_teste_arquivos_exemplo),
                     ) { nav.go(Routes.DEV) }
-                }
+                                }
+}
             }
 
             item { Header(Res.s(R.string.settings_sobre)) }
             item {
+                SettingsGroup {
                 // RF-AJU-11, RF-TOUR-03: o passeio animado, para ver de novo quando quiser.
                 SettingLink(Icons.Rounded.Explore, Res.s(R.string.tour_how_to_use), Res.s(R.string.tour_how_to_use_sub)) { nav.go(Routes.TOUR) }
                 SettingLink(Icons.Rounded.Code, Res.s(R.string.settings_codigo_fonte), Res.s(R.string.settings_github_com_h3yk0_cryo)) {
@@ -285,6 +307,7 @@ fun SettingsScreen() {
                 }
                 SettingLink(Icons.Rounded.Gavel, Res.s(R.string.settings_licenca), Res.s(R.string.settings_gnu_agpl_v3_ou)) {
                     openLink(ctx, "$SOURCE_URL/blob/main/LICENSE")
+                }
                 }
                 // 7 toques na versão ligam o modo desenvolvedor (como no Android).
                 CryoCard(
@@ -302,7 +325,12 @@ fun SettingsScreen() {
                         }
                     },
                 ) {
-                    Text(Res.s(R.string.settings_cryo, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.titleSmall)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        CryoBadge(Modifier.size(44.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Text(Res.s(R.string.settings_cryo, BuildConfig.VERSION_NAME), style = MaterialTheme.typography.titleMedium)
+                    }
+                    Spacer(Modifier.height(8.dp))
                     if (!devMode && versionTaps >= 3) {
                         Text(
                             (DEV_TAPS - versionTaps).let { n -> if (n == 1) Res.s(R.string.settings_mais_toque_para_modo) else Res.s(R.string.settings_mais_toques_para_modo, n) },
@@ -407,6 +435,12 @@ private fun Header(text: String) {
     )
 }
 
+/** DS-PROF-02: um grupo de ajustes num cartão, como os Ajustes do iPhone. */
+@Composable
+private fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 2.dp).depthCard().padding(horizontal = 6.dp, vertical = 6.dp), content = content)
+}
+
 @Composable
 private fun SettingLink(
     icon: ImageVector,
@@ -421,7 +455,8 @@ private fun SettingLink(
         supportingContent = { Text(subtitle, color = if (warning) MaterialTheme.colorScheme.error else Color.Unspecified) },
         leadingContent = { Icon(icon, null, tint = if (danger) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) },
         trailingContent = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null) },
-        modifier = Modifier.clickable(onClick = onClick),
+        colors = ListItemDefaults.colors(containerColor = Color.Transparent),
+        modifier = Modifier.clip(MaterialTheme.shapes.medium).clickable(onClick = onClick),
     )
 }
 

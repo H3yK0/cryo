@@ -39,6 +39,14 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.DpOffset
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -71,9 +79,10 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 val SectionPadding = 20.dp
 
 /**
- * DS-COMP-14: seção plana. Título com "›" quando leva a outra tela, o conteúdo e uma linha fina embaixo.
- * [onClick]: a seção inteira é tocável (o leitor de tela lê tudo junto). Quando o conteúdo tem os próprios toques (uma lista
- * de movimentações), use [headerOnly]: aí só a linha do título leva à outra tela.
+ * DS-COMP-14: seção. Na 1.5 (DS-PROF-02) é um cartão com profundidade sobre o fundo agrupado: título `titleMedium` com "›"
+ * quando leva a outra tela, e o conteúdo. [onClick]: o cartão inteiro é tocável (o leitor de tela lê tudo junto). Quando o
+ * conteúdo tem os próprios toques (uma lista de movimentações), use [headerOnly]: aí só a linha do título leva à outra tela.
+ * [divider] fica por compatibilidade (os cartões já se separam pelo espaço entre eles).
  */
 @Composable
 fun CryoSection(
@@ -81,34 +90,38 @@ fun CryoSection(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
     headerOnly: Boolean = false,
-    divider: Boolean = true,
+    @Suppress("UNUSED_PARAMETER") divider: Boolean = true,
     /** Ação no título, no lugar do "›" (ex.: "+ Nova"). */
     action: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    Column(modifier.fillMaxWidth()) {
-        val whole = onClick != null && !headerOnly
-        Column(Modifier.fillMaxWidth().then(if (whole) Modifier.clickable(onClick = onClick!!) else Modifier).padding(vertical = 8.dp)) {
-            Row(
-                Modifier.fillMaxWidth()
-                    .then(if (onClick != null && headerOnly) Modifier.clickable(onClick = onClick) else Modifier)
-                    .padding(horizontal = SectionPadding, vertical = 12.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
-                    modifier = Modifier.weight(1f).semantics { heading() },
-                )
-                when {
-                    action != null -> action()
-                    onClick != null -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+    val whole = onClick != null && !headerOnly
+    Column(
+        modifier.fillMaxWidth().padding(horizontal = Depth.Margin, vertical = 6.dp).depthCard()
+            .then(if (whole) Modifier.clickable(onClick = onClick!!) else Modifier)
+            .padding(vertical = 4.dp),
+    ) {
+        Row(
+            Modifier.fillMaxWidth()
+                .then(if (onClick != null && headerOnly) Modifier.clickable(onClick = onClick) else Modifier)
+                .padding(horizontal = CardPadding, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                title, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold,
+                modifier = Modifier.weight(1f).semantics { heading() },
+            )
+            when {
+                action != null -> action()
+                onClick != null -> Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Column(Modifier.fillMaxWidth().padding(start = SectionPadding, end = SectionPadding, bottom = 12.dp), content = content)
         }
-        if (divider) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+        Column(Modifier.fillMaxWidth().padding(start = CardPadding, end = CardPadding, bottom = 14.dp), content = content)
     }
 }
+
+/** Margem de dentro dos cartões. */
+val CardPadding = 18.dp
 
 /**
  * DS-COMP-18: linha de lista dentro de uma seção (conta, cartão, investimento...): ícone, título, subtítulo e o valor à direita.
@@ -150,31 +163,32 @@ fun CryoListRow(
 }
 
 /**
- * DS-COMP-19: destaque de uma tela interna (saldo da conta, total da fatura, valor do investimento): o número grande, sem
- * cartão em volta, e uma linha fina embaixo (PRI-04, DS-DIR-01).
+ * DS-COMP-19: destaque de uma tela interna (saldo da conta, total da fatura, valor do investimento): o número grande. Na 1.5,
+ * num cartão com profundidade (DS-PROF-02).
  */
 @Composable
 fun HeroBlock(modifier: Modifier = Modifier, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.fillMaxWidth().padding(start = SectionPadding, end = SectionPadding, top = 4.dp, bottom = 16.dp), content = content)
-    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+    Column(
+        modifier.fillMaxWidth().padding(horizontal = Depth.Margin, vertical = 6.dp).depthCard()
+            .padding(horizontal = CardPadding, vertical = 16.dp),
+        content = content,
+    )
 }
 
 /**
- * DS-COMP-20: item de lista sem cartão, com uma linha fina embaixo, para itens de várias linhas (orçamento, conta fixa, meta,
- * dívida). Substitui os cartões empilhados da 1.3 (DS-DIR-01).
+ * DS-COMP-20: item de lista com várias linhas (orçamento, conta fixa, meta, dívida). Na 1.5, cada item é um cartão com
+ * profundidade (DS-PROF-02); apagado (pago, arquivado), fica num cartão mais discreto e sem sombra.
  */
 @Composable
 fun FlatItem(modifier: Modifier = Modifier, onClick: (() -> Unit)? = null, faded: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
-    Column(modifier.fillMaxWidth()) {
-        Column(
-            Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
-                .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-                .then(if (faded) Modifier.background(MaterialTheme.colorScheme.surfaceContainerLowest) else Modifier)
-                .padding(horizontal = 4.dp, vertical = 14.dp),
-            content = content,
-        )
-        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-    }
+    val d = CryoTheme.depth
+    Column(
+        modifier.fillMaxWidth().padding(vertical = 5.dp)
+            .depthCard(shape = MaterialTheme.shapes.large, color = if (faded) d.cardFaded else d.card, lifted = !faded)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+        content = content,
+    )
 }
 
 /** Um atalho do Início. */
@@ -197,15 +211,17 @@ fun Shortcuts(items: List<ShortcutItem>, modifier: Modifier = Modifier) {
 fun Shortcut(item: ShortcutItem) {
     // DS-MOV-08: o círculo encolhe de leve enquanto o dedo está nele.
     val interaction = remember { MutableInteractionSource() }
+    val haptics = rememberHaptics()
     Column(
         Modifier.width(80.dp).clip(MaterialTheme.shapes.medium)
-            .clickable(interactionSource = interaction, indication = androidx.compose.material3.ripple(), onClick = item.onClick)
+            .clickable(interactionSource = interaction, indication = androidx.compose.material3.ripple(), onClick = { haptics.tap(); item.onClick() })
             .semantics { role = Role.Button }
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        // DS-PROF-04: círculo com volume (luz em cima, fio de luz e sombra suave).
         Box(
-            Modifier.pressScale(interaction).size(64.dp).clip(CircleShape).background(MaterialTheme.colorScheme.surfaceContainerHigh),
+            Modifier.pressScale(interaction).size(64.dp).raised(CircleShape, CryoTheme.depth.card),
             contentAlignment = Alignment.Center,
         ) {
             Icon(item.icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
@@ -233,8 +249,8 @@ fun HomeHeader(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val dark = CryoTheme.colors.isDark
-    val container = if (dark) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.primary
-    val onContainer = if (dark) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onPrimary
+    val d = CryoTheme.depth
+    val onContainer = Color.White
     val view = LocalView.current
     DisposableEffect(dark) {
         val window = (view.context as? Activity)?.window
@@ -242,7 +258,17 @@ fun HomeHeader(
         bars?.isAppearanceLightStatusBars = false
         onDispose { bars?.isAppearanceLightStatusBars = !dark }
     }
-    Surface(color = container, contentColor = onContainer, modifier = Modifier.fillMaxWidth()) {
+    // DS-PROF-03: o degradê do ícone, um brilho suave atrás do saldo e cantos de baixo arredondados: o cabeçalho "pousa"
+    // sobre a tela, com sombra.
+    val shape = RoundedCornerShape(bottomStart = 28.dp, bottomEnd = 28.dp)
+    Box(
+        Modifier.fillMaxWidth()
+            .dropShadow(shape, Shadow(radius = 22.dp, color = d.headerShadow, offset = DpOffset(0.dp, 8.dp)))
+            .clip(shape)
+            .background(Brush.linearGradient(listOf(d.headerStart, d.headerEnd), start = Offset.Zero, end = Offset.Infinite))
+            .background(Brush.radialGradient(listOf(d.headerGlow, Color.Transparent), center = Offset(260f, 420f), radius = 700f)),
+    ) {
+      CompositionLocalProvider(LocalContentColor provides onContainer) {
         Column(Modifier.statusBarsPadding().padding(start = SectionPadding, end = 8.dp, top = 8.dp, bottom = 24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -274,6 +300,7 @@ fun HomeHeader(
             Spacer(Modifier.height(20.dp))
             Column(Modifier.padding(end = 12.dp), content = content)
         }
+      }
     }
 }
 
@@ -283,9 +310,10 @@ fun HomeHeader(
  */
 @Composable
 fun InfoCard(icon: ImageVector, text: String, tint: Color, modifier: Modifier = Modifier, onClick: (() -> Unit)? = null) {
+    // DS-PROF-02: aviso também é um cartão com profundidade (mais baixo que as seções).
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLow, shape = MaterialTheme.shapes.medium,
-        modifier = modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
+        color = CryoTheme.depth.card, shape = MaterialTheme.shapes.large,
+        modifier = modifier.fillMaxWidth().depthCard(shape = MaterialTheme.shapes.large).then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier),
     ) {
         Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(

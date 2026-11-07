@@ -49,6 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
+| 1.5 | 6 | **Pronta no branch local `versao-1.5`, sem push** (07/11/2026): APK `Cryo-1.5.apk` entregue ao Hanry para testar. Só publicar depois da aprovação dele (seção 11). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -89,14 +90,27 @@ código anterior. Todos os testes passam.
 - Dados de exemplo na escala de cada moeda (`SampleData.m()`): salário de R$ 4.200 vira ¥210.000, ₩2.520.000.
 - Loja (fastlane) nas 10 línguas. Banco de dados continua na versão 3 (sem migração nova).
 
+### O que a 1.5 traz (branch `versao-1.5`)
+
+- **Ícone novo G4** (DS-ICO-02..05): o C quadrado agora **dourado, com espessura e fio de luz**, sem a estrela. Escolhido depois
+  de uma pesquisa de psicologia da atenção (cor quente sobre o azul puxa o olho; continuidade com o C conhecido) e da comparação
+  de 11 desenhos. Versões: adaptativo, monocromático, notificação, `ic_cryo_badge` (dentro do app) e `ic_cryo_mark` (banner).
+- **Profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, `ui/components/Depth.kt`): fundo agrupado com
+  cartões de sombra suave, listas agrupadas, cabeçalho do Início em degradê que pousa sobre a tela, atalhos e botão principal
+  (`CryoButton`) com volume, barras elevadas, molas e **vibração ao toque** (sem permissão nova).
+- Ajustes no estilo do iPhone (grupos em cartões, ícone em Sobre); ícone do app na apresentação e no bloqueio.
+- Imagens da loja e do guia visual refeitas. Banco de dados continua na versão 3 (sem migração nova).
+
 ### Próximos passos imediatos
 
-1. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
+1. **1.5**: esperar o Hanry testar o `Cryo-1.5.apk`. Com a aprovação: push de `versao-1.5` e de `main`, Release `v1.5` (seção 11).
+   O F-Droid pega sozinho pela etiqueta (a receita não muda).
+2. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
    receita oficial. Conferir em https://f-droid.org/packages/io.github.h3yk0.cryo/ que a 1.4 apareceu (alguns dias). Se não
    aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
-2. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
-3. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-4. 1.5: detalhar com o Hanry (widgets, notificações especiais, sons).
+3. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
+4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
+5. 1.6: detalhar com o Hanry (widgets, notificações especiais, sons).
 
 ---
 
@@ -127,6 +141,8 @@ código anterior. Todos os testes passam.
   Backups antigos precisam continuar abrindo (`Backup.import` lê todas as versões).
 
 **Código**
+- Botão principal é sempre `CryoButton` (nunca `Button(` direto nas telas: `PrdConformanceTest` confere). Cartões e listas usam
+  as peças de `ui/components/Depth.kt` (`depthCard`, `groupedRow`) e as cores de `CryoTheme.depth`, nunca cores soltas.
 - Kotlin + Jetpack Compose + Material 3. Texto da interface simples, no "você" (guia em `docs/VISUAL.md`), **sempre** em
   `res/values/strings.xml` (base pt-BR) e traduzido nas outras 9 línguas no mesmo commit: `PrdConformanceTest` falha se faltar
   chave, se os marcadores (`%1$s`) não baterem ou se houver texto escrito direto nas telas e notificações. Regras sem Android
@@ -178,8 +194,9 @@ app/src/main/java/io/github/h3yk0/cryo/
 │                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
 ├── notify/             Lembretes de contas e parcelas (diário, ~9h) e worker do backup automático (a cada 6h), via WorkManager
-└── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento),
-                        screens/ (telas; Tour.kt = passeio), tx/ (lançamento), theme/
+└── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento,
+                        Depth.kt = profundidade e vibração), screens/ (telas; Tour.kt = passeio), tx/ (lançamento),
+                        theme/ (Theme.kt: cores, CryoTheme.colors, CryoTheme.depth)
 ```
 
 **Como os dados andam**
@@ -253,6 +270,8 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Apresentação inicial, tela de bloqueio | `ui/screens/Onboarding.kt` |
 | Passeio "Como usar o Cryo" | `ui/screens/Tour.kt` (primeiro uso e rota `tour` pelos Ajustes) |
 | Movimento (transições, contagem, aparecer) | `ui/components/Motion.kt`, `ui/Nav.kt` |
+| Profundidade (cartões, volume, sombras, vibração) | `ui/components/Depth.kt`, `ui/theme/Theme.kt` (`CryoDepth`) |
+| Ícone do app e marca | `res/drawable/ic_launcher_*.xml`, `ic_notification.xml`, `ic_cryo_badge.xml`, `ic_cryo_mark.xml` |
 | Lembretes | `notify/Reminders.kt` |
 
 ## 10. Testes
@@ -294,6 +313,9 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   com "+" para não perder a língua. Testes JVM puros chamam `JvmStrings.install()` (lê `values/strings.xml`).
 - Expressões regulares com grupos de nome (`groups["x"]`) dependem de uma função do Android 13+: use grupos numerados (veja `tpl`
   em `PhraseParser`). E o `\b` do Java e o do Android tratam letras fora do latim de jeitos diferentes: use `PhraseParser.wordRegex`.
+- **Vetores com `<clip-path>`**: o leitor de vetores do Compose (`painterResource`) desloca os desenhos que vêm depois de um
+  `clip-path` (o C saía dobrado). Desenhe o contorno como um caminho em vez de recortar (veja `ic_cryo_badge.xml`).
+- Sombras (`Modifier.dropShadow`) aparecem nas imagens do Robolectric; a vibração (`HapticFeedback`) não faz nada lá, sem erro.
 - Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos). Um init script local em
   `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google resolve; ele fica fora do projeto e não muda o APK.
 
@@ -334,6 +356,7 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
+- **1.5** (pronta em 07/11/2026, aguardando o teste do Hanry): ícone novo G4 (C dourado com volume) e profundidade em todo o app.
 
 Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 
@@ -366,6 +389,13 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 - **Movimento sempre pelas APIs do Compose** (nunca `delay()`): elas seguem "Remover animações". O bloqueio nunca anima.
 - **README em inglês na raiz** (é o que o GitHub mostra) e as outras 9 línguas em `docs/readme/`; os documentos de trabalho
   (PRD, CLAUDE.md, VISUAL.md, IMPORTACAO.md) continuam em português. As imagens de cada README são as da loja daquela língua.
+- **Ícone G4** (07/11/2026): o Hanry achou o ícone antigo com "cara de feito com IA". Pesquisa de psicologia da atenção
+  (contraste de cor quente sobre fundo frio, forma simples e reconhecível, continuidade com o que já existe) → 11 desenhos
+  comparados → o C quadrado dourado com espessura. A estrela saiu (é o símbolo comum de "recurso de IA").
+- **Dourado só na marca**: é a cor do símbolo, nunca de entrada ou saída de dinheiro (verde/vermelho continuam com esse papel).
+- **Profundidade por peças centrais** (`Depth.kt` + `CryoTheme.depth`) e não sombra por tela: o mesmo peso em todo o app, nos dois
+  temas e com Material You. Sombras largas e claras (nunca bordas escuras), luz vinda de cima, volume só na ação principal.
+- **Vibração pelo `HapticFeedback` do Compose**: segue o ajuste do celular e não precisa da permissão `VIBRATE` (RNF-PRIV-03).
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 
@@ -387,10 +417,11 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
-2. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-3. **1.5**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
+2. **1.5** (ícone G4 + profundidade): pronta, aguardando o teste e a aprovação do Hanry.
+3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
+4. **1.6**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
    Detalhar com o Hanry antes de começar (quais widgets, quais momentos, quais sons).
-4. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
+5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
 ## 15. Arquivos de referência
 

@@ -20,7 +20,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -45,6 +44,8 @@ import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.components.Source
 import io.github.h3yk0.cryo.ui.components.rememberLedger
+import io.github.h3yk0.cryo.ui.components.BottomBarSurface
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 @Composable
 fun LoadingBox() {
@@ -89,14 +90,14 @@ fun TxEditorScreen(
             )
         },
         bottomBar = {
-            Surface(tonalElevation = 3.dp) {
+            BottomBarSurface {
                 Column(Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(16.dp)) {
                     val problem = draft.problem()
                     if (problem != null) {
                         Text(problem, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                         Spacer(Modifier.height(8.dp))
                     }
-                    Button(
+                    CryoButton(
                         onClick = {
                             c.launch {
                                 val r = saveDraft(draft, c.repo, l)

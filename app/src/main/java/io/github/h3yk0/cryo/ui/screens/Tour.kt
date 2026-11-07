@@ -43,7 +43,6 @@ import androidx.compose.material.icons.rounded.LockOpen
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.PhoneAndroid
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -52,6 +51,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
@@ -90,6 +90,7 @@ import io.github.h3yk0.cryo.ui.components.Motion
 import io.github.h3yk0.cryo.ui.components.PageDots
 import io.github.h3yk0.cryo.ui.components.categoryIcon
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
+import kotlinx.coroutines.flow.drop
 import kotlinx.coroutines.launch
 import java.text.BreakIterator
 import java.time.YearMonth
@@ -100,6 +101,8 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 import kotlin.math.roundToLong
 import kotlin.math.sin
+import io.github.h3yk0.cryo.ui.components.CryoButton
+import io.github.h3yk0.cryo.ui.components.rememberHaptics
 
 /*
  * RF-TOUR: "Como usar o Cryo", um passeio de 5 páginas para quem nunca ouviu falar do app. Cada página tem uma animação curta
@@ -167,6 +170,9 @@ fun Tour(
     val pager = rememberPagerState(initialPage) { PAGES.size }
     val scope = rememberCoroutineScope()
     val last = pager.currentPage == PAGES.lastIndex
+    val haptics = rememberHaptics()
+    // Um "tique" quando a página assenta numa nova (DS-PROF-07), como o clique das páginas no iPhone. A primeira não vibra.
+    LaunchedEffect(pager, haptics) { snapshotFlow { pager.settledPage }.drop(1).collect { haptics.tick() } }
     BackHandler {
         if (pager.currentPage > 0) scope.launch { pager.animateScrollToPage(pager.currentPage - 1) } else onBackFromFirst()
     }
@@ -204,7 +210,7 @@ fun Tour(
             }
         }
         PageDots(pager.currentPage, PAGES.size, Modifier.align(Alignment.CenterHorizontally).padding(vertical = 12.dp))
-        Button(
+        CryoButton(
             onClick = { if (last) onFinish() else scope.launch { pager.animateScrollToPage(pager.currentPage + 1) } },
             modifier = Modifier.fillMaxWidth().padding(start = 24.dp, end = 24.dp, bottom = 24.dp, top = 4.dp).height(56.dp),
         ) { Text(if (last) lastLabel else Res.s(R.string.tour_next)) }

@@ -2,6 +2,14 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.5 — new icon and depth
+
+- **New icon**: the square C is now gold, with thickness and a touch of light, on the same Cryo blue. The little star is gone. Chosen by comparing 11 designs with research on visual attention
+- **Depth across the app**: content sits on cards with soft shadows over a "grouped" background, like the best iPhone apps; the Home header uses the icon's gradient; shortcuts and the main button have volume and shrink with a spring when touched
+- **Grouped lists**: each day in Activity, a card's bill and the account history form a single card; Settings is grouped like the iPhone's
+- **Haptic feedback**: confirming, switching on and off, changing tabs and segments. It follows your phone's "touch vibration" setting and needs no new permission
+- Cryo's icon shows up inside the app (welcome, lock screen and About)
+
 ## 1.4 — 10 languages, currencies and a new look
 
 - **10 languages**: Brazilian Portuguese, English, Spanish, French, German, Italian, Japanese, Korean, Chinese (simplified) and Hindi. Cryo follows your phone's language (English if it is not one of the 10), and you can switch right away in Settings › Language and currency

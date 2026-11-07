@@ -2,6 +2,14 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.5 — ícone novo e profundidade
+
+- **Ícone novo**: o C quadrado agora é dourado, com espessura e um fio de luz, sobre o mesmo azul do Cryo. A estrelinha saiu. Escolhido comparando 11 desenhos com pesquisa sobre atenção visual
+- **Profundidade em todo o app**: o conteúdo fica em cartões com sombra suave sobre um fundo "agrupado", como nos melhores apps de iPhone; o cabeçalho do Início usa o degradê do ícone; atalhos e o botão principal têm volume e encolhem com mola ao toque
+- **Listas agrupadas**: cada dia do Extrato, a fatura de um cartão e o histórico de uma conta formam um cartão só; os Ajustes ficam agrupados como no iPhone
+- **Vibração ao toque**: ao confirmar, ligar e desligar, trocar de aba e de opção. Segue o ajuste "vibração ao toque" do celular e não precisa de permissão nova
+- O ícone do Cryo aparece dentro do app (boas-vindas, bloqueio e Sobre)
+
 ## 1.4 — 10 línguas, moedas e visual novo
 
 - **10 línguas**: português do Brasil, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês (simplificado) e hindi. O Cryo segue a língua do celular (inglês, se ela não for uma das 10) e dá para trocar em Ajustes › Idioma e moeda, na hora

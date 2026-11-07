@@ -29,7 +29,6 @@ import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Mic
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -61,6 +60,7 @@ import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.PhraseParser
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 fun Ledger.parseContext(settings: AppSettings) = ParseContext(
     today = today, accounts = s.accounts, cards = s.cards, categories = s.categories,
@@ -169,7 +169,7 @@ fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () 
                 Text(problem, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodyMedium)
                 Spacer(Modifier.height(8.dp))
             }
-            Button(
+            CryoButton(
                 onClick = {
                     c.launch {
                         val r = saveDraft(d, c.repo, l)

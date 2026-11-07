@@ -39,7 +39,6 @@ import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.SettingsBackupRestore
 import androidx.compose.material.icons.rounded.Smartphone
 import androidx.compose.material3.BasicAlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -95,6 +94,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import java.time.Instant
 import java.time.ZoneId
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 /** "hoje às 03:12", "ontem às 22:05", "23/09 às 03:12". */
 fun backupWhen(at: Long, now: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault()): String {
@@ -293,7 +293,7 @@ fun AutoBackupScreen() {
 
             item {
                 Spacer(Modifier.height(8.dp))
-                Button(
+                CryoButton(
                     onClick = {
                         running = true
                         c.safely({ running = false }) { c.message(summary(c.backupRunner.run(force = true))) }
@@ -370,7 +370,7 @@ private fun FolderCard(s: AutoBackupSettings, onPick: () -> Unit, onRemove: () -
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 8.dp),
             )
-            Button(onClick = onPick, modifier = Modifier.padding(top = 12.dp)) {
+            CryoButton(onClick = onPick, modifier = Modifier.padding(top = 12.dp)) {
                 Icon(Icons.Rounded.Folder, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.backup_escolher_pasta))
             }
             return@CryoCard
@@ -426,7 +426,7 @@ private fun CloudCard(s: AutoBackupSettings, onPick: () -> Unit, onRemove: () ->
                     color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp),
                 )
             }
-            Button(onClick = onPick, modifier = Modifier.padding(top = 12.dp)) {
+            CryoButton(onClick = onPick, modifier = Modifier.padding(top = 12.dp)) {
                 Icon(Icons.Rounded.Cloud, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.backup_escolher_nuvem))
             }
             return@CryoCard
@@ -540,10 +540,10 @@ fun ExistingBackupContent(
             )
             Column(Modifier.padding(top = 20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 if (found.richer) {
-                    Button(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.backup_restaurar_este_backup)) }
+                    CryoButton(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.backup_restaurar_este_backup)) }
                     OutlinedButton(onClick = onKeep, modifier = Modifier.fillMaxWidth()) { Text(keepLabel, textAlign = TextAlign.Center) }
                 } else {
-                    Button(onClick = onKeep, modifier = Modifier.fillMaxWidth()) { Text(keepLabel, textAlign = TextAlign.Center) }
+                    CryoButton(onClick = onKeep, modifier = Modifier.fillMaxWidth()) { Text(keepLabel, textAlign = TextAlign.Center) }
                     OutlinedButton(onClick = onRestore, modifier = Modifier.fillMaxWidth()) { Text(Res.s(R.string.backup_restaurar_este_backup)) }
                 }
             }
@@ -653,7 +653,7 @@ private fun TestModeBackupNotice(onBack: () -> Unit) {
                 Icons.Rounded.Science, Res.s(R.string.backup_voce_esta_modo_teste),
                 Res.s(R.string.backup_backup_automatico_continua_salvando),
             ) {
-                Button(onClick = { leaving = true; switchTestMode(ctx, false) { leaving = false } }, enabled = !leaving) {
+                CryoButton(onClick = { leaving = true; switchTestMode(ctx, false) { leaving = false } }, enabled = !leaving) {
                     Text(Res.s(R.string.backup_sair_modo_teste))
                 }
             }

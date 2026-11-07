@@ -398,23 +398,21 @@ fun SectionTitle(text: String, modifier: Modifier = Modifier, action: (@Composab
     }
 }
 
+/** DS-COMP-01: destaque com fundo próprio. Na 1.5, com profundidade (DS-PROF-02): sombra suave e cantos 24. */
 @Composable
 fun CryoCard(
     modifier: Modifier = Modifier,
     onClick: (() -> Unit)? = null,
-    color: Color = MaterialTheme.colorScheme.surfaceContainerLow,
+    color: Color = Color.Unspecified,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val colors = CardDefaults.cardColors(containerColor = color)
-    if (onClick != null) {
-        Card(onClick = onClick, modifier = modifier.fillMaxWidth(), colors = colors, shape = MaterialTheme.shapes.large) {
-            Column(Modifier.padding(16.dp), content = content)
-        }
-    } else {
-        Card(modifier = modifier.fillMaxWidth(), colors = colors, shape = MaterialTheme.shapes.large) {
-            Column(Modifier.padding(16.dp), content = content)
-        }
-    }
+    val c = color.takeOrElse { CryoTheme.depth.card }
+    Column(
+        modifier.fillMaxWidth().depthCard(shape = MaterialTheme.shapes.large, color = c)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(16.dp),
+        content = content,
+    )
 }
 
 @Composable

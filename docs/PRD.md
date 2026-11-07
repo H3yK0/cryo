@@ -12,7 +12,7 @@
 |---|---|
 | Produto | Cryo · "Seu dinheiro, claro como gelo." |
 | Dono do produto | Hanry Franco (aprova tudo o que vai para o público) |
-| Versão do PRD | **2.4** (06/11/2026) |
+| Versão do PRD | **2.5** (07/11/2026) |
 | Versão publicada do app | **1.4** no GitHub (06/11/2026; a 1.3 também, no mesmo dia) · F-Droid: receita com a 1.4 e a licença AGPL aceita em 07/11/2026 (!56186); a 1.4 entra na loja depois da compilação do F-Droid |
 | Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) (em inglês; em português: [`docs/CHANGELOG.pt-BR.md`](CHANGELOG.pt-BR.md)) |
 
@@ -44,6 +44,7 @@ anexo é corrigido no mesmo commit.
 | 2.0 | 04/11/2026 | PRD único com catálogo e códigos; processo de criação e manutenção; conformidade automática; design system 2.0 (visual de banco, cores do Cryo); licença AGPL. |
 | 2.1 | 04/11/2026 | Aprovados: piloto do Início, direção 2.0 em todas as telas, 4 abas, restaurar backup na apresentação. Novos: 10 línguas (RF-LNG) e moeda do app (RF-MOE), frases nas 10 línguas, importação de outros países; tudo na 1.4. |
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
+| 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
 | 2.3 | 06/11/2026 | Pedidos do Hanry depois de testar a 1.4: passeio animado "Como usar o Cryo" (RF-TOUR), movimento em todo o app (DS-MOV, ACS-08), página do GitHub nas 10 línguas com inglês como principal (RF-LNG-09, RF-LNG-10). Tudo na 1.4. |
 
@@ -480,13 +481,13 @@ Pedido do Hanry (05/11/2026): uma explicação animada de como usar o app, para 
 | RF-NOT-01 | Contas e parcelas | Diário ~9h; toque abre a tela certa nos dados de verdade. | ✅ 1.0 |
 | RF-NOT-02 | Problema no backup | RF-BKP-10. | ✅ 1.2 |
 | RF-NOT-03 | Pouca informação | A notificação mostra só o nome e o valor da conta ou parcela, nunca saldos; agendar lembretes nunca impede o app de abrir. | ✅ 1.0 |
-| RF-NOT-04 | Notificações especiais e sons | Popups e sons personalizados aleatórios. | 🔵 1.5 (detalhar) |
+| RF-NOT-04 | Notificações especiais e sons | Popups e sons personalizados aleatórios. | 🔵 1.6 (detalhar) |
 
 ### 6.20 Widgets — RF-WID
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-WID-01 | Widgets na tela inicial | Detalhar com o Hanry (quais, que dados, como respeitar "esconder valores" e o bloqueio). | 🔵 1.5 |
+| RF-WID-01 | Widgets na tela inicial | Detalhar com o Hanry (quais, que dados, como respeitar "esconder valores" e o bloqueio). | 🔵 1.6 |
 
 ---
 
@@ -540,7 +541,7 @@ roxo.
 
 | ID | Regra | Status |
 |---|---|---|
-| DS-DIR-01 | **Seções, não blocos**: conteúdo em seções planas separadas por uma linha fina; cartões (fundo próprio) só para o que é destaque ou aviso. | ✅ 1.4 |
+| DS-DIR-01 | **Seções, não blocos**: conteúdo em seções planas separadas por uma linha fina; cartões (fundo próprio) só para o que é destaque ou aviso. **Na 1.5**: as seções viram cartões com profundidade sobre um fundo agrupado (DS-PROF-02). | ✅ 1.4 · revisto ✅ 1.5 |
 | DS-DIR-02 | **Cor com propósito**: a cor do Cryo no cabeçalho do Início, nos atalhos e nos destaques; verde e vermelho só para entrada, saída e alerta. | ✅ 1.4 |
 | DS-DIR-03 | **Atalhos à mão**: as ações mais usadas em círculos no topo do Início. | ✅ 1.4 |
 | DS-DIR-04 | **Uma pergunta por seção**: cada seção responde uma pergunta ("Como está o mês?") e o "›" leva ao detalhe. | ✅ 1.4 |
@@ -599,6 +600,8 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | DS-COMP-19 | **`HeroBlock`** | Destaque plano no topo das telas de detalhe (conta, cartão, dívida, investimento): valor principal em `displaySmall` e informações abaixo, sem cartão em volta. | ✅ 1.4 |
 | DS-COMP-20 | **`FlatItem`** | Item plano tocável das listas de Planejar, Dívidas e Análises, com opção de aparecer apagado (pago, arquivado). | ✅ 1.4 |
 | DS-COMP-21 | **`PageDots`** | Pontos de página (passeio): o da página atual vira uma pílula na cor do Cryo, com a largura animada; lido como "Página 2 de 5". | ✅ 1.4 |
+| DS-COMP-23 | **`Depth`** (`ui/components/Depth.kt`) | Peças da profundidade (DS-PROF): `Modifier.depthCard()` (cartão com sombra suave e fio de luz), `Modifier.groupedRow()` (linha de lista agrupada: só a primeira e a última com cantos), `Modifier.raised()` (volume de círculos e botões), `CryoBadge` (o ícone dentro do app), `BottomBarSurface` (barra de ação fixa elevada), `rememberHaptics()` (vibrações com nome: confirmar, recusar, ligar/desligar, tique, toque). As cores do fundo agrupado, dos cartões, das sombras e do cabeçalho ficam em `CryoTheme.depth` (`ui/theme/Theme.kt`). | ✅ 1.5 |
+| DS-COMP-24 | **`CryoButton`** | Botão principal com volume (DS-PROF-05); mesmos parâmetros do `Button`. | ✅ 1.5 |
 | DS-COMP-22 | **`Motion`** (`ui/components/Motion.kt`) | Tempos, curvas e transições do DS-MOV num lugar só: transições de tela e de aba, `animateMoney`, `rememberAppear` (0 → 1 uma vez, ao aparecer), `pressScale`. Animação nova usa estas peças. | ✅ 1.4 |
 
 ### 9.6 Padrões de tela (DS-PAD)
@@ -618,7 +621,10 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | ID | Regra |
 |---|---|
 | DS-ICO-01 | Material Icons estilo **Rounded** (`Icons.Rounded.*`; setas `Icons.AutoMirrored.Rounded.*`). |
-| DS-ICO-02 | Ícone do app: gradiente da marca `#0A4F66 → #29B6D6`, hexágono aberto com estrela; versão monocromática. |
+| DS-ICO-02 | **Ícone do app (G4, 1.5)**: o mesmo fundo em degradê `#0A4F66 → #29B6D6`; o **C quadrado** (hexágono aberto) agora **dourado** (`#FFD866 → #F0A81E`), com **espessura** (a parte de baixo em `#B9780A`) e um **fio de luz** nas arestas de cima; **sem a estrela** (ela lembra o símbolo de "recurso de IA"). Escolhido em 07/11/2026 depois de comparar 11 desenhos com a pesquisa de psicologia da atenção (cor quente no azul = ponto que puxa o olho; continuidade com o C que as pessoas já conhecem). Até a 1.4: C branco com estrela. |
+| DS-ICO-03 | **Versões do ícone**: ícone adaptativo (`ic_launcher_background` + `ic_launcher_foreground`); **monocromático** só com o C (ícones temáticos do Android 13+); **notificação** só com o C, branco; **`ic_cryo_badge`**: o ícone completo (fundo + C dourado), usado dentro do app onde a marca aparece (apresentação, bloqueio, Sobre); **`ic_cryo_mark`**: só o C dourado com volume (banner da loja). |
+| DS-ICO-04 | **Loja**: `icon.png` 512 × 512 e `featureGraphic.png` (en-US e pt-BR) gerados por `StoreAssetsTest` a partir dos mesmos desenhos. |
+| DS-ICO-05 | O dourado do ícone é a cor da **marca** (`CryoTheme.colors.gold`): aparece no símbolo e em celebrações (meta concluída), **nunca** como cor de entrada ou saída de dinheiro (DS-COR-03). |
 
 ### 9.8 Movimento (DS-MOV)
 
@@ -637,6 +643,24 @@ mostra de onde a tela veio, para onde foi e o que mudou; nunca enfeita, nunca fa
 | DS-MOV-08 | **Toque**: os atalhos do Início encolhem de leve (92%) ao toque e voltam. | ✅ 1.4 |
 | DS-MOV-09 | **Passos e partes**: a apresentação desliza para a frente ao avançar e para trás ao voltar; a barra de progresso anda suave; partes de um formulário que aparecem (ex.: dados do cartão na apresentação) se abrem com a altura animada. Da apresentação para o app, fade. | ✅ 1.4 |
 | DS-MOV-10 | **Limites**: nenhuma animação infinita (só o indicador de "carregando", que já é do sistema); animação só com as APIs de animação do Compose, que seguem "Remover animações" (nunca `delay()` para animar); o **bloqueio aparece e some sem animação** (o app bloqueado não pode ficar à vista nem por um instante, RF-BLQ). | ✅ 1.4 |
+
+### 9.9 Profundidade (DS-PROF)
+
+Pedido do Hanry (07/11/2026): o mesmo "volume" do ícone dentro do app, para a pessoa sentir que usa um app **bem construído,
+com peso de app de iPhone**. **Direção**: profundidade discreta e consistente, com a mesma luz do ícone (vinda de cima): o que é
+importante parece um objeto que se pode tocar; nada de brilho exagerado, reflexo, textura ou imitação de material.
+
+| ID | Regra | Status |
+|---|---|---|
+| DS-PROF-01 | **Luz de cima**: superfícies de destaque têm degradê sutil (mais claro em cima), um **fio de luz** de 1 dp no topo e **sombra suave** embaixo (larga e clara, nunca uma borda escura). Tudo pelas peças de `Depth` (DS-COMP-23). | ✅ 1.5 |
+| DS-PROF-02 | **Fundo agrupado e cartões**: a tela tem um fundo "agrupado" (cinza-gelo no claro, quase preto no escuro) e o conteúdo fica em **cartões** (branco no claro, cinza-grafite no escuro), cantos 24, margem 16 dp, sombra suave, como as listas agrupadas do iPhone. Seções (`CryoSection`), itens (`FlatItem`), destaques (`HeroBlock`), avisos (`InfoCard`) e listas de movimentações viram cartões. Funciona também com as cores do papel de parede (Material You). | ✅ 1.5 |
+| DS-PROF-03 | **Cabeçalho do Início** com o degradê do ícone (`#0A4F66 → #168FAD`, no escuro mais fundo), um brilho suave atrás do saldo e cantos de baixo arredondados (28 dp) com sombra: o cabeçalho "pousa" sobre a tela. Com Material You, o degradê vem das cores do papel de parede. | ✅ 1.5 |
+| DS-PROF-04 | **Atalhos com volume**: círculo com degradê, fio de luz e sombra suave; encolhem ao toque com **mola** e vibração leve. | ✅ 1.5 |
+| DS-PROF-05 | **Botão principal** (`CryoButton`): degradê da cor principal (mais claro em cima), fio de luz, sombra colorida suave, encolhe ao toque com mola e vibra ao confirmar. Botões de apagar e secundários continuam sem volume (o volume chama para a ação principal). | ✅ 1.5 |
+| DS-PROF-06 | **Barra de abas** elevada: cor dos cartões, fio de luz no topo e sombra para cima; troca de aba com vibração de "tique". | ✅ 1.5 |
+| DS-PROF-07 | **Vibração ao toque** (como no iPhone): confirmar (salvar, importar), ligar/desligar (interruptores), tique (abas, segmentos, passos do passeio), toque nos atalhos. Pelo `HapticFeedback` do sistema, que segue o ajuste "vibração ao toque" do celular; **sem permissão nova** (RNF-PRIV-03). | ✅ 1.5 |
+| DS-PROF-08 | **Molas**: toques e pequenas mudanças (encolher, crescer) usam mola, não tempo fixo; com "Remover animações", nada se move (ACS-08). | ✅ 1.5 |
+| DS-PROF-09 | **Números com peso**: saldos e totais em `SemiBold` com algarismos de largura igual (`tnum`) e espaçamento levemente fechado nos números grandes. | ✅ 1.5 |
 
 ## 10. Conteúdo e acessibilidade
 
@@ -781,6 +805,8 @@ conferir sozinho:
 | Existe o schema do Room da versão atual do banco | DAD-03 |
 | `CHANGELOG.md` e `docs/CHANGELOG.pt-BR.md` têm a seção da versão atual; changelogs do fastlane com no máximo 500 caracteres | PRC-04, RF-LNG-09 |
 | Nenhuma animação infinita (`rememberInfiniteTransition`, `infiniteRepeatable`) nas telas e componentes | DS-MOV-10 |
+| Botão principal sempre com volume: nenhum `Button(` direto nas telas, só `CryoButton` | DS-PROF-05 |
+| O ícone e o selo não têm mais a estrela (G4) | DS-ICO-02 |
 | Todas as rotas usam as transições do `Motion` (nenhum `NavHost` sem elas) | DS-MOV-02, DS-MOV-03 |
 | `README.md` em inglês e os 9 `docs/readme/README.<língua>.md` existem, cada um com a linha das 10 línguas, e toda imagem ou arquivo que citam existe | RF-LNG-09 |
 | As 10 pastas da loja têm as imagens das telas (`phoneScreenshots/`) | RF-LNG-10 |
@@ -806,7 +832,8 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.2 | ✅ 03/10/2026 | Backup automático (pasta e nuvem). |
 | 1.3 | ✅ 06/11/2026 (GitHub) | Importar extrato, modo desenvolvedor, correções de bloqueio. |
 | **1.4** | ✅ 06/11/2026 (GitHub; F-Droid pela etiqueta) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
-| 1.5 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
+| **1.5** | ✅ Pronta (aguarda o teste e a aprovação do Hanry) | **Ícone novo G4** (DS-ICO-02..05) · **Profundidade** em todo o app, com peso de app de iPhone (DS-PROF-01..09) · vibração ao toque. |
+| 1.6 | 🔵 | Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04). |
 
 ## 13. Glossário
 

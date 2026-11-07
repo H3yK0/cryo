@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- O ícone completo como selo (DS-ICO-03): fundo em degradê com cantos arredondados e o C dourado. Usado dentro do app
+     onde a marca aparece (apresentação, bloqueio, Sobre), como os apps de iPhone mostram o próprio ícone.
+     Sem clip-path de propósito: o leitor de vetores do Compose desloca os desenhos que vêm depois de um recorte.
+     Os cantos já estão no próprio fundo (coordenadas do ícone de 108, área visível de 18 a 90). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="72dp" android:height="72dp"
+    android:viewportWidth="72" android:viewportHeight="72">
+    <group android:translateX="-18" android:translateY="-18">
+        <path android:pathData="M34,18 L74,18 Q90,18 90,34 L90,74 Q90,90 74,90 L34,90 Q18,90 18,74 L18,34 Q18,18 34,18 Z">
+            <aapt:attr name="android:fillColor">
+                <gradient android:type="linear" android:startX="0" android:startY="0" android:endX="108" android:endY="108">
+                    <item android:offset="0" android:color="#FF0A4F66" />
+                    <item android:offset="1" android:color="#FF29B6D6" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:fillColor="#14FFFFFF" android:pathData="M18,65 C38,58 66,84 90,68 L90,74 Q90,90 74,90 L34,90 Q18,90 18,74 Z" />
+        <group android:translateY="2.2">
+            <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeColor="#FFB9780A" android:strokeWidth="8"
+                android:strokeLineCap="round" android:strokeLineJoin="round" />
+        </group>
+        <group android:translateY="1.1">
+            <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeColor="#FFB9780A" android:strokeWidth="8"
+                android:strokeLineCap="round" android:strokeLineJoin="round" />
+        </group>
+        <path android:pathData="M73.05,43 L54,32 L34.95,43 L34.95,65 L54,76 L73.05,65" android:strokeWidth="8"
+            android:strokeLineCap="round" android:strokeLineJoin="round">
+            <aapt:attr name="android:strokeColor">
+                <gradient android:type="linear" android:startX="0" android:startY="32" android:endX="0" android:endY="76">
+                    <item android:offset="0" android:color="#FFFFD866" />
+                    <item android:offset="1" android:color="#FFF0A81E" />
+                </gradient>
+            </aapt:attr>
+        </path>
+        <path android:pathData="M69.6,40.4 L54,31.4 L38.4,40.4" android:strokeColor="#E6FFF1B8" android:strokeWidth="1.8"
+            android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+</vector>

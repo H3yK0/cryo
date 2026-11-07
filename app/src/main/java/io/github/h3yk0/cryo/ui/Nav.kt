@@ -50,6 +50,13 @@ import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.Motion
+import io.github.h3yk0.cryo.ui.components.rememberHaptics
+import io.github.h3yk0.cryo.ui.theme.CryoTheme
+import androidx.compose.ui.draw.dropShadow
+import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.graphics.shadow.Shadow
+import androidx.compose.ui.unit.DpOffset
+import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.ui.screens.AccountDetailScreen
 import io.github.h3yk0.cryo.ui.screens.AccountEditorScreen
 import io.github.h3yk0.cryo.ui.screens.AutoBackupScreen
@@ -212,11 +219,18 @@ fun CryoRoot(openOnStart: String?) {
                     Column {
                         // Modo de teste (modo desenvolvedor): sempre à vista nas abas, para ninguém confundir com os dados de verdade.
                         if (c.sandbox) TestModeStrip()
-                        NavigationBar {
+                        // DS-PROF-06: barra elevada, na cor dos cartões, com sombra para cima; trocar de aba vibra ("tique").
+                        val d = CryoTheme.depth
+                        val haptics = rememberHaptics()
+                        NavigationBar(
+                            containerColor = d.card,
+                            tonalElevation = 0.dp,
+                            modifier = Modifier.dropShadow(RectangleShape, Shadow(radius = 16.dp, color = d.shadow, offset = DpOffset(0.dp, (-2).dp))),
+                        ) {
                             tabs.forEach { t ->
                                 NavigationBarItem(
                                     selected = currentPattern == t.pattern,
-                                    onClick = { navigator.tab(t.route) },
+                                    onClick = { if (currentPattern != t.pattern) haptics.tick(); navigator.tab(t.route) },
                                     icon = { Icon(t.icon, null) },
                                     label = { Text(stringResource(t.label), maxLines = 1) },
                                 )

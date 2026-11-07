@@ -1,0 +1,1 @@
+Nuova icona: la C quadrata ora è dorata, con volume. Profondità in tutta l'app: schede con ombra morbida su uno sfondo raggruppato, intestazione con la sfumatura dell'icona, scorciatoie e pulsante principale con volume che si rimpiccioliscono con una molla al tocco. Elenchi e Impostazioni raggruppati come su iPhone. Vibrazione al tocco, senza nuove autorizzazioni.

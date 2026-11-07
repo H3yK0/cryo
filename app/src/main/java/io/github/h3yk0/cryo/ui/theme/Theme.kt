@@ -18,9 +18,11 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.Immutable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import io.github.h3yk0.cryo.data.ThemeMode
 
 /* Paleta própria "gelo" usada quando as cores do papel de parede (Material You) estão desligadas
@@ -75,13 +77,35 @@ data class CryoColors(
     val warning: Color,
     val warningContainer: Color,
     val onWarningContainer: Color,
+    /** DS-ICO-05: o dourado da marca (o C do ícone). Só para a marca e celebrações, nunca para entrada/saída de dinheiro. */
+    val gold: Color,
+    val goldDeep: Color,
     val isDark: Boolean,
+)
+
+/**
+ * DS-PROF (1.5): as cores da profundidade, calculadas a partir do esquema de cores do momento (paleta "gelo" ou Material You).
+ * [grouped] é o fundo das telas; [card], o dos cartões que ficam por cima; as sombras são largas e claras.
+ */
+@Immutable
+data class CryoDepth(
+    val grouped: Color,
+    val card: Color,
+    val cardFaded: Color,
+    val shadow: Color,
+    val shadowContact: Color,
+    val highlight: Color,
+    val headerStart: Color,
+    val headerEnd: Color,
+    val headerGlow: Color,
+    val headerShadow: Color,
 )
 
 private val LightExt = CryoColors(
     income = Color(0xFF1B6D2F), incomeContainer = Color(0xFFB6F2BB), onIncomeContainer = Color(0xFF002109),
     expense = Color(0xFFB3261E), expenseContainer = Color(0xFFFFDAD6), onExpenseContainer = Color(0xFF410002),
     warning = Color(0xFF8A5100), warningContainer = Color(0xFFFFDCBE), onWarningContainer = Color(0xFF2C1600),
+    gold = Color(0xFFF0A81E), goldDeep = Color(0xFFB9780A),
     isDark = false,
 )
 
@@ -89,24 +113,51 @@ private val DarkExt = CryoColors(
     income = Color(0xFF8BD893), incomeContainer = Color(0xFF00531C), onIncomeContainer = Color(0xFFB6F2BB),
     expense = Color(0xFFFFB4AB), expenseContainer = Color(0xFF93000A), onExpenseContainer = Color(0xFFFFDAD6),
     warning = Color(0xFFFFB870), warningContainer = Color(0xFF693C00), onWarningContainer = Color(0xFFFFDCBE),
+    gold = Color(0xFFFFC94D), goldDeep = Color(0xFFB9780A),
     isDark = true,
 )
 
 val LocalCryoColors = staticCompositionLocalOf { LightExt }
 
+/** O degradê do ícone (DS-ICO-02), usado no cabeçalho do Início quando as cores do papel de parede estão desligadas. */
+private val IconStart = Color(0xFF0A4F66)
+private val IconEnd = Color(0xFF168FAD)
+
+private fun depthFor(scheme: ColorScheme, dark: Boolean, dynamic: Boolean): CryoDepth {
+    // Com Material You, o cabeçalho segue a cor principal do papel de parede (mais escura em cima, como a luz do ícone).
+    val start = if (dynamic) lerp(scheme.primary, Color.Black, if (dark) 0.62f else 0.38f) else if (dark) lerp(IconStart, Color.Black, 0.35f) else IconStart
+    val end = if (dynamic) lerp(scheme.primary, Color.Black, if (dark) 0.40f else 0.08f) else if (dark) lerp(IconEnd, Color.Black, 0.40f) else IconEnd
+    return if (dark) CryoDepth(
+        grouped = scheme.surfaceContainerLowest, card = scheme.surfaceContainer, cardFaded = scheme.surfaceContainerLow,
+        shadow = Color(0x99000000), shadowContact = Color(0x66000000), highlight = Color(0x1FFFFFFF),
+        headerStart = start, headerEnd = end, headerGlow = Color(0x2E5FD4FD), headerShadow = Color(0xB3000000),
+    ) else CryoDepth(
+        grouped = scheme.surfaceContainer, card = scheme.surfaceContainerLowest, cardFaded = scheme.surfaceContainerLow,
+        shadow = Color(0x1F0A3A4A), shadowContact = Color(0x140A3A4A), highlight = Color(0x00FFFFFF),
+        headerStart = start, headerEnd = end, headerGlow = Color(0x403CC6E3), headerShadow = Color(0x400A3A4A),
+    )
+}
+
+val LocalCryoDepth = staticCompositionLocalOf { depthFor(LightColors, dark = false, dynamic = false) }
+
 object CryoTheme {
     val colors: CryoColors
         @Composable get() = LocalCryoColors.current
+
+    /** DS-PROF: cores da profundidade (fundo agrupado, cartões, sombras, cabeçalho). */
+    val depth: CryoDepth
+        @Composable get() = LocalCryoDepth.current
 }
 
 private val CryoTypography = Typography().let { t ->
     t.copy(
         displayLarge = t.displayLarge.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
         displayMedium = t.displayMedium.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
-        displaySmall = t.displaySmall.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
         headlineLarge = t.headlineLarge.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
         headlineMedium = t.headlineMedium.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
         headlineSmall = t.headlineSmall.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
+        // DS-PROF-09: números grandes com peso e espaçamento levemente fechado.
+        displaySmall = t.displaySmall.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum", letterSpacing = (-0.5).sp),
         titleLarge = t.titleLarge.copy(fontWeight = FontWeight.SemiBold),
         titleMedium = t.titleMedium.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
         titleSmall = t.titleSmall.copy(fontWeight = FontWeight.SemiBold, fontFeatureSettings = "tnum"),
@@ -140,7 +191,11 @@ fun CryoTheme(mode: ThemeMode = ThemeMode.SYSTEM, dynamicColor: Boolean = true, 
         dark -> DarkColors
         else -> LightColors
     }
-    CompositionLocalProvider(LocalCryoColors provides if (dark) DarkExt else LightExt) {
-        MaterialTheme(colorScheme = scheme, typography = CryoTypography, shapes = CryoShapes, content = content)
+    val dynamic = dynamicColor && Build.VERSION.SDK_INT >= 31
+    val depth = depthFor(scheme, dark, dynamic)
+    // DS-PROF-02: o fundo das telas (e das barras de cima) é o "agrupado"; os cartões ficam por cima, mais claros.
+    val grouped = scheme.copy(background = depth.grouped, surface = depth.grouped)
+    CompositionLocalProvider(LocalCryoColors provides if (dark) DarkExt else LightExt, LocalCryoDepth provides depth) {
+        MaterialTheme(colorScheme = grouped, typography = CryoTypography, shapes = CryoShapes, content = content)
     }
 }

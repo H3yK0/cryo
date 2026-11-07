@@ -39,7 +39,6 @@ import androidx.compose.material.icons.rounded.Inventory2
 import androidx.compose.material.icons.rounded.PieChart
 import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material3.AssistChip
-import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -116,6 +115,8 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.temporal.ChronoUnit
 import kotlin.math.max
+import io.github.h3yk0.cryo.ui.components.CryoButton
+import io.github.h3yk0.cryo.ui.components.depthCard
 
 @Composable
 fun PlanScreen(initialTab: Int) {
@@ -154,7 +155,8 @@ private fun BudgetsTab(l: Ledger) {
                 val limit = usages.sumOf { it.limit }
                 val spent = usages.sumOf { it.spent }
                 val daysLeft = ym.lengthOfMonth() - l.today.dayOfMonth + 1
-                Column(Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 12.dp)) {
+                // DS-PROF-02: o total do mês é o destaque, num cartão.
+                Column(Modifier.fillMaxWidth().padding(bottom = 6.dp).depthCard().padding(18.dp)) {
                     Text(Res.s(R.string.plan_total_planejado, Dates.monthInSentence(ym)), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
                     Row(verticalAlignment = Alignment.Bottom) {
                         MoneyText(spent, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
@@ -197,7 +199,7 @@ private fun BudgetsTab(l: Ledger) {
             }
         }
         item {
-            Button(onClick = { editing = null to 0L }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            CryoButton(onClick = { editing = null to 0L }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_novo_orcamento))
             }
         }
@@ -280,7 +282,7 @@ private fun BudgetSheet(
                 FieldLabel(Res.s(R.string.plan_categoria_2, l.category[categoryId]?.name))
             }
             Spacer(Modifier.height(20.dp))
-            Button(
+            CryoButton(
                 onClick = { cat?.let { onSave(it, amount) } }, enabled = cat != null && amount > 0,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Text(Res.s(R.string.plan_salvar_orcamento)) }
@@ -352,7 +354,7 @@ private fun BillsTab(l: Ledger) {
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
-                Button(onClick = { nav.go(Routes.billEdit(kind = CategoryKind.EXPENSE)) }, modifier = Modifier.weight(1f).height(52.dp)) {
+                CryoButton(onClick = { nav.go(Routes.billEdit(kind = CategoryKind.EXPENSE)) }, modifier = Modifier.weight(1f).height(52.dp)) {
                     Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.plan_conta_pagar))
                 }
                 OutlinedButton(onClick = { nav.go(Routes.billEdit(kind = CategoryKind.INCOME)) }, modifier = Modifier.weight(1f).height(52.dp)) {
@@ -628,7 +630,7 @@ private fun GoalsTab(l: Ledger) {
             )
         }
         item {
-            Button(onClick = { nav.go(Routes.goalEdit()) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+            CryoButton(onClick = { nav.go(Routes.goalEdit()) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_nova_meta))
             }
         }

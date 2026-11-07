@@ -50,7 +50,6 @@ import androidx.compose.material.icons.rounded.SwapVert
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Visibility
 import androidx.compose.material.icons.rounded.VisibilityOff
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
@@ -136,6 +135,8 @@ import io.github.h3yk0.cryo.ui.components.typeIcon
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.LocalDate
+import io.github.h3yk0.cryo.ui.components.BottomBarSurface
+import io.github.h3yk0.cryo.ui.components.CryoButton
 
 /**
  * Importar extrato: escolher o arquivo, conferir a lista e importar. Nada entra no Cryo sem passar pela conferência.
@@ -320,8 +321,8 @@ private fun FormatLine(name: String, text: String, best: Boolean = false) {
 
 @Composable
 private fun BottomButton(label: String, enabled: Boolean, busy: Boolean = false, onClick: () -> Unit) {
-    Surface(tonalElevation = 3.dp) {
-        Button(
+    BottomBarSurface {
+        CryoButton(
             onClick = onClick, enabled = enabled,
             modifier = Modifier.fillMaxWidth().navigationBarsPadding().imePadding().padding(16.dp).height(56.dp),
         ) {
@@ -904,7 +905,7 @@ private fun RowEditor(
                 Text(Res.s(R.string.import_importar_esta_movimentacao), style = MaterialTheme.typography.bodyLarge)
             }
             Spacer(Modifier.height(12.dp))
-            Button(
+            CryoButton(
                 onClick = { onSave(description, if (paired == null) category else null, kind, paired, selected) },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.import_pronto)) }
@@ -991,7 +992,7 @@ private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, de
             }
             Spacer(Modifier.height(28.dp))
             if (!step.undone) {
-                Button(
+                CryoButton(
                     onClick = { nav.go(t.cardId?.let { Routes.card(it) } ?: Routes.account(t.accountId ?: 0)) },
                     modifier = Modifier.fillMaxWidth().height(56.dp),
                 ) { Text(if (t.isCard) Res.s(R.string.import_ver_cartao) else Res.s(R.string.import_ver_conta)) }
