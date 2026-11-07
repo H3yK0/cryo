@@ -48,7 +48,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.1 | 2 | Publicada (GitHub) |
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
-| 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) aberto em 07/11/2026, com todos os testes verdes (inclusive o `fdroid build`); aguarda um mantenedor. |
+| 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -91,9 +91,9 @@ código anterior. Todos os testes passam.
 
 ### Próximos passos imediatos
 
-1. **F-Droid**: acompanhar o merge request https://gitlab.com/fdroid/fdroiddata/-/merge_requests/56186 (licença AGPL e build da
-   1.4; testes verdes em 07/11/2026). Responder se um mantenedor perguntar algo. Depois do merge, a 1.4 aparece na loja em alguns
-   dias. A cópia em `docs/fdroid/` já é o arquivo do pedido.
+1. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
+   receita oficial. Conferir em https://f-droid.org/packages/io.github.h3yk0.cryo/ que a 1.4 apareceu (alguns dias). Se não
+   aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
 2. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 3. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
 4. 1.5: detalhar com o Hanry (widgets, notificações especiais, sons).
@@ -386,7 +386,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 
 ## 14. Roadmap (prioridades do Hanry)
 
-1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); acompanhar o F-Droid e o merge request da licença.
+1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
 2. Revisão das traduções por quem fala cada língua (RF-LNG-08).
 3. **1.5**: widgets na tela inicial; notificações especiais (popups); sons personalizados tocados de forma aleatória.
    Detalhar com o Hanry antes de começar (quais widgets, quais momentos, quais sons).

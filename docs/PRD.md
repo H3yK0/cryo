@@ -13,7 +13,7 @@
 | Produto | Cryo · "Seu dinheiro, claro como gelo." |
 | Dono do produto | Hanry Franco (aprova tudo o que vai para o público) |
 | Versão do PRD | **2.4** (06/11/2026) |
-| Versão publicada do app | **1.4** no GitHub (06/11/2026; a 1.3 também, no mesmo dia) · F-Droid: 1.2, com a 1.4 entrando sozinha pela etiqueta `v1.4` |
+| Versão publicada do app | **1.4** no GitHub (06/11/2026; a 1.3 também, no mesmo dia) · F-Droid: receita com a 1.4 e a licença AGPL aceita em 07/11/2026 (!56186); a 1.4 entra na loja depois da compilação do F-Droid |
 | Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) (em inglês; em português: [`docs/CHANGELOG.pt-BR.md`](CHANGELOG.pt-BR.md)) |
 
 **Hierarquia**: PRD → anexos → código. Os anexos detalham o que o PRD define; se algum anexo disser outra coisa, vale o PRD e o
