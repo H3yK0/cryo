@@ -67,9 +67,9 @@ object SampleData {
         r.updateInvestmentValue(invs.first { it.id == tesouro }, m(230000), m(238530), today.minusDays(3))
         r.updateInvestmentValue(invs.first { it.id == cdb }, m(100000), m(101240), today.minusDays(3))
 
-        val viagem = r.saveGoal(Goal(name = Res.s(R.string.sample_viagem_para_praia), target = m(400000), deadline = today.plusMonths(8), emoji = "🏖️", color = Palette.pick(7)))
+        val viagem = r.saveGoal(Goal(name = Res.s(R.string.sample_viagem_para_praia), target = m(400000), deadline = today.plusMonths(8), art = io.github.h3yk0.cryo.domain.GoalArt.BEACH.key, color = Palette.pick(7)))
         r.saveTx(Tx(type = TxType.GOAL_IN, amount = m(125000), date = today.minusMonths(2), description = Res.s(R.string.sample_guardado), accountId = principal, goalId = viagem))
-        val reserva = r.saveGoal(Goal(name = Res.s(R.string.sample_reserva_emergencia), target = m(1000000), emoji = "🛡️", color = Palette.pick(8)))
+        val reserva = r.saveGoal(Goal(name = Res.s(R.string.sample_reserva_emergencia), target = m(1000000), art = io.github.h3yk0.cryo.domain.GoalArt.SHIELD.key, color = Palette.pick(8)))
         r.saveTx(Tx(type = TxType.GOAL_IN, amount = m(320000), date = today.minusMonths(3), description = Res.s(R.string.wallet_saldo_inicial), goalId = reserva))
 
         val start = today.ym().minusMonths(3).key()
@@ -136,9 +136,9 @@ object SampleData {
         fillDebts(r, today, principal)
 
         // Arquivados: uma meta concluída (com o dinheiro ainda guardado), uma já usada e uma conta antiga
-        val show = r.saveGoal(Goal(name = Res.s(R.string.sample_show_rock), target = m(80000), emoji = "🎸", color = Palette.pick(11), archived = true))
+        val show = r.saveGoal(Goal(name = Res.s(R.string.sample_show_rock), target = m(80000), art = io.github.h3yk0.cryo.domain.GoalArt.GUITAR.key, color = Palette.pick(11), archived = true))
         r.saveTx(Tx(type = TxType.GOAL_IN, amount = m(80000), date = today.minusMonths(3), description = Res.s(R.string.sample_guardado), accountId = principal, goalId = show))
-        val note = r.saveGoal(Goal(name = Res.s(R.string.sample_notebook_novo), target = m(350000), emoji = "💻", color = Palette.pick(6), archived = true))
+        val note = r.saveGoal(Goal(name = Res.s(R.string.sample_notebook_novo), target = m(350000), art = io.github.h3yk0.cryo.domain.GoalArt.LAPTOP.key, color = Palette.pick(6), archived = true))
         r.saveTx(Tx(type = TxType.GOAL_IN, amount = m(350000), date = today.minusMonths(4), description = Res.s(R.string.wallet_saldo_inicial), goalId = note))
         r.saveTx(Tx(type = TxType.GOAL_OUT, amount = m(350000), date = today.minusMonths(3), description = Res.s(R.string.sample_retirado), accountId = principal, goalId = note))
         r.saveAccount(Account(name = Res.s(R.string.sample_conta_antiga), type = AccountType.CHECKING, initialBalance = m(0), color = Palette.pick(12), sortOrder = 3, archived = true))

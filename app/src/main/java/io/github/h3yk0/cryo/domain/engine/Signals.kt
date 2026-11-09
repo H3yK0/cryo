@@ -188,10 +188,12 @@ object Pacing {
         if (d < 3) return emptyList()
         val out = ArrayList<PaceAlert>()
         for (b in l.s.budgets) {
-            if (b.limitAmount <= 0) continue
+            // DAD-12: o limite deste mês, já com os remanejamentos.
+            val limit = l.monthLimit(b.categoryId, ym)
+            if (limit <= 0) continue
             val cat = l.category[b.categoryId] ?: continue
             val spent = l.monthTxs(ym).filter { it.type == TxType.EXPENSE && it.categoryId == cat.id && !it.date.isAfter(today) }.sumOf { it.amount }
-            if (spent >= b.limitAmount) continue // já passou: o app já mostra
+            if (spent >= limit) continue // já passou: o app já mostra
             val c = curve(l, cat.id, ym)
             val share = shareAt(c, d, len)
             val history = (1..6).map { l.categorySpent(ym.minusMonths(it.toLong()), cat.id).toDouble() }.filter { it > 0 }
@@ -200,14 +202,14 @@ object Pacing {
             val byPace = if (share >= 0.05) spent / share else spent.toDouble()
             val byUsual = spent + usual * (1 - share)
             val projected = maxOf(spent.toDouble(), share * byPace + (1 - share) * byUsual)
-            if (projected <= b.limitAmount * 1.02) continue
+            if (projected <= limit * 1.02) continue
             var cross = len
             for (k in d + 1..len) {
                 val sk = shareAt(c, k, len)
                 val est = if (share >= 1.0) spent.toDouble() else spent + (projected - spent) * (sk - share) / (1 - share)
-                if (est >= b.limitAmount) { cross = k; break }
+                if (est >= limit) { cross = k; break }
             }
-            out += PaceAlert(cat.id, b.limitAmount, spent, projected.roundToLong(), cross)
+            out += PaceAlert(cat.id, limit, spent, projected.roundToLong(), cross)
         }
         return out.sortedBy { it.crossDay }
     }

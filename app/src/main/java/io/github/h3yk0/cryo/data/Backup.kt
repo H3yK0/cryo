@@ -87,6 +87,8 @@ object Backup {
             JSONObject().put("id", it.id).put("name", it.name).put("target", it.target)
                 .put("deadline", it.deadline?.toString().orNull()).put("emoji", it.emoji).put("color", it.color)
                 .put("archived", it.archived).put("createdAt", it.createdAt)
+                // DAD-14 (1.7): a ilustração; o emoji fica para as versões antigas que lerem este backup.
+                .apply { it.art?.let { a -> put("art", a) } }
         })
         root.put("bills", s.bills.toJson {
             JSONObject().put("id", it.id).put("name", it.name).put("amount", it.amount).put("dueDay", it.dueDay)
@@ -109,6 +111,14 @@ object Backup {
         root.put("debtAdjustments", s.debtAdjustments.toJson {
             JSONObject().put("id", it.id).put("debtId", it.debtId).put("date", it.date.toString())
                 .put("amount", it.amount).put("note", it.note)
+        })
+        // DAD-10: campo novo só aparece quando usado (o backup de quem não usa não muda).
+        if (s.budgetAdjustments.isNotEmpty()) root.put("budgetAdjustments", s.budgetAdjustments.toJson {
+            JSONObject().put("id", it.id).put("ym", it.ym).put("categoryId", it.categoryId).put("amount", it.amount)
+                .put("moveGroup", it.moveGroup.orNull()).put("createdAt", it.createdAt)
+        })
+        if (s.noSpendDays.isNotEmpty()) root.put("noSpendDays", s.noSpendDays.toJson {
+            JSONObject().put("date", it.date.toString()).put("createdAt", it.createdAt)
         })
         return root.toString(1)
     }
@@ -181,8 +191,10 @@ object Backup {
             goals = root.getJSONArray("goals").mapObj {
                 Goal(
                     id = it.getLong("id"), name = it.getString("name"), target = it.getLong("target"),
-                    deadline = it.optStr("deadline")?.let(LocalDate::parse), emoji = it.optString("emoji", "🎯"),
+                    deadline = it.optStr("deadline")?.let(LocalDate::parse), emoji = it.optString("emoji"),
                     color = it.getInt("color"), archived = it.optBoolean("archived"), createdAt = it.optLong("createdAt"),
+                    // Backups até a 1.6 só têm o emoji: vira a ilustração equivalente (RF-ILU-03).
+                    art = it.optStr("art") ?: io.github.h3yk0.cryo.domain.GoalArt.fromLegacy(it.optString("emoji")).key,
                 )
             },
             bills = root.getJSONArray("bills").mapObj {
@@ -215,6 +227,15 @@ object Backup {
                     id = it.getLong("id"), debtId = it.getLong("debtId"), date = LocalDate.parse(it.getString("date")),
                     amount = it.getLong("amount"), note = it.optString("note"),
                 )
+            }.orEmpty(),
+            budgetAdjustments = root.optJSONArray("budgetAdjustments")?.mapObj {
+                io.github.h3yk0.cryo.data.db.BudgetAdjustment(
+                    id = it.getLong("id"), ym = it.getInt("ym"), categoryId = it.getLong("categoryId"), amount = it.getLong("amount"),
+                    moveGroup = it.optStr("moveGroup"), createdAt = it.optLong("createdAt"),
+                )
+            }.orEmpty(),
+            noSpendDays = root.optJSONArray("noSpendDays")?.mapObj {
+                io.github.h3yk0.cryo.data.db.NoSpendDay(date = LocalDate.parse(it.getString("date")), createdAt = it.optLong("createdAt"))
             }.orEmpty(),
         )
         return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 }, root.optBoolean("testMode", false))

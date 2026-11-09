@@ -5,6 +5,8 @@ package io.github.h3yk0.cryo.domain
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.Bill
 import io.github.h3yk0.cryo.data.db.Budget
+import io.github.h3yk0.cryo.data.db.BudgetAdjustment
+import io.github.h3yk0.cryo.data.db.NoSpendDay
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
@@ -33,6 +35,8 @@ data class Snapshot(
     val budgets: List<Budget> = emptyList(),
     val debts: List<Debt> = emptyList(),
     val debtAdjustments: List<DebtAdjustment> = emptyList(),
+    val budgetAdjustments: List<BudgetAdjustment> = emptyList(),
+    val noSpendDays: List<NoSpendDay> = emptyList(),
 )
 
 /* ----------------------------- Cartão ----------------------------- */
@@ -339,8 +343,18 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
 
     /* ----------------------------- orçamentos ---------------------------- */
 
+    /** DAD-12: os ajustes do orçamento num mês (remanejamentos e limites só daquele mês). */
+    fun budgetAdjustments(ym: YearMonth): List<BudgetAdjustment> = s.budgetAdjustments.filter { it.ym == ym.key() }
+
+    /** DAD-12: o limite da categoria naquele mês, já com os ajustes (nunca menos que zero). */
+    fun monthLimit(categoryId: Long, ym: YearMonth): Long {
+        val base = budgetOf(categoryId)?.limitAmount ?: 0L
+        val key = ym.key()
+        return (base + s.budgetAdjustments.filter { it.ym == key && it.categoryId == categoryId }.sumOf { it.amount }).coerceAtLeast(0L)
+    }
+
     fun budgetUsages(ym: YearMonth): List<BudgetUsage> = s.budgets.mapNotNull { b ->
-        category[b.categoryId]?.let { BudgetUsage(it, b.limitAmount, categorySpent(ym, it.id)) }
+        category[b.categoryId]?.let { BudgetUsage(it, monthLimit(b.categoryId, ym), categorySpent(ym, it.id)) }
     }.sortedByDescending { it.ratio }
 
     fun budgetOf(categoryId: Long): Budget? = s.budgets.firstOrNull { it.categoryId == categoryId }

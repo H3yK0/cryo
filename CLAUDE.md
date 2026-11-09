@@ -49,7 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.7 | 8 | **Proposta** (09/11/2026, PRD 6.19a), esperando a aprovação do Hanry: avisos inteligentes estilo Duolingo, sons, momentos animados, alertas de orçamento, botão de voz embaixo (One UI), voz mais rápida. Branch `versao-1.7`. |
+| 1.7 | 8 | **Aprovada** (09/11/2026, PRD 6.19c), em construção: avisos inteligentes estilo Duolingo, sons, momentos animados, alertas de orçamento, botão de voz embaixo (One UI), voz mais rápida. Branch `versao-1.7`. |
 | 1.6 | 7 | **Testada e aprovada pelo Hanry** (09/11/2026: "gostei pra caramba"; ~5 s no A55), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
 | 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
 
@@ -139,9 +139,9 @@ código anterior. Todos os testes passam.
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
 5. **1.6** (branch `versao-1.6`): testada e aprovada pelo Hanry no A55 (09/11/2026; ~5 s até a transcrição). **No lançamento**:
    a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em `docs/fdroid/1.6-receita.md`).
-6. **1.7** (branch `versao-1.7`, a partir da 1.6): proposta no PRD (seção 6.19a: RF-AVI, RF-SOM, RF-MOM, RF-ORC-04/05,
-   RF-ALC, RF-VOZ-13), com protótipos em `Proposal17Test` (imagens 63–68 e quadros com `-PtourGif=true`) e o kit de sons
-   (script em `tools/sons/`). Esperando o Hanry aprovar e responder as decisões (tom, remanejar orçamento só no mês, etc.).
+6. **1.7** (branch `versao-1.7`, a partir da 1.6): aprovada em 09/11/2026 (PRD 6.19c: RF-AVI, RF-SOM, RF-MOM, RF-ILU,
+   RF-ORC-04..06, RF-ALC, RF-VOZ-13; banco versão 4). Decisões: tom Amigo, sem mascote, nada de emoji de teclado (ilustrações
+   próprias), lembrete do dia perguntando o horário, notificação animada pelo estilo de conversa, modo compras ao vivo.
 
 ---
 

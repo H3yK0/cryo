@@ -136,10 +136,13 @@ data class Goal(
     val name: String,
     val target: Long,
     val deadline: LocalDate? = null,
-    val emoji: String = "🎯",
+    /** Só para backups lidos por versões antigas (até a 1.6): o app não mostra mais emoji (RF-ILU-01). */
+    val emoji: String = "",
     val color: Int,
     val archived: Boolean = false,
     val createdAt: Long = System.currentTimeMillis(),
+    /** DAD-14: a ilustração da meta ([io.github.h3yk0.cryo.domain.GoalArt]); nula = a do emoji antigo, ou o alvo. */
+    val art: String? = null,
 )
 
 /** Conta fixa mensal (a pagar) ou recebimento fixo (a receber). */
@@ -157,6 +160,27 @@ data class Bill(
     val remindDaysBefore: Int = 1,
     val active: Boolean = true,
     val startYm: Int,
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+/**
+ * DAD-12: ajuste do orçamento **só num mês** (1.7): um remanejamento cria duas linhas com o mesmo [moveGroup] (sai de uma
+ * categoria, entra na outra); mudar o limite só deste mês cria uma linha sem par. Limite do mês = limite + soma dos ajustes.
+ */
+@Entity(tableName = "budget_adjustments", indices = [Index("ym")])
+data class BudgetAdjustment(
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
+    val ym: Int,
+    val categoryId: Long,
+    val amount: Long,
+    val moveGroup: String? = null,
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+/** DAD-13: um dia que a pessoa confirmou que foi sem gastos (conta na sequência, RF-MOM-03). */
+@Entity(tableName = "no_spend_days")
+data class NoSpendDay(
+    @PrimaryKey val date: LocalDate,
     val createdAt: Long = System.currentTimeMillis(),
 )
 

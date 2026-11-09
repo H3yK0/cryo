@@ -14,6 +14,8 @@ import androidx.room.withTransaction
 import io.github.h3yk0.cryo.data.db.Account
 import io.github.h3yk0.cryo.data.db.Bill
 import io.github.h3yk0.cryo.data.db.Budget
+import io.github.h3yk0.cryo.data.db.BudgetAdjustment
+import io.github.h3yk0.cryo.data.db.NoSpendDay
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
@@ -127,8 +129,10 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     val snapshot: StateFlow<Snapshot?> = combine(
         combine(dao.accounts(), dao.cards(), dao.categories(), dao.txs(), dao.investments(), ::Part1),
         combine(dao.yields(), dao.goals(), dao.bills(), dao.budgets(), dao.debts(), ::Part2),
-        dao.debtAdjustments(),
-    ) { p1, p2, adj -> Snapshot(p1.a, p1.c, p1.cat, p1.t, p1.i, p2.y, p2.g, p2.b, p2.bu, p2.d, adj) }
+        dao.debtAdjustments(), dao.budgetAdjustments(), dao.noSpendDays(),
+    ) { p1, p2, adj, badj, nsd ->
+        Snapshot(p1.a, p1.c, p1.cat, p1.t, p1.i, p2.y, p2.g, p2.b, p2.bu, p2.d, adj, budgetAdjustments = badj, noSpendDays = nsd)
+    }
         .stateIn(scope, SharingStarted.Eagerly, null)
 
     /** Fotografia de todos os dados, lida de uma vez só (numa transação, para não pegar nada pela metade). */
@@ -136,6 +140,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         Snapshot(
             dao.accountsOnce(), dao.cardsOnce(), dao.categoriesOnce(), dao.txsOnce(), dao.investmentsOnce(),
             dao.yieldsOnce(), dao.goalsOnce(), dao.billsOnce(), dao.budgetsOnce(), dao.debtsOnce(), dao.debtAdjustmentsOnce(),
+            budgetAdjustments = dao.budgetAdjustmentsOnce(), noSpendDays = dao.noSpendDaysOnce(),
         )
     }
 
@@ -194,16 +199,20 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     suspend fun budgetAlert(categoryId: Long?, date: LocalDate, added: Long): String? {
         if (categoryId == null || added <= 0) return null
         val budget = dao.budgetsOnce().firstOrNull { it.categoryId == categoryId } ?: return null
-        if (budget.limitAmount <= 0) return null
-        val cat = dao.categoriesOnce().firstOrNull { it.id == categoryId } ?: return null
         val ym = date.ym()
+        // DAD-12: o limite deste mês, já com os remanejamentos.
+        val key = ym.year * 100 + ym.monthValue
+        val limit = (budget.limitAmount + dao.budgetAdjustmentsOnce().filter { it.ym == key && it.categoryId == categoryId }.sumOf { it.amount })
+            .coerceAtLeast(0L)
+        if (limit <= 0) return null
+        val cat = dao.categoriesOnce().firstOrNull { it.id == categoryId } ?: return null
         val spent = dao.categorySpent(categoryId, ym.atDay(1), ym.atEndOfMonth())
         val before = spent - added
-        val ratio = spent.toDouble() / budget.limitAmount
-        val beforeRatio = before.toDouble() / budget.limitAmount
+        val ratio = spent.toDouble() / limit
+        val beforeRatio = before.toDouble() / limit
         return when {
             beforeRatio < 1.0 && ratio >= 1.0 ->
-                Res.s(R.string.repo_orcamento_estourado, cat.name, Money.format(spent), Money.format(budget.limitAmount))
+                Res.s(R.string.repo_orcamento_estourado, cat.name, Money.format(spent), Money.format(limit))
             beforeRatio < 0.8 && ratio >= 0.8 ->
                 Res.s(R.string.repo_atencao_voce_ja_usou, (ratio * 100).roundToInt(), cat.name)
             else -> null
@@ -272,7 +281,11 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
 
     /* -------------------------------- metas ------------------------------ */
 
-    suspend fun saveGoal(g: Goal): Long = dao.putGoal(g)
+    /** DAD-14: guarda a ilustração e, para backups lidos por versões antigas, o emoji equivalente (o app não o mostra). */
+    suspend fun saveGoal(g: Goal): Long {
+        val art = io.github.h3yk0.cryo.domain.GoalArt.forGoal(g)
+        return dao.putGoal(g.copy(art = art.key, emoji = art.legacy))
+    }
 
     suspend fun deleteGoal(g: Goal) = db.withTransaction { dao.deleteTxsOfGoal(g.id); dao.deleteGoal(g.id) }
 
@@ -300,7 +313,43 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     /* ----------------------------- orçamentos ---------------------------- */
 
     suspend fun saveBudget(categoryId: Long, limit: Long) = dao.putBudget(Budget(categoryId, limit))
-    suspend fun deleteBudget(categoryId: Long) = dao.deleteBudget(categoryId)
+    suspend fun deleteBudget(categoryId: Long) = db.withTransaction {
+        dao.deleteBudget(categoryId)
+        dao.deleteBudgetAdjustmentsOf(categoryId)
+    }
+
+    /**
+     * RF-ORC-04, DAD-12: passa [amount] do orçamento de [from] para [to] só no mês [ym]. Devolve o grupo (para desfazer com
+     * [undoBudgetMove]).
+     */
+    suspend fun moveBudget(from: Long, to: Long, amount: Long, ym: Int): String {
+        require(amount > 0 && from != to)
+        val group = java.util.UUID.randomUUID().toString()
+        dao.putBudgetAdjustments(
+            listOf(
+                BudgetAdjustment(ym = ym, categoryId = from, amount = -amount, moveGroup = group),
+                BudgetAdjustment(ym = ym, categoryId = to, amount = amount, moveGroup = group),
+            ),
+        )
+        return group
+    }
+
+    /** Muda o limite de uma categoria só no mês [ym] (soma [delta]), sem mexer nos outros meses. */
+    suspend fun adjustMonthLimit(categoryId: Long, ym: Int, delta: Long) {
+        if (delta != 0L) dao.putBudgetAdjustments(listOf(BudgetAdjustment(ym = ym, categoryId = categoryId, amount = delta)))
+    }
+
+    suspend fun undoBudgetMove(group: String) = dao.deleteBudgetMove(group)
+
+    suspend fun deleteBudgetAdjustment(a: BudgetAdjustment) =
+        a.moveGroup?.let { dao.deleteBudgetMove(it) } ?: dao.deleteBudgetAdjustment(a.id)
+
+    /* ---------------------------- dias sem gastos ---------------------------- */
+
+    /** DAD-13, RF-AVI-03: "Dia sem gastos ✓". */
+    suspend fun markNoSpend(date: java.time.LocalDate) = dao.putNoSpendDay(NoSpendDay(date))
+
+    suspend fun unmarkNoSpend(date: java.time.LocalDate) = dao.deleteNoSpendDay(date)
 
     /* ------------------------------- dívidas ------------------------------ */
 
@@ -402,6 +451,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         dao.putAccounts(s.accounts); dao.putCards(s.cards); dao.putCategories(s.categories); dao.putTxs(s.txs)
         dao.putInvestments(s.investments); dao.putYields(s.yields); dao.putGoals(s.goals); dao.putBills(s.bills)
         dao.putBudgets(s.budgets); dao.putDebts(s.debts); dao.putDebtAdjustments(s.debtAdjustments)
+        dao.putBudgetAdjustments(s.budgetAdjustments); dao.putNoSpendDays(s.noSpendDays)
         if (fromOldVersion) ensureDebtCategory()
     }
 
@@ -413,6 +463,6 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     private suspend fun clearTables() {
         dao.clearTxs(); dao.clearAccounts(); dao.clearCards(); dao.clearCategories(); dao.clearInvestments()
         dao.clearYields(); dao.clearGoals(); dao.clearBills(); dao.clearBudgets(); dao.clearDebts()
-        dao.clearDebtAdjustments()
+        dao.clearDebtAdjustments(); dao.clearBudgetAdjustments(); dao.clearNoSpendDays()
     }
 }

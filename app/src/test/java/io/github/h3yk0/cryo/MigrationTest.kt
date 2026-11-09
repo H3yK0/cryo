@@ -166,4 +166,33 @@ class MigrationTest {
         assertEquals(1, again.dao().categoriesOnce().count { it.icon == DefaultData.DEBT_ICON })
         again.close()
     }
+
+    /** 1.7: banco 3 → 4. As metas ganham a ilustração do emoji que tinham; tudo continua lá; as tabelas novas funcionam. */
+    @Test fun atualizaDa16Para17SemPerderNada() = runBlocking {
+        val file = ctx.getDatabasePath("cryo.db")
+        file.delete()
+        val db = createSchema(file, 3)
+        db.execSQL("INSERT INTO categories (id, name, kind, icon, color, keywords, archived, sortOrder) VALUES (1, 'Mercado', 'EXPENSE', 'cart', 0, '', 0, 0)")
+        db.execSQL("INSERT INTO budgets (categoryId, limitAmount) VALUES (1, 80000)")
+        // Emojis guardados pela 1.6 (praia com o seletor de variação, igreja sem) e um que não existe na lista.
+        db.insert("goals", null, ContentValues().apply { put("id", 1); put("name", "Praia"); put("target", 400000); put("emoji", "\uD83C\uDFD6\uFE0F"); put("color", 0); put("archived", 0); put("createdAt", 1L) })
+        db.insert("goals", null, ContentValues().apply { put("id", 2); put("name", "Casamento"); put("target", 900000); put("emoji", "\u26EA"); put("color", 0); put("archived", 0); put("createdAt", 1L) })
+        db.insert("goals", null, ContentValues().apply { put("id", 3); put("name", "Outra"); put("target", 1000); put("emoji", "?"); put("color", 0); put("archived", 0); put("createdAt", 1L) })
+        db.version = 3
+        db.close()
+
+        val room = CryoDatabase.build(ctx)
+        val dao = room.dao()
+        val goals = dao.goalsOnce().associateBy { it.id }
+        assertEquals("beach", goals[1]!!.art)
+        assertEquals("church", goals[2]!!.art)
+        assertEquals("target", goals[3]!!.art)
+        assertEquals("Praia", goals[1]!!.name)
+        assertEquals(80000L, dao.budgetsOnce().single().limitAmount)
+        dao.putBudgetAdjustments(listOf(io.github.h3yk0.cryo.data.db.BudgetAdjustment(ym = 202611, categoryId = 1, amount = 5000)))
+        dao.putNoSpendDay(io.github.h3yk0.cryo.data.db.NoSpendDay(LocalDate.of(2026, 11, 9)))
+        assertEquals(1, dao.budgetAdjustmentsOnce().size)
+        assertEquals(LocalDate.of(2026, 11, 9), dao.noSpendDaysOnce().single().date)
+        room.close()
+    }
 }

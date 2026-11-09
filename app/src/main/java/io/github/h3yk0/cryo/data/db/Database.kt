@@ -41,6 +41,8 @@ interface CryoDao {
     @Query("SELECT * FROM budgets") fun budgets(): Flow<List<Budget>>
     @Query("SELECT * FROM debts ORDER BY id") fun debts(): Flow<List<Debt>>
     @Query("SELECT * FROM debt_adjustments ORDER BY date DESC, id DESC") fun debtAdjustments(): Flow<List<DebtAdjustment>>
+    @Query("SELECT * FROM budget_adjustments ORDER BY ym, id") fun budgetAdjustments(): Flow<List<BudgetAdjustment>>
+    @Query("SELECT * FROM no_spend_days ORDER BY date") fun noSpendDays(): Flow<List<NoSpendDay>>
 
     // ---------- leitura única (lembretes e backup) ----------
     @Query("SELECT * FROM accounts ORDER BY sortOrder, id") suspend fun accountsOnce(): List<Account>
@@ -54,6 +56,8 @@ interface CryoDao {
     @Query("SELECT * FROM budgets") suspend fun budgetsOnce(): List<Budget>
     @Query("SELECT * FROM debts ORDER BY id") suspend fun debtsOnce(): List<Debt>
     @Query("SELECT * FROM debt_adjustments ORDER BY date DESC, id DESC") suspend fun debtAdjustmentsOnce(): List<DebtAdjustment>
+    @Query("SELECT * FROM budget_adjustments ORDER BY ym, id") suspend fun budgetAdjustmentsOnce(): List<BudgetAdjustment>
+    @Query("SELECT * FROM no_spend_days ORDER BY date") suspend fun noSpendDaysOnce(): List<NoSpendDay>
 
     // ---------- gravação ----------
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putAccount(a: Account): Long
@@ -78,6 +82,9 @@ interface CryoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putDebts(d: List<Debt>)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putDebtAdjustment(a: DebtAdjustment): Long
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putDebtAdjustments(a: List<DebtAdjustment>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putBudgetAdjustments(a: List<BudgetAdjustment>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putNoSpendDay(d: NoSpendDay)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putNoSpendDays(d: List<NoSpendDay>)
 
     // ---------- exclusão ----------
     @Query("DELETE FROM transactions WHERE id = :id") suspend fun deleteTx(id: Long)
@@ -100,6 +107,10 @@ interface CryoDao {
     @Query("DELETE FROM debt_adjustments WHERE debtId = :id") suspend fun deleteAdjustmentsOf(id: Long)
     @Query("DELETE FROM debt_adjustments WHERE id = :id") suspend fun deleteDebtAdjustment(id: Long)
     @Query("UPDATE transactions SET debtId = NULL WHERE debtId = :id") suspend fun unlinkDebt(id: Long)
+    @Query("DELETE FROM budget_adjustments WHERE moveGroup = :group") suspend fun deleteBudgetMove(group: String)
+    @Query("DELETE FROM budget_adjustments WHERE id = :id") suspend fun deleteBudgetAdjustment(id: Long)
+    @Query("DELETE FROM budget_adjustments WHERE categoryId = :id") suspend fun deleteBudgetAdjustmentsOf(id: Long)
+    @Query("DELETE FROM no_spend_days WHERE date = :date") suspend fun deleteNoSpendDay(date: LocalDate)
 
     // ---------- consultas auxiliares ----------
     @Query("SELECT COUNT(*) FROM transactions WHERE accountId = :id OR toAccountId = :id") suspend fun countTxForAccount(id: Long): Int
@@ -124,6 +135,8 @@ interface CryoDao {
     @Query("DELETE FROM budgets") suspend fun clearBudgets()
     @Query("DELETE FROM debts") suspend fun clearDebts()
     @Query("DELETE FROM debt_adjustments") suspend fun clearDebtAdjustments()
+    @Query("DELETE FROM budget_adjustments") suspend fun clearBudgetAdjustments()
+    @Query("DELETE FROM no_spend_days") suspend fun clearNoSpendDays()
 }
 
 /**
@@ -162,17 +175,31 @@ object DebtCategorySeed {
     }
 }
 
+/** Versão 3 → 4: as metas que já existiam ganham a ilustração do emoji que tinham (DAD-14, RF-ILU-03). */
+class Migration3To4 : AutoMigrationSpec {
+    override fun onPostMigrate(db: SupportSQLiteDatabase) {
+        val arts = ArrayList<Pair<Long, String>>()
+        db.query("SELECT id, emoji FROM goals").use { c ->
+            while (c.moveToNext()) arts += c.getLong(0) to io.github.h3yk0.cryo.domain.GoalArt.fromLegacy(c.getString(1)).key
+        }
+        arts.forEach { (id, art) -> db.execSQL("UPDATE goals SET art = ? WHERE id = ?", arrayOf<Any>(art, id)) }
+    }
+}
+
 @Database(
     entities = [
         Account::class, CreditCard::class, Category::class, Tx::class, Investment::class,
         InvestmentYield::class, Goal::class, Bill::class, Budget::class, Debt::class, DebtAdjustment::class,
+        BudgetAdjustment::class, NoSpendDay::class,
     ],
-    version = 3,
+    version = 4,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = Migration1To2::class),
         // Versão 2 → 3 (Cryo 1.3): coluna importKey nas movimentações (importação de extratos).
         AutoMigration(from = 2, to = 3),
+        // Versão 3 → 4 (Cryo 1.7): remanejar o orçamento só no mês, dias sem gastos e a ilustração das metas (DAD-12..14).
+        AutoMigration(from = 3, to = 4, spec = Migration3To4::class),
     ],
 )
 @TypeConverters(Converters::class)
