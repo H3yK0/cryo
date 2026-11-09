@@ -4,7 +4,9 @@ package io.github.h3yk0.cryo.ui.tx
 
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.speech.RecognizerIntent
@@ -49,7 +51,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.core.content.ContextCompat
+import io.github.h3yk0.cryo.voice.SystemListener
+import io.github.h3yk0.cryo.voice.VoiceEngineKind
+import io.github.h3yk0.cryo.voice.VoiceSettings
+import io.github.h3yk0.cryo.voice.WhisperEngine
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
@@ -99,18 +107,41 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
         }
     }
 
-    fun listen() {
+    /** A tela de voz do sistema (como na 1.5): para celulares sem o Whisper e sem reconhecimento offline, ou sem microfone. */
+    fun legacyListen() {
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             // A voz na língua do app (com o país do celular): "mercado 120 no débito", "groceries 120 on debit"...
             putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLocale.locale.toLanguageTag())
             putExtra(RecognizerIntent.EXTRA_PROMPT, Res.s(R.string.quick_fale_por_exemplo))
+            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
         }
         try {
             voice.launch(intent)
         } catch (_: ActivityNotFoundException) {
             c.message(Res.s(R.string.quick_este_aparelho_nao_tem))
         }
+    }
+
+    // RF-VOZ: a voz dentro do Cryo (Whisper ou o reconhecedor do celular só no aparelho), com a tela de eco.
+    val context = LocalContext.current
+    val voiceSettings = remember { VoiceSettings(context) }
+    var listening by remember { mutableStateOf<VoiceEngineKind?>(null) }
+    var askMic by remember { mutableStateOf(false) }
+    val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        askMic = false
+        if (granted) listening = voiceSettings.engine
+        else { c.message(Res.s(R.string.voice_mic_denied)); legacyListen() }
+    }
+
+    fun listen() {
+        focus.clearFocus()
+        val engine = voiceSettings.engine
+        val inApp = (engine == VoiceEngineKind.WHISPER && WhisperEngine.supported) || SystemListener.available(context)
+        if (!inApp) return legacyListen()
+        val kind = if (engine == VoiceEngineKind.PHONE && !SystemListener.available(context)) VoiceEngineKind.WHISPER else engine
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) listening = kind
+        else askMic = true
     }
 
     Surface(
@@ -143,6 +174,28 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
 
     draft?.let { d ->
         QuickConfirmSheet(d, l, onDismiss = { draft = null }, onSaved = { draft = null; text = "" })
+    }
+    if (askMic) MicPermissionSheet(onDismiss = { askMic = false }, onAllow = { micPermission.launch(Manifest.permission.RECORD_AUDIO) })
+    listening?.let { kind ->
+        VoiceSheet(l, kind, onDismiss = { listening = null }, onLegacy = { listening = null; legacyListen() })
+    }
+}
+
+/** RF-VOZ-02: antes de o Android perguntar, o Cryo explica para que é o microfone e que o áudio não sai do celular. */
+@Composable
+fun MicPermissionSheet(onDismiss: () -> Unit, onAllow: () -> Unit) {
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+            Icon(Icons.Rounded.Mic, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
+            Spacer(Modifier.height(12.dp))
+            Text(Res.s(R.string.voice_mic_title), style = MaterialTheme.typography.titleLarge)
+            Spacer(Modifier.height(8.dp))
+            Text(Res.s(R.string.voice_mic_text), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(20.dp))
+            CryoButton(onClick = onAllow, modifier = Modifier.fillMaxWidth().height(56.dp)) { Text(Res.s(R.string.voice_mic_allow)) }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.wallet_cancelar)) }
+        }
     }
 }
 

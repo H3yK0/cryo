@@ -2,6 +2,18 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.6 — voz entendida no celular
+
+- **Registro por voz dentro do Cryo, com o Whisper** (um modelo aberto de reconhecimento de fala, dentro do app): o que você fala é entendido no próprio celular, sem internet. O áudio só passa pela memória e é apagado na hora; o Cryo continua sem permissão de internet
+- **As palavras aparecem enquanto você fala**, com uma animação de eco: o microfone cresce com a sua voz, cada sílaba solta um anel e o que o Cryo entendeu (valor, categoria, cartão, data) salta em cartõezinhos. Termina sozinho quando você para de falar
+- **Conhece os seus nomes**: contas, cartões, categorias e metas ajudam a ouvir certo ("Roxo", "Pet Shop")
+- **Entende o jeito falado** (português primeiro): "dezoito e noventa" ou "18 e 90" = 18,90, "trinta e dois e cinquenta", "cento e vinte", "dois mil e quinhentos", "conto", apelidos como "roxinho" para o Cartão Roxo
+- **Vários lançamentos de uma vez**: "almoço 30 e uber 15" vira dois lançamentos para conferir; o cartão ou a data ditos uma vez valem para todos
+- **Correção falada**: "32, não, 35" fica 35
+- Escolha o reconhecedor em Ajustes › Registro rápido › Reconhecimento de voz: Whisper (padrão) ou o do celular (só no aparelho). Celulares que não rodam o Whisper usam o do celular
+- O app ficou maior (cerca de 65 MB) porque o modelo de voz vem dentro dele
+- Permissão nova: **microfone**, pedida só no primeiro toque no microfone, com explicação
+
 ## 1.5 — motor financeiro, backups protegidos e visual novo
 
 - **Motor financeiro no celular** (tudo sem internet): a previsão do fim do mês agora mostra uma faixa e a chance de fechar no vermelho, com 2.000 cenários simulados a partir do seu histórico, e erra ~38% menos que antes no teste com meses passados

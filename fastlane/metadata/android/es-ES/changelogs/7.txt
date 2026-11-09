@@ -1,0 +1,1 @@
+Voz entendida en el móvil, con Whisper dentro de la app y sin internet: las palabras aparecen mientras hablas, con una animación de eco. Varios movimientos en una frase, correcciones habladas y reconoce los nombres de tus cuentas y tarjetas. El audio se borra al momento. Permiso nuevo: micrófono. La app es más grande (~65 MB) por el modelo de voz.

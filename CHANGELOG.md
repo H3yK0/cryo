@@ -2,6 +2,18 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.6 — voice, understood on your phone
+
+- **Voice entry inside Cryo, with Whisper** (an open speech-recognition model, built into the app): what you say is understood on the phone itself, with no internet. The audio only lives in memory and is erased right away; Cryo still has no internet permission
+- **Words appear while you speak**, with an echo animation: the microphone grows with your voice, each syllable sends out a ring, and what Cryo understood (amount, category, card, date) pops up as little cards. It stops by itself when you stop talking
+- **Knows your names**: your accounts, cards, categories and goals help it hear right ("Roxo", "Pet Shop")
+- **Understands the way people talk** (Portuguese first): "dezoito e noventa" or "18 e 90" = 18.90, "trinta e dois e cinquenta", "cento e vinte", "dois mil e quinhentos", "conto", nicknames like "roxinho" for your "Roxo" card
+- **Several entries at once**: "lunch 30 and uber 15" becomes two entries to check; the card or date said once counts for all
+- **Spoken corrections**: "32, no, 35" keeps 35
+- Choose the recognizer in Settings › Quick entry › Speech recognition: Whisper (default) or your phone's own (on-device). Phones that can't run Whisper use the phone's recognizer
+- The app is bigger (about 65 MB) because the voice model comes inside it
+- New permission: **microphone**, asked only the first time you tap the mic, with an explanation
+
 ## 1.5 — financial engine, protected backups and a new look
 
 - **Financial engine on your phone** (all offline): the end-of-month forecast now shows a range and the chance of ending in the red, from 2,000 scenarios simulated with your own history, and makes ~38% smaller errors than before when tested against past months

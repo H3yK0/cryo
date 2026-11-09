@@ -3,6 +3,15 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- RF-VOZ-02: o microfone para o registro por voz. O áudio fica só na memória (nunca vira arquivo) e o app não tem internet. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
+    <!-- Android 11+: para achar o reconhecedor de voz do celular (plano B, só no aparelho). -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
 
     <application
         android:name=".CryoApp"

@@ -1581,4 +1581,38 @@
     <string name="sec_opening">Apertura…</string>
     <string name="sec_notif_public_title">Promemoria di Cryo</string>
     <string name="sec_notif_public_text">Hai un conto da pagare. Sblocca il telefono per vederlo.</string>
+    <string name="voice_preparing">Preparazione…</string>
+    <string name="voice_listening">Ascolto…</string>
+    <string name="voice_thinking">Sto capendo…</string>
+    <string name="voice_done">Capito</string>
+    <string name="voice_engine_whisper">Whisper · solo sul telefono</string>
+    <string name="voice_engine_phone">Riconoscimento del telefono</string>
+    <string name="voice_hint">Parla come con qualcuno: \"spesa 120 con la carta\"</string>
+    <string name="voice_finish">Fatto</string>
+    <string name="voice_save">Salva · %1$s</string>
+    <string name="voice_adjust">Modifica</string>
+    <string name="voice_again">Parla di nuovo</string>
+    <string name="voice_nothing">Non ho sentito niente. Parla vicino al microfono e riprova.</string>
+    <string name="voice_check">Manca qualcosa (l\'importo o il conto). Tocca Modifica.</string>
+    <string name="voice_mic_desc">Microfono: tocca per finire</string>
+    <string name="voice_mic_title">Usa il microfono</string>
+    <string name="voice_mic_text">Per capire cosa dici, Cryo ha bisogno del microfono. L\'audio resta sul telefono e viene cancellato subito: Cryo non ha nemmeno internet.</string>
+    <string name="voice_mic_allow">Consenti microfono</string>
+    <string name="voice_mic_denied">Senza microfono, Cryo usa la schermata vocale del telefono.</string>
+    <string name="voice_mic_busy">Non è stato possibile usare il microfono. Forse lo sta usando un\'altra app.</string>
+    <string name="voice_prompt_example">Pranzo 12,50 con bancomat. Uber 18,90 con la carta. Spesa 120 euro. Ieri, farmacia 45.</string>
+    <string name="settings_voice_title">Riconoscimento vocale</string>
+    <string name="settings_voice_whisper">Whisper, dentro di Cryo</string>
+    <string name="settings_voice_whisper_desc">Funziona senza internet e capisce i nomi dei tuoi conti e carte. Usa il processore per qualche secondo.</string>
+    <string name="settings_voice_phone">Riconoscimento del telefono</string>
+    <string name="settings_voice_phone_desc">Quello di sistema, in modalità solo sul dispositivo se disponibile.</string>
+    <string name="settings_voice_unsupported">Questo telefono non può usare Whisper: Cryo usa il riconoscimento del telefono.</string>
+    <plurals name="voice_save_many">
+        <item quantity="one">Salva %1$d movimento · %2$s</item>
+        <item quantity="other">Salva %1$d movimenti · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="one">%1$d movimento salvato</item>
+        <item quantity="other">%1$d movimenti salvati</item>
+    </plurals>
 </resources>

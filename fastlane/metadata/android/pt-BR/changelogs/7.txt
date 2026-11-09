@@ -1,0 +1,1 @@
+Voz entendida no celular, com o Whisper dentro do app e sem internet: as palavras aparecem enquanto você fala, com animação de eco. Entende "18 e 90", "trinta e dois e cinquenta", "cento e vinte", apelidos como "roxinho" e correções ("32, não, 35"). Vários lançamentos numa fala. O áudio é apagado na hora. Permissão nova: microfone. App maior (~65 MB) por causa do modelo de voz.

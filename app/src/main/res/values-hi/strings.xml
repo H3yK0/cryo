@@ -1581,4 +1581,38 @@
     <string name="sec_opening">खोला जा रहा है…</string>
     <string name="sec_notif_public_title">Cryo रिमाइंडर</string>
     <string name="sec_notif_public_text">आपको एक बिल चुकाना है। देखने के लिए फ़ोन अनलॉक करें।</string>
+    <string name="voice_preparing">तैयार हो रहा है…</string>
+    <string name="voice_listening">सुन रहा है…</string>
+    <string name="voice_thinking">समझ रहा है…</string>
+    <string name="voice_done">समझ गया</string>
+    <string name="voice_engine_whisper">Whisper · सिर्फ़ फ़ोन पर</string>
+    <string name="voice_engine_phone">फ़ोन की आवाज़ पहचान</string>
+    <string name="voice_hint">जैसे किसी से बात करते हैं: \"राशन 120 कार्ड से\"</string>
+    <string name="voice_finish">हो गया</string>
+    <string name="voice_save">सेव करें · %1$s</string>
+    <string name="voice_adjust">बदलें</string>
+    <string name="voice_again">फिर से बोलें</string>
+    <string name="voice_nothing">कुछ सुनाई नहीं दिया। माइक के पास बोलकर फिर से कोशिश करें।</string>
+    <string name="voice_check">कुछ छूट गया है (रकम या खाता)। बदलें पर टैप करें।</string>
+    <string name="voice_mic_desc">माइक: खत्म करने के लिए टैप करें</string>
+    <string name="voice_mic_title">माइक इस्तेमाल करें</string>
+    <string name="voice_mic_text">आप जो बोलते हैं उसे समझने के लिए Cryo को माइक चाहिए। आवाज़ सिर्फ़ फ़ोन में रहती है और तुरंत मिटा दी जाती है: Cryo के पास इंटरनेट तक नहीं है।</string>
+    <string name="voice_mic_allow">माइक की अनुमति दें</string>
+    <string name="voice_mic_denied">माइक के बिना, Cryo फ़ोन की आवाज़ वाली स्क्रीन इस्तेमाल करता है।</string>
+    <string name="voice_mic_busy">माइक इस्तेमाल नहीं हो सका। शायद कोई दूसरा ऐप इसे इस्तेमाल कर रहा है।</string>
+    <string name="voice_prompt_example">खाना 120 रुपये डेबिट से। ऑटो 80 रुपये कार्ड से। राशन 1200 रुपये। कल, दवा 450।</string>
+    <string name="settings_voice_title">आवाज़ पहचान</string>
+    <string name="settings_voice_whisper">Whisper, Cryo के अंदर</string>
+    <string name="settings_voice_whisper_desc">बिना इंटरनेट के चलता है और आपके खातों व कार्ड के नाम समझता है। कुछ सेकंड प्रोसेसर इस्तेमाल करता है।</string>
+    <string name="settings_voice_phone">फ़ोन की आवाज़ पहचान</string>
+    <string name="settings_voice_phone_desc">सिस्टम वाली, फ़ोन में हो तो सिर्फ़-डिवाइस मोड में।</string>
+    <string name="settings_voice_unsupported">यह फ़ोन Whisper नहीं चला सकता: Cryo फ़ोन की आवाज़ पहचान इस्तेमाल करता है।</string>
+    <plurals name="voice_save_many">
+        <item quantity="one">%1$d लेन-देन सेव करें · %2$s</item>
+        <item quantity="other">%1$d लेन-देन सेव करें · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="one">%1$d लेन-देन सेव हुआ</item>
+        <item quantity="other">%1$d लेन-देन सेव हुए</item>
+    </plurals>
 </resources>

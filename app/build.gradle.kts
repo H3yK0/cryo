@@ -20,8 +20,22 @@ android {
         applicationId = "io.github.h3yk0.cryo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 6
-        versionName = "1.5"
+        versionCode = 7
+        versionName = "1.6"
+
+        // RF-VOZ-01: o Whisper de verdade só no ARM de 64 bits; nos outros, uma biblioteca "vazia" (plano B), para o
+        // APK continuar instalando em todo celular.
+        ndk { abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86") }
+        externalNativeBuild { cmake { arguments += listOf("-DANDROID_STL=c++_static") } }
+    }
+
+    // RF-VOZ-10: NDK e CMake fixos (o F-Droid usa os mesmos): outra versão do compilador daria outro binário.
+    ndkVersion = "27.2.12479018"
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     signingConfigs {
@@ -62,6 +76,8 @@ android {
     // Android 13+: o Cryo aparece na tela "Idioma do app" do sistema com as 10 línguas (RF-LNG-02).
     androidResources {
         generateLocaleConfig = true
+        // O modelo do Whisper fica sem compressão dentro do APK: é lido direto de lá, sem copiar para um arquivo.
+        noCompress += "bin"
     }
 
     testOptions {
@@ -75,6 +91,12 @@ android {
             it.systemProperty("cryo.storeAssets", (project.findProperty("storeAssets") ?: "false").toString())
             // Quadros das animações do passeio, para montar GIFs: ./gradlew testDebugUnitTest --tests '*TourTest' -PtourGif=true
             it.systemProperty("cryo.tourGif", (project.findProperty("tourGif") ?: "false").toString())
+            // A ponte do Whisper compilada para o computador (app/src/test/cpp/build-host.sh), com o modelo de verdade:
+            // ./gradlew testDebugUnitTest --tests '*WhisperHostTest' -PwhisperHost=true
+            if (project.findProperty("whisperHost") == "true") {
+                it.systemProperty("cryo.whisperHostLib", layout.buildDirectory.file("whisper-host/libcryo_whisper_host.so").get().asFile.absolutePath)
+                it.environment("CRYO_ASSETS", file("src/main/assets").absolutePath)
+            }
             it.maxHeapSize = "1536m"
         }
     }

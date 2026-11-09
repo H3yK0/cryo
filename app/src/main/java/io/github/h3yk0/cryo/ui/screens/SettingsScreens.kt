@@ -2,6 +2,10 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.ui.components.ChoiceRow
+import io.github.h3yk0.cryo.voice.VoiceEngineKind
+import io.github.h3yk0.cryo.voice.VoiceSettings
+import io.github.h3yk0.cryo.voice.WhisperEngine
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import android.content.ActivityNotFoundException
@@ -252,6 +256,8 @@ fun SettingsScreen() {
                 AccountChips(l.activeAccounts, s.defaultAccountId, { id -> c.launch { c.settings.setDefaultAccount(id) } })
                 Spacer(Modifier.height(8.dp))
                 SettingLink(Icons.Rounded.Category, Res.s(R.string.settings_categorias), Res.s(R.string.settings_nomes_icones_cores_palavras)) { nav.go(Routes.CATEGORIES) }
+                Spacer(Modifier.height(8.dp))
+                VoiceEngineChoice()
                             }
 }
 
@@ -426,6 +432,31 @@ fun SettingsScreen() {
 }
 
 const val SOURCE_URL = "https://github.com/H3yK0/cryo"
+
+/** RF-VOZ-01: qual ouvido o registro por voz usa (Whisper dentro do Cryo ou o reconhecedor do celular). */
+@Composable
+private fun VoiceEngineChoice() {
+    val ctx = LocalContext.current
+    val voice = remember { VoiceSettings(ctx) }
+    var engine by remember { mutableStateOf(voice.engine) }
+    FieldLabel(Res.s(R.string.settings_voice_title))
+    if (!WhisperEngine.supported) {
+        Text(
+            Res.s(R.string.settings_voice_unsupported), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+        )
+        return
+    }
+    listOf(
+        Triple(VoiceEngineKind.WHISPER, R.string.settings_voice_whisper, R.string.settings_voice_whisper_desc),
+        Triple(VoiceEngineKind.PHONE, R.string.settings_voice_phone, R.string.settings_voice_phone_desc),
+    ).forEach { (kind, title, desc) ->
+        ChoiceRow(Res.s(title), Res.s(desc), selected = engine == kind) {
+            voice.engine = kind
+            engine = kind
+        }
+    }
+}
 
 /** Toques na versão do app para ligar o modo desenvolvedor. */
 private const val DEV_TAPS = 7

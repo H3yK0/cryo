@@ -1,0 +1,1 @@
+Sprache wird auf dem Handy verstanden, mit Whisper in der App und ohne Internet: Die Wörter erscheinen beim Sprechen, mit einer Echo-Animation. Mehrere Buchungen in einem Satz, gesprochene Korrekturen, und deine Konto- und Kartennamen werden erkannt. Der Ton wird sofort gelöscht. Neue Berechtigung: Mikrofon. Die App ist größer (~65 MB) wegen des Sprachmodells.

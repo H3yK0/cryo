@@ -1552,4 +1552,36 @@
     <string name="sec_opening">開いています…</string>
     <string name="sec_notif_public_title">Cryoのリマインダー</string>
     <string name="sec_notif_public_text">支払いがあります。端末のロックを解除すると表示されます。</string>
+    <string name="voice_preparing">準備中…</string>
+    <string name="voice_listening">聞いています…</string>
+    <string name="voice_thinking">理解しています…</string>
+    <string name="voice_done">わかりました</string>
+    <string name="voice_engine_whisper">Whisper・この端末だけで処理</string>
+    <string name="voice_engine_phone">端末の音声認識</string>
+    <string name="voice_hint">話しかけるように：「スーパー 3000円 カードで」</string>
+    <string name="voice_finish">完了</string>
+    <string name="voice_save">保存・%1$s</string>
+    <string name="voice_adjust">修正</string>
+    <string name="voice_again">もう一度話す</string>
+    <string name="voice_nothing">何も聞こえませんでした。マイクの近くで話して、もう一度試してください。</string>
+    <string name="voice_check">足りない情報があります（金額または口座）。「修正」をタップしてください。</string>
+    <string name="voice_mic_desc">マイク：タップで終了</string>
+    <string name="voice_mic_title">マイクを使う</string>
+    <string name="voice_mic_text">話した内容を理解するために、Cryoはマイクを使います。音声は端末の中だけで処理され、すぐに消去されます。Cryoはインターネットにも接続しません。</string>
+    <string name="voice_mic_allow">マイクを許可</string>
+    <string name="voice_mic_denied">マイクが使えないため、端末の音声入力画面を使います。</string>
+    <string name="voice_mic_busy">マイクを使えませんでした。別のアプリが使用中かもしれません。</string>
+    <string name="voice_prompt_example">ランチ 1200円 デビットで。タクシー 1890円 カードで。スーパー 3000円。昨日、薬局 450円。</string>
+    <string name="settings_voice_title">音声認識</string>
+    <string name="settings_voice_whisper">Whisper（Cryoの中）</string>
+    <string name="settings_voice_whisper_desc">オフラインで動作し、口座やカードの名前もわかります。数秒間プロセッサを使います。</string>
+    <string name="settings_voice_phone">端末の音声認識</string>
+    <string name="settings_voice_phone_desc">システム標準のもの（端末が対応していればオフラインで）。</string>
+    <string name="settings_voice_unsupported">この端末ではWhisperを使えません。端末の音声認識を使います。</string>
+    <plurals name="voice_save_many">
+        <item quantity="other">%1$d件を保存・%2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="other">%1$d件を保存しました</item>
+    </plurals>
 </resources>

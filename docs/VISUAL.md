@@ -245,6 +245,23 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt, Sections.kt, Motion
 | `ColorChooser` / `IconChooser` / `EmojiChooser` | Personalizar itens | Círculos selecionáveis |
 | Gráficos (`Charts.kt`) | Ver seção 8 | Desenhados à mão em Canvas, sem biblioteca; `ForecastChart` mostra a faixa do motor (1.5) |
 
+### 6.1 Tela de eco (voz, 1.6)
+
+A folha de voz (`ui/tx/VoiceSheet.kt`, RF-VOZ-08) segue o protótipo aprovado pelo Hanry em 09/11/2026:
+
+- **Topo**: bolinha vermelha + "Ouvindo…" (ou "Preparando…", "Entendendo…", ✓ "Entendi") e, à direita, quem está ouvindo
+  ("Whisper · só no celular" ou "Reconhecedor do celular").
+- **Palavras**: grandes (headlineSmall, seminegrito); cada palavra nova entra subindo e passa da cor do Cryo para a cor do texto.
+  Antes de a pessoa falar, um exemplo em cinza ("Fale como falaria com alguém: …").
+- **Eco**: o microfone (círculo com volume, `raised`) cresce até 14% com a voz e tem um brilho em volta; cada sílaba solta um
+  anel que se abre e some em 1,1 s (mais grosso e forte quanto mais alta a sílaba). Anéis só enquanto há voz. Tocar no
+  microfone = "Pronto". Depois de "Entendi", o eco encolhe e o microfone fica verde com ✓.
+- **Cartõezinhos** (`depthCard` em pílula): valor, categoria, cartão ou conta, data e parcelas, cada um saltando com mola.
+  Com vários lançamentos, um cartão por lançamento (descrição, valor e o resto em cinza; tocar = ajustar).
+- **Botões**: "Pronto" (CryoButton) e "Cancelar" enquanto ouve; depois, "Salvar · R$ 120,00" (ou "Salvar 2 lançamentos ·
+  R$ 45,00"), "Ajustar" e "Falar de novo".
+- "Remover animações": sem anéis, e palavras e cartõezinhos já no lugar. Imagens 58–62.
+
 ## 7. Ícones e marca
 
 - Todos os ícones são **Material Icons, estilo Rounded** (`Icons.Rounded.*`; setas `Icons.AutoMirrored.Rounded.*`).

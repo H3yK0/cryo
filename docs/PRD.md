@@ -46,6 +46,7 @@ anexo é corrigido no mesmo commit.
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 | 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
+| 2.8 | 09/11/2026 | 1.6 aprovada pelo Hanry ("aprovado; vamos testar em português primeiro"; permissão para compilar o Whisper) e feita: RF-VOZ-01..12 (Whisper no APK, microfone ao vivo com o eco, frases faladas em português, vários lançamentos, correções, escolha do ouvido em Ajustes). Permissão `RECORD_AUDIO` (RNF-PRIV-01). Análise de "um Cryo por língua" (seção 6.2a). |
 | 2.7 | 09/11/2026 | Proposta da 1.6: voz no aparelho com Whisper e animação de eco (RF-VOZ, seção 6.2a), com as respostas do Hanry (Galaxy A55, aceita IA local se nada sair do celular). 1.5 guardada para lançar por volta de 07/12/2026. |
 | 2.6 | 07/11/2026 | Pedido do Hanry depois de testar a 1.5: **motor financeiro** robusto e todo no aparelho (RF-MOT-01..15, seção 6.12a), com **500 testes de garantia**, e **proteção dos dados** com hash e criptografia (RF-SEG, seção 6.15a); Rust e criptografia do banco avaliados e deixados para depois. Aprovado e unido ao visual: tudo na **1.5**. |
 | 2.3 | 06/11/2026 | Pedidos do Hanry depois de testar a 1.4: passeio animado "Como usar o Cryo" (RF-TOUR), movimento em todo o app (DS-MOV, ACS-08), página do GitHub nas 10 línguas com inglês como principal (RF-LNG-09, RF-LNG-10). Tudo na 1.4. |
@@ -216,12 +217,12 @@ Testes: `ScreensTest` (imagens 01–04), `AppFlowTest`, `DevModeFlowTest`.
 | RF-REG-05 | Entender parcelas | "em 10x" no cartão: uma movimentação por parcela, cada uma na fatura certa (DAD-05). | ✅ 1.0 |
 | RF-REG-06 | Entender entradas, transferências e metas | "recebi 3000 de salário" vira receita; "transferi 200 para a poupança" vira transferência; o nome de uma meta guarda nela. | ✅ 1.0 |
 | RF-REG-07 | Conferir antes de salvar | Folha com o que foi entendido; dá para corrigir; nada salva sozinho. | ✅ 1.0 |
-| RF-REG-08 | Voz | Reconhecimento de fala do próprio celular (`RecognizerIntent`), na língua do app; sem ele, digitar sempre funciona. | ✅ 1.0 |
+| RF-REG-08 | Voz | Reconhecimento de fala do próprio celular (`RecognizerIntent`), na língua do app; sem ele, digitar sempre funciona. A partir da 1.6, a voz é ouvida dentro do Cryo (RF-VOZ); a tela do sistema fica como último recurso. | ✅ 1.0 · 1.6 |
 | RF-REG-09 | **Frases nas 10 línguas** | Valor, data relativa (ontem, dia 5, segunda...), parcelas ("10x", "in 10 installments", "10回払い"...), conta ou cartão, entrada, transferência e categoria pelas palavras-chave da língua do app. Em japonês, mandarim e coreano (sem espaços entre palavras) e em hindi, regras próprias de leitura. | ✅ 1.4 |
 
 Código: `domain/PhraseParser.kt` (regras), `domain/PhraseLang.kt` (palavras de cada língua), `ui/tx/QuickEntry.kt`. Testes: `PhraseParserTest`, `PhraseLanguagesTest`.
 
-### 6.2a Voz no aparelho — RF-VOZ (proposta para a 1.6)
+### 6.2a Voz no aparelho — RF-VOZ (1.6)
 
 Pedido do Hanry (07 e 09/11/2026): melhorar o registro por voz com uma IA local; "se o Whisper não levar nenhum dado para fora,
 eu aceito ter uma IA local dentro do app"; "uma animação daora enquanto a pessoa fala, como um eco, e o sistema pega exatamente
@@ -239,20 +240,28 @@ podem inventar números (inaceitável com dinheiro) e não explicam o que decidi
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-VOZ-01 | **Reconhecimento de fala no aparelho** com o Whisper (whisper.cpp e modelos com licença MIT), modelo multilíngue "base" quantizado (~57 MB, dentro do APK: o app continua sem internet). Plano B: o reconhecedor do celular em modo "só no aparelho" (Android 13+), se o modelo não carregar. | Frases faladas nas 10 línguas reconhecidas sem rede; o app segue sem permissão de INTERNET. | 🔵 1.6 |
-| RF-VOZ-02 | **Microfone**: permissão `RECORD_AUDIO` pedida só no primeiro toque no microfone, com a explicação ("o áudio fica só no celular; o Cryo nem tem internet"). O áudio fica só na memória e é apagado ao terminar: nunca vira arquivo. | Revisão; teste da tela de explicação; RNF-PRIV-01 atualizado. | 🔵 1.6 |
-| RF-VOZ-03 | **Ao vivo**: as palavras aparecem enquanto a pessoa fala (o áudio acumulado é relido a cada ~0,7 s); termina sozinho depois de ~1,2 s de silêncio; "Pronto" e "Cancelar" a qualquer momento. | Tempo do fim da fala até o resultado < 1,5 s num celular como o A55. | 🔵 1.6 |
-| RF-VOZ-04 | **Vocabulário da pessoa**: o Whisper recebe como dica os nomes das contas, cartões, categorias e metas, e as palavras de dinheiro da língua: acerta "Roxo", "Nubank", "Pet Shop". | Frases com nomes próprios da pessoa reconhecidas certo nos testes. | 🔵 1.6 |
-| RF-VOZ-05 | **Entender o jeito falado** nas 10 línguas: números por extenso ("trinta e dois e cinquenta", "cento e vinte", "três mil"), "18 e 90" = 18,90, "conto/pila", pontuação e "R$" do Whisper, apelidos e diminutivos ("roxinho" → Cartão Roxo). | Testes com as frases do teste de 09/11 e equivalentes nas 10 línguas. | 🔵 1.6 |
-| RF-VOZ-06 | **Vários lançamentos numa frase**: "almoço 30 e uber 15" vira dois lançamentos para conferir. | Teste. | 🔵 1.6 |
-| RF-VOZ-07 | **Correção falada**: "32, não, 35" fica 35, e a descrição sem o "não". | Teste. | 🔵 1.6 |
-| RF-VOZ-08 | **Animação de eco** (protótipo de 09/11/2026 para aprovação): o microfone "respira" com o volume da voz; cada sílaba solta um anel de eco que se abre e some; cada palavra reconhecida entra subindo com um brilho que se apaga; o que o Cryo entende (valor, categoria, conta ou cartão, data, parcelas) vira um cartãozinho que salta com mola; no fim, ✓ "Entendi" e o botão "Salvar". Anéis só enquanto há voz (nada infinito, DS-MOV-10); com "Remover animações", tudo aparece direto. | Imagens e quadros da animação; teste de "Remover animações". | 🔵 1.6 |
-| RF-VOZ-09 | **Leve**: o modelo só é carregado ao abrir o microfone e é solto ao fechar; em celular lento, menos atualizações ao vivo (fica o resultado final). | Medição de memória e tempo; nada roda com o microfone fechado. | 🔵 1.6 |
-| RF-VOZ-10 | **Compilação reproduzível com código nativo**: NDK fixo (r27c), sem caminhos da máquina dentro do binário, o mesmo APK compilado em duas pastas diferentes. A receita do F-Droid ganha a linha do NDK (o lançamento da 1.6 precisa de merge request no fdroiddata). | Duas compilações limpas com o mesmo SHA-256. | 🔵 1.6 |
+| RF-VOZ-01 | **Reconhecimento de fala no aparelho** com o Whisper (whisper.cpp v1.9.5 e o modelo "base" multilíngue q5_1, licença MIT, 57 MB dentro do APK: o app continua sem internet). Só em ARM de 64 bits com fp16 e dotprod (conferido nas informações do processador antes de carregar a biblioteca); nos outros, uma biblioteca vazia deixa o APK instalar. Plano B: o reconhecedor do celular **só no aparelho** (Android 12+); sem ele, a tela de voz do sistema, como na 1.5 (com "preferir offline"). | `WhisperHostTest` (a ponte e o modelo de verdade no computador); o app segue sem INTERNET (`PrdConformanceTest`). | ✅ 1.6 |
+| RF-VOZ-02 | **Microfone**: permissão `RECORD_AUDIO` pedida só no primeiro toque no microfone, com a explicação ("o áudio fica só no celular; o Cryo nem tem internet"). O áudio fica só na memória e é apagado ao terminar: nunca vira arquivo. | `VoiceFlowTest` (tela de explicação), `VoiceListenerTest` (microfone sempre solto); RNF-PRIV-01 atualizado. | ✅ 1.6 |
+| RF-VOZ-03 | **Ao vivo**: as palavras aparecem enquanto a pessoa fala (o áudio acumulado é relido a cada ~0,7 s); termina sozinho depois de ~1,2 s de silêncio; "Pronto" e "Cancelar" a qualquer momento. | `VoiceListenerTest` (início, fim, releituras, "Pronto", cancelar). Tempo no A55: medir no teste do Hanry. | 🟡 1.6 |
+| RF-VOZ-04 | **Vocabulário da pessoa**: o Whisper recebe como dica os nomes das contas, cartões, categorias e metas, e as palavras de dinheiro da língua: acerta "Roxo", "Nubank", "Pet Shop". | `VoicePrompt`; `WhisperHostTest` (com a dica, "32,50" sai com algarismos). | ✅ 1.6 |
+| RF-VOZ-05 | **Entender o jeito falado** nas 10 línguas: números por extenso ("trinta e dois e cinquenta", "cento e vinte", "três mil"), "18 e 90" = 18,90, "conto/pila", pontuação e "R$" do Whisper, apelidos e diminutivos ("roxinho" → Cartão Roxo). | `SpokenTest` com as frases do teste de 09/11. **Português primeiro** (pedido do Hanry); nas outras línguas o Whisper já escreve algarismos e fica a limpeza e a divisão. | ✅ 1.6 (pt) |
+| RF-VOZ-06 | **Vários lançamentos numa frase**: "almoço 30 e uber 15" vira dois lançamentos para conferir. A data, o cartão ou a conta e o verbo ditos uma vez valem para todos ("mercado 120 e farmácia 30 no cartão"). | `SpokenTest`, `VoiceFlowTest`. | ✅ 1.6 |
+| RF-VOZ-07 | **Correção falada**: "32, não, 35" fica 35, e a descrição sem o "não"; "no débito, não, na carteira" fica na carteira. | `SpokenTest`. | ✅ 1.6 |
+| RF-VOZ-08 | **Animação de eco** (protótipo de 09/11/2026 para aprovação): o microfone "respira" com o volume da voz; cada sílaba solta um anel de eco que se abre e some; cada palavra reconhecida entra subindo com um brilho que se apaga; o que o Cryo entende (valor, categoria, conta ou cartão, data, parcelas) vira um cartãozinho que salta com mola; no fim, ✓ "Entendi" e o botão "Salvar". Anéis só enquanto há voz (nada infinito, DS-MOV-10); com "Remover animações", tudo aparece direto. | Imagens 58–62 (`VoiceFlowTest`); "Remover animações" pelo `animationsOn()` (ACS-08): sem anéis, palavras e cartõezinhos já no lugar. | ✅ 1.6 |
+| RF-VOZ-09 | **Leve**: o modelo só é carregado ao abrir o microfone e é solto ao fechar; em celular lento, menos atualizações ao vivo (fica o resultado final). | `VoiceListenerTest` e `WhisperHostTest` (fechar solta tudo, fechar duas vezes é seguro). | ✅ 1.6 |
+| RF-VOZ-10 | **Compilação reproduzível com código nativo**: NDK fixo (r27c), sem caminhos da máquina dentro do binário, o mesmo APK compilado em duas pastas diferentes. A receita do F-Droid ganha a linha do NDK (o lançamento da 1.6 precisa de merge request no fdroiddata). | Duas compilações limpas, em pastas diferentes, com o mesmo SHA-256; `PrdConformanceTest` confere as opções do CMake. | ✅ 1.6 |
+| RF-VOZ-11 | **Escolha do ouvido** em Ajustes › Registro rápido › Reconhecimento de voz: "Whisper, dentro do Cryo" (padrão) ou "Reconhecedor do celular". Preferência do aparelho, fora do backup. Em celular que não roda o Whisper, a opção explica e fica no do celular. | Revisão. | ✅ 1.6 |
+| RF-VOZ-12 | **Ruído e frases inventadas**: o Whisper só é chamado depois de ~160 ms de voz; áudio sem energia não chega a ele; "legendas de vídeo" que ele inventa no silêncio ("Legendas pela comunidade Amara.org", "Obrigado por assistir") e repetições ("meu e o meu e o meu") são descartadas; se nada sobra, "Não ouvi nada" e "Falar de novo". | `SpokenTest`, `VoiceListenerTest`, `WhisperHostTest`. | ✅ 1.6 |
+
+**Um Cryo por língua? (análise pedida pelo Hanry, 09/11/2026.)** Não ajuda no peso: o modelo "base" multilíngue tem o
+mesmo tamanho para qualquer língua; o "base" só de inglês tem o mesmo tamanho; não existe modelo oficial menor só de
+português. Dez apps dividiriam quem usa, os backups e as atualizações (10 receitas no F-Droid, 10 páginas, 10 APKs para
+conferir). O que de fato reduz o peso, se um dia precisar: o modelo "tiny" (31 MB, erra mais em português), um "pacote de
+voz" opcional instalado à parte, ou APKs por processador (economiza só ~1–2 MB). Decisão: **um app só**.
 
 Custos aceitos pelo Hanry: APK de ~5 MB para ~65 MB (o modelo); a permissão de microfone. Código previsto: whisper.cpp (cópia do
-código-fonte, MIT) compilado pelo NDK, uma ponte JNI, a tela de "ouvindo" e as regras novas de frases faladas. O protótipo da
-animação está em `VoicePrototypeTest` (quadros com `-PtourGif=true`).
+código-fonte, MIT) compilado pelo NDK, uma ponte JNI, a tela de "ouvindo" e as regras novas de frases faladas. O protótipo aprovado virou a tela de verdade
+(`ui/tx/VoiceSheet.kt`); as imagens saem do `VoiceFlowTest`.
 
 ### 6.3 Lançamento completo — RF-LAN (TELA-LANCAR, TELA-LANC-EDITAR)
 
@@ -617,7 +626,7 @@ Pedido do Hanry (05/11/2026): uma explicação animada de como usar o app, para 
 
 | ID | Requisito | Como se confere | Status |
 |---|---|---|---|
-| RNF-PRIV-01 | **Sem permissão de INTERNET.** Permissões declaradas: só `POST_NOTIFICATIONS` e `USE_BIOMETRIC` (as demais vêm das bibliotecas de biometria e de agendamento). | `PrdConformanceTest` | ✅ |
+| RNF-PRIV-01 | **Sem permissão de INTERNET.** Permissões declaradas: só `POST_NOTIFICATIONS`, `USE_BIOMETRIC` e, a partir da 1.6, `RECORD_AUDIO` (registro por voz no aparelho, RF-VOZ-02; pedida só no primeiro toque no microfone, com explicação). As demais vêm das bibliotecas de biometria e de agendamento. | `PrdConformanceTest` | ✅ |
 | RNF-PRIV-02 | Sem bibliotecas de analytics, anúncios ou crash reporting. | Revisão de dependências (PRC-07) | ✅ |
 | RNF-PRIV-03 | `android:allowBackup="false"`; transferência entre aparelhos sem permissões do backup e sem o modo de teste. | `PrdConformanceTest` + revisão | ✅ |
 | RNF-PRIV-04 | Nunca colocar extratos reais no repositório (nem em testes). | `PrdConformanceTest` (sem `.ofx/.csv/.xlsx/.pdf` versionados) | ✅ |
@@ -726,6 +735,7 @@ Estão em `ui/components/`. **Antes de criar um componente, procure aqui**; comp
 | DS-COMP-23 | **`Depth`** (`ui/components/Depth.kt`) | Peças da profundidade (DS-PROF): `Modifier.depthCard()` (cartão com sombra suave e fio de luz), `Modifier.groupedRow()` (linha de lista agrupada: só a primeira e a última com cantos), `Modifier.raised()` (volume de círculos e botões), `CryoBadge` (o ícone dentro do app), `BottomBarSurface` (barra de ação fixa elevada), `rememberHaptics()` (vibrações com nome: confirmar, recusar, ligar/desligar, tique, toque). As cores do fundo agrupado, dos cartões, das sombras e do cabeçalho ficam em `CryoTheme.depth` (`ui/theme/Theme.kt`). | ✅ 1.5 |
 | DS-COMP-24 | **`CryoButton`** | Botão principal com volume (DS-PROF-05); mesmos parâmetros do `Button`. | ✅ 1.5 |
 | DS-COMP-25 | **Gráficos do motor** (`ui/components/Charts.kt`) | `ForecastChart` com a faixa (P10–P90) e a linha do mais provável; `ProjectionChart` (saldo dos próximos meses, faixa, dia mais apertado marcado); `ScoreRing` (anel da nota de 0 a 100, cor pela faixa). Todos aparecem com o movimento DS-MOV e têm descrição para leitor de tela. | ✅ 1.5 |
+| DS-COMP-26 | **Tela de eco** (`ui/tx/VoiceSheet.kt`) | Folha de voz (RF-VOZ-08): estado e nome do ouvido no topo; palavras que entram subindo com brilho; microfone com volume que cresce com a voz e solta um anel por sílaba (finito); cartõezinhos do que foi entendido, com mola; com vários lançamentos, um cartão por lançamento. O eco encolhe depois de "Entendi". | ✅ 1.6 |
 | DS-COMP-22 | **`Motion`** (`ui/components/Motion.kt`) | Tempos, curvas e transições do DS-MOV num lugar só: transições de tela e de aba, `animateMoney`, `rememberAppear` (0 → 1 uma vez, ao aparecer), `pressScale`. Animação nova usa estas peças. | ✅ 1.4 |
 
 ### 9.6 Padrões de tela (DS-PAD)
@@ -919,7 +929,8 @@ conferir sozinho:
 | Confere | Regra |
 |---|---|
 | Todo `.kt` começa com `// SPDX-License-Identifier: AGPL-3.0-or-later`; `LICENSE` é a AGPL v3 | RNF-LIC-01 |
-| Manifesto sem `INTERNET`; só `POST_NOTIFICATIONS` e `USE_BIOMETRIC` declaradas; `allowBackup="false"` | RNF-PRIV-01, RNF-PRIV-03 |
+| Manifesto sem `INTERNET`; só `POST_NOTIFICATIONS`, `USE_BIOMETRIC` e `RECORD_AUDIO` declaradas; `allowBackup="false"` | RNF-PRIV-01, RNF-PRIV-03 |
+| Voz: nada de rede no código de voz nem na ponte nativa; CMake com `GGML_NATIVE` e KleidiAI desligados, caminhos da máquina trocados (`-ffile-prefix-map`), sem informação de depuração | RF-VOZ-10, RNF-PRIV-01 |
 | Nenhum extrato (`.ofx`, `.csv`, `.xlsx`, `.xls`, `.pdf`) nem chave (`.jks`, `.keystore`) versionado; `keystore/` no `.gitignore` | RNF-PRIV-04, RNF-SEG-01 |
 | Nenhuma cor fixa (`Color(0x…)`) em telas e componentes | DS-COR-02 |
 | Toda rota de `Routes` está no catálogo de telas (5.2) | PRC-02 |
@@ -959,7 +970,7 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.3 | ✅ 06/11/2026 (GitHub) | Importar extrato, modo desenvolvedor, correções de bloqueio. |
 | **1.4** | ✅ 06/11/2026 (GitHub; F-Droid pela etiqueta) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
 | **1.5** | ✅ Pronta e guardada: lançamento por volta de 07/12/2026 (pedido do Hanry) | **Ícone novo G4** (DS-ICO-02..05) · **Profundidade** em todo o app, com peso de app de iPhone (DS-PROF-01..09) · vibração ao toque · **Motor financeiro** robusto, todo no aparelho (RF-MOT-01..15): recorrências, previsão com faixa, próximos meses, fora do padrão, saúde financeira, ritmo das categorias, juros e plano das dívidas, rendimento real, metas, categoria aprendida, 500 testes de garantia · **Proteção dos dados** com hash e criptografia (RF-SEG). |
-| 1.6 | 🔵 Proposta | **Voz no aparelho** (RF-VOZ-01..10): Whisper local, microfone ao vivo com animação de eco, vocabulário da pessoa, números por extenso, vários lançamentos numa frase, correções faladas. Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04): a detalhar. |
+| 1.6 | 🟡 Pronta para o teste do Hanry | **Voz no aparelho** (RF-VOZ-01..12): Whisper local, microfone ao vivo com animação de eco, vocabulário da pessoa, números por extenso, vários lançamentos numa frase, correções faladas. Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04): a detalhar. |
 
 ## 13. Glossário
 

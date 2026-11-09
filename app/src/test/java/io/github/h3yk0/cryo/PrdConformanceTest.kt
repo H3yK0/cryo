@@ -40,9 +40,23 @@ class PrdConformanceTest {
     @Test fun semInternetEPermissoesSoAsCombinadas() { // RNF-PRIV-01, RNF-PRIV-03
         val manifest = File(app, "src/main/AndroidManifest.xml").readText()
         val declared = Regex("""<uses-permission[^>]*android:name="([^"]+)"""").findAll(manifest).map { it.groupValues[1] }.toSet()
-        assertEquals(setOf("android.permission.POST_NOTIFICATIONS", "android.permission.USE_BIOMETRIC"), declared)
+        assertEquals(setOf("android.permission.POST_NOTIFICATIONS", "android.permission.USE_BIOMETRIC", "android.permission.RECORD_AUDIO"), declared)
         assertTrue("O app não pode ter permissão de internet", !manifest.contains("android.permission.INTERNET"))
         assertTrue("allowBackup precisa ser false", manifest.contains("""android:allowBackup="false""""))
+    }
+
+    @Test fun vozSemRedeECompilacaoReproduzivel() { // RF-VOZ-10, RNF-PRIV-01
+        // O código de voz (Kotlin e a ponte nativa) não fala com a rede nem grava o áudio em arquivo.
+        val voice = kotlinFiles(File(main, "voice")) + listOf(File(app, "src/main/cpp/cryo_whisper.cpp"), File(app, "src/main/cpp/cryo_whisper_stub.cpp"))
+        val net = Regex("""\b(?:java\.net|okhttp|HttpURLConnection|URL\(|Socket|socket\(|connect\(|curl|FileOutputStream|fopen|ofstream|MediaRecorder\.OutputFormat)""")
+        voice.forEach { f -> assertTrue("rede ou arquivo em ${f.name}", !net.containsMatchIn(f.readText().lines().filterNot { it.trim().startsWith("//") || it.trim().startsWith("*") }.joinToString("\n"))) }
+        // Compilação nativa igual em qualquer máquina.
+        val cmake = File(app, "src/main/cpp/CMakeLists.txt").readText()
+        listOf("GGML_NATIVE OFF", "GGML_CPU_KLEIDIAI OFF", "GGML_OPENMP OFF", "-ffile-prefix-map=\${CMAKE_SOURCE_DIR}", "-ffile-prefix-map=\${ANDROID_NDK}", "-g0", "CRYO_GGML_COMMIT")
+            .forEach { assertTrue("falta $it no CMakeLists.txt", cmake.contains(it)) }
+        val gradle = File(app, "build.gradle.kts").readText()
+        assertTrue("NDK fixo", Regex("""ndkVersion = "\d+\.\d+\.\d+"""").containsMatchIn(gradle))
+        assertTrue("CMake fixo", Regex("""version = "\d+\.\d+\.\d+"""").containsMatchIn(gradle))
     }
 
     @Test fun semExtratosNemChaveNoGit() { // RNF-PRIV-04, RNF-SEG-01

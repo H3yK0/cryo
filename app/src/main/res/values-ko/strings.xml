@@ -1552,4 +1552,36 @@
     <string name="sec_opening">여는 중…</string>
     <string name="sec_notif_public_title">Cryo 알림</string>
     <string name="sec_notif_public_text">납부할 항목이 있어요. 휴대폰 잠금을 풀면 볼 수 있어요.</string>
+    <string name="voice_preparing">준비 중…</string>
+    <string name="voice_listening">듣고 있어요…</string>
+    <string name="voice_thinking">이해하는 중…</string>
+    <string name="voice_done">알겠어요</string>
+    <string name="voice_engine_whisper">Whisper · 휴대폰에서만</string>
+    <string name="voice_engine_phone">휴대폰 음성 인식</string>
+    <string name="voice_hint">말하듯이: \"마트 3만원 카드로\"</string>
+    <string name="voice_finish">완료</string>
+    <string name="voice_save">저장 · %1$s</string>
+    <string name="voice_adjust">수정</string>
+    <string name="voice_again">다시 말하기</string>
+    <string name="voice_nothing">아무것도 듣지 못했어요. 마이크 가까이에서 다시 말해 주세요.</string>
+    <string name="voice_check">빠진 게 있어요(금액이나 계좌). 수정을 눌러 주세요.</string>
+    <string name="voice_mic_desc">마이크: 눌러서 끝내기</string>
+    <string name="voice_mic_title">마이크 사용</string>
+    <string name="voice_mic_text">말한 내용을 이해하려면 Cryo에 마이크가 필요해요. 음성은 휴대폰 안에서만 처리되고 바로 지워져요. Cryo는 인터넷도 쓰지 않아요.</string>
+    <string name="voice_mic_allow">마이크 허용</string>
+    <string name="voice_mic_denied">마이크 없이는 휴대폰의 음성 입력 화면을 사용해요.</string>
+    <string name="voice_mic_busy">마이크를 쓸 수 없어요. 다른 앱이 쓰고 있을 수 있어요.</string>
+    <string name="voice_prompt_example">점심 12000원 체크카드로. 택시 18900원 카드로. 마트 3만원. 어제 약국 4500원.</string>
+    <string name="settings_voice_title">음성 인식</string>
+    <string name="settings_voice_whisper">Whisper (Cryo 안에서)</string>
+    <string name="settings_voice_whisper_desc">인터넷 없이 작동하고 계좌와 카드 이름도 알아들어요. 몇 초 동안 프로세서를 사용해요.</string>
+    <string name="settings_voice_phone">휴대폰 음성 인식</string>
+    <string name="settings_voice_phone_desc">시스템 기본 기능(휴대폰이 지원하면 기기 내 모드로).</string>
+    <string name="settings_voice_unsupported">이 휴대폰은 Whisper를 실행할 수 없어요. 휴대폰 음성 인식을 사용해요.</string>
+    <plurals name="voice_save_many">
+        <item quantity="other">%1$d건 저장 · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="other">%1$d건 저장했어요</item>
+    </plurals>
 </resources>

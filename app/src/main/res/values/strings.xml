@@ -1706,4 +1706,38 @@
     <string name="sec_opening">Abrindo…</string>
     <string name="sec_notif_public_title">Lembrete do Cryo</string>
     <string name="sec_notif_public_text">Você tem uma conta para pagar. Desbloqueie o celular para ver.</string>
+    <string name="voice_preparing">Preparando…</string>
+    <string name="voice_listening">Ouvindo…</string>
+    <string name="voice_thinking">Entendendo…</string>
+    <string name="voice_done">Entendi</string>
+    <string name="voice_engine_whisper">Whisper · só no celular</string>
+    <string name="voice_engine_phone">Reconhecedor do celular</string>
+    <string name="voice_hint">Fale como falaria com alguém: \"mercado 120 no cartão\"</string>
+    <string name="voice_finish">Pronto</string>
+    <string name="voice_save">Salvar · %1$s</string>
+    <string name="voice_adjust">Ajustar</string>
+    <string name="voice_again">Falar de novo</string>
+    <string name="voice_nothing">Não ouvi nada. Fale perto do microfone e tente de novo.</string>
+    <string name="voice_check">Faltou alguma coisa (o valor ou a conta). Toque em Ajustar.</string>
+    <string name="voice_mic_desc">Microfone: toque para terminar</string>
+    <string name="voice_mic_title">Usar o microfone</string>
+    <string name="voice_mic_text">Para entender o que você fala, o Cryo precisa do microfone. O áudio fica só no celular e é apagado na hora: o Cryo nem tem internet.</string>
+    <string name="voice_mic_allow">Permitir microfone</string>
+    <string name="voice_mic_denied">Sem o microfone, o Cryo usa a tela de voz do celular.</string>
+    <string name="voice_mic_busy">Não deu para usar o microfone. Outro app pode estar usando.</string>
+    <string name="voice_prompt_example">Almoço 32,50 no débito. Uber 18,90 no cartão. Mercado 120 reais. Ontem, farmácia 45.</string>
+    <string name="settings_voice_title">Reconhecimento de voz</string>
+    <string name="settings_voice_whisper">Whisper, dentro do Cryo</string>
+    <string name="settings_voice_whisper_desc">Funciona sem internet e entende nomes das suas contas e cartões. Usa o processador por alguns segundos.</string>
+    <string name="settings_voice_phone">Reconhecedor do celular</string>
+    <string name="settings_voice_phone_desc">O do sistema, em modo só no aparelho quando o celular tem.</string>
+    <string name="settings_voice_unsupported">Este celular não roda o Whisper: o Cryo usa o reconhecedor do celular.</string>
+    <plurals name="voice_save_many">
+        <item quantity="one">Salvar %1$d lançamento · %2$s</item>
+        <item quantity="other">Salvar %1$d lançamentos · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="one">%1$d lançamento salvo</item>
+        <item quantity="other">%1$d lançamentos salvos</item>
+    </plurals>
 </resources>

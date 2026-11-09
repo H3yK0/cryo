@@ -1581,4 +1581,38 @@
     <string name="sec_opening">Opening…</string>
     <string name="sec_notif_public_title">Cryo reminder</string>
     <string name="sec_notif_public_text">You have a bill to pay. Unlock your phone to see it.</string>
+    <string name="voice_preparing">Getting ready…</string>
+    <string name="voice_listening">Listening…</string>
+    <string name="voice_thinking">Understanding…</string>
+    <string name="voice_done">Got it</string>
+    <string name="voice_engine_whisper">Whisper · on this phone only</string>
+    <string name="voice_engine_phone">Phone\'s recognizer</string>
+    <string name="voice_hint">Talk like you would to a friend: \"groceries 120 on the card\"</string>
+    <string name="voice_finish">Done</string>
+    <string name="voice_save">Save · %1$s</string>
+    <string name="voice_adjust">Adjust</string>
+    <string name="voice_again">Speak again</string>
+    <string name="voice_nothing">I didn\'t hear anything. Speak close to the microphone and try again.</string>
+    <string name="voice_check">Something is missing (the amount or the account). Tap Adjust.</string>
+    <string name="voice_mic_desc">Microphone: tap to finish</string>
+    <string name="voice_mic_title">Use the microphone</string>
+    <string name="voice_mic_text">To understand what you say, Cryo needs the microphone. The audio stays on your phone and is erased right away: Cryo doesn\'t even have internet access.</string>
+    <string name="voice_mic_allow">Allow microphone</string>
+    <string name="voice_mic_denied">Without the microphone, Cryo uses the phone\'s voice screen.</string>
+    <string name="voice_mic_busy">Couldn\'t use the microphone. Another app may be using it.</string>
+    <string name="voice_prompt_example">Lunch 12.50 on debit. Uber 18.90 on the card. Groceries 120 dollars. Yesterday, pharmacy 45.</string>
+    <string name="settings_voice_title">Speech recognition</string>
+    <string name="settings_voice_whisper">Whisper, inside Cryo</string>
+    <string name="settings_voice_whisper_desc">Works offline and knows the names of your accounts and cards. Uses the processor for a few seconds.</string>
+    <string name="settings_voice_phone">Phone\'s recognizer</string>
+    <string name="settings_voice_phone_desc">The system\'s own, in on-device mode when the phone supports it.</string>
+    <string name="settings_voice_unsupported">This phone can\'t run Whisper: Cryo uses the phone\'s recognizer.</string>
+    <plurals name="voice_save_many">
+        <item quantity="one">Save %1$d entry · %2$s</item>
+        <item quantity="other">Save %1$d entries · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="one">%1$d entry saved</item>
+        <item quantity="other">%1$d entries saved</item>
+    </plurals>
 </resources>

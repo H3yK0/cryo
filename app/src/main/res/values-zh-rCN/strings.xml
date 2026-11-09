@@ -1552,4 +1552,36 @@
     <string name="sec_opening">正在打开…</string>
     <string name="sec_notif_public_title">Cryo 提醒</string>
     <string name="sec_notif_public_text">你有一笔账单要付。解锁手机即可查看。</string>
+    <string name="voice_preparing">准备中…</string>
+    <string name="voice_listening">正在听…</string>
+    <string name="voice_thinking">正在理解…</string>
+    <string name="voice_done">明白了</string>
+    <string name="voice_engine_whisper">Whisper · 仅在手机上</string>
+    <string name="voice_engine_phone">手机的语音识别</string>
+    <string name="voice_hint">像跟人说话一样：“超市 120 刷卡”</string>
+    <string name="voice_finish">好了</string>
+    <string name="voice_save">保存 · %1$s</string>
+    <string name="voice_adjust">调整</string>
+    <string name="voice_again">再说一次</string>
+    <string name="voice_nothing">没有听到声音。请靠近麦克风再试一次。</string>
+    <string name="voice_check">缺少信息（金额或账户）。请点“调整”。</string>
+    <string name="voice_mic_desc">麦克风：点按结束</string>
+    <string name="voice_mic_title">使用麦克风</string>
+    <string name="voice_mic_text">为了听懂你说的话，Cryo 需要使用麦克风。音频只留在手机上并立即删除：Cryo 甚至没有联网权限。</string>
+    <string name="voice_mic_allow">允许使用麦克风</string>
+    <string name="voice_mic_denied">没有麦克风权限时，Cryo 会使用手机自带的语音输入界面。</string>
+    <string name="voice_mic_busy">无法使用麦克风。可能有其他应用正在使用。</string>
+    <string name="voice_prompt_example">午饭 32.5 元借记卡。打车 18.9 元刷卡。超市 120 元。昨天，药店 45 元。</string>
+    <string name="settings_voice_title">语音识别</string>
+    <string name="settings_voice_whisper">Whisper（Cryo 内置）</string>
+    <string name="settings_voice_whisper_desc">无需联网，能听懂你的账户和卡片名称。会占用处理器几秒钟。</string>
+    <string name="settings_voice_phone">手机的语音识别</string>
+    <string name="settings_voice_phone_desc">系统自带的识别（手机支持时只在本机处理）。</string>
+    <string name="settings_voice_unsupported">这部手机无法运行 Whisper：Cryo 会使用手机的语音识别。</string>
+    <plurals name="voice_save_many">
+        <item quantity="other">保存 %1$d 笔 · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="other">已保存 %1$d 笔</item>
+    </plurals>
 </resources>

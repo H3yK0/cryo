@@ -1581,4 +1581,38 @@
     <string name="sec_opening">Wird geöffnet…</string>
     <string name="sec_notif_public_title">Erinnerung von Cryo</string>
     <string name="sec_notif_public_text">Du hast eine Rechnung zu bezahlen. Entsperre dein Handy, um sie zu sehen.</string>
+    <string name="voice_preparing">Wird vorbereitet…</string>
+    <string name="voice_listening">Ich höre zu…</string>
+    <string name="voice_thinking">Wird verstanden…</string>
+    <string name="voice_done">Verstanden</string>
+    <string name="voice_engine_whisper">Whisper · nur auf dem Handy</string>
+    <string name="voice_engine_phone">Spracherkennung des Handys</string>
+    <string name="voice_hint">Sprich ganz normal: „Einkauf 120 mit Karte“</string>
+    <string name="voice_finish">Fertig</string>
+    <string name="voice_save">Speichern · %1$s</string>
+    <string name="voice_adjust">Anpassen</string>
+    <string name="voice_again">Noch mal sprechen</string>
+    <string name="voice_nothing">Ich habe nichts gehört. Sprich nah am Mikrofon und versuch es noch einmal.</string>
+    <string name="voice_check">Etwas fehlt (Betrag oder Konto). Tippe auf Anpassen.</string>
+    <string name="voice_mic_desc">Mikrofon: zum Beenden tippen</string>
+    <string name="voice_mic_title">Mikrofon verwenden</string>
+    <string name="voice_mic_text">Um zu verstehen, was du sagst, braucht Cryo das Mikrofon. Der Ton bleibt auf dem Handy und wird sofort gelöscht: Cryo hat nicht einmal Internetzugriff.</string>
+    <string name="voice_mic_allow">Mikrofon erlauben</string>
+    <string name="voice_mic_denied">Ohne Mikrofon nutzt Cryo die Spracheingabe des Handys.</string>
+    <string name="voice_mic_busy">Das Mikrofon ließ sich nicht verwenden. Vielleicht nutzt es eine andere App.</string>
+    <string name="voice_prompt_example">Mittagessen 12,50 mit EC-Karte. Uber 18,90 mit Karte. Einkauf 120 Euro. Gestern Apotheke 45.</string>
+    <string name="settings_voice_title">Spracherkennung</string>
+    <string name="settings_voice_whisper">Whisper, in Cryo</string>
+    <string name="settings_voice_whisper_desc">Funktioniert offline und kennt die Namen deiner Konten und Karten. Nutzt den Prozessor ein paar Sekunden.</string>
+    <string name="settings_voice_phone">Spracherkennung des Handys</string>
+    <string name="settings_voice_phone_desc">Die des Systems, im Offline-Modus, wenn das Handy ihn hat.</string>
+    <string name="settings_voice_unsupported">Dieses Handy kann Whisper nicht ausführen: Cryo nutzt die Spracherkennung des Handys.</string>
+    <plurals name="voice_save_many">
+        <item quantity="one">%1$d Buchung speichern · %2$s</item>
+        <item quantity="other">%1$d Buchungen speichern · %2$s</item>
+    </plurals>
+    <plurals name="voice_saved_many">
+        <item quantity="one">%1$d Buchung gespeichert</item>
+        <item quantity="other">%1$d Buchungen gespeichert</item>
+    </plurals>
 </resources>

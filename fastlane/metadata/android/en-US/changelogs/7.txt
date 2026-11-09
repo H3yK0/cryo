@@ -1,0 +1,1 @@
+Voice understood on your phone, with Whisper built into the app and no internet: words appear while you speak, with an echo animation. Several entries in one sentence ("lunch 30 and uber 15"), spoken corrections, and it knows your account and card names. The audio is erased right away. New permission: microphone. The app is bigger (~65 MB) because of the voice model.

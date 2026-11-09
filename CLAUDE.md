@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **07/11/2026**.
+Situação descrita aqui: **09/11/2026**.
 
 ---
 
@@ -49,6 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
+| 1.6 | 7 | **Pronta para o teste do Hanry** (09/11/2026), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
 | 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
@@ -113,6 +114,18 @@ código anterior. Todos os testes passam.
 - **500 testes de garantia** (RF-MOT-15): estabilidade, escalabilidade, desempenho, economia de recursos e segurança, 100 cada.
 - Imagens da loja e do guia visual refeitas. Banco de dados continua na versão 3 (sem migração nova).
 
+### O que a 1.6 traz (branch `versao-1.6`, a partir da 1.5)
+
+- **Voz no aparelho** (RF-VOZ, PRD 6.2a): o Whisper (whisper.cpp v1.9.5, MIT, cópia em `app/src/main/cpp/whisper/`) compilado
+  pelo NDK numa biblioteca só (`libcryo_whisper.so`, 1,6 MB, só arm64 com fp16+dotprod; nos outros, uma biblioteca vazia) e o
+  modelo "base" q5_1 (57 MB) em `assets/whisper/`, lido direto do APK. O áudio só passa pela memória.
+- **Tela de eco** (`ui/tx/VoiceSheet.kt`): o protótipo aprovado virou a tela de verdade (palavras ao vivo, anéis por sílaba,
+  cartõezinhos com mola). Microfone pedido com explicação (`MicPermissionSheet`).
+- **Português falado** (`domain/Spoken.kt`): números por extenso, "18 e 90" = 18,90, correções ("32, não, 35"), apelidos
+  ("roxinho"), vários lançamentos numa fala, frases que o Whisper inventa no silêncio descartadas.
+- Escolha do ouvido em Ajustes (Whisper ou o reconhecedor do celular só no aparelho); sem nenhum dos dois, a tela de voz do sistema.
+- Permissão nova `RECORD_AUDIO`. APK de ~6 MB para ~65 MB. Banco de dados continua na versão 3.
+
 ### Próximos passos imediatos
 
 1. **1.5**: guardada para lançar por volta de 07/12/2026 (pedido do Hanry). Se esta sessão não existir mais, recuperar o código do
@@ -123,12 +136,11 @@ código anterior. Todos os testes passam.
    aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
 3. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-5. **1.6** (branch `versao-1.6`, a partir da 1.5): **voz no aparelho**, proposta no PRD (RF-VOZ, seção 6.2a) esperando a
-   aprovação do Hanry. Ele usa um Galaxy A55 com Google e aceita o Whisper dentro do app se nada sair do celular; quer uma
-   animação de eco (protótipo em `VoicePrototypeTest`, quadros com `-PtourGif=true`). Atenção: nesta nuvem, compilar e rodar o
-   whisper.cpp baixado do GitHub foi bloqueado pelo controle de permissões ("código de fora"); o Hanry precisa liberar para a
-   compilação nativa (NDK r27c já instalado aqui) e os testes do Whisper no computador. Widgets, notificações especiais e sons:
-   detalhar depois.
+5. **1.6** (branch `versao-1.6`): pronta para o Hanry testar no Galaxy A55 (APK entregue em 09/11/2026). Conferir com ele:
+   acerto em português com a voz dele, tempo do fim da fala até o resultado (RF-VOZ-03, meta < 1,5 s), calor/bateria. Se o
+   Whisper ficar lento, dá para trocar o resultado final para a janela curta (como o ao vivo) ou usar o modelo "tiny".
+   **No lançamento**: a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em
+   `docs/fdroid/1.6-receita.md`). Widgets, notificações especiais e sons: detalhar depois.
 
 ---
 
@@ -136,7 +148,8 @@ código anterior. Todos os testes passam.
 
 **Privacidade**
 - O app **não tem permissão de INTERNET** e não pode ganhar. Nada de bibliotecas de analytics, anúncios, crash reporting
-  online ou qualquer coisa que fale com servidores. Permissões atuais: `POST_NOTIFICATIONS` e `USE_BIOMETRIC`, só.
+  online ou qualquer coisa que fale com servidores. Permissões atuais: `POST_NOTIFICATIONS`, `USE_BIOMETRIC` e (1.6)
+  `RECORD_AUDIO`, só. O áudio da voz nunca vira arquivo e é apagado da memória ao terminar (RF-VOZ-02).
 - Dados ficam só no aparelho. Nuvem só pelo seletor de arquivos do Android (o app da nuvem é quem envia).
 - `android:allowBackup="false"`; `data_extraction_rules.xml` só permite transferência direta entre aparelhos e exclui as
   permissões do backup automático e tudo do modo de teste.
@@ -193,6 +206,7 @@ Requisitos: **JDK 21** (o mesmo do F-Droid) e Android SDK com a plataforma 36. G
 ./gradlew testDebugUnitTest --tests '*StatementImportTest'     # um conjunto só
 ./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true   # imagens da loja e dos READMEs, nas 10 línguas
 ./gradlew testDebugUnitTest --tests '*TourTest' -PtourGif=true   # quadros das animações do passeio (app/screenshots/passeio_gif/), para montar GIFs
+app/src/test/cpp/build-host.sh && ./gradlew testDebugUnitTest --tests '*WhisperHostTest' -PwhisperHost=true   # a ponte do Whisper com o modelo de verdade, no computador
 ```
 
 - Os testes de tela salvam imagens em `app/screenshots/` (fora do git). É assim que se confere o visual sem celular.
@@ -216,11 +230,17 @@ app/src/main/java/io/github/h3yk0/cryo/
 │                       engine/ (o motor financeiro: Engine.kt junta tudo; Stats, Recurrences, Outlook, Projection,
 │                       Signals, Health, Wealth, CategoryModel, TxKey)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
+├── voice/            Voz no aparelho (1.6): WhisperNative (JNI), WhisperEngine, Listener (WhisperListener e o medidor de
+│                       volume/sílabas), SystemListener (plano B), AudioInput/MicInput, VoiceSettings e VoicePrompt
 ├── notify/             Lembretes de contas e parcelas (diário, ~9h) e worker do backup automático (a cada 6h), via WorkManager
 └── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento,
                         Depth.kt = profundidade e vibração), screens/ (telas; Tour.kt = passeio), tx/ (lançamento),
                         theme/ (Theme.kt: cores, CryoTheme.colors, CryoTheme.depth)
 ```
+
+Código nativo (1.6): `app/src/main/cpp/` = `CMakeLists.txt` (opções da compilação reproduzível), `cryo_whisper.cpp` (a ponte
+JNI), `cryo_whisper_stub.cpp` (32 bits e x86) e `whisper/` (cópia do whisper.cpp v1.9.5; única mudança: o commit do ggml vem
+do Cryo, não do git). O modelo fica em `app/src/main/assets/whisper/ggml-base-q5_1.bin` (SHA-256 `422f1ae4…8898`).
 
 **Como os dados andam**
 1. `AppContainer` (em `CryoApp.kt`) cria o banco Room, o `FinanceRepository`, os ajustes (DataStore), o backup e o modo desenvolvedor.
@@ -282,7 +302,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Área | Arquivos principais |
 |---|---|
 | Início (saldo, patrimônio, resumo do mês, alertas, previsão) | `ui/screens/HomeScreen.kt` |
-| Registro rápido por frase/voz | `ui/tx/QuickEntry.kt`, `domain/PhraseParser.kt` (voz = `RecognizerIntent` do próprio celular) |
+| Registro rápido por frase/voz | `ui/tx/QuickEntry.kt`, `domain/PhraseParser.kt`; voz (1.6): `ui/tx/VoiceSheet.kt`, `voice/`, `domain/Spoken.kt`, `src/main/cpp/` |
 | Lançamento completo | `ui/tx/TxEditorScreen.kt`, `ui/tx/TxForm.kt` |
 | Extrato (movimentações) | `ui/screens/TransactionsScreen.kt` |
 | Planejar: orçamentos, contas fixas, metas | `ui/screens/PlanScreens.kt` |
@@ -321,6 +341,8 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `MotionTest` | Saldo que conta até o valor exato; "Remover animações" mostra o final |
 | `StoreScreenshotsTest`, `StoreAssetsTest` | Imagens da loja e dos READMEs nas 10 línguas; ícone e banner (só com `-PstoreAssets=true`) |
 | `EngineTest` | Motor: um teste por requisito RF-MOT, inclusive o **teste contra o passado** (backtest) da previsão; dados de `EngineFixtures` (`Personas`) |
+| `SpokenTest`, `VoiceListenerTest`, `VoiceFlowTest` | Voz (1.6): português falado; a escuta com microfone e Whisper falsos (início, fim, cancelar, nada ouvido); a tela de eco (imagens 58–62) |
+| `WhisperHostTest` | A ponte JNI e o modelo de verdade, compilados para o computador (só com `-PwhisperHost=true`, depois de `app/src/test/cpp/build-host.sh`) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -331,7 +353,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz.
 - Animações: o ambiente de teste do Compose **ignora a escala de animação do sistema** (por isso `animationsOn()` lê
   `Settings.Global.ANIMATOR_DURATION_SCALE` sozinho). Com `mainClock.autoAdvance = false`, mudar um estado de fora pede
   `rule.runOnUiThread { ...; Snapshot.sendApplyNotifications() }`. Animações finitas terminam antes das imagens (inclusive no
@@ -352,6 +374,13 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   é testado no Robolectric. `java.lang.management` não está na biblioteca do Android que compila os testes: use reflexão.
 - PBKDF2 com 310 mil voltas leva ~0,3 s na JVM e ~1 s no celular: nos testes, passe menos voltas (`iterations = 1_000`).
 - Imagens das telas do motor: sem `EngineRunner.inline = true` no `@Before`, a primeira composição sai sem o resultado do motor.
+- **Compilação nativa** (1.6): precisa de `ANDROID_HOME` (o Gradle não acha o SDK sem ele aqui), do NDK `27.2.12479018` e do
+  CMake `3.22.1` do SDK (`sdkmanager "cmake;3.22.1"`). A primeira compilação do Whisper leva ~3 min.
+- **Whisper e silêncio**: com áudio vazio ele inventa frases ("O que é isso", "Legendas pela comunidade Amara.org"). Por isso
+  ele só é chamado depois de voz de verdade, áudio sem energia nem chega a ele e `Spoken.clean` descarta essas frases.
+- **Janela curta do Whisper** (`audio_ctx`): bem mais rápida, mas às vezes entra em repetição. Só nas palavras ao vivo (com
+  limite de 48 pedaços); o resultado final usa a janela inteira.
+- **Microfone falso nos testes**: o `FakeMic` despeja o áudio na hora; para testar "Pronto" e "Cancelar" use `paced = true`.
 - Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos). Um init script local em
   `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google resolve; ele fica fora do projeto e não muda o APK.
 
@@ -392,6 +421,7 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
+- **1.6** (pronta em 09/11/2026, aguardando o teste do Hanry): voz no aparelho com o Whisper e a animação de eco.
 - **1.5** (pronta em 07/11/2026, aguardando o teste do Hanry): ícone novo G4 (C dourado com volume), profundidade em todo o app,
   motor financeiro no aparelho, backup com senha e proteção dos dados, 500 testes de garantia.
 
@@ -451,6 +481,16 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
   complicaria a compilação reproduzível. Faz sentido se um dia houver Cryo para computador ou iPhone: um motor só para todos.
 - **1.5 unida**: o Hanry gostou da 1.5 (ícone e profundidade) e pediu o motor; como ela não tinha sido publicada, saiu tudo junto
   como 1.5 (versionCode 6). Widgets, notificações especiais e sons ficaram para a 1.6.
+- **Voz com o Whisper e regras, sem modelo de linguagem** (1.6): o ouvido (voz → texto) é IA local; o cérebro (texto →
+  lançamento) continua com regras exatas e testáveis. Modelos de conversa locais pesam de 300 MB a 1 GB, demoram e podem
+  inventar números. Modelo "base" q5_1 (57 MB): o "tiny" erra mais em português e o "small" pesa 190 MB.
+- **Um app só, não um Cryo por língua** (análise pedida pelo Hanry, 09/11/2026): o modelo multilíngue tem o mesmo tamanho para
+  qualquer língua e não há modelo oficial menor só de português; 10 apps dividiriam pessoas, backups e atualizações.
+- **Whisper só em arm64 com fp16+dotprod**: compilar uma versão só deixa a biblioteca com 1,6 MB; celulares sem essas instruções
+  (anteriores a ~2018) seriam lentos demais para o Whisper e usam o reconhecedor do celular. A conferência é feita lendo o
+  `/proc/cpuinfo` **antes** de carregar a biblioteca (carregar num processador sem elas derrubaria o app).
+- **Bibliotecas vazias** para armeabi-v7a, x86 e x86_64: um APK com biblioteca nativa só instala nos processadores que têm
+  versão dela.
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 
@@ -474,7 +514,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
 2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta e guardada; lançamento por volta de 07/12/2026.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. **1.6**: **voz melhor e no aparelho** (prioridade do Hanry); depois widgets na tela inicial, notificações especiais (popups) e
+4. **1.6**: **voz melhor e no aparelho** (feita, em teste com o Hanry); depois widgets na tela inicial, notificações especiais (popups) e
    sons personalizados. Detalhar com o Hanry antes de começar.
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
