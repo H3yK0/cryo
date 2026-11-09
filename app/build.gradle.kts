@@ -91,6 +91,8 @@ android {
             it.systemProperty("cryo.storeAssets", (project.findProperty("storeAssets") ?: "false").toString())
             // Quadros das animações do passeio, para montar GIFs: ./gradlew testDebugUnitTest --tests '*TourTest' -PtourGif=true
             it.systemProperty("cryo.tourGif", (project.findProperty("tourGif") ?: "false").toString())
+            // Quadros das figurinhas animadas das notificações (RF-ILU-04): -Pstickers=true, depois tools/stickers/make_stickers.sh
+            it.systemProperty("cryo.stickers", (project.findProperty("stickers") ?: "false").toString())
             // A ponte do Whisper compilada para o computador (app/src/test/cpp/build-host.sh), com o modelo de verdade:
             // ./gradlew testDebugUnitTest --tests '*WhisperHostTest' -PwhisperHost=true
             if (project.findProperty("whisperHost") == "true") {

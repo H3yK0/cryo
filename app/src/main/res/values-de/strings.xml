@@ -348,7 +348,7 @@
     <string name="debt_valor_pago">Gezahlter Betrag</string>
     <string name="debt_desconto_divida_fica_quitada">Nachlass von %1$s: Die Schuld ist abgelöst und der Nachlass wird erfasst.</string>
     <string name="debt_voce_pagou_mais_que">Du hast %1$s mehr gezahlt als offen war: Die Differenz zählt als Zinsen oder Verzugsgebühr.</string>
-    <string name="debt_esse_pagamento_quita_divida">Diese Zahlung löst die Schuld ab. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">Diese Zahlung löst die Schuld ab.</string>
     <string name="debt_diferenca_foi">Die Differenz von %1$s war:</string>
     <string name="debt_sai_conta_mas_nao">Geht vom Konto ab, senkt aber nicht die Schuld</string>
     <string name="debt_juros_ou_multa_por">Zinsen oder Verzugsgebühr</string>
@@ -356,7 +356,7 @@
     <string name="debt_para_adiantar_divida">Um die Schuld früher abzuzahlen</string>
     <string name="debt_pago_com_conta">Bezahlt vom Konto</string>
     <string name="debt_pagamento_registrado">Zahlung erfasst</string>
-    <string name="debt_divida_quitada_parabens">Schuld abbezahlt. Glückwunsch! 🎉</string>
+    <string name="debt_divida_quitada_parabens">Schuld abbezahlt. Glückwunsch!</string>
     <string name="debt_registrar_pagamento">Zahlung erfassen</string>
     <string name="debt_quitar_divida">Schuld ablösen</string>
     <string name="debt_nome_para_divida">Gib der Schuld einen Namen</string>
@@ -495,7 +495,7 @@
     <string name="plan_mais_metas_arquivadas">und %1$s mehr in archivierten Sparzielen</string>
     <string name="plan_metas_arquivadas_2">Archivierte Sparziele (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">Sparziel archiviert. Es bleibt unter Archivierte Sparziele.</string>
-    <string name="plan_meta_alcancada">Sparziel erreicht! 🎉</string>
+    <string name="plan_meta_alcancada">Sparziel erreicht!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">Archiviert ohne zurückgelegtes Geld</string>
     <string name="plan_faltam">Noch %1$s</string>
     <string name="plan_retirar_2">Aus %1$s entnehmen</string>
@@ -1127,7 +1127,7 @@
     <string name="analytics_seu_maior_gasto_mes">Deine größte Ausgabe des Monats ist %1$s: %2$s der Summe.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s ist um %2$s gestiegen im Vergleich zum selben Zeitraum im Vormonat.</string>
     <string name="analytics_orcamento_ja_passou_limite">Das Budget %1$s liegt schon %2$s über der Grenze.</string>
-    <string name="analytics_voce_quitou_neste_mes">Du hast diesen Monat %1$s abbezahlt. Glückwunsch! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">Du hast diesen Monat %1$s abbezahlt. Glückwunsch!</string>
     <string name="analytics_voce_esta_guardando_que">Du legst %1$s von dem zurück, was diesen Monat reinkam. Weiter so!</string>
     <string name="analytics_sem_categoria">ohne Kategorie</string>
     <string name="analytics_categoria">Eine Kategorie</string>
@@ -1615,4 +1615,25 @@
         <item quantity="one">%1$d Buchung gespeichert</item>
         <item quantity="other">%1$d Buchungen gespeichert</item>
     </plurals>
+    <string name="goal_art_desc">Illustration: %1$s</string>
+    <string name="art_target">Zielscheibe</string>
+    <string name="art_house">Haus</string>
+    <string name="art_plane">Flugzeug</string>
+    <string name="art_car">Auto</string>
+    <string name="art_graduation">Abschluss</string>
+    <string name="art_ring">Ring</string>
+    <string name="art_shield">Notgroschen</string>
+    <string name="art_phone">Handy</string>
+    <string name="art_laptop">Laptop</string>
+    <string name="art_game">Videospiel</string>
+    <string name="art_beach">Strand</string>
+    <string name="art_baby">Baby</string>
+    <string name="art_pet">Haustier</string>
+    <string name="art_guitar">Gitarre</string>
+    <string name="art_moto">Motorrad</string>
+    <string name="art_savings">Sparschwein</string>
+    <string name="art_gift">Geschenk</string>
+    <string name="art_church">Kirche</string>
+    <string name="art_gym">Fitnessstudio</string>
+    <string name="art_books">Bücher</string>
 </resources>

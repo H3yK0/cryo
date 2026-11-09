@@ -348,7 +348,7 @@
     <string name="debt_valor_pago">Importe pagado</string>
     <string name="debt_desconto_divida_fica_quitada">Descuento de %1$s: la deuda queda saldada y el descuento queda registrado.</string>
     <string name="debt_voce_pagou_mais_que">Pagaste %1$s más de lo que falta: esa diferencia cuenta como intereses o recargo.</string>
-    <string name="debt_esse_pagamento_quita_divida">Este pago salda la deuda. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">Este pago salda la deuda.</string>
     <string name="debt_diferenca_foi">La diferencia de %1$s fue:</string>
     <string name="debt_sai_conta_mas_nao">Sale de la cuenta, pero no baja la deuda</string>
     <string name="debt_juros_ou_multa_por">Intereses o recargo por atraso</string>
@@ -356,7 +356,7 @@
     <string name="debt_para_adiantar_divida">Para adelantar la deuda</string>
     <string name="debt_pago_com_conta">Pagado con la cuenta</string>
     <string name="debt_pagamento_registrado">Pago registrado</string>
-    <string name="debt_divida_quitada_parabens">Deuda saldada. ¡Enhorabuena! 🎉</string>
+    <string name="debt_divida_quitada_parabens">Deuda saldada. ¡Enhorabuena!</string>
     <string name="debt_registrar_pagamento">Registrar pago</string>
     <string name="debt_quitar_divida">Saldar deuda</string>
     <string name="debt_nome_para_divida">Ponle un nombre a la deuda</string>
@@ -495,7 +495,7 @@
     <string name="plan_mais_metas_arquivadas">y %1$s más en metas archivadas</string>
     <string name="plan_metas_arquivadas_2">Metas archivadas (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">Meta archivada. Queda en Metas archivadas.</string>
-    <string name="plan_meta_alcancada">¡Meta alcanzada! 🎉</string>
+    <string name="plan_meta_alcancada">¡Meta alcanzada!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">Archivada sin dinero ahorrado</string>
     <string name="plan_faltam">Faltan %1$s</string>
     <string name="plan_retirar_2">Retirar de %1$s</string>
@@ -1127,7 +1127,7 @@
     <string name="analytics_seu_maior_gasto_mes">Tu mayor gasto del mes es %1$s: %2$s del total.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s subió %2$s respecto al mismo período del mes pasado.</string>
     <string name="analytics_orcamento_ja_passou_limite">El presupuesto de %1$s ya superó el límite en %2$s.</string>
-    <string name="analytics_voce_quitou_neste_mes">Saldaste %1$s este mes. ¡Enhorabuena! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">Saldaste %1$s este mes. ¡Enhorabuena!</string>
     <string name="analytics_voce_esta_guardando_que">Estás ahorrando el %1$s de lo que entró este mes. ¡Sigue así!</string>
     <string name="analytics_sem_categoria">sin categoría</string>
     <string name="analytics_categoria">Una categoría</string>
@@ -1615,4 +1615,25 @@
         <item quantity="one">%1$d movimiento guardado</item>
         <item quantity="other">%1$d movimientos guardados</item>
     </plurals>
+    <string name="goal_art_desc">Ilustración: %1$s</string>
+    <string name="art_target">diana</string>
+    <string name="art_house">casa</string>
+    <string name="art_plane">avión</string>
+    <string name="art_car">coche</string>
+    <string name="art_graduation">graduación</string>
+    <string name="art_ring">anillo</string>
+    <string name="art_shield">fondo de emergencia</string>
+    <string name="art_phone">móvil</string>
+    <string name="art_laptop">portátil</string>
+    <string name="art_game">videojuego</string>
+    <string name="art_beach">playa</string>
+    <string name="art_baby">bebé</string>
+    <string name="art_pet">mascota</string>
+    <string name="art_guitar">guitarra</string>
+    <string name="art_moto">moto</string>
+    <string name="art_savings">hucha</string>
+    <string name="art_gift">regalo</string>
+    <string name="art_church">iglesia</string>
+    <string name="art_gym">gimnasio</string>
+    <string name="art_books">libros</string>
 </resources>

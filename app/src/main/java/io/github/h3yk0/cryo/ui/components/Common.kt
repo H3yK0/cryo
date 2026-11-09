@@ -248,13 +248,10 @@ fun Color.lerpTo(other: Color, t: Float) = Color(
     alpha = alpha,
 )
 
+/** RF-ILU-03: a ilustração de uma meta (no lugar do emoji que existia até a 1.6). */
 @Composable
-fun EmojiBadge(emoji: String, color: Color, size: Dp = 40.dp) {
-    Box(
-        Modifier.size(size).clip(CircleShape).background(color.copy(alpha = 0.18f)),
-        contentAlignment = Alignment.Center,
-    ) { Text(emoji, style = MaterialTheme.typography.titleMedium) }
-}
+fun GoalBadge(goal: io.github.h3yk0.cryo.data.db.Goal, size: Dp = 40.dp) =
+    GoalImage(io.github.h3yk0.cryo.domain.GoalArt.forGoal(goal), Color(goal.color), size)
 
 /* ================================ Dinheiro ================================ */
 

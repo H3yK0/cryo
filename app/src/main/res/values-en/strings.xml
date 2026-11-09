@@ -348,7 +348,7 @@
     <string name="debt_valor_pago">Amount paid</string>
     <string name="debt_desconto_divida_fica_quitada">Discount of %1$s: the debt is paid off and the discount is recorded.</string>
     <string name="debt_voce_pagou_mais_que">You paid %1$s more than what\'s left: that difference counts as interest or a late fee.</string>
-    <string name="debt_esse_pagamento_quita_divida">This payment pays off the debt. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">This payment pays off the debt.</string>
     <string name="debt_diferenca_foi">The difference of %1$s was:</string>
     <string name="debt_sai_conta_mas_nao">Leaves the account, but doesn\'t lower the debt</string>
     <string name="debt_juros_ou_multa_por">Interest or late fee</string>
@@ -356,7 +356,7 @@
     <string name="debt_para_adiantar_divida">To pay the debt ahead</string>
     <string name="debt_pago_com_conta">Paid from account</string>
     <string name="debt_pagamento_registrado">Payment recorded</string>
-    <string name="debt_divida_quitada_parabens">Debt paid off. Congratulations! 🎉</string>
+    <string name="debt_divida_quitada_parabens">Debt paid off. Congratulations!</string>
     <string name="debt_registrar_pagamento">Record payment</string>
     <string name="debt_quitar_divida">Pay off debt</string>
     <string name="debt_nome_para_divida">Give the debt a name</string>
@@ -495,7 +495,7 @@
     <string name="plan_mais_metas_arquivadas">and %1$s more in archived goals</string>
     <string name="plan_metas_arquivadas_2">Archived goals (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">Goal archived. It stays in Archived goals.</string>
-    <string name="plan_meta_alcancada">Goal reached! 🎉</string>
+    <string name="plan_meta_alcancada">Goal reached!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">Archived with no money saved in it</string>
     <string name="plan_faltam">%1$s to go</string>
     <string name="plan_retirar_2">Take out of %1$s</string>
@@ -1127,7 +1127,7 @@
     <string name="analytics_seu_maior_gasto_mes">Your biggest spending this month is %1$s: %2$s of the total.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s went up %2$s compared with the same period last month.</string>
     <string name="analytics_orcamento_ja_passou_limite">The %1$s budget is already %2$s over the limit.</string>
-    <string name="analytics_voce_quitou_neste_mes">You paid off %1$s this month. Congratulations! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">You paid off %1$s this month. Congratulations!</string>
     <string name="analytics_voce_esta_guardando_que">You\'re saving %1$s of what came in this month. Keep it up!</string>
     <string name="analytics_sem_categoria">no category</string>
     <string name="analytics_categoria">A category</string>
@@ -1615,4 +1615,25 @@
         <item quantity="one">%1$d entry saved</item>
         <item quantity="other">%1$d entries saved</item>
     </plurals>
+    <string name="goal_art_desc">Illustration: %1$s</string>
+    <string name="art_target">target</string>
+    <string name="art_house">house</string>
+    <string name="art_plane">plane</string>
+    <string name="art_car">car</string>
+    <string name="art_graduation">graduation</string>
+    <string name="art_ring">ring</string>
+    <string name="art_shield">emergency fund</string>
+    <string name="art_phone">phone</string>
+    <string name="art_laptop">laptop</string>
+    <string name="art_game">video game</string>
+    <string name="art_beach">beach</string>
+    <string name="art_baby">baby</string>
+    <string name="art_pet">pet</string>
+    <string name="art_guitar">guitar</string>
+    <string name="art_moto">motorcycle</string>
+    <string name="art_savings">piggy bank</string>
+    <string name="art_gift">gift</string>
+    <string name="art_church">church</string>
+    <string name="art_gym">gym</string>
+    <string name="art_books">books</string>
 </resources>

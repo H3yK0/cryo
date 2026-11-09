@@ -337,7 +337,7 @@
     <string name="debt_valor_pago">实付金额</string>
     <string name="debt_desconto_divida_fica_quitada">减免 %1$s：债务已还清，减免也会记录下来。</string>
     <string name="debt_voce_pagou_mais_que">你多付了 %1$s：差额计为利息或罚息。</string>
-    <string name="debt_esse_pagamento_quita_divida">这笔还款会还清债务。🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">这笔还款会还清债务。</string>
     <string name="debt_diferenca_foi">差额 %1$s 是：</string>
     <string name="debt_sai_conta_mas_nao">从账户扣除，但不减少债务</string>
     <string name="debt_juros_ou_multa_por">逾期利息或罚息</string>
@@ -345,7 +345,7 @@
     <string name="debt_para_adiantar_divida">用于提前还款</string>
     <string name="debt_pago_com_conta">还款账户</string>
     <string name="debt_pagamento_registrado">已记录还款</string>
-    <string name="debt_divida_quitada_parabens">债务已还清。恭喜！🎉</string>
+    <string name="debt_divida_quitada_parabens">债务已还清。恭喜！</string>
     <string name="debt_registrar_pagamento">记录还款</string>
     <string name="debt_quitar_divida">还清债务</string>
     <string name="debt_nome_para_divida">给债务起个名字</string>
@@ -484,7 +484,7 @@
     <string name="plan_mais_metas_arquivadas">已归档目标中还有 %1$s</string>
     <string name="plan_metas_arquivadas_2">已归档目标（%1$s）</string>
     <string name="plan_meta_arquivada_ela_fica">已归档目标。它会留在“已归档目标”中。</string>
-    <string name="plan_meta_alcancada">目标达成！🎉</string>
+    <string name="plan_meta_alcancada">目标达成！</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">归档时没有存款</string>
     <string name="plan_faltam">还差 %1$s</string>
     <string name="plan_retirar_2">从 %1$s 取出</string>
@@ -1101,7 +1101,7 @@
     <string name="analytics_seu_maior_gasto_mes">本月最大的支出是%1$s，占总额的 %2$s。</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s 比上月同期增加了 %2$s。</string>
     <string name="analytics_orcamento_ja_passou_limite">%1$s 预算已超出上限 %2$s。</string>
-    <string name="analytics_voce_quitou_neste_mes">本月你还清了 %1$s。恭喜！🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">本月你还清了 %1$s。恭喜！</string>
     <string name="analytics_voce_esta_guardando_que">本月收入中你存下了 %1$s。继续保持！</string>
     <string name="analytics_sem_categoria">未分类</string>
     <string name="analytics_categoria">一个分类</string>
@@ -1584,4 +1584,25 @@
     <plurals name="voice_saved_many">
         <item quantity="other">已保存 %1$d 笔</item>
     </plurals>
+    <string name="goal_art_desc">插图：%1$s</string>
+    <string name="art_target">靶心</string>
+    <string name="art_house">房子</string>
+    <string name="art_plane">飞机</string>
+    <string name="art_car">汽车</string>
+    <string name="art_graduation">毕业</string>
+    <string name="art_ring">戒指</string>
+    <string name="art_shield">应急基金</string>
+    <string name="art_phone">手机</string>
+    <string name="art_laptop">笔记本电脑</string>
+    <string name="art_game">游戏机</string>
+    <string name="art_beach">海滩</string>
+    <string name="art_baby">宝宝</string>
+    <string name="art_pet">宠物</string>
+    <string name="art_guitar">吉他</string>
+    <string name="art_moto">摩托车</string>
+    <string name="art_savings">存钱罐</string>
+    <string name="art_gift">礼物</string>
+    <string name="art_church">教堂</string>
+    <string name="art_gym">健身</string>
+    <string name="art_books">书</string>
 </resources>

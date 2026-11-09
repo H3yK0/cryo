@@ -59,6 +59,21 @@ class PrdConformanceTest {
         assertTrue("CMake fixo", Regex("""version = "\d+\.\d+\.\d+"""").containsMatchIn(gradle))
     }
 
+    @Test fun nenhumEmojiDeTeclado() { // RF-ILU-01
+        // Emoji = símbolos coloridos do teclado (rostos, objetos, "festa"...) e o seletor que pede a versão colorida (FE0F).
+        // Setas e o "☰" (botão de menu de outros apps, citado num texto) não são emoji.
+        fun isEmoji(cp: Int) = cp in 0x1F000..0x1FAFF || cp == 0xFE0F || (cp in 0x2600..0x27BF && cp != 0x2630 && cp != 0x2713)
+        val files = File(app, "src/main/res").walkTopDown()
+            .filter { it.isFile && it.name == "strings.xml" }.toList() + kotlinFiles(main)
+        val found = files.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                val cps = line.codePoints().toArray()
+                if (cps.any(::isEmoji)) "${f.name}:${i + 1}" else null
+            }
+        }
+        assertEquals("Emoji no app (RF-ILU-01: use as ilustrações)", emptyList<String>(), found)
+    }
+
     @Test fun semExtratosNemChaveNoGit() { // RNF-PRIV-04, RNF-SEG-01
         val ignore = File(root, ".gitignore").readLines().map { it.trim() }
         assertTrue("keystore/ precisa estar no .gitignore", "keystore/" in ignore)

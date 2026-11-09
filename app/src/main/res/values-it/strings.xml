@@ -348,7 +348,7 @@
     <string name="debt_valor_pago">Importo pagato</string>
     <string name="debt_desconto_divida_fica_quitada">Sconto di %1$s: il debito è estinto e lo sconto resta registrato.</string>
     <string name="debt_voce_pagou_mais_que">Hai pagato %1$s più di quanto mancava: la differenza conta come interessi o mora.</string>
-    <string name="debt_esse_pagamento_quita_divida">Questo pagamento estingue il debito. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">Questo pagamento estingue il debito.</string>
     <string name="debt_diferenca_foi">La differenza di %1$s è stata:</string>
     <string name="debt_sai_conta_mas_nao">Esce dal conto, ma non riduce il debito</string>
     <string name="debt_juros_ou_multa_por">Interessi o mora per ritardo</string>
@@ -356,7 +356,7 @@
     <string name="debt_para_adiantar_divida">Per anticipare il debito</string>
     <string name="debt_pago_com_conta">Pagato con il conto</string>
     <string name="debt_pagamento_registrado">Pagamento registrato</string>
-    <string name="debt_divida_quitada_parabens">Debito estinto. Complimenti! 🎉</string>
+    <string name="debt_divida_quitada_parabens">Debito estinto. Complimenti!</string>
     <string name="debt_registrar_pagamento">Registra pagamento</string>
     <string name="debt_quitar_divida">Estingui debito</string>
     <string name="debt_nome_para_divida">Dai un nome al debito</string>
@@ -495,7 +495,7 @@
     <string name="plan_mais_metas_arquivadas">e altri %1$s negli obiettivi archiviati</string>
     <string name="plan_metas_arquivadas_2">Obiettivi archiviati (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">Obiettivo archiviato. Resta in Obiettivi archiviati.</string>
-    <string name="plan_meta_alcancada">Obiettivo raggiunto! 🎉</string>
+    <string name="plan_meta_alcancada">Obiettivo raggiunto!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">Archiviato senza soldi messi da parte</string>
     <string name="plan_faltam">Mancano %1$s</string>
     <string name="plan_retirar_2">Preleva da %1$s</string>
@@ -1127,7 +1127,7 @@
     <string name="analytics_seu_maior_gasto_mes">La tua spesa più grande del mese è %1$s: %2$s del totale.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s è salito del %2$s rispetto allo stesso periodo del mese scorso.</string>
     <string name="analytics_orcamento_ja_passou_limite">Il budget %1$s ha già superato il limite di %2$s.</string>
-    <string name="analytics_voce_quitou_neste_mes">Hai estinto %1$s questo mese. Complimenti! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">Hai estinto %1$s questo mese. Complimenti!</string>
     <string name="analytics_voce_esta_guardando_que">Stai mettendo da parte il %1$s di quello che è entrato questo mese. Continua così!</string>
     <string name="analytics_sem_categoria">senza categoria</string>
     <string name="analytics_categoria">Una categoria</string>
@@ -1615,4 +1615,25 @@
         <item quantity="one">%1$d movimento salvato</item>
         <item quantity="other">%1$d movimenti salvati</item>
     </plurals>
+    <string name="goal_art_desc">Illustrazione: %1$s</string>
+    <string name="art_target">bersaglio</string>
+    <string name="art_house">casa</string>
+    <string name="art_plane">aereo</string>
+    <string name="art_car">auto</string>
+    <string name="art_graduation">laurea</string>
+    <string name="art_ring">anello</string>
+    <string name="art_shield">fondo di emergenza</string>
+    <string name="art_phone">telefono</string>
+    <string name="art_laptop">portatile</string>
+    <string name="art_game">videogioco</string>
+    <string name="art_beach">spiaggia</string>
+    <string name="art_baby">bambino</string>
+    <string name="art_pet">animale</string>
+    <string name="art_guitar">chitarra</string>
+    <string name="art_moto">moto</string>
+    <string name="art_savings">salvadanaio</string>
+    <string name="art_gift">regalo</string>
+    <string name="art_church">chiesa</string>
+    <string name="art_gym">palestra</string>
+    <string name="art_books">libri</string>
 </resources>

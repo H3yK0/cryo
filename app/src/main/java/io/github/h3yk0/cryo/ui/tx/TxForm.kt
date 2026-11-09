@@ -330,7 +330,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                 FieldLabel(Res.s(R.string.tx_meta))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     l.activeGoals.forEach { g ->
-                        FilterChip(selected = d.goalId == g.id, onClick = { d.goalId = g.id }, label = { Text("${g.emoji} ${g.name}") })
+                        FilterChip(selected = d.goalId == g.id, onClick = { d.goalId = g.id }, label = { Text(g.name) }, leadingIcon = { io.github.h3yk0.cryo.ui.components.GoalBadge(g, 22.dp) })
                     }
                 }
                 if (l.activeGoals.isEmpty()) NoItemsText(Res.s(R.string.tx_crie_meta_aba_planejar))

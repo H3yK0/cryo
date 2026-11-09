@@ -98,7 +98,6 @@ import io.github.h3yk0.cryo.ui.components.CryoCard
 import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.DatePickerDialogField
-import io.github.h3yk0.cryo.ui.components.EmojiChooser
 import io.github.h3yk0.cryo.ui.components.EmptyState
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
@@ -678,7 +677,7 @@ private fun GoalCard(
     val ratio = saved.toFloat() / g.target.coerceAtLeast(1)
     FlatItem(onClick = onClick, faded = faded) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            io.github.h3yk0.cryo.ui.components.EmojiBadge(g.emoji, Color(g.color), 48.dp)
+            io.github.h3yk0.cryo.ui.components.GoalBadge(g, 48.dp)
             Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
                 Text(g.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
@@ -812,7 +811,7 @@ fun GoalEditorScreen(id: Long?) {
     val nav = LocalNav.current
     val existing = id?.let { l.goal[it] }
     var name by rememberSaveable { mutableStateOf(existing?.name ?: "") }
-    var emoji by rememberSaveable { mutableStateOf(existing?.emoji ?: "🎯") }
+    var art by rememberSaveable { mutableStateOf((existing?.let { io.github.h3yk0.cryo.domain.GoalArt.forGoal(it) } ?: io.github.h3yk0.cryo.domain.GoalArt.TARGET).key) }
     var target by rememberSaveable { mutableLongStateOf(existing?.target ?: 0L) }
     var deadline by rememberSaveable { mutableStateOf(existing?.deadline?.toEpochDay()) }
     var color by rememberSaveable { mutableIntStateOf(existing?.color ?: Palette.pick(l.s.goals.size + 8)) }
@@ -829,7 +828,7 @@ fun GoalEditorScreen(id: Long?) {
         canSave = name.isNotBlank() && target > 0,
         onSave = {
             val g = (existing ?: Goal(name = name, target = target, color = color)).copy(
-                name = name.trim(), emoji = emoji, target = target, color = color,
+                name = name.trim(), art = art, target = target, color = color,
                 deadline = deadline?.let { java.time.LocalDate.ofEpochDay(it) },
             )
             c.launch {
@@ -854,7 +853,7 @@ fun GoalEditorScreen(id: Long?) {
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
         )
         FieldLabel(Res.s(R.string.plan_icone))
-        EmojiChooser(DefaultData.goalEmojis, emoji) { emoji = it }
+        io.github.h3yk0.cryo.ui.components.GoalArtChooser(io.github.h3yk0.cryo.domain.GoalArt.of(art), Color(color)) { art = it.key }
         FieldLabel(Res.s(R.string.plan_quanto_quer_juntar))
         AmountField(target, { target = it }, label = Res.s(R.string.plan_valor_meta))
         FieldLabel(Res.s(R.string.plan_prazo_opcional))

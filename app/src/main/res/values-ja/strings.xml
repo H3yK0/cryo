@@ -337,7 +337,7 @@
     <string name="debt_valor_pago">払った金額</string>
     <string name="debt_desconto_divida_fica_quitada">%1$sの減額: 借入は完済となり、減額分も記録されます。</string>
     <string name="debt_voce_pagou_mais_que">残りより%1$s多く払いました。この差額は利息か延滞金になります。</string>
-    <string name="debt_esse_pagamento_quita_divida">この返済で完済です。🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">この返済で完済です。</string>
     <string name="debt_diferenca_foi">%1$sの差額は:</string>
     <string name="debt_sai_conta_mas_nao">口座からは出ますが、借入は減りません</string>
     <string name="debt_juros_ou_multa_por">利息・延滞金</string>
@@ -345,7 +345,7 @@
     <string name="debt_para_adiantar_divida">繰り上げ返済</string>
     <string name="debt_pago_com_conta">返済した口座</string>
     <string name="debt_pagamento_registrado">返済を記録しました</string>
-    <string name="debt_divida_quitada_parabens">完済しました。おめでとうございます！ 🎉</string>
+    <string name="debt_divida_quitada_parabens">完済しました。おめでとうございます！</string>
     <string name="debt_registrar_pagamento">返済を記録</string>
     <string name="debt_quitar_divida">借入を完済</string>
     <string name="debt_nome_para_divida">借入に名前をつけてください</string>
@@ -484,7 +484,7 @@
     <string name="plan_mais_metas_arquivadas">アーカイブした目標にほか%1$s</string>
     <string name="plan_metas_arquivadas_2">アーカイブした目標（%1$s）</string>
     <string name="plan_meta_arquivada_ela_fica">目標をアーカイブしました。「アーカイブした目標」に残ります。</string>
-    <string name="plan_meta_alcancada">目標達成！ 🎉</string>
+    <string name="plan_meta_alcancada">目標達成！</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">貯金なしでアーカイブ</string>
     <string name="plan_faltam">あと%1$s</string>
     <string name="plan_retirar_2">%1$sから取り出す</string>
@@ -1101,7 +1101,7 @@
     <string name="analytics_seu_maior_gasto_mes">今月いちばん多い支出は%1$sで、全体の%2$sです。</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$sは先月の同じ時期より%2$s増えています。</string>
     <string name="analytics_orcamento_ja_passou_limite">%1$sの予算はすでに上限を%2$s超えています。</string>
-    <string name="analytics_voce_quitou_neste_mes">今月%1$sを完済しました。おめでとうございます！ 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">今月%1$sを完済しました。おめでとうございます！</string>
     <string name="analytics_voce_esta_guardando_que">今月の収入の%1$sを貯めています。この調子です！</string>
     <string name="analytics_sem_categoria">カテゴリなし</string>
     <string name="analytics_categoria">カテゴリ</string>
@@ -1584,4 +1584,25 @@
     <plurals name="voice_saved_many">
         <item quantity="other">%1$d件を保存しました</item>
     </plurals>
+    <string name="goal_art_desc">イラスト：%1$s</string>
+    <string name="art_target">的</string>
+    <string name="art_house">家</string>
+    <string name="art_plane">飛行機</string>
+    <string name="art_car">車</string>
+    <string name="art_graduation">卒業</string>
+    <string name="art_ring">指輪</string>
+    <string name="art_shield">緊急資金</string>
+    <string name="art_phone">スマホ</string>
+    <string name="art_laptop">ノートPC</string>
+    <string name="art_game">ゲーム</string>
+    <string name="art_beach">ビーチ</string>
+    <string name="art_baby">赤ちゃん</string>
+    <string name="art_pet">ペット</string>
+    <string name="art_guitar">ギター</string>
+    <string name="art_moto">バイク</string>
+    <string name="art_savings">貯金箱</string>
+    <string name="art_gift">プレゼント</string>
+    <string name="art_church">教会</string>
+    <string name="art_gym">ジム</string>
+    <string name="art_books">本</string>
 </resources>

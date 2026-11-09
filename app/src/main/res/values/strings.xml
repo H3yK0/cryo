@@ -365,7 +365,7 @@
     <string name="debt_valor_pago">Valor pago</string>
     <string name="debt_desconto_divida_fica_quitada">Desconto de %1$s: a dívida fica quitada e o desconto fica registrado.</string>
     <string name="debt_voce_pagou_mais_que">Você pagou %1$s a mais do que falta: essa diferença conta como juros ou multa.</string>
-    <string name="debt_esse_pagamento_quita_divida">Esse pagamento quita a dívida. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">Esse pagamento quita a dívida.</string>
     <string name="debt_diferenca_foi">A diferença de %1$s foi:</string>
     <string name="debt_sai_conta_mas_nao">Sai da conta, mas não diminui a dívida</string>
     <string name="debt_juros_ou_multa_por">Juros ou multa por atraso</string>
@@ -373,7 +373,7 @@
     <string name="debt_para_adiantar_divida">Para adiantar a dívida</string>
     <string name="debt_pago_com_conta">Pago com a conta</string>
     <string name="debt_pagamento_registrado">Pagamento registrado</string>
-    <string name="debt_divida_quitada_parabens">Dívida quitada. Parabéns! 🎉</string>
+    <string name="debt_divida_quitada_parabens">Dívida quitada. Parabéns!</string>
     <string name="debt_registrar_pagamento">Registrar pagamento</string>
     <string name="debt_quitar_divida">Quitar dívida</string>
     <string name="debt_nome_para_divida">Dê um nome para a dívida</string>
@@ -518,7 +518,7 @@
     <string name="plan_mais_metas_arquivadas">e mais %1$s em metas arquivadas</string>
     <string name="plan_metas_arquivadas_2">Metas arquivadas (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">Meta arquivada. Ela fica em Metas arquivadas.</string>
-    <string name="plan_meta_alcancada">Meta alcançada! 🎉</string>
+    <string name="plan_meta_alcancada">Meta alcançada!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">Arquivada sem dinheiro guardado nela</string>
     <string name="plan_faltam">Faltam %1$s</string>
     <string name="plan_retirar_2">Retirar de %1$s</string>
@@ -1210,7 +1210,7 @@
     <string name="analytics_seu_maior_gasto_mes">Seu maior gasto do mês é %1$s: %2$s do total.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s subiu %2$s em relação ao mesmo período do mês passado.</string>
     <string name="analytics_orcamento_ja_passou_limite">O orçamento de %1$s já passou do limite em %2$s.</string>
-    <string name="analytics_voce_quitou_neste_mes">Você quitou %1$s neste mês. Parabéns! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">Você quitou %1$s neste mês. Parabéns!</string>
     <string name="analytics_voce_esta_guardando_que">Você está guardando %1$s do que entrou neste mês. Continue assim!</string>
 
     <!-- Analytics.kt -->
@@ -1740,4 +1740,25 @@
         <item quantity="one">%1$d lançamento salvo</item>
         <item quantity="other">%1$d lançamentos salvos</item>
     </plurals>
+    <string name="goal_art_desc">Ilustração: %1$s</string>
+    <string name="art_target">alvo</string>
+    <string name="art_house">casa</string>
+    <string name="art_plane">avião</string>
+    <string name="art_car">carro</string>
+    <string name="art_graduation">formatura</string>
+    <string name="art_ring">aliança</string>
+    <string name="art_shield">reserva de emergência</string>
+    <string name="art_phone">celular</string>
+    <string name="art_laptop">notebook</string>
+    <string name="art_game">videogame</string>
+    <string name="art_beach">praia</string>
+    <string name="art_baby">bebê</string>
+    <string name="art_pet">pet</string>
+    <string name="art_guitar">violão</string>
+    <string name="art_moto">moto</string>
+    <string name="art_savings">cofrinho</string>
+    <string name="art_gift">presente</string>
+    <string name="art_church">igreja</string>
+    <string name="art_gym">academia</string>
+    <string name="art_books">livros</string>
 </resources>

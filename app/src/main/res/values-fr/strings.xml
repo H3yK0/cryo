@@ -348,7 +348,7 @@
     <string name="debt_valor_pago">Montant payé</string>
     <string name="debt_desconto_divida_fica_quitada">Remise de %1$s : la dette est soldée et la remise est enregistrée.</string>
     <string name="debt_voce_pagou_mais_que">Vous avez payé %1$s de plus que ce qu\'il restait : cette différence compte comme intérêts ou pénalité.</string>
-    <string name="debt_esse_pagamento_quita_divida">Ce paiement solde la dette. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">Ce paiement solde la dette.</string>
     <string name="debt_diferenca_foi">La différence de %1$s était :</string>
     <string name="debt_sai_conta_mas_nao">Sort du compte, mais ne réduit pas la dette</string>
     <string name="debt_juros_ou_multa_por">Intérêts ou pénalité de retard</string>
@@ -356,7 +356,7 @@
     <string name="debt_para_adiantar_divida">Pour rembourser en avance</string>
     <string name="debt_pago_com_conta">Payé avec le compte</string>
     <string name="debt_pagamento_registrado">Paiement enregistré</string>
-    <string name="debt_divida_quitada_parabens">Dette remboursée. Félicitations ! 🎉</string>
+    <string name="debt_divida_quitada_parabens">Dette remboursée. Félicitations !</string>
     <string name="debt_registrar_pagamento">Enregistrer un paiement</string>
     <string name="debt_quitar_divida">Solder la dette</string>
     <string name="debt_nome_para_divida">Donnez un nom à la dette</string>
@@ -495,7 +495,7 @@
     <string name="plan_mais_metas_arquivadas">et %1$s de plus dans les objectifs archivés</string>
     <string name="plan_metas_arquivadas_2">Objectifs archivés (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">Objectif archivé. Il reste dans Objectifs archivés.</string>
-    <string name="plan_meta_alcancada">Objectif atteint ! 🎉</string>
+    <string name="plan_meta_alcancada">Objectif atteint !</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">Archivé sans argent mis de côté</string>
     <string name="plan_faltam">Reste %1$s</string>
     <string name="plan_retirar_2">Retirer de %1$s</string>
@@ -1127,7 +1127,7 @@
     <string name="analytics_seu_maior_gasto_mes">Votre plus grosse dépense du mois est %1$s : %2$s du total.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s a augmenté de %2$s par rapport à la même période du mois dernier.</string>
     <string name="analytics_orcamento_ja_passou_limite">Le budget %1$s a déjà dépassé la limite de %2$s.</string>
-    <string name="analytics_voce_quitou_neste_mes">Vous avez remboursé %1$s ce mois-ci. Félicitations ! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">Vous avez remboursé %1$s ce mois-ci. Félicitations !</string>
     <string name="analytics_voce_esta_guardando_que">Vous mettez de côté %1$s de ce qui est entré ce mois-ci. Continuez comme ça !</string>
     <string name="analytics_sem_categoria">sans catégorie</string>
     <string name="analytics_categoria">Une catégorie</string>
@@ -1615,4 +1615,25 @@
         <item quantity="one">%1$d opération enregistrée</item>
         <item quantity="other">%1$d opérations enregistrées</item>
     </plurals>
+    <string name="goal_art_desc">Illustration : %1$s</string>
+    <string name="art_target">cible</string>
+    <string name="art_house">maison</string>
+    <string name="art_plane">avion</string>
+    <string name="art_car">voiture</string>
+    <string name="art_graduation">diplôme</string>
+    <string name="art_ring">bague</string>
+    <string name="art_shield">épargne de précaution</string>
+    <string name="art_phone">téléphone</string>
+    <string name="art_laptop">ordinateur portable</string>
+    <string name="art_game">jeu vidéo</string>
+    <string name="art_beach">plage</string>
+    <string name="art_baby">bébé</string>
+    <string name="art_pet">animal</string>
+    <string name="art_guitar">guitare</string>
+    <string name="art_moto">moto</string>
+    <string name="art_savings">tirelire</string>
+    <string name="art_gift">cadeau</string>
+    <string name="art_church">église</string>
+    <string name="art_gym">salle de sport</string>
+    <string name="art_books">livres</string>
 </resources>

@@ -347,21 +347,48 @@ fun IconChooser(options: List<Pair<String, String>>, selected: String, color: Co
     }
 }
 
+/** RF-ILU-03: escolher a ilustração da meta (no azulejo da cor escolhida); a escolhida ganha um aro. */
 @Composable
-fun EmojiChooser(options: List<String>, selected: String, onSelect: (String) -> Unit) {
+fun GoalArtChooser(selected: io.github.h3yk0.cryo.domain.GoalArt, color: Color, onSelect: (io.github.h3yk0.cryo.domain.GoalArt) -> Unit) {
     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        options.forEach { e ->
-            val sel = e == selected
+        io.github.h3yk0.cryo.domain.GoalArt.entries.forEach { a ->
+            val sel = a == selected
+            val desc = Res.s(R.string.goal_art_desc, Res.s(goalArtName(a)))
             Box(
                 Modifier
-                    .size(46.dp)
-                    .clip(CircleShape)
-                    .background(if (sel) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh)
-                    .selectable(selected = sel, role = Role.RadioButton, onClick = { onSelect(e) }),
+                    .size(52.dp)
+                    .clip(androidx.compose.foundation.shape.RoundedCornerShape(16.dp))
+                    .background(if (sel) MaterialTheme.colorScheme.primaryContainer else Color.Transparent)
+                    .selectable(selected = sel, role = Role.RadioButton, onClick = { onSelect(a) })
+                    .padding(4.dp),
                 contentAlignment = Alignment.Center,
-            ) { Text(e, style = MaterialTheme.typography.titleLarge) }
+            ) { GoalImage(a, color, 44.dp, description = desc) }
         }
     }
+}
+
+/** O nome de cada ilustração de meta, para o leitor de tela (ACS-01). */
+fun goalArtName(a: io.github.h3yk0.cryo.domain.GoalArt): Int = when (a) {
+    io.github.h3yk0.cryo.domain.GoalArt.TARGET -> R.string.art_target
+    io.github.h3yk0.cryo.domain.GoalArt.HOUSE -> R.string.art_house
+    io.github.h3yk0.cryo.domain.GoalArt.PLANE -> R.string.art_plane
+    io.github.h3yk0.cryo.domain.GoalArt.CAR -> R.string.art_car
+    io.github.h3yk0.cryo.domain.GoalArt.GRADUATION -> R.string.art_graduation
+    io.github.h3yk0.cryo.domain.GoalArt.RING -> R.string.art_ring
+    io.github.h3yk0.cryo.domain.GoalArt.SHIELD -> R.string.art_shield
+    io.github.h3yk0.cryo.domain.GoalArt.PHONE -> R.string.art_phone
+    io.github.h3yk0.cryo.domain.GoalArt.LAPTOP -> R.string.art_laptop
+    io.github.h3yk0.cryo.domain.GoalArt.GAME -> R.string.art_game
+    io.github.h3yk0.cryo.domain.GoalArt.BEACH -> R.string.art_beach
+    io.github.h3yk0.cryo.domain.GoalArt.BABY -> R.string.art_baby
+    io.github.h3yk0.cryo.domain.GoalArt.PET -> R.string.art_pet
+    io.github.h3yk0.cryo.domain.GoalArt.GUITAR -> R.string.art_guitar
+    io.github.h3yk0.cryo.domain.GoalArt.MOTO -> R.string.art_moto
+    io.github.h3yk0.cryo.domain.GoalArt.SAVINGS -> R.string.art_savings
+    io.github.h3yk0.cryo.domain.GoalArt.GIFT -> R.string.art_gift
+    io.github.h3yk0.cryo.domain.GoalArt.CHURCH -> R.string.art_church
+    io.github.h3yk0.cryo.domain.GoalArt.GYM -> R.string.art_gym
+    io.github.h3yk0.cryo.domain.GoalArt.BOOKS -> R.string.art_books
 }
 
 /** Número com botões − e + (dia do mês, parcelas...). */

@@ -77,5 +77,4 @@ object DefaultData {
         "money" to Res.s(R.string.icon_money), "star" to Res.s(R.string.icon_star), "more" to Res.s(R.string.icon_more),
     )
 
-    val goalEmojis = listOf("🎯", "🏠", "✈️", "🚗", "🎓", "💍", "🛡️", "📱", "💻", "🎮", "🏖️", "👶", "🐶", "🎸", "🏍️", "💰", "🎁", "⛪", "🏋️", "📚")
 }

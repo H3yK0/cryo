@@ -348,7 +348,7 @@
     <string name="debt_valor_pago">चुकाई गई रकम</string>
     <string name="debt_desconto_divida_fica_quitada">%1$s की छूट: कर्ज़ पूरा हो जाता है और छूट दर्ज रहती है।</string>
     <string name="debt_voce_pagou_mais_que">आपने बाकी से %1$s ज़्यादा चुकाए: यह फ़र्क ब्याज या जुर्माना गिना जाता है।</string>
-    <string name="debt_esse_pagamento_quita_divida">इस भुगतान से कर्ज़ पूरा चुक जाता है। 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">इस भुगतान से कर्ज़ पूरा चुक जाता है।</string>
     <string name="debt_diferenca_foi">%1$s का फ़र्क था:</string>
     <string name="debt_sai_conta_mas_nao">खाते से जाता है, पर कर्ज़ नहीं घटता</string>
     <string name="debt_juros_ou_multa_por">देरी का ब्याज या जुर्माना</string>
@@ -356,7 +356,7 @@
     <string name="debt_para_adiantar_divida">कर्ज़ जल्दी चुकाने के लिए</string>
     <string name="debt_pago_com_conta">किस खाते से चुकाया</string>
     <string name="debt_pagamento_registrado">भुगतान दर्ज हुआ</string>
-    <string name="debt_divida_quitada_parabens">कर्ज़ चुका दिया। बधाई हो! 🎉</string>
+    <string name="debt_divida_quitada_parabens">कर्ज़ चुका दिया। बधाई हो!</string>
     <string name="debt_registrar_pagamento">भुगतान दर्ज करें</string>
     <string name="debt_quitar_divida">कर्ज़ पूरा चुकाएँ</string>
     <string name="debt_nome_para_divida">कर्ज़ को एक नाम दें</string>
@@ -495,7 +495,7 @@
     <string name="plan_mais_metas_arquivadas">और %1$s आर्काइव लक्ष्यों में</string>
     <string name="plan_metas_arquivadas_2">आर्काइव लक्ष्य (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">लक्ष्य आर्काइव हुआ। यह आर्काइव लक्ष्यों में रहेगा।</string>
-    <string name="plan_meta_alcancada">लक्ष्य पूरा! 🎉</string>
+    <string name="plan_meta_alcancada">लक्ष्य पूरा!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">बिना बचत के आर्काइव</string>
     <string name="plan_faltam">%1$s बाकी</string>
     <string name="plan_retirar_2">%1$s से निकालें</string>
@@ -1127,7 +1127,7 @@
     <string name="analytics_seu_maior_gasto_mes">इस महीने आपका सबसे बड़ा खर्च %1$s है: कुल का %2$s।</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s पिछले महीने की इसी अवधि से %2$s बढ़ा।</string>
     <string name="analytics_orcamento_ja_passou_limite">%1$s का बजट सीमा से %2$s ज़्यादा हो चुका है।</string>
-    <string name="analytics_voce_quitou_neste_mes">आपने इस महीने %1$s पूरा चुका दिया। बधाई हो! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">आपने इस महीने %1$s पूरा चुका दिया। बधाई हो!</string>
     <string name="analytics_voce_esta_guardando_que">इस महीने आई रकम का %1$s आप बचा रहे हैं। ऐसे ही जारी रखें!</string>
     <string name="analytics_sem_categoria">बिना श्रेणी</string>
     <string name="analytics_categoria">एक श्रेणी</string>
@@ -1615,4 +1615,25 @@
         <item quantity="one">%1$d लेन-देन सेव हुआ</item>
         <item quantity="other">%1$d लेन-देन सेव हुए</item>
     </plurals>
+    <string name="goal_art_desc">चित्र: %1$s</string>
+    <string name="art_target">निशाना</string>
+    <string name="art_house">घर</string>
+    <string name="art_plane">हवाई जहाज़</string>
+    <string name="art_car">कार</string>
+    <string name="art_graduation">दीक्षांत</string>
+    <string name="art_ring">अंगूठी</string>
+    <string name="art_shield">आपात कोष</string>
+    <string name="art_phone">फ़ोन</string>
+    <string name="art_laptop">लैपटॉप</string>
+    <string name="art_game">वीडियो गेम</string>
+    <string name="art_beach">समुद्र तट</string>
+    <string name="art_baby">बच्चा</string>
+    <string name="art_pet">पालतू</string>
+    <string name="art_guitar">गिटार</string>
+    <string name="art_moto">मोटरसाइकिल</string>
+    <string name="art_savings">गुल्लक</string>
+    <string name="art_gift">उपहार</string>
+    <string name="art_church">चर्च</string>
+    <string name="art_gym">जिम</string>
+    <string name="art_books">किताबें</string>
 </resources>

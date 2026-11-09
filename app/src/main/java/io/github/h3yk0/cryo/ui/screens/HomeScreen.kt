@@ -242,7 +242,7 @@ fun HomeScreen() {
                             if (i > 0) Spacer(Modifier.height(14.dp))
                             val saved = l.goalSaved(g.id)
                             ProgressLine(
-                                lead = { Text(g.emoji, style = MaterialTheme.typography.titleLarge) },
+                                lead = { io.github.h3yk0.cryo.ui.components.GoalBadge(g, 32.dp) },
                                 title = g.name, ratio = saved.toFloat() / g.target.coerceAtLeast(1),
                                 detail = stringResource(R.string.goal_progress, fmt(saved, hide), fmt(g.target, hide)), color = Color(g.color), warn = false,
                             )

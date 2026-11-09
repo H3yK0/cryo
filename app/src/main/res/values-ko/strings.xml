@@ -337,7 +337,7 @@
     <string name="debt_valor_pago">낸 금액</string>
     <string name="debt_desconto_divida_fica_quitada">%1$s 감면: 빚은 완납되고 감면액도 기록돼요.</string>
     <string name="debt_voce_pagou_mais_que">남은 금액보다 %1$s 더 냈어요. 이 차액은 이자나 연체료로 기록돼요.</string>
-    <string name="debt_esse_pagamento_quita_divida">이번 상환으로 다 갚아요. 🎉</string>
+    <string name="debt_esse_pagamento_quita_divida">이번 상환으로 다 갚아요.</string>
     <string name="debt_diferenca_foi">%1$s의 차액은:</string>
     <string name="debt_sai_conta_mas_nao">계좌에서 나가지만 빚은 줄지 않아요</string>
     <string name="debt_juros_ou_multa_por">연체 이자나 연체료</string>
@@ -345,7 +345,7 @@
     <string name="debt_para_adiantar_divida">중도 상환</string>
     <string name="debt_pago_com_conta">상환한 계좌</string>
     <string name="debt_pagamento_registrado">상환을 기록했어요</string>
-    <string name="debt_divida_quitada_parabens">빚을 다 갚았어요. 축하해요! 🎉</string>
+    <string name="debt_divida_quitada_parabens">빚을 다 갚았어요. 축하해요!</string>
     <string name="debt_registrar_pagamento">상환 기록</string>
     <string name="debt_quitar_divida">빚 완납</string>
     <string name="debt_nome_para_divida">빚 이름을 정해 주세요</string>
@@ -484,7 +484,7 @@
     <string name="plan_mais_metas_arquivadas">보관한 목표에 %1$s 더</string>
     <string name="plan_metas_arquivadas_2">보관한 목표 (%1$s)</string>
     <string name="plan_meta_arquivada_ela_fica">목표를 보관했어요. 보관한 목표에 남아요.</string>
-    <string name="plan_meta_alcancada">목표 달성! 🎉</string>
+    <string name="plan_meta_alcancada">목표 달성!</string>
     <string name="plan_arquivada_sem_dinheiro_guardado">모은 돈 없이 보관</string>
     <string name="plan_faltam">%1$s 남음</string>
     <string name="plan_retirar_2">%1$s에서 꺼내기</string>
@@ -1101,7 +1101,7 @@
     <string name="analytics_seu_maior_gasto_mes">이번 달 가장 큰 지출은 %1$s로, 전체의 %2$s예요.</string>
     <string name="analytics_subiu_relacao_ao_mesmo">%1$s 지출이 지난달 같은 기간보다 %2$s 늘었어요.</string>
     <string name="analytics_orcamento_ja_passou_limite">%1$s 예산이 이미 한도를 %2$s 넘었어요.</string>
-    <string name="analytics_voce_quitou_neste_mes">이번 달 %1$s을(를) 다 갚았어요. 축하해요! 🎉</string>
+    <string name="analytics_voce_quitou_neste_mes">이번 달 %1$s을(를) 다 갚았어요. 축하해요!</string>
     <string name="analytics_voce_esta_guardando_que">이번 달 들어온 돈의 %1$s를 모으고 있어요. 계속 이렇게 해요!</string>
     <string name="analytics_sem_categoria">카테고리 없음</string>
     <string name="analytics_categoria">카테고리</string>
@@ -1584,4 +1584,25 @@
     <plurals name="voice_saved_many">
         <item quantity="other">%1$d건 저장했어요</item>
     </plurals>
+    <string name="goal_art_desc">그림: %1$s</string>
+    <string name="art_target">과녁</string>
+    <string name="art_house">집</string>
+    <string name="art_plane">비행기</string>
+    <string name="art_car">자동차</string>
+    <string name="art_graduation">졸업</string>
+    <string name="art_ring">반지</string>
+    <string name="art_shield">비상금</string>
+    <string name="art_phone">휴대폰</string>
+    <string name="art_laptop">노트북</string>
+    <string name="art_game">게임</string>
+    <string name="art_beach">해변</string>
+    <string name="art_baby">아기</string>
+    <string name="art_pet">반려동물</string>
+    <string name="art_guitar">기타</string>
+    <string name="art_moto">오토바이</string>
+    <string name="art_savings">저금통</string>
+    <string name="art_gift">선물</string>
+    <string name="art_church">교회</string>
+    <string name="art_gym">헬스</string>
+    <string name="art_books">책</string>
 </resources>
