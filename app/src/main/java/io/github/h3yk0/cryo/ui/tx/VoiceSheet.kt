@@ -162,7 +162,8 @@ fun VoiceSheet(
     // RF-SOM: um "pode falar" curto quando o microfone abre e um "pronto" quando o texto chega.
     LaunchedEffect(ui.phase) {
         when (ui.phase) {
-            VoicePhase.LISTENING -> Sounds.play(context, Sound.VOICE_START)
+            // Só no Whisper (a escuta tira esse som da gravação); o reconhecedor do celular tem o seu próprio.
+            VoicePhase.LISTENING -> if (kind == VoiceEngineKind.WHISPER) Sounds.play(context, Sound.VOICE_START)
             VoicePhase.DONE -> if (ui.text.isNotBlank()) Sounds.play(context, Sound.VOICE_END)
             else -> Unit
         }

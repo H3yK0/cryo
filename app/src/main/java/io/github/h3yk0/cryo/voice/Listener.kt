@@ -121,7 +121,7 @@ internal class VoiceMeter {
 
 /**
  * RF-VOZ-03: a escuta com o Whisper. O microfone liga na hora (o modelo carrega ao mesmo tempo); as palavras aparecem
- * enquanto a pessoa fala (o áudio é relido a cada ~0,7 s); termina sozinha ~1 s depois que a fala para (RF-VOZ-13). Todo o tempo
+ * enquanto a pessoa fala (o áudio é relido a cada ~0,7 s); termina sozinha ~1,2 s depois que a fala para. Todo o tempo
  * é contado em áudio (amostras), não no relógio: o mesmo áudio dá sempre o mesmo resultado (e os testes são exatos).
  */
 class WhisperListener(
@@ -180,10 +180,11 @@ class WhisperListener(
                 val r = input.read(frame)
                 if (r <= 0) break
                 heard += r
-                for (k in 0 until r) if (n < audio.size) audio[n++] = frame[k] / 32768f
-                // O som de "pode falar" (RF-SOM, 0,18 s) sai pelo alto-falante e entra no microfone: nos primeiros 0,3 s
-                // nada conta como começo da fala.
-                val speech = meter.feed(VoiceMeter.db(frame, r)) && heard > EARCON
+                // O som de "pode falar" (RF-SOM, 0,18 s) sai pelo alto-falante e entra no microfone: os primeiros 0,3 s não
+                // vão para o Whisper (ele ouviria "bipe + fala" e erraria a primeira palavra) e não contam como começo da fala.
+                val earcon = heard <= EARCON
+                if (!earcon) for (k in 0 until r) if (n < audio.size) audio[n++] = frame[k] / 32768f
+                val speech = meter.feed(VoiceMeter.db(frame, r)) && !earcon
                 state.update { it.copy(level = meter.level, syllables = meter.syllables, strength = meter.strength) }
                 if (speech) { speechFrames++; silence = 0 } else if (started) silence += r
                 if (!started) {
@@ -245,7 +246,7 @@ class WhisperListener(
         const val RATE = 16_000
         const val FRAME = 320                      // 20 ms
         const val START_FRAMES = 8                 // 160 ms de voz = começou a falar
-        const val END_SILENCE = RATE               // 1 s de silêncio depois da fala = terminou (era 1,2 s; RF-VOZ-13)
+        const val END_SILENCE = RATE * 12 / 10     // 1,2 s de silêncio depois da fala = terminou (o valor aprovado na 1.6; 1,0 s arriscava cortar pausas no meio da frase)
         const val NO_SPEECH = RATE * 8             // 8 s sem falar = "não ouvi nada"
         const val LIVE_STEP = RATE * 7 / 10        // relê a cada 0,7 s de áudio novo
         const val PREROLL = RATE / 2

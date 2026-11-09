@@ -145,7 +145,8 @@ código anterior. Todos os testes passam.
 - **Painel do mês** (`plan/budgets/month`, `ui/screens/BudgetMonthScreen.kt`) e **remanejar só no mês** (`budget_adjustments`).
 - **Ajustes › Avisos e sons** (`settings/alerts`, `ui/screens/AlertScreens.kt`, com "Ver exemplo" = `AlertExamples`).
 - **Sons** (RF-SOM, `notify/Sounds.kt`, `res/raw/som_*.ogg`, gerados por `tools/sons/make_sounds.py`): só com o celular no modo normal.
-- **Voz**: fim da fala em 1,0 s; tempo na tela de voz e chave experimental "Atenção rápida no Whisper" no modo desenvolvedor.
+- **Voz**: o som de "pode falar" não entra na gravação; fim da fala em 1,2 s (como na 1.6); tempo na tela de voz e chave
+  experimental "Atenção rápida no Whisper" no modo desenvolvedor. Estudo de outras IAs de fala no PRD (RF-VOZ-14).
 - **Banco de dados versão 4** (`budget_adjustments`, `no_spend_days`, `goals.art`; migração 3→4 automática com `Migration3To4`).
 
 ### Próximos passos imediatos

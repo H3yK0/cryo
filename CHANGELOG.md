@@ -14,7 +14,7 @@
 - **Monthly spending overview** with every budgeted category, plus categories without a budget; **move budget between categories for this month only**, with undo
 - **Cryo's own sounds** ("ice crystal" sounds made from scratch): saving, money in, warnings, achievements, voice start and end. They always follow your phone's silent mode and can be turned off
 - **Settings › Alerts and sounds**: Friendly or Discreet tone, the reminder time, each alert type with **See example**, and sounds
-- **Voice a bit faster**: it ends 1 second after you stop talking (was 1.2 s); developer mode shows the timing and has an experimental faster mode to test
+- **Voice**: the "go ahead" sound is no longer recorded together with what you say; developer mode shows the timing and has an experimental faster mode to test
 - Large text (200%) checked on the main screens
 - Database version 4 (monthly budget moves, no-spend days, goal illustrations); old backups still open, and goals get the illustration matching their old emoji
 - New permission: **promoted notifications** (Android 16 live updates; it asks you nothing)

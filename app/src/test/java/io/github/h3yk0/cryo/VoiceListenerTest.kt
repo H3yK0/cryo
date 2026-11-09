@@ -69,6 +69,7 @@ class VoiceListenerTest {
         val liveCalls = AtomicInteger()
         val finalCalls = AtomicInteger()
         var lastSamples = 0
+        var lastPcm = FloatArray(0)
         @Volatile var closed = false
         @Volatile var aborted = false
         override fun transcribe(pcm: FloatArray, samples: Int, live: Boolean): String? {
@@ -76,6 +77,7 @@ class VoiceListenerTest {
             if (live) { liveCalls.incrementAndGet(); return this.live }
             finalCalls.incrementAndGet()
             lastSamples = samples
+            lastPcm = pcm.copyOf(samples)
             return final
         }
         override fun abort() { aborted = true }
@@ -100,7 +102,7 @@ class VoiceListenerTest {
         assertTrue("sílabas: ${ui.syllables}", ui.syllables in 8..20)
         assertEquals(1, rec.finalCalls.get())
         assertTrue("releituras ao vivo: ${rec.liveCalls.get()}", rec.liveCalls.get() >= 1)
-        // Terminou ~1 s depois da fala, sem ler o áudio todo; e o Whisper recebeu só a fala (+ meio segundo antes).
+        // Terminou ~1,2 s depois da fala, sem ler o áudio todo; e o Whisper recebeu só a fala (+ meio segundo antes).
         assertTrue(mic.pos < audio.size)
         assertTrue("amostras: ${rec.lastSamples}", rec.lastSamples < (0.5 + 14 * 0.23 + 1.4) * rate)
         assertTrue(mic.stopped)
@@ -156,5 +158,17 @@ class VoiceListenerTest {
         withTimeout(5_000) { while (!rec.closed || !mic.stopped) Thread.sleep(2) }
         assertFalse(l.ui.value.phase == VoicePhase.DONE)
         assertEquals(0, rec.finalCalls.get())
+    }
+
+    /** O som de "pode falar" (RF-SOM) toca com o microfone já aberto: ele não pode chegar ao Whisper (a 1.7 deixava). */
+    @Test fun somDePodeFalarNaoVaiParaOWhisper() {
+        val beep = ShortArray((0.2 * rate).toInt()) { (sin(2 * PI * 1000 * it / rate) * 16000).toInt().toShort() }
+        val audio = beep + speech(0.6, 14, 3.0)
+        val rec = FakeWhisper(live = "Uber 18", final = " Uber, 18 e 90.")
+        val ui = run(FakeMic(audio, paced = true), rec)
+        assertEquals("Uber, 18 e 90", ui.text)
+        // Nada do bipe (amplitude ~0,5) no áudio entregue: só o chiado baixo antes da fala.
+        val before = rec.lastPcm.take((0.3 * rate).toInt())
+        assertTrue("bipe no áudio: ${before.maxOf { kotlin.math.abs(it) }}", before.all { kotlin.math.abs(it) < 0.05f })
     }
 }

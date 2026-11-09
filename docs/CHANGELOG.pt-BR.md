@@ -14,7 +14,7 @@
 - **Painel dos gastos do mês** com todas as categorias com orçamento e as sem orçamento; **remanejar o orçamento entre categorias só neste mês**, com desfazer
 - **Sons próprios do Cryo** (de "cristal de gelo", feitos do zero): salvar, entrou dinheiro, atenção, conquista, começo e fim da voz. Sempre seguem o modo silencioso do celular e dá para desligar
 - **Ajustes › Avisos e sons**: tom Amigo ou Discreto, o horário do lembrete, cada tipo de aviso com **Ver exemplo** e os sons
-- **Voz um pouco mais rápida**: termina 1 segundo depois que você para de falar (era 1,2 s); o modo desenvolvedor mostra o tempo e tem um modo mais rápido experimental para testar
+- **Voz**: o som de "pode falar" não entra mais na gravação junto com o que você diz; o modo desenvolvedor mostra o tempo e tem um modo mais rápido experimental para testar
 - Fonte grande (200%) conferida nas telas principais
 - Banco de dados versão 4 (remanejamentos do mês, dias sem gastos, ilustrações das metas); backups antigos continuam abrindo e as metas ganham a ilustração do emoji que tinham
 - Permissão nova: **notificações promovidas** (as atualizações ao vivo do Android 16; não pergunta nada)
