@@ -49,7 +49,8 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.6 | 7 | **Pronta para o teste do Hanry** (09/11/2026), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
+| 1.7 | 8 | **Proposta** (09/11/2026, PRD 6.19a), esperando a aprovação do Hanry: avisos inteligentes estilo Duolingo, sons, momentos animados, alertas de orçamento, botão de voz embaixo (One UI), voz mais rápida. Branch `versao-1.7`. |
+| 1.6 | 7 | **Testada e aprovada pelo Hanry** (09/11/2026: "gostei pra caramba"; ~5 s no A55), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
 | 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
@@ -136,11 +137,11 @@ código anterior. Todos os testes passam.
    aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
 3. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-5. **1.6** (branch `versao-1.6`): pronta para o Hanry testar no Galaxy A55 (APK entregue em 09/11/2026). Conferir com ele:
-   acerto em português com a voz dele, tempo do fim da fala até o resultado (RF-VOZ-03, meta < 1,5 s), calor/bateria. Se o
-   Whisper ficar lento, dá para trocar o resultado final para a janela curta (como o ao vivo) ou usar o modelo "tiny".
-   **No lançamento**: a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em
-   `docs/fdroid/1.6-receita.md`). Widgets, notificações especiais e sons: detalhar depois.
+5. **1.6** (branch `versao-1.6`): testada e aprovada pelo Hanry no A55 (09/11/2026; ~5 s até a transcrição). **No lançamento**:
+   a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em `docs/fdroid/1.6-receita.md`).
+6. **1.7** (branch `versao-1.7`, a partir da 1.6): proposta no PRD (seção 6.19a: RF-AVI, RF-SOM, RF-MOM, RF-ORC-04/05,
+   RF-ALC, RF-VOZ-13), com protótipos em `Proposal17Test` (imagens 63–68 e quadros com `-PtourGif=true`) e o kit de sons
+   (script em `tools/sons/`). Esperando o Hanry aprovar e responder as decisões (tom, remanejar orçamento só no mês, etc.).
 
 ---
 
@@ -353,7 +354,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 proposta da 1.7.
 - Animações: o ambiente de teste do Compose **ignora a escala de animação do sistema** (por isso `animationsOn()` lê
   `Settings.Global.ANIMATOR_DURATION_SCALE` sozinho). Com `mainClock.autoAdvance = false`, mudar um estado de fora pede
   `rule.runOnUiThread { ...; Snapshot.sendApplyNotifications() }`. Animações finitas terminam antes das imagens (inclusive no
@@ -514,8 +515,8 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
 2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta e guardada; lançamento por volta de 07/12/2026.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. **1.6**: **voz melhor e no aparelho** (feita, em teste com o Hanry); depois widgets na tela inicial, notificações especiais (popups) e
-   sons personalizados. Detalhar com o Hanry antes de começar.
+4. **1.6**: **voz melhor e no aparelho** (feita e aprovada). **1.7**: avisos inteligentes, sons, momentos animados, alertas de
+   orçamento, voz ao alcance do polegar e voz mais rápida (proposta). Depois: widgets na tela inicial.
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
 ## 15. Arquivos de referência

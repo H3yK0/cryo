@@ -46,6 +46,7 @@ anexo é corrigido no mesmo commit.
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 | 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
+| 2.9 | 09/11/2026 | Retorno do Hanry sobre a 1.6 ("gostei pra caramba", "lentinho, coisa de 5 segundos") e **proposta da 1.7** (seção 6.19a): avisos inteligentes no estilo Duolingo (RF-AVI), sons próprios (RF-SOM), momentos animados (RF-MOM), alertas de orçamento ao salvar e pelo ritmo (RF-ORC-04/05), botão de voz ao alcance do polegar como na One UI (RF-ALC) e voz mais rápida (RF-VOZ-13). |
 | 2.8 | 09/11/2026 | 1.6 aprovada pelo Hanry ("aprovado; vamos testar em português primeiro"; permissão para compilar o Whisper) e feita: RF-VOZ-01..12 (Whisper no APK, microfone ao vivo com o eco, frases faladas em português, vários lançamentos, correções, escolha do ouvido em Ajustes). Permissão `RECORD_AUDIO` (RNF-PRIV-01). Análise de "um Cryo por língua" (seção 6.2a). |
 | 2.7 | 09/11/2026 | Proposta da 1.6: voz no aparelho com Whisper e animação de eco (RF-VOZ, seção 6.2a), com as respostas do Hanry (Galaxy A55, aceita IA local se nada sair do celular). 1.5 guardada para lançar por volta de 07/12/2026. |
 | 2.6 | 07/11/2026 | Pedido do Hanry depois de testar a 1.5: **motor financeiro** robusto e todo no aparelho (RF-MOT-01..15, seção 6.12a), com **500 testes de garantia**, e **proteção dos dados** com hash e criptografia (RF-SEG, seção 6.15a); Rust e criptografia do banco avaliados e deixados para depois. Aprovado e unido ao visual: tudo na **1.5**. |
@@ -242,7 +243,7 @@ podem inventar números (inaceitável com dinheiro) e não explicam o que decidi
 |---|---|---|---|
 | RF-VOZ-01 | **Reconhecimento de fala no aparelho** com o Whisper (whisper.cpp v1.9.5 e o modelo "base" multilíngue q5_1, licença MIT, 57 MB dentro do APK: o app continua sem internet). Só em ARM de 64 bits com fp16 e dotprod (conferido nas informações do processador antes de carregar a biblioteca); nos outros, uma biblioteca vazia deixa o APK instalar. Plano B: o reconhecedor do celular **só no aparelho** (Android 12+); sem ele, a tela de voz do sistema, como na 1.5 (com "preferir offline"). | `WhisperHostTest` (a ponte e o modelo de verdade no computador); o app segue sem INTERNET (`PrdConformanceTest`). | ✅ 1.6 |
 | RF-VOZ-02 | **Microfone**: permissão `RECORD_AUDIO` pedida só no primeiro toque no microfone, com a explicação ("o áudio fica só no celular; o Cryo nem tem internet"). O áudio fica só na memória e é apagado ao terminar: nunca vira arquivo. | `VoiceFlowTest` (tela de explicação), `VoiceListenerTest` (microfone sempre solto); RNF-PRIV-01 atualizado. | ✅ 1.6 |
-| RF-VOZ-03 | **Ao vivo**: as palavras aparecem enquanto a pessoa fala (o áudio acumulado é relido a cada ~0,7 s); termina sozinho depois de ~1,2 s de silêncio; "Pronto" e "Cancelar" a qualquer momento. | `VoiceListenerTest` (início, fim, releituras, "Pronto", cancelar). Tempo no A55: medir no teste do Hanry. | 🟡 1.6 |
+| RF-VOZ-03 | **Ao vivo**: as palavras aparecem enquanto a pessoa fala (o áudio acumulado é relido a cada ~0,7 s); termina sozinho depois de ~1,2 s de silêncio; "Pronto" e "Cancelar" a qualquer momento. | `VoiceListenerTest` (início, fim, releituras, "Pronto", cancelar). **Medido pelo Hanry no A55 (09/11/2026): ~5 s** até a transcrição pronta; aprovado assim, e a 1.7 traz a voz mais rápida (RF-VOZ-13). | 🟡 1.6 |
 | RF-VOZ-04 | **Vocabulário da pessoa**: o Whisper recebe como dica os nomes das contas, cartões, categorias e metas, e as palavras de dinheiro da língua: acerta "Roxo", "Nubank", "Pet Shop". | `VoicePrompt`; `WhisperHostTest` (com a dica, "32,50" sai com algarismos). | ✅ 1.6 |
 | RF-VOZ-05 | **Entender o jeito falado** nas 10 línguas: números por extenso ("trinta e dois e cinquenta", "cento e vinte", "três mil"), "18 e 90" = 18,90, "conto/pila", pontuação e "R$" do Whisper, apelidos e diminutivos ("roxinho" → Cartão Roxo). | `SpokenTest` com as frases do teste de 09/11. **Português primeiro** (pedido do Hanry); nas outras línguas o Whisper já escreve algarismos e fica a limpeza e a divisão. | ✅ 1.6 (pt) |
 | RF-VOZ-06 | **Vários lançamentos numa frase**: "almoço 30 e uber 15" vira dois lançamentos para conferir. A data, o cartão ou a conta e o verbo ditos uma vez valem para todos ("mercado 120 e farmácia 30 no cartão"). | `SpokenTest`, `VoiceFlowTest`. | ✅ 1.6 |
@@ -251,6 +252,7 @@ podem inventar números (inaceitável com dinheiro) e não explicam o que decidi
 | RF-VOZ-09 | **Leve**: o modelo só é carregado ao abrir o microfone e é solto ao fechar; em celular lento, menos atualizações ao vivo (fica o resultado final). | `VoiceListenerTest` e `WhisperHostTest` (fechar solta tudo, fechar duas vezes é seguro). | ✅ 1.6 |
 | RF-VOZ-10 | **Compilação reproduzível com código nativo**: NDK fixo (r27c), sem caminhos da máquina dentro do binário, o mesmo APK compilado em duas pastas diferentes. A receita do F-Droid ganha a linha do NDK (o lançamento da 1.6 precisa de merge request no fdroiddata). | Duas compilações limpas, em pastas diferentes, com o mesmo SHA-256; `PrdConformanceTest` confere as opções do CMake. | ✅ 1.6 |
 | RF-VOZ-11 | **Escolha do ouvido** em Ajustes › Registro rápido › Reconhecimento de voz: "Whisper, dentro do Cryo" (padrão) ou "Reconhecedor do celular". Preferência do aparelho, fora do backup. Em celular que não roda o Whisper, a opção explica e fica no do celular. | Revisão. | ✅ 1.6 |
+| RF-VOZ-13 | **Voz mais rápida** (pedido da 1.7; hoje ~5 s no A55): o resultado final também com a janela do tamanho da fala (como o ao vivo) e, se sair repetição ou nada, de novo com a janela inteira; decodificação simples quando o ao vivo já bate; fim da fala em 1,0 s de silêncio (era 1,2 s); o modelo começa a carregar quando o dedo toca no botão. O modo desenvolvedor mostra os tempos de cada etapa. | Meta: ≤ 2 s no A55 do fim da fala até o resultado, sem perder acerto nas frases do `SpokenTest`. | 🔵 1.7 |
 | RF-VOZ-12 | **Ruído e frases inventadas**: o Whisper só é chamado depois de ~160 ms de voz; áudio sem energia não chega a ele; "legendas de vídeo" que ele inventa no silêncio ("Legendas pela comunidade Amara.org", "Obrigado por assistir") e repetições ("meu e o meu e o meu") são descartadas; se nada sobra, "Não ouvi nada" e "Falar de novo". | `SpokenTest`, `VoiceListenerTest`, `WhisperHostTest`. | ✅ 1.6 |
 
 **Um Cryo por língua? (análise pedida pelo Hanry, 09/11/2026.)** Não ajuda no peso: o modelo "base" multilíngue tem o
@@ -348,6 +350,8 @@ Código: `domain/Debts.kt`. Testes: `DebtsTest`, `DebtFlowTest`.
 | RF-ORC-01 | Limite por categoria por mês | Total planejado, restante e quanto por dia. | ✅ 1.0 |
 | RF-ORC-02 | Barra de uso | Cor normal, âmbar a partir de 80 %, vermelho a partir de 100 % (DS-COMP-08). | ✅ 1.0 |
 | RF-ORC-03 | Sugestões | Pela média de gastos de cada categoria. | ✅ 1.0 |
+| RF-ORC-04 | **Alerta ao salvar** (1.7, RF-MOM-02): ao salvar um gasto que leva a categoria a 80% ou além do limite, o momento animado no lugar da mensagem de rodapé, com a **sugestão de onde cobrir** (uma categoria com folga neste mês: "Lazer ainda tem R$ 150 livres"). Remanejar só neste mês precisa de uma tabela nova (banco versão 4, com migração): decidir com o Hanry; sem ela, o botão abre os orçamentos. | Teste do alerta em 80%, 100% e sem orçamento. | 🔵 1.7 |
+| RF-ORC-05 | **Aviso pelo ritmo**: quando o motor (RF-MOT ritmo) prevê que a categoria passa do limite antes do fim do mês, um aviso por mês por categoria, com o dia previsto. | Teste. | 🔵 1.7 |
 
 ### 6.10 Metas e caixinhas — RF-MET (TELA-PLANEJAR aba 3, TELA-META-EDITAR, TELA-METAS-ARQUIVO)
 
@@ -612,13 +616,67 @@ Pedido do Hanry (05/11/2026): uma explicação animada de como usar o app, para 
 | RF-NOT-01 | Contas e parcelas | Diário ~9h; toque abre a tela certa nos dados de verdade. | ✅ 1.0 |
 | RF-NOT-02 | Problema no backup | RF-BKP-10. | ✅ 1.2 |
 | RF-NOT-03 | Pouca informação | A notificação mostra só o nome e o valor da conta ou parcela, nunca saldos; agendar lembretes nunca impede o app de abrir. | ✅ 1.0 |
-| RF-NOT-04 | Notificações especiais e sons | Popups e sons personalizados aleatórios. | 🔵 1.6 (detalhar) |
+| RF-NOT-04 | Notificações especiais e sons | Detalhado na seção 6.19a (RF-AVI, RF-SOM, RF-MOM). | 🔵 1.7 |
+
+### 6.19a Avisos, sons, momentos e alcance — 1.7 (proposta)
+
+Pedido do Hanry (09/11/2026): "sons, notificações, alertas de passando do limite (orçamento), notificações push animadas do tipo
+Duolingo onde a cada situação ele manda um alerta diferente"; e "usar uma técnica adotada pela One UI, colocar o botão de voz em
+baixo, alcançável pelos dedos... deixar tudo mais acessível e cômodo". Protótipos para aprovação em `Proposal17Test` (imagens
+63–68, quadros com `-PtourGif=true`) e o kit de sons para ouvir.
+
+**O que o Duolingo faz bem, e como fica no Cryo:** (1) cada situação tem um aviso diferente e com personalidade, nunca o mesmo
+texto; (2) o aviso chega na hora certa (perto do que importa, não ao acaso); (3) dá para resolver na própria notificação; (4)
+sequências e conquistas viram comemoração. **O que o Cryo não copia:** culpa e insistência. Dinheiro já é assunto sensível: o
+tom é de amigo que ajuda, nunca de cobrança, e o app avisa pouco (regras anti-chatice abaixo). **"Push" sem internet:** o Cryo
+não tem servidor; todo aviso é montado e agendado no próprio celular (WorkManager), com os dados que só existem ali.
+
+**Avisos inteligentes — RF-AVI**
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-AVI-01 | **Um aviso para cada situação**, todos calculados no aparelho: orçamento em 80% e passou do limite (RF-ORC-04/05); **ritmo** ("no ritmo atual, Transporte passa do limite por volta do dia 24"); **fatura fecha amanhã** ("compras a partir de amanhã só vencem no mês seguinte: bom dia para a compra grande"); conta vence e venceu (RF-NOT-01, com texto novo); **dia de salário** (recorrência do motor: "hoje costuma cair o salário; já entrou?"); **salário atrasado**; **assinatura mais cara** e **cobrança repetida** (RF-MOT); **gasto fora do padrão**; **saldo vai ficar negativo** (projeção do motor); **meta quase lá** e concluída; **última parcela** de uma compra; **resumo da semana** (domingo à noite) e **fechamento do mês** (dia 1); **nota de saúde** que subiu; **lembrete do dia** se nada foi anotado (com "dia sem gastos"). | Um teste por situação (quando dispara e quando não). | 🔵 1.7 |
+| RF-AVI-02 | **Vários textos por situação** (4 a 6 em cada língua), sorteados sem repetir o último; **tom** em Ajustes: Discreto ("Alimentação: 80% do limite"), Amigo (padrão: "Ainda é dia 18. Segurando o delivery até sexta, você fecha o mês no azul") e Animado (com emoji). Nunca culpa, nunca ironia com dinheiro. | Textos nas 10 línguas; `PrdConformanceTest` (chaves e marcadores). | 🔵 1.7 |
+| RF-AVI-03 | **Resolver na notificação**: "Já paguei" (marca a conta como paga), "Lembrar amanhã", "Dia sem gastos ✓", "Registrar salário" (com o valor de sempre) e "Anotar" (abre a voz). Ações que mudam dados pedem desbloqueio quando o bloqueio está ligado. | Teste de cada ação; com bloqueio, nada muda sem desbloquear. | 🔵 1.7 |
+| RF-AVI-04 | **Regras anti-chatice**: no máximo **1 aviso comum por dia** (vencimentos não contam), escolhido pela importância do motor (RF-MOT-11); **horário silencioso** 21h–8h (ajustável); o mesmo tipo no máximo 1 vez por semana (orçamento: 1 vez por faixa por mês); tipo ignorado 3 vezes seguidas passa a vir com metade da frequência; nada no primeiro dia de uso além das contas. | Testes das regras com um relógio falso. | 🔵 1.7 |
+| RF-AVI-05 | **Privacidade**: na tela de bloqueio só "Cryo · 3 avisos novos / Desbloqueie para ver", sem nome nem valor (RF-SEG-05); nada sai do celular; nada novo guardado além de quando cada tipo foi mostrado e dos dias sem gastos confirmados (estes entram no backup). | Teste da versão pública de cada aviso. | 🔵 1.7 |
+| RF-AVI-06 | **Canais do Android**: Contas, Orçamento, Conquistas, Resumos e Hábito, cada um com o seu som (RF-SOM) e importância; a pessoa pode mudar cada canal nos ajustes do próprio Android. | Revisão. | 🔵 1.7 |
+| RF-AVI-07 | **Imagem no aviso**: o resumo da semana e o fechamento do mês trazem um gráfico desenhado no aparelho (barras dos dias e a linha do normal). No Android 12+ a imagem pode ser **animada** (as barras crescendo); onde o celular não animar, fica a imagem parada. | Imagem 65; teste no A55 (a animação depende do sistema). | 🔵 1.7 |
+| RF-AVI-08 | **Ajustes › Avisos**: liga/desliga por tipo, com "ver exemplo" (mostra a notificação na hora), horário do lembrete do dia, horário silencioso e tom. | Revisão + imagem. | 🔵 1.7 |
+
+**Sons — RF-SOM**
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-SOM-01 | **Kit de sons próprio**, timbre de "cristal de gelo" (a marca): salvar (um "tim"), entrou dinheiro (duas notas subindo), atenção 80% (duas notas descendo), limite estourado (gelo trincando + nota grave), conquista (arpejo de cristal), sequência (três notas rápidas), notificação (sininho), voz começou/terminou (bip que sobe/desce). Todos **sintetizados do zero** por um script no repositório (nada gravado nem copiado; mesma licença do app); ~80 KB no total. | O script gera os arquivos; demonstração aprovada pelo Hanry. | 🔵 1.7 |
+| RF-SOM-02 | **Respeita o celular**: no silencioso ou no vibrar, sem som; volume baixo (a vibração do DS-PROF-07 continua); **Ajustes › Sons do Cryo** liga/desliga; nada toca em repetição; o som nunca é a única informação (texto e vibração junto, ACS). Sem permissão nova. | Teste: com o celular no silencioso nada toca; com o ajuste desligado nada toca. | 🔵 1.7 |
+
+**Momentos animados no app — RF-MOM** (os "popups" do pedido: dentro do app, onde a animação é livre)
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-MOM-01 | **Meta concluída**: tela cheia; o anel completa e fica dourado, o ícone da meta salta, cristais de gelo explodem e caem; som "conquista" e vibração; "Ver minhas metas". | Imagem 67 e quadros. | 🔵 1.7 |
+| RF-MOM-02 | **Orçamento ao salvar** (RF-ORC-04): em 80%, um cartão âmbar embaixo com a barra enchendo; ao passar do limite, a barra passa da marca dos 100%, fica vermelha e o cartão treme; som "limite"; sugestão de onde cobrir. | Imagem 68 e quadros. | 🔵 1.7 |
+| RF-MOM-03 | **Sequência de dias anotando** (marcos de 3, 7, 14, 30, 60 e 100 dias): "🔥 7 dias seguidos"; um **dia sem gastos** confirmado também conta. Perder a sequência não gera bronca: "Recomeçar é parte". | Teste da contagem (fusos e meia-noite). | 🔵 1.7 |
+| RF-MOM-04 | **Fechamento do mês** (ao abrir o app do dia 1 ao dia 3): "Outubro fechou no azul: sobrou R$ 820", com as barras crescendo; se fechou no vermelho, tom calmo e uma dica do motor. **Dívida quitada** e **última parcela** também ganham momento. | Imagens. | 🔵 1.7 |
+| RF-MOM-05 | **Regras**: no máximo 1 momento por abertura do app; nunca no meio da voz, de um formulário ou da importação; tudo finito (≤ 2,6 s, DS-MOV-10); com "Remover animações", aparece direto; fecha com um toque ou com o Voltar; o leitor de tela lê o texto. | Teste de "Remover animações" e do Voltar. | 🔵 1.7 |
+
+**Orçamento** (complementa a seção 6.9): RF-ORC-04 e RF-ORC-05.
+
+**Alcance com uma mão — RF-ALC** (o princípio da One UI: em cima é para olhar, embaixo é para tocar)
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-ALC-01 | **Botão de voz no centro da barra de baixo**, em todas as abas: 68 dp, com volume (DS-PROF-05), acima da linha da barra; tocar = falar (abre a tela de eco); **segurar = escrever** (abre a frase com o teclado). As abas ficam 2 de cada lado. | Imagem 63; teste do toque e do segurar; leitor de tela: "Registrar falando". | 🔵 1.7 |
+| RF-ALC-02 | O microfone sai do campo de frase do Início (fica só para escrever, que é o caso de quem prefere digitar); o atalho "Lançar" continua. | Revisão. | 🔵 1.7 |
+| RF-ALC-03 | **Ação principal sempre embaixo**: salvar, confirmar e escolher ficam na faixa de baixo ou em folhas que sobem de baixo (DS-PAD-02), nunca só no topo; o que fica no topo é para ler. Revisão de todas as telas atrás de botão importante na zona difícil. | Imagem 64 (zonas do polegar); lista de telas revisadas. | 🔵 1.7 |
+| RF-ALC-04 | **Acessível e cômodo**: alvos de toque ≥ 48 dp (o de voz, 68 dp); imagens das telas principais com a fonte do sistema em 200% sem cortar nada; descrições para o leitor de tela em tudo o que é novo. | Imagens com fonte grande; `PrdConformanceTest`. | 🔵 1.7 |
 
 ### 6.20 Widgets — RF-WID
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-WID-01 | Widgets na tela inicial | Detalhar com o Hanry (quais, que dados, como respeitar "esconder valores" e o bloqueio). | 🔵 1.6 |
+| RF-WID-01 | Widgets na tela inicial | Detalhar com o Hanry (quais, que dados, como respeitar "esconder valores" e o bloqueio). | 🔵 depois da 1.7 |
 
 ---
 
@@ -970,7 +1028,8 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.3 | ✅ 06/11/2026 (GitHub) | Importar extrato, modo desenvolvedor, correções de bloqueio. |
 | **1.4** | ✅ 06/11/2026 (GitHub; F-Droid pela etiqueta) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
 | **1.5** | ✅ Pronta e guardada: lançamento por volta de 07/12/2026 (pedido do Hanry) | **Ícone novo G4** (DS-ICO-02..05) · **Profundidade** em todo o app, com peso de app de iPhone (DS-PROF-01..09) · vibração ao toque · **Motor financeiro** robusto, todo no aparelho (RF-MOT-01..15): recorrências, previsão com faixa, próximos meses, fora do padrão, saúde financeira, ritmo das categorias, juros e plano das dívidas, rendimento real, metas, categoria aprendida, 500 testes de garantia · **Proteção dos dados** com hash e criptografia (RF-SEG). |
-| 1.6 | 🟡 Pronta para o teste do Hanry | **Voz no aparelho** (RF-VOZ-01..12): Whisper local, microfone ao vivo com animação de eco, vocabulário da pessoa, números por extenso, vários lançamentos numa frase, correções faladas. Widgets (RF-WID-01), notificações especiais e sons (RF-NOT-04): a detalhar. |
+| 1.6 | ✅ Testada e aprovada pelo Hanry (09/11/2026; ~5 s no A55) | **Voz no aparelho** (RF-VOZ-01..12): Whisper local, microfone ao vivo com animação de eco, vocabulário da pessoa, números por extenso, vários lançamentos numa frase, correções faladas. |
+| 1.7 | 🔵 Proposta (aguardando aprovação) | **Avisos inteligentes** no estilo Duolingo, todos no aparelho (RF-AVI-01..08) · **sons próprios** de cristal (RF-SOM) · **momentos animados** (RF-MOM: meta, orçamento, sequência, fechamento do mês) · **alertas de orçamento** ao salvar e pelo ritmo (RF-ORC-04/05) · **botão de voz ao alcance do polegar** (RF-ALC, One UI) · **voz mais rápida** (RF-VOZ-13). Widgets (RF-WID-01): depois. |
 
 ## 13. Glossário
 
