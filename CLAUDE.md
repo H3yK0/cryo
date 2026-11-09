@@ -123,9 +123,12 @@ código anterior. Todos os testes passam.
    aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
 3. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-5. **1.6**: o Hanry quer melhorar o **registro por voz** com algo local (07/11/2026). Proposta em discussão: reconhecimento de fala
-   no próprio aparelho (sem mandar áudio para fora), resultado ao vivo enquanto fala e um entendimento de frases faladas mais
-   esperto, sem modelo de linguagem grande. Widgets, notificações especiais e sons: detalhar depois.
+5. **1.6** (branch `versao-1.6`, a partir da 1.5): **voz no aparelho**, proposta no PRD (RF-VOZ, seção 6.2a) esperando a
+   aprovação do Hanry. Ele usa um Galaxy A55 com Google e aceita o Whisper dentro do app se nada sair do celular; quer uma
+   animação de eco (protótipo em `VoicePrototypeTest`, quadros com `-PtourGif=true`). Atenção: nesta nuvem, compilar e rodar o
+   whisper.cpp baixado do GitHub foi bloqueado pelo controle de permissões ("código de fora"); o Hanry precisa liberar para a
+   compilação nativa (NDK r27c já instalado aqui) e os testes do Whisper no computador. Widgets, notificações especiais e sons:
+   detalhar depois.
 
 ---
 
