@@ -30,6 +30,7 @@ import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.PieChart
 import androidx.compose.material.icons.rounded.RequestQuote
 import androidx.compose.material.icons.rounded.Savings
+import androidx.compose.material.icons.rounded.ShoppingCart
 import androidx.compose.material.icons.rounded.SwapHoriz
 import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material.icons.rounded.Warning
@@ -41,6 +42,9 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.pluralStringResource
@@ -105,6 +109,9 @@ fun HomeScreen() {
     val outlook = engine?.outlook
     val insights = engine?.insights?.map { it.toInsight() } ?: classic
 
+    var shopping by remember { mutableStateOf(false) }
+    if (shopping) ShoppingStartSheet(onDismiss = { shopping = false })
+
     // RF-INI-16: sem botão flutuante; "Lançar" é o primeiro atalho.
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 24.dp)) {
@@ -116,7 +123,10 @@ fun HomeScreen() {
                 ) { BalanceBlock(l, onClick = { nav.go(Routes.WALLET) }) }
             }
 
-            item { Shortcuts(homeShortcuts(l, nav), Modifier.padding(top = 16.dp)) }
+            item { Shortcuts(homeShortcuts(l, nav, onShopping = if (c.sandbox) null else ({ shopping = true })), Modifier.padding(top = 16.dp)) }
+
+            // RF-AVI-10: a ida às compras em andamento (sempre os dados de verdade).
+            if (!c.sandbox) item { ShoppingBanner(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) }
 
             item {
                 Column(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) {
@@ -290,10 +300,12 @@ fun HomeScreen() {
 private const val MAX_ROWS = 3
 
 /** RF-INI-12: as ações mais usadas, na ordem do dia a dia. "Fatura" só aparece com cartão. */
-private fun homeShortcuts(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator): List<ShortcutItem> = listOfNotNull(
+private fun homeShortcuts(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, onShopping: (() -> Unit)?): List<ShortcutItem> = listOfNotNull(
     ShortcutItem(Res.s(R.string.home_shortcut_new), Icons.Rounded.Add) { nav.go(Routes.txNew()) },
     ShortcutItem(Res.s(R.string.home_shortcut_import), Icons.Rounded.UploadFile) { nav.go(Routes.import()) },
     ShortcutItem(Res.s(R.string.home_shortcut_transfer), Icons.Rounded.SwapHoriz) { nav.go(Routes.txNew(TxType.TRANSFER)) },
+    // RF-AVI-10: "Vou às compras" (o modo compras ao vivo).
+    onShopping?.let { ShortcutItem(Res.s(R.string.home_shortcut_shopping), Icons.Rounded.ShoppingCart, onClick = it) },
     l.activeCards.takeIf { it.isNotEmpty() }?.let { cards ->
         ShortcutItem(Res.s(R.string.home_shortcut_invoice), Icons.Rounded.CreditCard) { if (cards.size == 1) nav.go(Routes.card(cards.single().id)) else nav.go(Routes.WALLET) }
     },

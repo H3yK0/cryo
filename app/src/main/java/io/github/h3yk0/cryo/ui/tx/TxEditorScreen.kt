@@ -101,7 +101,7 @@ fun TxEditorScreen(
                         onClick = {
                             c.launch {
                                 val r = saveDraft(draft, c.repo, l)
-                                c.message(r.alert ?: r.summary, Res.s(R.string.wallet_desfazer)) { r.undo() }
+                                c.afterSave(r, income = draft.type == io.github.h3yk0.cryo.data.db.TxType.INCOME)
                             }
                             onDone()
                         },

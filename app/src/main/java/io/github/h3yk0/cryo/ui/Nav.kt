@@ -88,6 +88,33 @@ import io.github.h3yk0.cryo.ui.screens.HealthScreen
 import io.github.h3yk0.cryo.ui.screens.TransactionsScreen
 import io.github.h3yk0.cryo.ui.screens.WalletScreen
 import io.github.h3yk0.cryo.ui.tx.TxEditorScreen
+import io.github.h3yk0.cryo.ui.screens.AlertSettingsScreen
+import io.github.h3yk0.cryo.ui.screens.BudgetMonthScreen
+import io.github.h3yk0.cryo.ui.screens.ReminderTimeSheet
+import io.github.h3yk0.cryo.ui.screens.saveReminder
+import io.github.h3yk0.cryo.ui.components.Moment
+import io.github.h3yk0.cryo.ui.components.MomentHost
+import io.github.h3yk0.cryo.ui.components.pressScale
+import io.github.h3yk0.cryo.ui.components.raised
+import io.github.h3yk0.cryo.ui.components.rememberLedger
+import io.github.h3yk0.cryo.ui.tx.rememberVoiceLauncher
+import io.github.h3yk0.cryo.notify.AlertState
+import io.github.h3yk0.cryo.domain.ym
+import io.github.h3yk0.cryo.domain.key
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import io.github.h3yk0.cryo.domain.Res
 
 object Routes {
     const val HOME = "home"
@@ -121,6 +148,8 @@ object Routes {
     const val HEALTH = "insights/health"
     const val RECURRING = "insights/recurring"
     const val DEBT_PLAN = "debts/plan"
+    const val BUDGET_MONTH = "plan/budgets/month"
+    const val ALERT_SETTINGS = "settings/alerts"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
@@ -200,6 +229,29 @@ fun CryoRoot(openOnStart: String?) {
     // Uma vez só: o app sai da tela enquanto está bloqueado e, ao desbloquear, volta para onde a pessoa estava, e não
     // de novo para a tela do aviso.
     var opened by rememberSaveable { mutableStateOf(false) }
+    var voiceOnStart by remember { mutableStateOf(false) }
+    // RF-ALC-01: a voz (tocar) e a frase escrita (segurar) a partir do botão do meio, em qualquer aba.
+    val ledger = rememberLedger()
+    val voice = rememberVoiceLauncher(ledger)
+    LaunchedEffect(voiceOnStart, ledger != null) {
+        if (voiceOnStart && ledger != null) { voiceOnStart = false; voice.listen() }
+    }
+    // RF-AVI-11: pergunta o horário do lembrete do dia, uma vez (não no modo de teste: os avisos são dos dados de verdade).
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val alertState = remember { AlertState(context) }
+    var askReminder by rememberSaveable { mutableStateOf(!alertState.reminderAsked && !c.sandbox && openOnStart == null) }
+    val notifPermission = androidx.activity.compose.rememberLauncherForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) { }
+    // RF-MOM-04: do dia 1 ao 3, na primeira abertura, como o mês passado fechou (uma vez por mês).
+    LaunchedEffect(ledger != null) {
+        val l = ledger ?: return@LaunchedEffect
+        if (c.sandbox || l.today.dayOfMonth > 3) return@LaunchedEffect
+        val prev = l.today.ym().minusMonths(1)
+        val key = "month:${prev.key()}"
+        val sum = l.monthSummary(prev)
+        if (alertState.momentShown(key) || (sum.income == 0L && sum.expense == 0L)) return@LaunchedEffect
+        alertState.markMoment(key)
+        c.moments.show(Moment.MonthClosed(prev, sum.result))
+    }
     LaunchedEffect(openOnStart) {
         if (opened) return@LaunchedEffect
         opened = true
@@ -207,6 +259,12 @@ fun CryoRoot(openOnStart: String?) {
             "bills" -> navigator.open(Routes.plan(1))
             "debts" -> navigator.go(Routes.DEBTS)
             "backup" -> navigator.go(Routes.AUTO_BACKUP)
+            // 1.7 (RF-AVI): para onde cada aviso leva.
+            "budgets" -> navigator.go(Routes.BUDGET_MONTH)
+            "goals" -> navigator.open(Routes.plan(2))
+            "insights" -> navigator.tab(Routes.INSIGHTS)
+            "wallet" -> navigator.go(Routes.WALLET)
+            "voice" -> voiceOnStart = true
         }
     }
 
@@ -225,23 +283,7 @@ fun CryoRoot(openOnStart: String?) {
                     Column {
                         // Modo de teste (modo desenvolvedor): sempre à vista nas abas, para ninguém confundir com os dados de verdade.
                         if (c.sandbox) TestModeStrip()
-                        // DS-PROF-06: barra elevada, na cor dos cartões, com sombra para cima; trocar de aba vibra ("tique").
-                        val d = CryoTheme.depth
-                        val haptics = rememberHaptics()
-                        NavigationBar(
-                            containerColor = d.card,
-                            tonalElevation = 0.dp,
-                            modifier = Modifier.dropShadow(RectangleShape, Shadow(radius = 16.dp, color = d.shadow, offset = DpOffset(0.dp, (-2).dp))),
-                        ) {
-                            tabs.forEach { t ->
-                                NavigationBarItem(
-                                    selected = currentPattern == t.pattern,
-                                    onClick = { if (currentPattern != t.pattern) haptics.tick(); navigator.tab(t.route) },
-                                    icon = { Icon(t.icon, null) },
-                                    label = { Text(stringResource(t.label), maxLines = 1) },
-                                )
-                            }
-                        }
+                        VoiceTabBar(currentPattern, navigator, onListen = voice.listen, onType = voice.type)
                     }
                 }
             },
@@ -249,7 +291,8 @@ fun CryoRoot(openOnStart: String?) {
             NavHost(
                 navController = nav,
                 startDestination = Routes.HOME,
-                modifier = Modifier.padding(bottom = pad.calculateBottomPadding()),
+                // O botão de voz sobe acima da barra (RF-ALC-01): o conteúdo continua por baixo dessa parte.
+                modifier = Modifier.padding(bottom = (pad.calculateBottomPadding() - if (showBar) MIC_RISE else 0.dp).coerceAtLeast(0.dp)),
                 enterTransition = {
                     if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabEnter() else Motion.forwardEnter()
                 },
@@ -357,6 +400,8 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.HEALTH) { HealthScreen() }
                 composable(Routes.RECURRING) { RecurringScreen() }
                 composable(Routes.DEBT_PLAN) { DebtPlanScreen() }
+                composable(Routes.BUDGET_MONTH) { BudgetMonthScreen() }
+                composable(Routes.ALERT_SETTINGS) { AlertSettingsScreen() }
                 composable(
                     Routes.CATEGORY_EDIT,
                     arguments = listOf(
@@ -370,6 +415,67 @@ fun CryoRoot(openOnStart: String?) {
                     )
                 }
             }
+        }
+        MomentHost(c.moments)
+        if (askReminder) ReminderTimeSheet(alertState.reminderMinutes, onDismiss = { askReminder = false; alertState.reminderAsked = true }) { m ->
+            askReminder = false
+            saveReminder(context, m)
+            if (m != null && android.os.Build.VERSION.SDK_INT >= 33 && !io.github.h3yk0.cryo.notify.Reminders.canNotify(context)) {
+                notifPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+}
+
+/** Quanto o botão de voz sobe acima da linha da barra. */
+private val MIC_RISE = 22.dp
+
+/**
+ * RF-ALC-01: a barra de baixo com o botão de voz no centro (como o "Fácil acesso" da One UI: o que mais se usa fica onde o
+ * polegar alcança). Duas abas de cada lado; o botão tem 68 dp, volume (DS-PROF-05) e sobe um pouco acima da barra.
+ * Tocar = falar; segurar = escrever.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun VoiceTabBar(currentPattern: String?, navigator: Navigator, onListen: () -> Unit, onType: () -> Unit) {
+    val d = CryoTheme.depth
+    val haptics = rememberHaptics()
+    Box(Modifier.fillMaxWidth()) {
+        // DS-PROF-06: barra elevada, na cor dos cartões, com sombra para cima; trocar de aba vibra ("tique").
+        NavigationBar(
+            containerColor = d.card,
+            tonalElevation = 0.dp,
+            modifier = Modifier.padding(top = MIC_RISE).dropShadow(RectangleShape, Shadow(radius = 16.dp, color = d.shadow, offset = DpOffset(0.dp, (-2).dp))),
+        ) {
+            tabs.forEachIndexed { i, t ->
+                if (i == 2) Spacer(Modifier.weight(1f))
+                NavigationBarItem(
+                    selected = currentPattern == t.pattern,
+                    onClick = { if (currentPattern != t.pattern) haptics.tick(); navigator.tab(t.route) },
+                    icon = { Icon(t.icon, null) },
+                    label = { io.github.h3yk0.cryo.ui.components.CappedFontScale { Text(stringResource(t.label), maxLines = 1, softWrap = false) } },
+                )
+            }
+        }
+        val primary = MaterialTheme.colorScheme.primary
+        val interaction = remember { MutableInteractionSource() }
+        val label = Res.s(R.string.quick_registrar_falando)
+        val typeLabel = Res.s(R.string.bar_type_title)
+        Box(
+            Modifier.align(Alignment.TopCenter)
+                .size(68.dp)
+                .pressScale(interaction, 0.92f)
+                .raised(CircleShape, primary, shadowColor = primary.copy(alpha = 0.42f), glow = 14.dp)
+                .combinedClickable(
+                    interactionSource = interaction, indication = androidx.compose.material3.ripple(),
+                    role = Role.Button, onClickLabel = label, onLongClickLabel = typeLabel,
+                    onClick = { haptics.tap(); onListen() },
+                    onLongClick = { haptics.confirm(); onType() },
+                )
+                .semantics { contentDescription = label },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Rounded.Mic, null, tint = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(30.dp))
         }
     }
 }

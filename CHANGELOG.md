@@ -2,6 +2,23 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.7 — smart alerts, sounds and the voice button within thumb reach
+
+- **The voice button now sits in the middle of the bottom bar**, on every tab, where your thumb reaches (like Samsung's One UI): tap to speak, **hold to type**. The phrase field on Home is now for typing only
+- **Smart alerts, one at a time**: a bill due tomorrow (with **Paid** and **Remind me tomorrow** right in the notification), a budget close to or over its limit, a category on pace to go over, a card statement closing tomorrow, payday ("Log salary" with the usual amount), a late salary, a subscription that got more expensive, a duplicate charge, unusual spending, a balance about to go negative, a goal almost reached, a last installment, a better financial health score, your week on Sunday and how the month closed
+- **Never annoying**: at most one regular alert a day, only at two times (morning and your reminder time), nothing for new users besides bills; types you keep dismissing come less often. Everything is calculated on your phone
+- **Daily reminder at the time you choose** (Cryo asks once): only if you logged nothing that day, with **No-spend day** and **Log** buttons
+- **Animated notifications**: each alert comes as a message from Cryo with an animated sticker drawn for the situation (Android plays animations only in this conversation style). No keyboard emoji anywhere: all images are Cryo's own
+- **Shopping mode, live**: "Going shopping, up to $300" shows a live notification with how much is gone and how much is left (Android 16 Live Updates and the Now Bar on One UI 8)
+- **Celebration moments**: goal reached (full screen, with ice crystals), budget at 80% or over (the bar crosses the line and the card shakes, with a tip on where to cover it from), logging streaks (3, 7, 14, 30... days) and how last month closed
+- **Monthly spending overview** with every budgeted category, plus categories without a budget; **move budget between categories for this month only**, with undo
+- **Cryo's own sounds** ("ice crystal" sounds made from scratch): saving, money in, warnings, achievements, voice start and end. They always follow your phone's silent mode and can be turned off
+- **Settings › Alerts and sounds**: Friendly or Discreet tone, the reminder time, each alert type with **See example**, and sounds
+- **Voice a bit faster**: it ends 1 second after you stop talking (was 1.2 s); developer mode shows the timing and has an experimental faster mode to test
+- Large text (200%) checked on the main screens
+- Database version 4 (monthly budget moves, no-spend days, goal illustrations); old backups still open, and goals get the illustration matching their old emoji
+- New permission: **promoted notifications** (Android 16 live updates; it asks you nothing)
+
 ## 1.6 — voice, understood on your phone
 
 - **Voice entry inside Cryo, with Whisper** (an open speech-recognition model, built into the app): what you say is understood on the phone itself, with no internet. The audio only lives in memory and is erased right away; Cryo still has no internet permission

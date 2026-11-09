@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RF-AVI-09: só a pasta das figurinhas animadas (cópias das de res/raw) fica visível, e só para quem desenha a notificação. -->
+<paths>
+    <cache-path name="stickers" path="stickers/" />
+</paths>

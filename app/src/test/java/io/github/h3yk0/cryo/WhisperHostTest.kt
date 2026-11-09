@@ -65,6 +65,32 @@ class WhisperHostTest {
         }
     }
 
+    /**
+     * RF-VOZ-13: por que o resultado final continua com a janela inteira. A janela do tamanho da fala é umas 4 vezes mais
+     * rápida, mas troca "32,50" por "32,40". A "atenção rápida" (experimental, só no modo desenvolvedor) acerta o mesmo valor.
+     */
+    @Test fun janelaInteiraAcertaOValorComESemAtencaoRapida() {
+        val pcm = wav("voice/almoco-sintetico.wav")
+        val pctx = io.github.h3yk0.cryo.domain.ParseContext(java.time.LocalDate.of(2026, 11, 9), emptyList(), emptyList(), emptyList(), language = AppLanguage.PT_BR)
+        val times = LongArray(2)
+        for ((i, flash) in listOf(false, true).withIndex()) {
+            WhisperEngine.openLoaded(ctx.assets, AppLanguage.PT_BR, prompt, flash)!!.use { e ->
+                val t0 = System.nanoTime()
+                val text = e.transcribe(pcm, pcm.size, live = false)!!
+                times[i] = (System.nanoTime() - t0) / 1_000_000
+                assertEquals("atenção rápida=$flash: $text", 3250L, Spoken.entries(text, pctx).single().amount)
+            }
+        }
+        System.out.println("janela inteira: ${times[0]} ms; com atenção rápida: ${times[1]} ms")
+        // A janela curta (a das palavras ao vivo) no resultado final: rápida, mas erra o valor.
+        WhisperEngine.openLoaded(ctx.assets, AppLanguage.PT_BR, prompt)!!.use { e ->
+            val short = String(WhisperNative.nativeTranscribe(handleOf(e), pcm, pcm.size, "pt", prompt, 4, false, (pcm.size + 319) / 320 + 128, 0)!!, Charsets.UTF_8)
+            assertTrue("janela curta: $short", Spoken.entries(short, pctx).single().amount != 3250L)
+        }
+    }
+
+    private fun handleOf(e: WhisperEngine): Long = WhisperEngine::class.java.getDeclaredField("handle").apply { isAccessible = true }.getLong(e)
+
     @Test fun silencioNaoInventaTexto() {
         WhisperEngine.openLoaded(ctx.assets, AppLanguage.PT_BR, prompt)!!.use { e ->
             val silence = FloatArray(16_000 * 2)
@@ -83,6 +109,6 @@ class WhisperHostTest {
     }
 
     @Test fun modeloQueNaoExisteNaoAbre() {
-        assertEquals(0L, WhisperNative.nativeOpen(ctx.assets, "whisper/nao-existe.bin"))
+        assertEquals(0L, WhisperNative.nativeOpen(ctx.assets, "whisper/nao-existe.bin", false))
     }
 }

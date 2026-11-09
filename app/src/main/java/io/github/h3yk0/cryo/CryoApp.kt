@@ -74,6 +74,20 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
     val messages: SharedFlow<UiMessage> = _messages
 
     fun launch(block: suspend CoroutineScope.() -> Unit) = appScope.launch(block = block)
+
+    /** RF-MOM: os momentos animados (um por vez). */
+    val moments = io.github.h3yk0.cryo.ui.components.MomentBus()
+
+    /**
+     * Depois de salvar um lançamento: o momento que ele provocou (com o som dele) ou o som de salvar (RF-SOM), e a mensagem
+     * com "Desfazer".
+     */
+    fun afterSave(r: io.github.h3yk0.cryo.ui.tx.SaveResult, income: Boolean) {
+        val m = r.moment
+        if (m != null) moments.show(m)
+        else io.github.h3yk0.cryo.notify.Sounds.play(app, if (income) io.github.h3yk0.cryo.notify.Sound.INCOME else io.github.h3yk0.cryo.notify.Sound.SAVE)
+        message(if (m is io.github.h3yk0.cryo.ui.components.Moment.Budget) r.summary else (r.alert ?: r.summary), io.github.h3yk0.cryo.domain.Res.s(io.github.h3yk0.cryo.R.string.wallet_desfazer)) { r.undo() }
+    }
     fun message(text: String, actionLabel: String? = null, action: (suspend () -> Unit)? = null) {
         _messages.tryEmit(UiMessage(text, actionLabel, action))
     }
@@ -138,8 +152,16 @@ class CryoApp : Application() {
         applyLocale()
         real // abre o banco de verdade logo (e cria as categorias na primeira vez)
         // Lembretes nunca podem impedir o app de abrir.
-        runCatching { Reminders.createChannel(this) }
+        runCatching { io.github.h3yk0.cryo.notify.Alerts.createChannels(this) }
+        runCatching { io.github.h3yk0.cryo.notify.Alerts.scheduleEvening(this, io.github.h3yk0.cryo.notify.AlertState(this)) }
         runCatching { Reminders.schedule(this) }
+        // RF-AVI-10: a sessão de compras sobrevive ao app fechado; a notificação acompanha cada gasto anotado.
+        runCatching {
+            io.github.h3yk0.cryo.notify.Shopping.restore(this)
+            real.appScope.launch {
+                real.repo.snapshot.collect { s -> if (io.github.h3yk0.cryo.notify.Shopping.session.value != null) io.github.h3yk0.cryo.notify.Shopping.refresh(this@CryoApp, s) }
+            }
+        }
         runCatching { AutoBackupWork.createChannel(this) }
         startBackup()
     }

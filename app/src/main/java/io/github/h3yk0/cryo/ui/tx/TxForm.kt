@@ -51,6 +51,7 @@ import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.ParsedEntry
 import io.github.h3yk0.cryo.domain.key
+import io.github.h3yk0.cryo.domain.ym
 import io.github.h3yk0.cryo.domain.normalized
 import io.github.h3yk0.cryo.ui.components.AccountChips
 import io.github.h3yk0.cryo.ui.components.AmountField
@@ -132,7 +133,65 @@ class TxDraft(
     }
 }
 
-data class SaveResult(val alert: String?, val undo: suspend () -> Unit, val summary: String)
+data class SaveResult(
+    val alert: String?, val undo: suspend () -> Unit, val summary: String,
+    /** RF-MOM: o momento que este lançamento provocou (meta completa, orçamento em 80%/estourado, sequência). */
+    val moment: io.github.h3yk0.cryo.ui.components.Moment? = null,
+)
+
+/**
+ * RF-MOM-01..03: o que este lançamento provocou. [l] é o livro-caixa de antes de salvar; [monthPart] é o que entra no mês
+ * da categoria (a primeira parcela, numa compra parcelada no cartão).
+ */
+internal fun momentAfterSave(d: TxDraft, l: Ledger, monthPart: Long, isNew: Boolean): io.github.h3yk0.cryo.ui.components.Moment? {
+    // Meta completa.
+    if (isNew && d.type == TxType.GOAL_IN) {
+        val g = d.goalId?.let { l.goal[it] }
+        if (g != null && g.target > 0) {
+            val before = l.goalSaved(g.id)
+            if (before < g.target && before + d.amount >= g.target) {
+                val since = java.time.Instant.ofEpochMilli(g.createdAt).atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                val months = java.time.temporal.ChronoUnit.MONTHS.between(since.withDayOfMonth(1), l.today.withDayOfMonth(1)).toInt().coerceAtLeast(0)
+                return io.github.h3yk0.cryo.ui.components.Moment.GoalDone(g.name, io.github.h3yk0.cryo.domain.GoalArt.forGoal(g), g.color, before + d.amount, months)
+            }
+        }
+    }
+    // Orçamento em 80% ou estourado (com o limite deste mês, já remanejado).
+    val cat = d.categoryId
+    if (d.type == TxType.EXPENSE && cat != null && monthPart > 0 && l.budgetOf(cat) != null) {
+        val ym = d.date.ym()
+        val limit = l.monthLimit(cat, ym)
+        if (limit > 0) {
+            val before = l.categorySpent(ym, cat)
+            val after = before + monthPart
+            val over = before < limit && after >= limit
+            val eighty = !over && before * 10 < limit * 8 && after * 10 >= limit * 8
+            if (over || eighty) {
+                val c = l.category[cat]
+                val move = if (over) {
+                    // De onde cobrir: a categoria com mais folga neste mês (arredondado para cima, de 10 em 10).
+                    val need = (((after - limit) + 999) / 1000) * 1000
+                    l.budgetUsages(ym).filter { it.category.id != cat }.map { it to (it.limit - it.spent) }
+                        .filter { (_, free) -> free >= need }.maxByOrNull { it.second }
+                        ?.let { (u, free) -> io.github.h3yk0.cryo.ui.components.Moment.BudgetMove(u.category.id, u.category.name, free, need) }
+                } else null
+                return io.github.h3yk0.cryo.ui.components.Moment.Budget(
+                    cat, c?.name.orEmpty(), c?.icon.orEmpty(), after, limit, over,
+                    (ym.lengthOfMonth() - d.date.dayOfMonth).coerceAtLeast(0), ym.key(), move,
+                )
+            }
+        }
+    }
+    // Sequência: o primeiro lançamento do dia que fecha um marco (3, 7, 14, 30... dias seguidos).
+    if (isNew && d.date == l.today && l.s.txs.none { it.date == l.today } && l.s.noSpendDays.none { it.date == l.today }) {
+        val logged = l.s.txs.mapTo(HashSet()) { it.date } + l.s.noSpendDays.map { it.date }
+        var n = 1
+        var day = l.today.minusDays(1)
+        while (day in logged) { n++; day = day.minusDays(1) }
+        if (n in io.github.h3yk0.cryo.ui.components.Moment.STREAK_MARKS) return io.github.h3yk0.cryo.ui.components.Moment.Streak(n)
+    }
+    return null
+}
 
 /** Grava o rascunho no banco. Devolve um aviso de orçamento (se houver) e como desfazer. */
 suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResult {
@@ -201,7 +260,11 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
         d.type == TxType.DEBT_IN -> Res.s(R.string.debt_somados_divida, Money.format(d.amount))
         else -> Res.s(R.string.tx_registrada, what, Money.format(d.amount))
     }
-    return SaveResult(alert, undo, summary)
+    val moment = runCatching {
+        val added = if (d.type == TxType.EXPENSE) (if (cardId != null && o == null && d.installments > 1) CardMath.split(d.amount, d.installments).first() else d.amount - if (o != null && o.categoryId == d.categoryId && o.type == TxType.EXPENSE) o.amount else 0) else 0L
+        momentAfterSave(d, l, added, isNew = o == null)
+    }.getOrNull()
+    return SaveResult(alert, undo, summary, moment)
 }
 
 /**

@@ -56,7 +56,7 @@ Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeAvailable(JNIEnv *, jobject)
 }
 
 JNIEXPORT jlong JNICALL
-Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpen(JNIEnv * env, jobject, jobject assets, jstring path) {
+Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpen(JNIEnv * env, jobject, jobject assets, jstring path, jboolean flash) {
     AAssetManager * mgr = AAssetManager_fromJava(env, assets);
     if (mgr == nullptr) return 0;
     const char * p = env->GetStringUTFChars(path, nullptr);
@@ -67,7 +67,8 @@ Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpen(JNIEnv * env, jobject, 
     whisper_model_loader loader{asset, assetRead, assetEof, assetClose};
     whisper_context_params cp = whisper_context_default_params();
     cp.use_gpu = false;
-    cp.flash_attn = false;
+    // RF-VOZ-13: a "atenção rápida" só com a chave experimental do modo desenvolvedor (ainda não conferida no celular).
+    cp.flash_attn = flash;
     whisper_context * ctx = whisper_init_with_params(&loader, cp);   // fecha o asset sozinho, dando certo ou não
     if (ctx == nullptr) return 0;
     auto * s = new Session();

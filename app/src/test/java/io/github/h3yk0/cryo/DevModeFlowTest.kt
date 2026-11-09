@@ -74,6 +74,8 @@ class DevModeFlowTest {
         val r = app.real
         r.settings.clear()
         SettingsRepository(app, sandbox = true).clear()
+        // O horário do lembrete do dia (RF-AVI-11) já foi escolhido: a pergunta não aparece por cima das telas.
+        io.github.h3yk0.cryo.notify.AlertState(app).reminderAsked = true
         val acc = r.repo.saveAccount(Account(name = "Minha conta", type = AccountType.CHECKING, initialBalance = 50000, color = Palette.pick(1)))
         r.repo.saveTx(Tx(type = TxType.EXPENSE, amount = 3250, date = LocalDate.now(), description = "Almoço de verdade", accountId = acc))
         r.settings.setDefaultAccount(acc)

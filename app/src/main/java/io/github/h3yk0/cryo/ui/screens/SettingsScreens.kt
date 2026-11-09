@@ -37,6 +37,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Category
@@ -232,22 +233,12 @@ fun SettingsScreen() {
 }
 
             item { Header(Res.s(R.string.settings_lembretes)) }
-            if (c.sandbox) {
-                item { TestModeNote(Res.s(R.string.settings_modo_teste_lembretes_continuam)) }
-            } else item {
+            item {
+                // RF-AVI-08: avisos, lembrete do dia e sons numa tela só (sempre os dados de verdade, mesmo no modo de teste).
                 SettingsGroup {
-                SwitchRow(
-                    Res.s(R.string.settings_avisar_contas_vencer), s.remindersEnabled,
-                    { v ->
-                        c.launch { c.settings.setReminders(v) }
-                        if (v && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) {
-                            notifPermission.launch(android.Manifest.permission.POST_NOTIFICATIONS)
-                        }
-                    },
-                    Res.s(R.string.settings_notificacao_dia_que_voce),
-                )
-                            }
-}
+                    SettingLink(Icons.Rounded.NotificationsActive, Res.s(R.string.alerts_settings_title), Res.s(R.string.alerts_settings_sub)) { nav.go(Routes.ALERT_SETTINGS) }
+                }
+            }
 
             item { Header(Res.s(R.string.settings_registro_rapido)) }
             item {
@@ -483,7 +474,7 @@ private suspend fun writeText(ctx: Context, uri: Uri, text: String): Boolean = w
 }
 
 @Composable
-private fun Header(text: String) {
+internal fun Header(text: String) {
     Text(
         text, style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary,
         modifier = Modifier.padding(top = 24.dp, bottom = 4.dp).semantics { heading() },
@@ -492,12 +483,12 @@ private fun Header(text: String) {
 
 /** DS-PROF-02: um grupo de ajustes num cartão, como os Ajustes do iPhone. */
 @Composable
-private fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
+internal fun SettingsGroup(content: @Composable ColumnScope.() -> Unit) {
     Column(Modifier.fillMaxWidth().padding(vertical = 2.dp).depthCard().padding(horizontal = 6.dp, vertical = 6.dp), content = content)
 }
 
 @Composable
-private fun SettingLink(
+internal fun SettingLink(
     icon: ImageVector,
     title: String,
     subtitle: String,

@@ -227,11 +227,29 @@ fun Shortcut(item: ShortcutItem) {
             Icon(item.icon, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(26.dp))
         }
         Spacer(Modifier.height(8.dp))
-        Text(
-            item.label, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
-            maxLines = 2, overflow = TextOverflow.Ellipsis,
-        )
+        // RF-ALC-04: rótulo curto embaixo do ícone; com a fonte muito grande ele cresce até 1,3x (senão quebraria no meio
+        // da palavra). O leitor de tela continua lendo o nome inteiro.
+        CappedFontScale {
+            Text(
+                item.label, style = MaterialTheme.typography.labelMedium, textAlign = TextAlign.Center,
+                maxLines = 2, overflow = TextOverflow.Ellipsis,
+            )
+        }
     }
+}
+
+/**
+ * RF-ALC-04: limita o aumento da fonte do sistema num rótulo curto de espaço fixo (abas, atalhos), como a One UI faz na
+ * barra de baixo. O resto do app segue a fonte do celular sem limite.
+ */
+@Composable
+fun CappedFontScale(max: Float = 1.3f, content: @Composable () -> Unit) {
+    val d = androidx.compose.ui.platform.LocalDensity.current
+    if (d.fontScale <= max) return content()
+    androidx.compose.runtime.CompositionLocalProvider(
+        androidx.compose.ui.platform.LocalDensity provides androidx.compose.ui.unit.Density(d.density, max),
+        content = content,
+    )
 }
 
 /**

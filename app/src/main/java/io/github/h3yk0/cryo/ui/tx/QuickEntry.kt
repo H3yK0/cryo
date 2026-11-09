@@ -4,14 +4,6 @@ package io.github.h3yk0.cryo.ui.tx
 
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
-import android.Manifest
-import android.app.Activity
-import android.content.pm.PackageManager
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.speech.RecognizerIntent
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -51,20 +43,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
-import androidx.core.content.ContextCompat
-import io.github.h3yk0.cryo.voice.SystemListener
-import io.github.h3yk0.cryo.voice.VoiceEngineKind
-import io.github.h3yk0.cryo.voice.VoiceSettings
-import io.github.h3yk0.cryo.voice.WhisperEngine
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.AppSettings
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.ParseContext
-import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.PhraseParser
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
@@ -80,8 +65,8 @@ fun Ledger.parseContext(settings: AppSettings) = ParseContext(
 )
 
 /**
- * Barra de "registro rápido": a pessoa digita ou fala como falaria com alguém
- * ("almoço 25 no débito") e o app monta o lançamento para ela só conferir.
+ * Barra de "registro rápido": a pessoa escreve como falaria com alguém ("almoço 25 no débito") e o app monta o lançamento
+ * para ela só conferir. Para falar, o botão do meio da barra de baixo (RF-ALC-01).
  */
 @Composable
 fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
@@ -95,53 +80,6 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
         if (t.isBlank()) return
         draft = TxDraft.fromParsed(PhraseParser(l.parseContext(settings)).parse(t))
         focus.clearFocus()
-    }
-
-    val voice = rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) { res ->
-        if (res.resultCode == Activity.RESULT_OK) {
-            val spoken = res.data?.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS)?.firstOrNull()
-            if (!spoken.isNullOrBlank()) {
-                text = spoken
-                submit(spoken)
-            }
-        }
-    }
-
-    /** A tela de voz do sistema (como na 1.5): para celulares sem o Whisper e sem reconhecimento offline, ou sem microfone. */
-    fun legacyListen() {
-        val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
-            // A voz na língua do app (com o país do celular): "mercado 120 no débito", "groceries 120 on debit"...
-            putExtra(RecognizerIntent.EXTRA_LANGUAGE, AppLocale.locale.toLanguageTag())
-            putExtra(RecognizerIntent.EXTRA_PROMPT, Res.s(R.string.quick_fale_por_exemplo))
-            putExtra(RecognizerIntent.EXTRA_PREFER_OFFLINE, true)
-        }
-        try {
-            voice.launch(intent)
-        } catch (_: ActivityNotFoundException) {
-            c.message(Res.s(R.string.quick_este_aparelho_nao_tem))
-        }
-    }
-
-    // RF-VOZ: a voz dentro do Cryo (Whisper ou o reconhecedor do celular só no aparelho), com a tela de eco.
-    val context = LocalContext.current
-    val voiceSettings = remember { VoiceSettings(context) }
-    var listening by remember { mutableStateOf<VoiceEngineKind?>(null) }
-    var askMic by remember { mutableStateOf(false) }
-    val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        askMic = false
-        if (granted) listening = voiceSettings.engine
-        else { c.message(Res.s(R.string.voice_mic_denied)); legacyListen() }
-    }
-
-    fun listen() {
-        focus.clearFocus()
-        val engine = voiceSettings.engine
-        val inApp = (engine == VoiceEngineKind.WHISPER && WhisperEngine.supported) || SystemListener.available(context)
-        if (!inApp) return legacyListen()
-        val kind = if (engine == VoiceEngineKind.PHONE && !SystemListener.available(context)) VoiceEngineKind.WHISPER else engine
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) listening = kind
-        else askMic = true
     }
 
     Surface(
@@ -164,20 +102,13 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
                 keyboardActions = KeyboardActions(onSend = { submit(text) }),
                 modifier = Modifier.weight(1f),
             )
-            if (text.isBlank()) {
-                FilledIconButton(onClick = { listen() }) { Icon(Icons.Rounded.Mic, Res.s(R.string.quick_registrar_falando)) }
-            } else {
-                FilledIconButton(onClick = { submit(text) }) { Icon(Icons.AutoMirrored.Rounded.Send, Res.s(R.string.debt_registrar)) }
-            }
+            // RF-ALC-02: aqui só se escreve; a voz fica no botão do meio da barra de baixo, ao alcance do polegar.
+            FilledIconButton(onClick = { submit(text) }, enabled = text.isNotBlank()) { Icon(Icons.AutoMirrored.Rounded.Send, Res.s(R.string.debt_registrar)) }
         }
     }
 
     draft?.let { d ->
         QuickConfirmSheet(d, l, onDismiss = { draft = null }, onSaved = { draft = null; text = "" })
-    }
-    if (askMic) MicPermissionSheet(onDismiss = { askMic = false }, onAllow = { micPermission.launch(Manifest.permission.RECORD_AUDIO) })
-    listening?.let { kind ->
-        VoiceSheet(l, kind, onDismiss = { listening = null }, onLegacy = { listening = null; legacyListen() })
     }
 }
 
@@ -229,7 +160,7 @@ fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () 
                 onClick = {
                     c.launch {
                         val r = saveDraft(d, c.repo, l)
-                        c.message(r.alert ?: r.summary, Res.s(R.string.wallet_desfazer)) { r.undo() }
+                        c.afterSave(r, income = d.type == io.github.h3yk0.cryo.data.db.TxType.INCOME)
                     }
                     onSaved()
                 },

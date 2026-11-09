@@ -145,6 +145,7 @@ fun PlanScreen(initialTab: Int) {
 @Composable
 private fun BudgetsTab(l: Ledger) {
     val c = LocalContainer.current
+    val nav = LocalNav.current
     val hide = LocalSettings.current.hideValues
     val ym = l.today.ym()
     val usages = l.budgetUsages(ym)
@@ -175,6 +176,8 @@ private fun BudgetsTab(l: Ledger) {
                         else Res.s(R.string.plan_voce_passou_total_planejado, if (hide) Money.HIDDEN else Money.format(spent - limit)),
                         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer,
                     )
+                    // RF-ORC-06: o painel geral do mês (com remanejar só neste mês).
+                    TextButton(onClick = { nav.go(Routes.BUDGET_MONTH) }, modifier = Modifier.padding(top = 4.dp)) { Text(Res.s(R.string.moment_panel)) }
                 }
             }
         }

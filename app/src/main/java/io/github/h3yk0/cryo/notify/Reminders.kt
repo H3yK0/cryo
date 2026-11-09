@@ -39,14 +39,6 @@ object Reminders {
     const val CHANNEL = "bills"
     const val EXTRA_OPEN = "open"
 
-    fun createChannel(context: Context) {
-        if (Build.VERSION.SDK_INT >= 26) {
-            val ch = NotificationChannel(CHANNEL, Res.s(R.string.onboarding_lembretes_contas), NotificationManager.IMPORTANCE_DEFAULT)
-            ch.description = Res.s(R.string.reminder_avisos_contas_fixas_parcelas)
-            context.getSystemService(NotificationManager::class.java).createNotificationChannel(ch)
-        }
-    }
-
     /** Verificação diária, por volta das 9h. */
     fun schedule(context: Context) {
         val now = LocalDateTime.now()
@@ -97,75 +89,3 @@ fun debtReminderTitle(r: DebtReminder, today: LocalDate): String =
 
 fun debtReminderText(r: DebtReminder): String =
     Res.s(R.string.reminder_parcela_toque_para_registrar, Money.format(r.info.nextAmount), r.info.installmentsPaid + 1, r.info.installmentsTotal)
-
-class BillReminderWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
-    override suspend fun doWork(): Result {
-        val app = applicationContext as CryoApp
-        // Sempre os dados de verdade, mesmo com as telas no modo de teste.
-        val c = app.real
-        if (!c.settings.current().remindersEnabled || !Reminders.canNotify(applicationContext)) return Result.success()
-        val today = LocalDate.now()
-        val ledger = Ledger(c.repo.loadOnce(), today)
-        val statuses = dueReminders(ledger)
-
-        val nm = NotificationManagerCompat.from(applicationContext)
-        val open = Intent(applicationContext, MainActivity::class.java)
-            .putExtra(Reminders.EXTRA_OPEN, "bills")
-            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-        val pi = PendingIntent.getActivity(applicationContext, 0, open, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-
-        // RF-SEG-05: com o celular bloqueado, aparece só a versão sem nome e sem valor.
-        val hidden = publicVersion()
-        for (s in statuses) {
-            val n = NotificationCompat.Builder(applicationContext, Reminders.CHANNEL)
-                .setSmallIcon(R.drawable.ic_notification)
-                .setContentTitle(reminderTitle(s, today))
-                .setContentText(Res.s(R.string.reminder_toque_para_marcar_como, Money.format(s.bill.amount)))
-                .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-                .setPublicVersion(hidden)
-                .setContentIntent(pi)
-                .setAutoCancel(true)
-                .build()
-            try {
-                nm.notify((s.bill.id * 100 + s.ym.monthValue).toInt(), n)
-            } catch (_: SecurityException) {
-            }
-        }
-
-        val debts = debtReminders(ledger)
-        if (debts.isNotEmpty()) {
-            val openDebts = Intent(applicationContext, MainActivity::class.java)
-                .putExtra(Reminders.EXTRA_OPEN, "debts")
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
-            val debtPi = PendingIntent.getActivity(applicationContext, 1, openDebts, PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-            for (r in debts) {
-                val n = NotificationCompat.Builder(applicationContext, Reminders.CHANNEL)
-                    .setSmallIcon(R.drawable.ic_notification)
-                    .setContentTitle(debtReminderTitle(r, today))
-                    .setContentText(debtReminderText(r))
-                    .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-                    .setPublicVersion(hidden)
-                    .setContentIntent(debtPi)
-                    .setAutoCancel(true)
-                    .build()
-                try {
-                    // Faixa própria de ids, para não substituir os avisos das contas fixas.
-                    nm.notify((DEBT_NOTIFICATION_BASE + r.info.debt.id * 100 + r.due.monthValue).toInt(), n)
-                } catch (_: SecurityException) {
-                }
-            }
-        }
-        return Result.success()
-    }
-
-    /** O que a tela de bloqueio do celular mostra: só que há uma conta, sem nome nem valor. */
-    private fun publicVersion() = NotificationCompat.Builder(applicationContext, Reminders.CHANNEL)
-        .setSmallIcon(R.drawable.ic_notification)
-        .setContentTitle(Res.s(R.string.sec_notif_public_title))
-        .setContentText(Res.s(R.string.sec_notif_public_text))
-        .build()
-
-    private companion object {
-        const val DEBT_NOTIFICATION_BASE = 1_000_000_000L
-    }
-}

@@ -95,6 +95,9 @@ import io.github.h3yk0.cryo.voice.MicInput
 import io.github.h3yk0.cryo.voice.SystemListener
 import io.github.h3yk0.cryo.voice.VoiceEngineKind
 import io.github.h3yk0.cryo.voice.VoicePhase
+import io.github.h3yk0.cryo.voice.VoiceSettings
+import io.github.h3yk0.cryo.notify.Sound
+import io.github.h3yk0.cryo.notify.Sounds
 import io.github.h3yk0.cryo.voice.VoiceProblem
 import io.github.h3yk0.cryo.voice.VoicePrompt
 import io.github.h3yk0.cryo.voice.VoiceUi
@@ -135,7 +138,7 @@ fun VoiceSheet(
     val listener = remember(kind, round) {
         listeners?.invoke(kind, pctx) ?: when (kind) {
             VoiceEngineKind.WHISPER -> WhisperListener(scope, MicInput(), {
-                WhisperEngine.open(context.assets, pctx.language, VoicePrompt.build(pctx))
+                WhisperEngine.open(context.assets, pctx.language, VoicePrompt.build(pctx), flash = c.dev.enabled && VoiceSettings(context).fastAttention)
             })
             VoiceEngineKind.PHONE -> SystemListener(context)
         }
@@ -156,6 +159,16 @@ fun VoiceSheet(
         }
     }
 
+    // RF-SOM: um "pode falar" curto quando o microfone abre e um "pronto" quando o texto chega.
+    LaunchedEffect(ui.phase) {
+        when (ui.phase) {
+            VoicePhase.LISTENING -> Sounds.play(context, Sound.VOICE_START)
+            VoicePhase.DONE -> if (ui.text.isNotBlank()) Sounds.play(context, Sound.VOICE_END)
+            else -> Unit
+        }
+    }
+    val devMode = remember { c.dev.enabled }
+
     val entries = remember(ui.text) { if (ui.text.isBlank()) emptyList() else Spoken.entries(ui.text, pctx) }
     val done = ui.phase == VoicePhase.DONE
     val drafts = remember(done, ui.text) { mutableStateListOf<TxDraft>().apply { if (done) addAll(entries.map { TxDraft.fromParsed(it) }) } }
@@ -164,7 +177,7 @@ fun VoiceSheet(
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp).navigationBarsPadding()) {
-            StatusRow(ui, kind, hasResult = drafts.isNotEmpty())
+            StatusRow(ui, kind, hasResult = drafts.isNotEmpty(), devMs = if (devMode) ui.finalMs else null)
             Words(ui)
             Echo(ui, done && drafts.isNotEmpty(), onTap = { if (ui.phase == VoicePhase.LISTENING) listener.finish() })
             if (done && drafts.size > 1) {
@@ -192,9 +205,14 @@ fun VoiceSheet(
                             val list = drafts.toList()
                             c.launch {
                                 val results = list.map { saveDraft(it, c.repo, l) }
-                                val msg = results.firstNotNullOfOrNull { it.alert }
-                                    ?: if (results.size == 1) results[0].summary else Res.p(R.plurals.voice_saved_many, results.size, results.size)
-                                c.message(msg, Res.s(R.string.wallet_desfazer)) { results.asReversed().forEach { it.undo() } }
+                                if (results.size == 1) {
+                                    c.afterSave(results[0], income = list[0].type == io.github.h3yk0.cryo.data.db.TxType.INCOME)
+                                } else {
+                                    results.firstNotNullOfOrNull { it.moment }?.let(c.moments::show)
+                                        ?: Sounds.play(c.app, Sound.SAVE)
+                                    val msg = results.firstNotNullOfOrNull { it.alert } ?: Res.p(R.plurals.voice_saved_many, results.size, results.size)
+                                    c.message(msg, Res.s(R.string.wallet_desfazer)) { results.asReversed().forEach { it.undo() } }
+                                }
                             }
                             onDismiss()
                         },
@@ -232,7 +250,7 @@ fun VoiceSheet(
 }
 
 @Composable
-private fun StatusRow(ui: VoiceUi, kind: VoiceEngineKind, hasResult: Boolean) {
+private fun StatusRow(ui: VoiceUi, kind: VoiceEngineKind, hasResult: Boolean, devMs: Long? = null) {
     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 4.dp)) {
         val done = ui.phase == VoicePhase.DONE && hasResult
         if (done) Icon(Icons.Rounded.CheckCircle, null, tint = CryoTheme.colors.income, modifier = Modifier.size(18.dp))
@@ -248,6 +266,11 @@ private fun StatusRow(ui: VoiceUi, kind: VoiceEngineKind, hasResult: Boolean) {
             style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
         Spacer(Modifier.weight(1f))
+        // RF-VOZ-13: no modo desenvolvedor, quanto tempo levou do fim da fala até o texto.
+        if (devMs != null) Text(
+            Res.s(R.string.voice_dev_ms, devMs.toInt()), style = MaterialTheme.typography.labelMedium,
+            color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(end = 8.dp),
+        )
         Text(
             Res.s(if (kind == VoiceEngineKind.WHISPER) R.string.voice_engine_whisper else R.string.voice_engine_phone),
             style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,

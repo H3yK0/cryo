@@ -91,7 +91,8 @@ class VoiceListenerTest {
 
     @Test fun ouveEntendeETerminaSozinho() {
         val audio = speech(0.6, 14, 3.0)
-        val mic = FakeMic(audio)
+        // No ritmo de um microfone: despejando tudo de uma vez, a fala podia acabar antes de o "modelo" carregar (sem releitura).
+        val mic = FakeMic(audio, paced = true)
         val rec = FakeWhisper(live = "Uber 18", final = " Uber, 18 e 90.")
         val ui = run(mic, rec)
         assertEquals(VoicePhase.DONE, ui.phase)
@@ -99,7 +100,7 @@ class VoiceListenerTest {
         assertTrue("sílabas: ${ui.syllables}", ui.syllables in 8..20)
         assertEquals(1, rec.finalCalls.get())
         assertTrue("releituras ao vivo: ${rec.liveCalls.get()}", rec.liveCalls.get() >= 1)
-        // Terminou ~1,2 s depois da fala, sem ler o áudio todo; e o Whisper recebeu só a fala (+ meio segundo antes).
+        // Terminou ~1 s depois da fala, sem ler o áudio todo; e o Whisper recebeu só a fala (+ meio segundo antes).
         assertTrue(mic.pos < audio.size)
         assertTrue("amostras: ${rec.lastSamples}", rec.lastSamples < (0.5 + 14 * 0.23 + 1.4) * rate)
         assertTrue(mic.stopped)

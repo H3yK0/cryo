@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- RF-VOZ-02: o microfone para o registro por voz. O áudio fica só na memória (nunca vira arquivo) e o app não tem internet. -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <!-- RF-AVI-10: o modo compras "ao vivo" (Android 16+). Permissão comum: não pergunta nada à pessoa e não tem relação com rede. -->
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
 
     <!-- Android 11+: para achar o reconhecedor de voz do celular (plano B, só no aparelho). -->
     <queries>
@@ -32,5 +34,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <!-- RF-AVI-03: os botões das notificações ("Já paguei", "Dia sem gastos"...). Só o próprio app chama. -->
+        <receiver
+            android:name=".notify.AlertActionReceiver"
+            android:exported="false" />
+
+        <!-- RF-AVI-09: entrega as figurinhas animadas para quem desenha a notificação, só com permissão dada a cada uma. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.stickers"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/sticker_paths" />
+        </provider>
     </application>
 </manifest>

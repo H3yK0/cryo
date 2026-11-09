@@ -31,7 +31,7 @@ internal object WhisperNative {
     }
 
     external fun nativeAvailable(): Boolean
-    external fun nativeOpen(assets: AssetManager, path: String): Long
+    external fun nativeOpen(assets: AssetManager, path: String, flash: Boolean): Long
     external fun nativeTranscribe(
         handle: Long, pcm: FloatArray, samples: Int, language: String, prompt: String?,
         threads: Int, greedy: Boolean, audioCtx: Int, maxTokens: Int,

@@ -34,8 +34,14 @@ class WhisperEngine private constructor(
         if (rms(pcm, samples) < 0.003f) return ""
         // Ao vivo: janela do tamanho da fala (+ folga) e no máximo 48 pedaços de palavra: rápido, e se o Whisper entrar
         // em repetição a conta para logo. O final usa a janela inteira (30 s), que é o que mais acerta.
-        val ctx = if (live) ((samples + 319) / 320 + 128).coerceIn(256, 1500) else 0
-        val bytes = WhisperNative.nativeTranscribe(handle, pcm, samples, language, prompt, THREADS, live, ctx, if (live) 48 else 0) ?: return null
+        // RF-VOZ-13: o final fica com a janela inteira. A janela curta seria umas 4 vezes mais rápida, mas no teste com o
+        // modelo de verdade ela ouviu "32,40" onde a pessoa disse "32,50": valor errado não compensa a pressa.
+        return if (live) run(pcm, samples, greedy = true, ctx = shortWindow(samples), maxTokens = 48)
+        else run(pcm, samples, greedy = false, ctx = 0, maxTokens = 0)
+    }
+
+    private fun run(pcm: FloatArray, samples: Int, greedy: Boolean, ctx: Int, maxTokens: Int): String? {
+        val bytes = WhisperNative.nativeTranscribe(handle, pcm, samples, language, prompt, THREADS, greedy, ctx, maxTokens) ?: return null
         val text = String(bytes, Charsets.UTF_8).trim()
         // O próprio Whisper diz quando acha que não houve fala (ruído): o texto é descartado.
         return if (WhisperNative.nativeNoSpeech(handle) > 0.6f && text.length < 40) "" else text
@@ -69,18 +75,21 @@ class WhisperEngine private constructor(
         /** Os 4 núcleos rápidos dos celulares de hoje (o A55 tem 4 + 4): mais threads só disputariam com a tela. */
         val THREADS: Int = Runtime.getRuntime().availableProcessors().coerceIn(1, 4)
 
+        /** A janela do tamanho da fala para as palavras ao vivo (cada unidade = 20 ms de áudio), com 2,5 s de folga. */
+        internal fun shortWindow(samples: Int) = ((samples + 319) / 320 + 128).coerceIn(256, 1500)
+
         /** Este celular roda o Whisper? (ARM de 64 bits com fp16 e dotprod.) */
         val supported: Boolean get() = WhisperNative.supported
 
         /** Abre o modelo (lento: ~0,5 s; chame fora da linha principal). Null se este celular não roda o Whisper. */
-        fun open(assets: AssetManager, language: AppLanguage, prompt: String?): WhisperEngine? {
+        fun open(assets: AssetManager, language: AppLanguage, prompt: String?, flash: Boolean = false): WhisperEngine? {
             if (!WhisperNative.loaded) return null
-            return openLoaded(assets, language, prompt)
+            return openLoaded(assets, language, prompt, flash)
         }
 
         /** Com a biblioteca já carregada (o teste no computador carrega a dele). */
-        internal fun openLoaded(assets: AssetManager, language: AppLanguage, prompt: String?): WhisperEngine? {
-            val h = runCatching { WhisperNative.nativeOpen(assets, MODEL) }.getOrDefault(0L)
+        internal fun openLoaded(assets: AssetManager, language: AppLanguage, prompt: String?, flash: Boolean = false): WhisperEngine? {
+            val h = runCatching { WhisperNative.nativeOpen(assets, MODEL, flash) }.getOrDefault(0L)
             return if (h == 0L) null else WhisperEngine(h, language.code, prompt)
         }
     }

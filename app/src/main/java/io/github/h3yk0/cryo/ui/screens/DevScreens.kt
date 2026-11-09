@@ -253,6 +253,18 @@ fun DevScreen() {
                 }
             }
 
+            // RF-VOZ-13: experiência para medir a voz no celular (o tempo aparece na tela de voz com o modo desenvolvedor).
+            if (io.github.h3yk0.cryo.voice.WhisperEngine.supported) {
+                item { DevHeader(Res.s(R.string.dev_voice)) }
+                item {
+                    val voice = remember { io.github.h3yk0.cryo.voice.VoiceSettings(ctx) }
+                    var flash by remember { mutableStateOf(voice.fastAttention) }
+                    CryoCard {
+                        SwitchRow(Res.s(R.string.dev_voice_flash), flash, { voice.fastAttention = it; flash = it }, Res.s(R.string.dev_voice_flash_desc))
+                    }
+                }
+            }
+
             item { DevHeader(Res.s(R.string.dev_este_celular)) }
             item {
                 CryoCard {

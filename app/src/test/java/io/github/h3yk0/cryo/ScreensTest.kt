@@ -91,6 +91,8 @@ class TestApp : Application() {
     override fun onCreate() {
         super.onCreate()
         LocaleSettings.install(systemBase)
+        // As imagens mostram o app já em uso: a pergunta do horário do lembrete (RF-AVI-11) já foi respondida.
+        io.github.h3yk0.cryo.notify.AlertState(this).reminderAsked = true
     }
 }
 

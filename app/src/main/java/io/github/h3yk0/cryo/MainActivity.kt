@@ -78,7 +78,12 @@ class MainActivity : FragmentActivity() {
         val openOnStart = if (savedInstanceState == null) intent?.getStringExtra(Reminders.EXTRA_OPEN) else null
         // Os avisos de contas e de dívidas falam dos dados de verdade: tocar num deles com o modo de teste ligado abre
         // os dados de verdade (senão o pagamento seria registrado nos dados de exemplo).
-        if ((openOnStart == "bills" || openOnStart == "debts") && app.container.sandbox) app.switchData(false)
+        val fromAlert = savedInstanceState == null && intent?.hasExtra(io.github.h3yk0.cryo.notify.Alerts.EXTRA_KIND) == true
+        if ((openOnStart == "bills" || openOnStart == "debts" || openOnStart == "voice" || fromAlert) && app.container.sandbox) app.switchData(false)
+        // RF-AVI-04: abriu o aviso (não ignorou): aquele tipo volta à frequência normal.
+        if (fromAlert) runCatching {
+            io.github.h3yk0.cryo.notify.AlertState(this).markOpened(io.github.h3yk0.cryo.notify.AlertKind.valueOf(intent.getStringExtra(io.github.h3yk0.cryo.notify.Alerts.EXTRA_KIND).orEmpty()))
+        }
         val container = app.container
         shown = container
         // Pede o desbloqueio sempre que o app abre do zero, inclusive quando o Android fechou o app em segundo plano e

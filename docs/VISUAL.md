@@ -262,6 +262,22 @@ A folha de voz (`ui/tx/VoiceSheet.kt`, RF-VOZ-08) segue o protótipo aprovado pe
   R$ 45,00"), "Ajustar" e "Falar de novo".
 - "Remover animações": sem anéis, e palavras e cartõezinhos já no lugar. Imagens 58–62.
 
+### 6.2 Barra com voz, ilustrações e momentos (1.7)
+
+- **Barra de baixo com o botão de voz no centro** (RF-ALC-01): 2 abas de cada lado; o botão tem 68 dp, a cor principal com
+  volume (`raised`) e sobe 22 dp acima da linha da barra; o conteúdo continua por baixo dessa parte. Tocar = falar, segurar =
+  escrever. Rótulos das abas e dos atalhos crescem até 1,3x com a fonte grande (`CappedFontScale`).
+- **Ilustrações próprias** (RF-ILU, `ui/components/Art.kt`): azulejo arredondado com o degradê azul do ícone (`ArtColors`),
+  fio de luz em cima, desenho em branco e azul-gelo com toque dourado. Nunca emoji de teclado. Metas usam `GoalImage`.
+- **Momentos** (RF-MOM, `ui/components/Moments.kt`): meta completa em tela cheia (fundo azul profundo, anel que fica dourado,
+  cristais); orçamento numa folha de baixo (barra que passa da marca, cartão que treme, dica de onde cobrir e o botão de
+  remanejar); sequência e fechamento do mês num cartão no meio com a ilustração saltando. Tudo finito e direto no quadro final
+  com "Remover animações".
+- **Notificações**: cada aviso é uma mensagem do Cryo (o nome do "remetente" é o título; o ícone é o selo do Cryo) seguida da
+  figurinha animada; o resumo da semana é um gráfico de barras parado. Cor de destaque: `ArtColors.deep`.
+- Imagens: 71 (painel do mês), 72 (Avisos e sons), 73 (lembrete do dia), 74–77 (momentos), 78–79 (compras e barra com voz),
+  80–81 (fonte em 200%).
+
 ## 7. Ícones e marca
 
 - Todos os ícones são **Material Icons, estilo Rounded** (`Icons.Rounded.*`; setas `Icons.AutoMirrored.Rounded.*`).

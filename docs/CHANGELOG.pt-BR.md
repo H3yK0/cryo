@@ -2,6 +2,23 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.7 — avisos inteligentes, sons e o botão de voz ao alcance do polegar
+
+- **O botão de voz agora fica no meio da barra de baixo**, em todas as abas, onde o polegar alcança (como na One UI da Samsung): tocar = falar, **segurar = escrever**. O campo de frase do Início fica só para escrever
+- **Avisos inteligentes, um de cada vez**: conta que vence amanhã (com **Já paguei** e **Lembrar amanhã** na própria notificação), orçamento perto ou acima do limite, categoria no ritmo de passar, fatura que fecha amanhã, dia do salário ("Registrar salário" com o valor de sempre), salário atrasado, assinatura que ficou mais cara, cobrança repetida, gasto fora do comum, saldo que vai ficar negativo, meta quase lá, última parcela, saúde financeira que subiu, a semana no domingo e como o mês fechou
+- **Nada de chatice**: no máximo um aviso comum por dia, só em dois horários (de manhã e no horário do lembrete), nada para quem acabou de chegar além das contas; tipos que você dispensa sempre passam a vir menos. Tudo calculado no celular
+- **Lembrete do dia no horário que você escolher** (o Cryo pergunta uma vez): só se nada foi anotado no dia, com os botões **Dia sem gastos** e **Anotar**
+- **Notificações animadas**: cada aviso vem como uma mensagem do Cryo com uma figurinha animada desenhada para a situação (o Android só anima neste estilo de conversa). Nenhum emoji de teclado: todas as imagens são do próprio Cryo
+- **Modo compras ao vivo**: "Vou às compras, até R$ 300" mostra uma notificação ao vivo com quanto já foi e quanto falta (atualizações ao vivo do Android 16 e a Now Bar da One UI 8)
+- **Momentos de comemoração**: meta completa (tela cheia, com cristais de gelo), orçamento em 80% ou estourado (a barra passa da linha e o cartão treme, com a dica de onde cobrir), sequência de dias anotando (3, 7, 14, 30...) e como o mês passado fechou
+- **Painel dos gastos do mês** com todas as categorias com orçamento e as sem orçamento; **remanejar o orçamento entre categorias só neste mês**, com desfazer
+- **Sons próprios do Cryo** (de "cristal de gelo", feitos do zero): salvar, entrou dinheiro, atenção, conquista, começo e fim da voz. Sempre seguem o modo silencioso do celular e dá para desligar
+- **Ajustes › Avisos e sons**: tom Amigo ou Discreto, o horário do lembrete, cada tipo de aviso com **Ver exemplo** e os sons
+- **Voz um pouco mais rápida**: termina 1 segundo depois que você para de falar (era 1,2 s); o modo desenvolvedor mostra o tempo e tem um modo mais rápido experimental para testar
+- Fonte grande (200%) conferida nas telas principais
+- Banco de dados versão 4 (remanejamentos do mês, dias sem gastos, ilustrações das metas); backups antigos continuam abrindo e as metas ganham a ilustração do emoji que tinham
+- Permissão nova: **notificações promovidas** (as atualizações ao vivo do Android 16; não pergunta nada)
+
 ## 1.6 — voz entendida no celular
 
 - **Registro por voz dentro do Cryo, com o Whisper** (um modelo aberto de reconhecimento de fala, dentro do app): o que você fala é entendido no próprio celular, sem internet. O áudio só passa pela memória e é apagado na hora; o Cryo continua sem permissão de internet

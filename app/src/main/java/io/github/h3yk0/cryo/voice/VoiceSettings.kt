@@ -20,7 +20,18 @@ class VoiceSettings(ctx: Context) {
         else prefs.getString(KEY, null)?.let { runCatching { VoiceEngineKind.valueOf(it) }.getOrNull() } ?: VoiceEngineKind.WHISPER
         set(v) { prefs.edit().putString(KEY, v.name).apply() }
 
-    private companion object { const val KEY = "engine" }
+    /**
+     * RF-VOZ-13 (modo desenvolvedor, experimental): a "atenção rápida" do Whisper. No computador deixou o resultado ~25%
+     * mais rápido com o mesmo texto; fica desligada até ser conferida no celular.
+     */
+    var fastAttention: Boolean
+        get() = prefs.getBoolean(KEY_FLASH, false)
+        set(v) { prefs.edit().putBoolean(KEY_FLASH, v).apply() }
+
+    private companion object {
+        const val KEY = "engine"
+        const val KEY_FLASH = "flash_attn"
+    }
 }
 
 /**

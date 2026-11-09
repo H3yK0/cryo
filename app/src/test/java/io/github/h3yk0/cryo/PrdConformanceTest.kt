@@ -40,7 +40,10 @@ class PrdConformanceTest {
     @Test fun semInternetEPermissoesSoAsCombinadas() { // RNF-PRIV-01, RNF-PRIV-03
         val manifest = File(app, "src/main/AndroidManifest.xml").readText()
         val declared = Regex("""<uses-permission[^>]*android:name="([^"]+)"""").findAll(manifest).map { it.groupValues[1] }.toSet()
-        assertEquals(setOf("android.permission.POST_NOTIFICATIONS", "android.permission.USE_BIOMETRIC", "android.permission.RECORD_AUDIO"), declared)
+        assertEquals(
+            setOf("android.permission.POST_NOTIFICATIONS", "android.permission.USE_BIOMETRIC", "android.permission.RECORD_AUDIO", "android.permission.POST_PROMOTED_NOTIFICATIONS"),
+            declared,
+        )
         assertTrue("O app não pode ter permissão de internet", !manifest.contains("android.permission.INTERNET"))
         assertTrue("allowBackup precisa ser false", manifest.contains("""android:allowBackup="false""""))
     }
