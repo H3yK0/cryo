@@ -115,6 +115,30 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
+/**
+ * RF-BLQ-01 (ERR-039): ligar o bloqueio passa por ele uma vez, com a mesma pergunta de quando o app abre. A pessoa vê na hora
+ * que funciona naquele aparelho, e a chave só liga se a digital, o rosto ou a senha do celular forem aceitos.
+ */
+fun confirmDeviceLock(ctx: Context, onOk: () -> Unit) {
+    var c: Context? = ctx
+    while (c is android.content.ContextWrapper && c !is androidx.fragment.app.FragmentActivity) c = c.baseContext
+    // Sem a tela de verdade por trás (imagens de teste), não há a quem perguntar.
+    val activity = c as? androidx.fragment.app.FragmentActivity ?: return onOk()
+    val prompt = androidx.biometric.BiometricPrompt(
+        activity, androidx.core.content.ContextCompat.getMainExecutor(activity),
+        object : androidx.biometric.BiometricPrompt.AuthenticationCallback() {
+            override fun onAuthenticationSucceeded(result: androidx.biometric.BiometricPrompt.AuthenticationResult) = onOk()
+        },
+    )
+    prompt.authenticate(
+        androidx.biometric.BiometricPrompt.PromptInfo.Builder()
+            .setTitle(Res.s(R.string.lock_desbloquear_cryo))
+            .setSubtitle(Res.s(R.string.lock_use_sua_digital_rosto))
+            .setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL)
+            .build(),
+    )
+}
+
 fun canUseDeviceLock(ctx: Context): Boolean =
     BiometricManager.from(ctx).canAuthenticate(
         BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
@@ -227,8 +251,12 @@ fun SettingsScreen() {
                     { v ->
                         if (v && !canUseDeviceLock(ctx)) {
                             c.message(Res.s(R.string.settings_cadastre_digital_rosto_ou))
+                        } else if (v) {
+                            confirmDeviceLock(ctx) {
+                                c.launch { c.lockSettings.setLock(true); c.message(Res.s(R.string.settings_pede_desbloqueio_ao_abrir)) }
+                            }
                         } else {
-                            c.launch { c.lockSettings.setLock(v) }
+                            c.launch { c.lockSettings.setLock(false) }
                         }
                     },
                     Res.s(R.string.settings_pede_desbloqueio_ao_abrir),

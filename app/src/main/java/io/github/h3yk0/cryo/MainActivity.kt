@@ -105,6 +105,10 @@ class MainActivity : FragmentActivity() {
         // a tela volta sozinha (aí a tela antiga vem "restaurada"). Girar a tela ou trocar para o modo de teste não pede
         // de novo. Leitura rápida, para não mostrar nada antes do bloqueio.
         lockOn = runBlocking { container.lockSettings.current().lockEnabled }
+        // RF-BLQ-02 (ERR-039): abrir do zero pede o desbloqueio mesmo com o processo ainda vivo (a pessoa tirou o app dos
+        // Recentes e abriu de novo antes de 1 minuto: o "desbloqueado" continuava valendo). Girar a tela e as recriações do
+        // próprio app (modo de teste, língua) chegam com o estado salvo e não pedem de novo.
+        if (lockOn && savedInstanceState == null) app.unlocked = false
         if (!lockOn) app.unlocked = true
         locked = lockOn && !app.unlocked
         hideFromRecents(lockOn)

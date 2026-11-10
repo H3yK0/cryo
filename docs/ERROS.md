@@ -86,6 +86,12 @@ principal falha; S3 = texto, visual, acessibilidade.
 | ERR-037 | S2 | 1.8 | A previsão por categoria dava alarme falso (61% de chance de passar) num mercado gasto todo no começo do mês: uma fatia fixa de peso ia para os modelos que erravam feio. O laboratório não viu porque os mundos inventados compravam em dias sorteados. | O peso de cada modelo vem do erro encolhido para o erro médio, nunca de uma fatia fixa. Toda mudança no previsor passa no caso do mercado do começo do mês e no mundo `MONTHLY_SHOP` do laboratório. | `ForecastTest.mercadoDoComecoDoMesNaoDaAlarmeFalso`, `EngineTest.ritmoDaCategoriaSemAlarmeNoComeco` |
 | ERR-038 | S3 | 1.8 | Com um investimento só, a Carteira mostrava uma projeção de 5 anos diferente da tela do investimento (os cenários usavam sementes diferentes). | Mesmos dados, mesmo número em todas as telas: a semente dos cenários vem dos próprios dados (os investimentos da conta), nunca de onde a conta é chamada. | `ForecastTest.investimentoComSobeEDesce` |
 
+## Achados em uso (da 1.8 em diante, na ordem em que apareceram)
+
+| ID | Sev. | Versão | O que acontecia | Lei | Guarda |
+|---|---|---|---|---|---|
+| ERR-039 | S1 | 1.8 | Com o bloqueio ligado, fechar o app (tirar dos Recentes) e abrir de novo em menos de 1 minuto não pedia a digital: o "desbloqueado" morava no processo, que continuava vivo. E ligar a chave não confirmava nada. Existia desde a 1.3; achado pelo Hanry no teste da 1.8. | Toda abertura do zero (tela criada sem estado salvo) pede o desbloqueio; só giro de tela e recriações do próprio app ficam de fora. Ligar o bloqueio exige passar por ele uma vez. | `DevModeFlowTest.abrirDoZeroPedeDesbloqueioMesmoComOProcessoVivo`, `DevModeFlowTest.girarATelaNaoPedeDesbloqueioDeNovo` |
+
 ## Regras sem guarda automática (conferir à mão)
 
 Estas não dão para testar no computador; quem mexer na área confere e escreve no relatório da entrega:

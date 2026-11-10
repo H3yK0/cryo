@@ -156,6 +156,8 @@ código anterior. Todos os testes passam.
   conferido campo a campo, planilha sem fórmulas, erro do sensor só libera aparelho sem trava, `FLAG_SECURE` no Android 8–12 com o
   bloqueio ligado, valores enormes por `Money.centsOrNull`, "Já paguei" em transação, apagar categoria leva os remanejamentos,
   cada aviso com o seu `PendingIntent`. Testes `Audit18Test`, `Audit18DataTest`.
+- **Bloqueio** (achado pelo Hanry no teste, ERR-039): abrir do zero sempre pede o desbloqueio (`savedInstanceState == null` em
+  `MainActivity.onCreate`), mesmo com o processo vivo; ligar a chave passa pelo desbloqueio uma vez (`confirmDeviceLock`).
 - **Biblioteca de erros = lei** (`docs/ERROS.md`, PRC-08): cada erro já corrigido, a regra e o teste que guarda; `KnownIssuesTest`.
 - **Previsor novo, do zero** (RF-PRV, PRD 6.12b, `domain/predict/`): série diária sem os extremos (`Series.kt`), 7 modelos clássicos
   (`Models.kt`: perfil da semana, médias de 3 e 6 meses, o mesmo trecho do mês puro e no nível de agora, Holt amortecido, Theta),
@@ -188,10 +190,14 @@ Pedido do Hanry (10/11/2026). Tudo no aparelho, **sem permissão nova e sem muda
      `Ledger.billStatuses`/`forecast` com cuidado: o motor, as categorias e os avisos leem daí). Depois a conferência
      (`ImportRow` ganha o casamento; `ImportModel` grava com `billId`), "Já paguei" (`Repository.markBillPaid`, mantendo a
      transação do ERR-018), a tela "Organizar contas fixas" (`BillReconciler` puro + desfazer) e os apelidos por HMAC no `EngineStore`.
+   - Decisão do Hanry: o pagamento fica **na conta em que aconteceu** (a do extrato); e **criar a conta fixa depois** pergunta se os
+     lançamentos já existentes são ela (RF-CFX-08).
    - Nomes: normalizar com `TxKey.of` (já tira números e pontuação). Parcelas (`installmentTotal > 1`) e `CARD_PAYMENT` não casam.
 2. **RF-PRF — perfil**: `HomeHeader` (`ui/components/Sections.kt`) troca a engrenagem pela bolinha clicável; rota nova `profile`
    (entrar no catálogo de telas do PRD 5.2, senão `PrdConformanceTest.todaTelaEstaNoCatalogo` falha); ajustes novos `avatar` e
    `avatarColor` no DataStore (`SettingsRepository`). Emoji = dado da pessoa (um grafema, `BreakIterator`), nunca texto do app.
+   **Foto própria** também (decisão do Hanry): seletor de fotos do Android (`PickVisualMedia`, sem permissão), cópia de 256 px na
+   área privada, fora do backup.
    Folha de editar com campo de texto: usar `ModalBottomSheet` (o `AlertDialog` com campo trava o Robolectric).
 3. **RF-GUI — guia "Aprender o Cryo"**: `GuidePlanner` puro (molde: `AlertPlanner` + `AlertPlannerTest`), `GuideState` (molde:
    `AlertState`), anfitrião no molde do `MomentHost`. **O `TestApp` precisa desligar o guia** (como faz com `reminderAsked`), senão

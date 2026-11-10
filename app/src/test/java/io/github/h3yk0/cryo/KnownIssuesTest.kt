@@ -17,7 +17,7 @@ class KnownIssuesTest {
     private val rows = File(root, "docs/ERROS.md").readLines().filter { it.startsWith("| ERR-") }.map { line -> line.trim('|').split('|').map { it.trim() } }
 
     @Test fun todoErroTemIdLeiEGuarda() {
-        assertTrue("a biblioteca encolheu: ${rows.size} linhas", rows.size >= 38)
+        assertTrue("a biblioteca encolheu: ${rows.size} linhas", rows.size >= 39)
         val ids = rows.map { it[0] }
         assertEquals("ID repetido", ids.size, ids.toSet().size)
         assertEquals("os IDs seguem a ordem, sem buracos", (1..rows.size).map { "ERR-%03d".format(it) }, ids)

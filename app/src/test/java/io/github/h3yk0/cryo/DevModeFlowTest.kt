@@ -172,6 +172,25 @@ class DevModeFlowTest {
         }
     }
 
+    /**
+     * ERR-039: fechar o app e abrir de novo pede o desbloqueio mesmo antes de 1 minuto e com o processo ainda vivo (antes, o
+     * "desbloqueado" continuava valendo). Girar a tela, que traz o estado salvo, continua sem pedir.
+     */
+    @Test fun abrirDoZeroPedeDesbloqueioMesmoComOProcessoVivo() {
+        realData()
+        runBlocking { app.real.settings.setLock(true) }
+        waitText("Saldo em contas")
+        assertTrue(app.unlocked) // quem já estava dentro continua dentro
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use { assertFalse(app.unlocked) }
+            app.unlocked = true
+            rule.activityRule.scenario.recreate()
+            assertTrue(app.unlocked)
+        } finally {
+            runBlocking { app.real.settings.clear() }
+        }
+    }
+
     /** Entra no modo de teste (dados de exemplo) e espera a tela recriada. */
     private fun testMode() {
         app.real.dev.enabled = true
