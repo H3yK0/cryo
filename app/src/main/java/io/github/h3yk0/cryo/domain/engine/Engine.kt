@@ -83,7 +83,8 @@ object FinanceEngine {
         val seed = seedOf(s, today)
         val all = Recurrences.detect(s.txs, today)
         val recurrences = if (options.dismissed.isEmpty()) all else all.filter { hasher(it.key) !in options.dismissed }
-        val outlook = Outlook.month(l, recurrences, seed)
+        // RF-PRV: a previsão do mês vem do previsor novo (1.8); a da 1.5 ([Outlook.month]) fica como régua nos testes.
+        val outlook = io.github.h3yk0.cryo.domain.predict.Forecaster.month(l, recurrences, seed)
         val projection = Projections.project(l, recurrences, Rng.mix(seed, 1))
         val anomalies = Anomalies.find(l, recurrences)
         val health = HealthScore.of(l)

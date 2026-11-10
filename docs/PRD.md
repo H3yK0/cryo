@@ -46,6 +46,7 @@ anexo é corrigido no mesmo commit.
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 | 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
+| 3.2 | 10/11/2026 | Pedido do Hanry: auditoria do código inteiro e **previsor novo, do zero** (RF-PRV, seção 6.12b), para a **1.8**. Auditoria feita e corrigida (RF-AUD); previsor do mês pronto e ligado ao motor, medido contra o da 1.5. Falta (RF-PRV-06..08): categorias, investimentos, telas. |
 | 3.1 | 09/11/2026 | **1.7 construída**: requisitos marcados como feitos; avisos só em dois horários (RF-AVI-04, sem "horário silencioso" separado); telas TELA-ORCAMENTO-MES e TELA-AVISOS; voz mais rápida medida com o modelo de verdade (RF-VOZ-13: a janela curta erra valores e ficou de fora; atenção rápida como teste no modo desenvolvedor); fonte em 200% conferida (RF-ALC-04). |
 | 3.0 | 09/11/2026 | **1.7 aprovada pelo Hanry**: barra com o botão de voz, tom "amigo", sons, **banco de dados mais flexível** (versão 4: remanejar o orçamento só no mês, dias sem gastos, ilustração das metas) com um **painel geral dos gastos**, sem mascote, lembrete do dia ligado **perguntando antes o horário**. Pedido novo: **nada de emoji de teclado**; ilustrações próprias no estilo do Cryo (RF-ILU). Estudo das notificações animadas e "ao vivo" do Android e da One UI (RF-AVI-09/10). |
 | 2.9 | 09/11/2026 | Retorno do Hanry sobre a 1.6 ("gostei pra caramba", "lentinho, coisa de 5 segundos") e **proposta da 1.7** (seção 6.19c): avisos inteligentes no estilo Duolingo (RF-AVI), sons próprios (RF-SOM), momentos animados (RF-MOM), alertas de orçamento ao salvar e pelo ritmo (RF-ORC-04/05), botão de voz ao alcance do polegar como na One UI (RF-ALC) e voz mais rápida (RF-VOZ-13). |
@@ -413,7 +414,7 @@ próprio aplicativo; algo robusto". **Aprovado em 07/11/2026** e unido ao visual
 |---|---|---|---|
 | RF-MOT-01 | **Núcleo de estatística robusta**: mediana, quantis, desvio robusto (MAD), corte de extremos (winsorização), média com peso pelo tempo (meia-vida de 90 dias), tendência resistente a extremos (Theil–Sen), sorteio com semente (SplitMix64). | Testes com valores conhecidos; um gasto 100× maior não muda a mediana; mesma semente, mesmo sorteio. | ✅ 1.5 |
 | RF-MOT-02 | **Recorrências**: descobre sozinho o que se repete (salário, aluguel, assinaturas, academia): descrição normalizada (sem números, datas, acentos e "parcela 3/10"), valor parecido, intervalo regular (semanal, quinzenal, mensal, anual), pelo menos 3 vezes (anual: 2). Mostra a próxima data e o valor esperado, "valor varia" (conta de luz), **ficou mais cara**, **atrasou** (salário que não veio) e **parou**. Sugere virar conta fixa; "Não é recorrente" esconde. | Histórico inventado com salário, Netflix, academia, luz e 300 compras soltas: acha todas as recorrentes e **nenhuma** compra solta; aumento de preço e atraso apontados no dia certo. | ✅ 1.5 |
-| RF-MOT-03 | **Previsão do mês 2.0** (evolui RF-ANA-01): ritmo do dia a dia aprendido em até 12 meses (dia da semana, começo e fim do mês, peso maior no recente), misturado com o mês atual conforme a confiança; recorrências esperadas e ainda não lançadas entram (sem contar duas vezes as contas fixas); **2.000 cenários** simulados dão a **faixa de 80%** ("entre R$ X e R$ Y") e a **chance de fechar no vermelho**. | Backtest em 24 meses inventados de 4 perfis, nos dias 5, 10, 15, 20 e 25: erro médio menor que o da 1.5; a faixa de 80% contém o valor real em 70%–90% dos casos. | ✅ 1.5 |
+| RF-MOT-03 | **Previsão do mês 2.0** (evolui RF-ANA-01): ritmo do dia a dia aprendido em até 12 meses (dia da semana, começo e fim do mês, peso maior no recente), misturado com o mês atual conforme a confiança; recorrências esperadas e ainda não lançadas entram (sem contar duas vezes as contas fixas); **2.000 cenários** simulados dão a **faixa de 80%** ("entre R$ X e R$ Y") e a **chance de fechar no vermelho**. | Backtest em 24 meses inventados de 4 perfis, nos dias 5, 10, 15, 20 e 25: erro médio menor que o da 1.5; a faixa de 80% contém o valor real em 70%–90% dos casos. | ✅ 1.5 (na 1.8, a conta passa a ser a de RF-PRV-04; esta fica como régua) |
 | RF-MOT-04 | **Próximos meses** (3, 6 e 12): saldo das contas dia a dia com salários e recorrências, contas fixas, faturas (no vencimento, na conta que paga), parcelas futuras, dívidas e o gasto do dia a dia com faixa. Mostra o **dia mais apertado**, o saldo no fim de cada mês e a chance de ficar negativo. | Dados inventados: faturas e parcelas no dia certo; dia mais apertado igual ao calculado à mão; sem dados futuros, a linha segue o ritmo com a faixa abrindo. | ✅ 1.5 |
 | RF-MOT-05 | **Fora do padrão**: gasto muito acima do normal da categoria (desvio robusto > 3,5 e mais que o dobro do comum, com pelo menos 8 gastos na categoria), **cobrança repetida** (mesma descrição e valor em até 2 dias, sem ser parcela), assinatura que subiu e categoria do mês que, até o mesmo dia, já passou de todos os meses anteriores e está pelo menos 60% acima do normal (com 6 meses para comparar). Os gastos são comparados na escala dos logaritmos (gastos têm "cauda longa"). | Dados inventados: aponta a compra fora da curva e a cobrança em dobro; **zero alarmes** num histórico normal de 12 meses. | ✅ 1.5 |
 | RF-MOT-06 | **Saúde financeira**: nota de 0 a 100 com 6 partes, cada uma explicada e com uma sugestão do que fazer: **sobra do mês** (25 pontos: 0% → 0, 20% ou mais → 25), **reserva de emergência** (25: meses de gastos essenciais cobertos por contas, caixinhas e investimentos resgatáveis; 0 → 0, 6 meses → 25), **compromissos** (20: parcelas e dívidas ÷ renda; até 10% → 20, 50% ou mais → 0), **cartão** (10: uso do limite; até 30% → 10, 90% → 0), **em dia** (10: contas e dívidas sem atraso nos últimos 3 meses) e **estabilidade** (10: quanto os gastos variam de um mês para o outro). Faixas com palavras gentis: Atenção · Em construção · Bem · Ótima. | Contas da nota conferidas com perfis inventados (cada parte separada); com menos de 60 dias ou sem renda: "Ainda conhecendo você". Texto diz que não é conselho financeiro. | ✅ 1.5 |
@@ -451,6 +452,65 @@ de teste, cada caso com dados diferentes (semente própria, perfil e tamanho):
 | **Economia de recursos** | 301–400 | Memória usada por cálculo dentro do limite, nada fica preso na memória depois de muitos cálculos seguidos (sem vazamento), número de cenários fixo, nenhuma thread nova, cache que não cresce sem parar. |
 | **Segurança** | 401–500 | Textos maliciosos (enormes, com caracteres de controle, de inversão de escrita, "%s", padrões que travam expressões regulares) terminam rápido e sem erro; o que o motor guarda é hash (HMAC-SHA256) e não contém nenhuma descrição, valor ou nome; backup com senha não deixa nada legível, recusa senha errada e arquivo adulterado; nada do motor fala com rede. |
 
+
+### 6.12b Previsor — RF-PRV (1.8)
+
+Pedido do Hanry (10/11/2026): "um algoritmo de previsão tão robusto e eficiente que se compara a IA, mas algoritmo puro".
+O previsor é **puro Kotlin, sem biblioteca, sem rede e sem rede neural** (PRI-05: cada número se explica). A ideia central
+é a que vence as competições de previsão com séries curtas: **vários métodos simples, combinados pelo desempenho de cada um
+no passado da própria pessoa**, e uma faixa que é **conferida** contra esse passado antes de ser mostrada.
+
+| Código | Requisito | Aceite | Situação |
+|---|---|---|---|
+| RF-PRV-01 | **Séries diárias** (`Series.kt`): cada fluxo (gasto do dia a dia, entradas avulsas, uma categoria) vira um valor por dia (até 3 anos). Quem prevê vê só o passado (`View`), **sem os extremos** (teto no percentil 97,5 dos dias vistos até ali). | Um modelo nunca lê um dia depois do dia da pergunta. | ✅ 1.8 |
+| RF-PRV-02 | **Modelos** (`Models.kt`), todos respondendo "quanto soma nos próximos h dias?": perfil da semana com peso no recente; média de 3 e de 6 meses; o mesmo trecho do mês nos meses passados (puro e ajustado ao nível de agora); Holt amortecido e Theta sobre as semanas. Quem não tem o que dizer fica calado. | Cada modelo tem o seu erro medido no laboratório. | ✅ 1.8 |
+| RF-PRV-03 | **Conjunto** (`Ensemble.kt`): para cada previsão, o Cryo refaz a pergunta em até 20 dias do passado (o mesmo dia do mês nos últimos 12 meses e algumas semanas atrás) e pesa cada modelo pelo erro (1/erro⁴), encolhendo para pesos iguais quando há pouco passado. Os erros "de fora" (pesos refeitos sem aquele dia) dão o espalhamento. **Época do ano** (`Season.kt`): só multiplica a previsão quando os mesmos dias se destacaram **nos dois anos anteriores**, para o mesmo lado. | O conjunto erra menos que o melhor modelo sozinho na média dos mundos. | ✅ 1.8 |
+| RF-PRV-04 | **Previsão do mês** (`Forecaster.month`, no lugar de RF-MOT-03): o que é certo (já aconteceu, agendados, contas fixas, parcelas, recorrências) entra como na 1.5; o incerto (gasto do dia a dia e entradas avulsas) vem do conjunto; 2.000 cenários dão a faixa. Mesmos dados, mesmo resultado. | `ForecastTest`: erra menos que `Outlook.month` (1.5). | ✅ 1.8 |
+| RF-PRV-05 | **Conferência no passado** (calibração conforme): o Cryo refaz a previsão no mesmo dia de até 12 meses anteriores e alarga ou estreita a faixa até ela conter 80% do que aconteceu; corrige o centro só quando o erro para um lado é maior que o acaso. Guarda `Calibration(meses, acertos, erro típico, viés)` para a tela dizer "nos seus últimos N meses, a faixa acertou X". | A faixa de 80% contém o real em 68%–93% dos casos de `ForecastTest`. | ✅ 1.8 |
+| RF-PRV-06 | **Categorias**: a mesma previsão por categoria com orçamento (fecha o mês em quanto, chance de passar do limite), no lugar do ritmo de RF-MOT-07. | Erro menor que `Pacing.alerts` no laboratório. | ⏳ |
+| RF-PRV-07 | **Investimentos**: rentabilidade no tempo (Dietz modificado), sobe e desce (volatilidade), maior queda, e projeção com aportes em cenários (faixa e chance de chegar a um valor). | Testes com rendimentos inventados; nada de promessa de ganho no texto. | ⏳ |
+| RF-PRV-08 | **A previsão se explica** nas telas: quais modelos pesaram (`MonthOutlook.models`), a conferência do passado (`calibration`), a época do ano. Textos nas 10 línguas. | Imagens novas em `ScreensTest`. | ⏳ |
+| RF-PRV-09 | **Laboratório** (`ForecastLabTest`, só com `-PforecastLab=true`) e **teste permanente** (`ForecastTest`): 9 "mundos" inventados e difíceis (`ForecastWorld`: estável, pós-pagamento, tendência, mudança de vida, sazonal, compra semanal, gastos raros, renda irregular, quem cortou gastos). | O previsor só substitui o da 1.5 onde ganha. | ✅ 1.8 |
+
+**Resultado do laboratório** (900 casos: 9 mundos × 2 sementes × 10 meses × dias 5, 10, 15, 20 e 25; erro médio do resultado
+do mês, na moeda; "cob." = em quantos casos a faixa de 80% conteve o real):
+
+```
+mundo       casos |  motor 1.5: erro cob. largura | previsor 1.8: erro cob. largura
+STEADY        100 |    375.37  68.0   872.29 |    337.85  75.0  1021.17
+PAYDAY        100 |    509.65  48.0  1068.52 |    353.74  74.0  1044.40
+TREND         100 |    349.55  89.0  1277.84 |    306.67  88.0  1324.59
+SHIFT         100 |    433.94  70.0  1133.58 |    398.65  79.0  1246.96
+SEASONAL      100 |    418.57  72.0  1124.35 |    461.39  77.0  1407.52
+WEEKLY        100 |    336.18  48.0   675.64 |    230.49  70.0   763.17
+LUMPY         100 |   1448.94  70.0  3691.90 |   1378.86  84.0  5479.42
+FREELANCER    100 |   2064.65  73.0  6514.44 |   2044.68  83.0  8102.10
+SAVER         100 |    359.75  74.0  1030.99 |    348.98  90.0  1408.99
+TODOS         900 |    699.62  68.0  1932.17 |    651.26  80.0  2422.03
+```
+
+**Testado e descartado** (para ninguém repetir): somar a mediana dos erros passados ao centro (piorou em todos os mundos: era
+ruído); modelos "nervosos" (média de 4 semanas, o mês esticado pela curva dos meses passados, o nível do mês misturado ao
+histórico, que é o jeito da 1.5); o "pulso do mês" (aprender se um mês que começa caro continua caro: piorou em todos os
+mundos); época do ano com um ano só de confirmação (alarmes falsos custavam mais do que ela rendia).
+**Limite conhecido**: num mês fora do padrão que nunca se repetiu (o primeiro dezembro caro), o motor da 1.5 reage mais
+depressa; o novo ganha nos outros meses e no conjunto. Os mundos são inventados: a medida de verdade virá do uso.
+Código: `domain/predict/` (`Series.kt`, `Models.kt`, `Season.kt`, `Ensemble.kt`, `Forecaster.kt`). O motor da 1.5
+(`Outlook.month`) continua no código como régua dos testes.
+
+### 6.12c Auditoria da 1.8 — RF-AUD
+
+| Código | Requisito | Situação |
+|---|---|---|
+| RF-AUD-01 | Backup com senha **nunca** sai aberto: se o cofre não responde, o backup falha e avisa (antes gravava sem proteção). | ✅ 1.8 |
+| RF-AUD-02 | Backup lido com limite (64 MB) e conferido campo a campo (valores, datas, dias, contadores); arquivo estragado é recusado com mensagem clara, fora da linha principal. | ✅ 1.8 |
+| RF-AUD-03 | Planilha (CSV) não executa fórmulas vindas de descrições (`=`, `+`, `-`, `@` ganham `'`). | ✅ 1.8 |
+| RF-AUD-04 | Bloqueio: erro do sensor só libera em aparelho **sem** trava de tela; no Android 8–12 a tela fica protegida (`FLAG_SECURE`) com o bloqueio ligado. | ✅ 1.8 |
+| RF-AUD-05 | Dinheiro: valores gigantes não "dão a volta" (`Money.centsOrNull`, teto de 13 algarismos) em frases, importação e JSON; parcelas nunca dividem por zero. | ✅ 1.8 |
+| RF-AUD-06 | Banco: "Já paguei" duas vezes grava um pagamento só (transação); apagar categoria leva os remanejamentos. | ✅ 1.8 |
+| RF-AUD-07 | Avisos: cada aviso abre a sua tela (`PendingIntent` com ação própria); figurinhas por tabela fixa. | ✅ 1.8 |
+
+Testes: `Audit18Test`, `Audit18DataTest`.
 
 ### 6.13 Importação de extratos — RF-IMP (TELA-IMPORTAR, TELA-RELATORIO)
 

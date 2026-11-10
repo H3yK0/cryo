@@ -144,6 +144,10 @@ data class MonthOutlook(
     val certainty: Certainty,
     val historyDays: Int,
     val scenarios: Int,
+    /** RF-PRV-05: a conferência no passado da própria pessoa (null enquanto não há meses bastantes). */
+    val calibration: io.github.h3yk0.cryo.domain.predict.Calibration? = null,
+    /** RF-PRV-08: quanto cada modelo pesou na previsão do gasto do dia a dia. */
+    val models: List<io.github.h3yk0.cryo.domain.predict.ModelShare> = emptyList(),
 ) {
     val expectedIncome: Long get() = expected.filter { it.recurrence.type == TxType.INCOME }.sumOf { (it.recurrence.amount * it.probability).roundToLong() }
     val expectedExpense: Long get() = expected.filter { it.recurrence.type == TxType.EXPENSE }.sumOf { (it.recurrence.amount * it.probability).roundToLong() }

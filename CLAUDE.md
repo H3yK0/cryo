@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **09/11/2026**.
+Situação descrita aqui: **10/11/2026**.
 
 ---
 
@@ -49,6 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
+| 1.8 | 9 (ainda **não** subido no `build.gradle.kts`) | **Em construção** (10/11/2026, PRD 6.12b e 6.12c), sem push: auditoria do código corrigida (commit `ca08339`) e **previsor novo** do mês pronto e ligado ao motor. **Falta** o que está em "Continuar a 1.8" logo abaixo. Branch de trabalho `ccr-e0054817-ha2fkn` (a partir da 1.7). |
 | 1.7 | 8 | **Pronta** (09/11/2026, PRD 6.19c), sem push, aguardando o teste do Hanry: avisos inteligentes estilo Duolingo, sons, momentos animados, painel do mês, botão de voz embaixo (One UI), modo compras ao vivo. Branch `versao-1.7` (a partir da 1.6). |
 | 1.6 | 7 | **Testada e aprovada pelo Hanry** (09/11/2026: "gostei pra caramba"; ~5 s no A55), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
 | 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
@@ -148,6 +149,34 @@ código anterior. Todos os testes passam.
 - **Voz**: o som de "pode falar" não entra na gravação; fim da fala em 1,2 s (como na 1.6); tempo na tela de voz e chave
   experimental "Atenção rápida no Whisper" no modo desenvolvedor. Estudo de outras IAs de fala no PRD (RF-VOZ-14).
 - **Banco de dados versão 4** (`budget_adjustments`, `no_spend_days`, `goals.art`; migração 3→4 automática com `Migration3To4`).
+
+### Continuar a 1.8 (roteiro para a próxima sessão)
+
+O Hanry pediu (10/11/2026): auditar e corrigir o código, e criar do zero um previsor "que se compara a IA, mas algoritmo
+puro". **Feito**: auditoria (RF-AUD, `Audit18Test`, `Audit18DataTest`) e a previsão do mês (RF-PRV-01..05 e 09). **Falta**, nesta ordem:
+
+1. **RF-PRV-06 — categorias**: `Ensemble.forecast(DailySeries.of(txs, hoje, { gasto da categoria }), n - 1, diasQueFaltam)`
+   dá o quanto ainda vai somar; `gasto até hoje + point` = como a categoria fecha o mês; sorteando `drawError` sai a chance de
+   passar do limite (`l.monthLimit`). Entra no lugar de `Pacing.alerts` (`domain/engine/Signals.kt`) **só se errar menos**
+   (medir no `ForecastLabTest`, como foi feito com o mês).
+2. **RF-PRV-07 — investimentos** (`domain/engine/Wealth.kt` já tem `Returns.xirr`): rentabilidade no tempo (Dietz modificado
+   mês a mês com `yields` e aportes), volatilidade, maior queda, e projeção com aportes em cenários (faixa de 80% em 1, 3 e 5
+   anos e chance de chegar a um valor). O `ForecastWorld` já gera o "Fundo Horizonte" para os testes. Texto sem promessa de ganho.
+3. **RF-PRV-08 — telas e textos**: mostrar em Análises (cartão da previsão, `InsightsScreen.kt` / `EngineScreens.kt`) a
+   conferência do passado (`outlook.calibration`: "nos seus últimos N meses, a faixa acertou X"), os modelos que pesaram
+   (`outlook.models`, nomes simples) e os cartões de categorias e investimentos. Strings nas 10 línguas (o script
+   `i18n/apply.py` da sessão antiga não existe mais: editar os 10 `strings.xml`; `PrdConformanceTest` confere). Imagens novas.
+4. **Fechar a versão**: `versionCode 9` / `versionName "1.8"`, `CHANGELOG.md` (inglês), `docs/CHANGELOG.pt-BR.md`, fastlane
+   `changelogs/9.txt` nas 10 línguas (≤ 500 caracteres), PRD (marcar feitos, histórico, roadmap), este arquivo, suíte completa,
+   commit local, APK reproduzível de clone limpo (seção 11) e entrega ao Hanry. **Sem push.**
+5. Avisar o Hanry na entrega: no Android 8–12, com o bloqueio ligado, não dá mais para tirar print do app (`FLAG_SECURE`);
+   backup estragado agora é recusado com mensagem; a 1.5 reage mais rápido num mês fora do padrão que nunca se repetiu.
+
+Como medir qualquer mudança no previsor (não confiar no palpite: várias ideias "óbvias" pioraram, lista no PRD 6.12b):
+```bash
+./gradlew testDebugUnitTest --tests '*ForecastLabTest' -PforecastLab=true     # tudo (~4 min); tabelas em app/build/forecast-*.txt
+./gradlew testDebugUnitTest --tests '*ForecastLabTest.tabela' -PforecastLab=SEASONAL,STEADY:6   # só alguns mundos, 6 sementes
+```
 
 ### Próximos passos imediatos
 
@@ -251,7 +280,8 @@ app/src/main/java/io/github/h3yk0/cryo/
 │                       calendário, fluxo), Debts.kt (dívidas), PhraseParser.kt + PhraseLang.kt (registro por frase e as
 │                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res),
 │                       engine/ (o motor financeiro: Engine.kt junta tudo; Stats, Recurrences, Outlook, Projection,
-│                       Signals, Health, Wealth, CategoryModel, TxKey)
+│                       Signals, Health, Wealth, CategoryModel, TxKey),
+│                       predict/ (1.8, o previsor: Series, Models, Season, Ensemble, Forecaster)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
 ├── voice/            Voz no aparelho (1.6): WhisperNative (JNI), WhisperEngine, Listener (WhisperListener e o medidor de
 │                       volume/sílabas), SystemListener (plano B), AudioInput/MicInput, VoiceSettings e VoicePrompt
@@ -373,6 +403,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `WhisperHostTest` | A ponte JNI e o modelo de verdade, compilados para o computador (só com `-PwhisperHost=true`, depois de `app/src/test/cpp/build-host.sh`) |
 | `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.7): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
 | `MomentsTest`, `BudgetMonthTest`, `Screens17Test` | Momentos depois de salvar e o modo compras; remanejar só no mês e backup; imagens 71–81 (painel, avisos, momentos, compras, botão de voz, fonte em 200%) |
+| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -542,6 +573,10 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
   na 1.6 aprovada e não dá para testar no celular daqui: fica como chave do modo desenvolvedor até o Hanry medir no A55.
 - **Rótulos curtos com a fonte limitada a 1,3x** (abas e atalhos, `CappedFontScale`): com a fonte em 200% eles quebravam no meio
   da palavra; o resto do app cresce sem limite (RF-ALC-04).
+- **Previsor por conjunto de modelos simples, pesados pelo passado da própria pessoa** (1.8): sem rede neural (pouco dado por
+  pessoa, sem internet, tudo explicável). O que decide é o laboratório (`ForecastLabTest`): o motor da 1.5 fica no código como
+  régua e o novo só entra onde erra menos. Faixa conferida contra o passado (calibração conforme): prometer 80% e cumprir.
+- **Época do ano só com dois anos de confirmação** (1.8): com um ano, os alarmes falsos custavam mais do que ela rendia.
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 

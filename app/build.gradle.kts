@@ -93,6 +93,8 @@ android {
             it.systemProperty("cryo.tourGif", (project.findProperty("tourGif") ?: "false").toString())
             // Quadros das figurinhas animadas das notificações (RF-ILU-04): -Pstickers=true, depois tools/stickers/make_stickers.sh
             it.systemProperty("cryo.stickers", (project.findProperty("stickers") ?: "false").toString())
+            // Laboratório da previsão (RF-PRV): mede o motor atual e o novo nos mundos inventados. -PforecastLab=true
+            it.systemProperty("cryo.forecastLab", (project.findProperty("forecastLab") ?: "false").toString())
             // A ponte do Whisper compilada para o computador (app/src/test/cpp/build-host.sh), com o modelo de verdade:
             // ./gradlew testDebugUnitTest --tests '*WhisperHostTest' -PwhisperHost=true
             if (project.findProperty("whisperHost") == "true") {
