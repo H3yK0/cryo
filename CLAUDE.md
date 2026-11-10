@@ -176,6 +176,29 @@ código anterior. Todos os testes passam.
 - **Avisar o Hanry**: no Android 8–12, com o bloqueio ligado, não dá para tirar print do app (`FLAG_SECURE`); backup estragado agora é
   recusado com mensagem; num mês fora do padrão que nunca se repetiu, a 1.5 reagia mais depressa (o novo ganha no conjunto).
 
+### Continuar: a 1.9 (roteiro; a especificação completa está no PRD 6.19d)
+
+Pedido do Hanry (10/11/2026). Tudo no aparelho, **sem permissão nova e sem mudar o banco** (versão 4). Nesta ordem:
+
+1. **RF-CFX — contas fixas × extrato** (conserta número errado: fazer primeiro). Causa conferida: a importação não conhece contas
+   fixas (`importer/ImportPlan.kt` só compara valor + conta + 3 dias); "paga" = movimentação com `billId`/`billYm`. A linha
+   importada entra sem vínculo → conta fixa segue pendente, a previsão conta em dobro (`pendingBillsExpense` em
+   `domain/Analytics.kt`) e "Já paguei" depois cria uma segunda movimentação.
+   - Começar pela regra pura `BillMatcher` (em `importer/`, com testes JVM) e por RF-CFX-07 (previsão sem dobro: mexer em
+     `Ledger.billStatuses`/`forecast` com cuidado: o motor, as categorias e os avisos leem daí). Depois a conferência
+     (`ImportRow` ganha o casamento; `ImportModel` grava com `billId`), "Já paguei" (`Repository.markBillPaid`, mantendo a
+     transação do ERR-018), a tela "Organizar contas fixas" (`BillReconciler` puro + desfazer) e os apelidos por HMAC no `EngineStore`.
+   - Nomes: normalizar com `TxKey.of` (já tira números e pontuação). Parcelas (`installmentTotal > 1`) e `CARD_PAYMENT` não casam.
+2. **RF-PRF — perfil**: `HomeHeader` (`ui/components/Sections.kt`) troca a engrenagem pela bolinha clicável; rota nova `profile`
+   (entrar no catálogo de telas do PRD 5.2, senão `PrdConformanceTest.todaTelaEstaNoCatalogo` falha); ajustes novos `avatar` e
+   `avatarColor` no DataStore (`SettingsRepository`). Emoji = dado da pessoa (um grafema, `BreakIterator`), nunca texto do app.
+   Folha de editar com campo de texto: usar `ModalBottomSheet` (o `AlertDialog` com campo trava o Robolectric).
+3. **RF-GUI — guia "Aprender o Cryo"**: `GuidePlanner` puro (molde: `AlertPlanner` + `AlertPlannerTest`), `GuideState` (molde:
+   `AlertState`), anfitrião no molde do `MomentHost`. **O `TestApp` precisa desligar o guia** (como faz com `reminderAsked`), senão
+   as telas de teste ganham um cartão por cima. Um destaque por vez; animação finita.
+4. Fechar: textos nas 10 línguas, imagens 86+, `versionCode 10` / `"1.9"`, changelogs (3 arquivos + 10 da loja), PRD (marcar feitos,
+   catálogo), `docs/ERROS.md` (os defeitos do item 1 viram `ERR-039+` com guarda), suíte inteira, APK de clone limpo. **Sem push.**
+
 ### Próximos passos imediatos
 
 1. **1.5**: guardada para lançar por volta de 07/12/2026 (pedido do Hanry). Se esta sessão não existir mais, recuperar o código do
@@ -616,7 +639,8 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
 4. **1.6**: **voz melhor e no aparelho** (feita e aprovada). **1.7**: avisos inteligentes, sons, momentos animados, alertas de
    orçamento, voz ao alcance do polegar (pronta, aguardando o teste). **1.8**: auditoria, biblioteca de erros e previsor novo
-   (pronta, aguardando o teste). Depois: widgets na tela inicial; dívida quitada e última
+   (pronta, aguardando o teste). **1.9** (proposta, PRD 6.19d): contas fixas que se acertam com o extrato, perfil, guia
+   "Aprender o Cryo". Depois: widgets na tela inicial; dívida quitada e última
    parcela como momentos (RF-MOM-04).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
