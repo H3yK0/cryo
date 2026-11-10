@@ -638,9 +638,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Primero configura una huella, el rostro o un bloqueo de pantalla en Android</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Pide desbloquear al abrir la app</string>
     <string name="settings_lembretes">Recordatorios</string>
-    <string name="settings_modo_teste_lembretes_continuam">En el modo de prueba, los recordatorios siguen avisando de tus pagos reales.</string>
-    <string name="settings_avisar_contas_vencer">Avisar de pagos por vencer</string>
-    <string name="settings_notificacao_dia_que_voce">Notificación el día que elijas en cada pago fijo</string>
     <string name="settings_registro_rapido">Registro rápido</string>
     <string name="settings_conta_principal_usada_quando">Cuenta principal (se usa cuando no dices la cuenta)</string>
     <string name="settings_nomes_icones_cores_palavras">Nombres, iconos, colores y palabras clave</string>
@@ -867,7 +864,6 @@
     <string name="quick_confira_lancamento">Revisa el movimiento</string>
     <string name="quick_foi_isso_que_eu">Esto es lo que entendí. Ajusta lo que necesites y guarda.</string>
     <string name="quick_escreva_ou_fale_seu">Escribe o habla a tu manera: “recibí 3000 de sueldo”, “tele 1200 en 10 cuotas con tarjeta”.</string>
-    <string name="quick_falar">Hablar</string>
     <string name="quick_fale_por_exemplo">Di, por ejemplo: supermercado 120 con débito</string>
     <string name="common_valor_escondido">Importe oculto</string>
     <string name="common_transferencia">Transferencia</string>
@@ -1136,13 +1132,11 @@
     <string name="phrase_pagamento">Pago · %1$s</string>
     <string name="phrase_dinheiro_guardado">Dinero ahorrado</string>
     <string name="phrase_dinheiro_retirado">Dinero retirado</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">Avisos de pagos fijos y cuotas de deudas cerca del vencimiento</string>
     <string name="reminder_venceu_ontem">venció ayer</string>
     <string name="reminder_vence_hoje">vence hoy</string>
     <string name="reminder_vence_amanha">vence mañana</string>
     <string name="reminder_parcela">Cuota de %1$s %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · cuota %2$s de %3$s · toca para registrar</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · toca para marcar como pagado</string>
     <string name="backup_avisa_quando_backup_automatico">Avisa cuando la copia automática no puede guardar o te necesita</string>
     <string name="backup_backup_automatico_falhou">La copia automática %1$s falló</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo protegió tu copia %1$s</string>
@@ -1579,8 +1573,6 @@
     <string name="sec_open_help">Escribe la contraseña que se usó al proteger esta copia.</string>
     <string name="sec_open_button">Abrir</string>
     <string name="sec_opening">Abriendo…</string>
-    <string name="sec_notif_public_title">Recordatorio de Cryo</string>
-    <string name="sec_notif_public_text">Tienes una cuenta por pagar. Desbloquea el teléfono para verla.</string>
     <string name="voice_preparing">Preparando…</string>
     <string name="voice_listening">Escuchando…</string>
     <string name="voice_thinking">Entendiendo…</string>
@@ -1826,5 +1818,6 @@
     </plurals>
     <string name="dev_voice">Voz</string>
     <string name="dev_voice_flash">Atención rápida en Whisper (prueba)</string>
-    <string name="dev_voice_flash_desc">En el ordenador hizo el resultado ~20% más rápido, con el mismo texto. El tiempo aparece en la pantalla de voz. Desactívalo si la voz se traba o se equivoca.</string>
+    <string name="dev_voice_flash_desc" formatted="false">En el ordenador hizo el resultado ~20% más rápido, con el mismo texto. El tiempo aparece en la pantalla de voz. Desactívalo si la voz se traba o se equivoca.</string>
+    <string name="sec_protection_unavailable">La protección con contraseña está activada, pero el almacén de claves de este teléfono no entregó la clave. No se guardó nada sin contraseña. En Ajustes, desactiva y vuelve a activar la protección de las copias.</string>
 </resources>

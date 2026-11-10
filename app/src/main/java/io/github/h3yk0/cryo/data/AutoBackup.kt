@@ -371,8 +371,9 @@ object SafFiles {
         out.use { it.write(bytes); it.flush() }
     }
 
+    /** O texto do arquivo, ou null se não abriu ou é maior que um backup pode ser (um arquivo enorme não estoura a memória). */
     fun read(resolver: ContentResolver, uri: Uri): String? =
-        resolver.openInputStream(uri)?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+        readBytes(resolver, uri, Backup.MAX_BYTES)?.toString(Charsets.UTF_8)
 
     /** O arquivo inteiro, ou null se for maior que [max] bytes (não lê o resto: um arquivo enorme não estoura a memória). */
     fun readBytes(resolver: ContentResolver, uri: Uri, max: Int): ByteArray? {
@@ -563,7 +564,15 @@ class AutoBackupRunner(
         if (!BackupPolicy.hasData(snap)) return due.map { BackupOutcome(it, BackupStatus.NOTHING_TO_SAVE) }
         val hash = BackupPolicy.dataHash(snap)
         // A impressão digital é sempre dos dados abertos: ligar ou desligar a senha não faz gravar cópia igual à toa.
-        val json = Backup.export(snap, exportedAt = now).let { protection?.seal(it, now) ?: it }
+        val json = try {
+            Backup.export(snap, exportedAt = now).let { protection?.seal(it, now) ?: it }
+        } catch (e: BackupProtection.Unavailable) {
+            // RF-SEG-03: a proteção está ligada e o cofre não abriu. Sem senha nada é gravado; a pessoa é avisada.
+            return due.map { t ->
+                runCatching { store.recordFailure(t, now, BackupErrors.PROTECTION) }
+                BackupOutcome(t, BackupStatus.FAILED, BackupErrors.PROTECTION)
+            }
+        }
         val localNow = LocalDateTime.ofInstant(Instant.ofEpochMilli(now), zone())
         return due.map { t -> backupOne(t, st, force, snap, hash, json, now, localNow) }
     }
@@ -731,6 +740,7 @@ object BackupErrors {
     val LOCKED: String get() = Res.s(R.string.sec_backup_locked_found)
     val CANT_OPEN_FOLDER: String get() = Res.s(R.string.backup_err_cant_open_folder)
     val READ_DATA: String get() = Res.s(R.string.backup_err_read_data)
+    val PROTECTION: String get() = Res.s(R.string.sec_protection_unavailable)
     val CANT_CHECK: String get() = Res.s(R.string.backup_err_cant_check)
 
     fun message(e: Throwable, t: BackupTarget): String {

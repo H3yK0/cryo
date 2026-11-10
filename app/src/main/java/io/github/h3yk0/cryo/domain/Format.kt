@@ -46,6 +46,26 @@ object Money {
 
     private fun units(cents: Long): BigDecimal = BigDecimal.valueOf(cents).movePointLeft(2)
 
+    /**
+     * O maior valor que o Cryo aceita: 9.999.999.999.999,99. Acima disso é erro de digitação ou arquivo estragado, nunca um
+     * gasto de verdade; e somar muitos valores assim estouraria a conta (os valores são guardados em centavos, num Long).
+     */
+    const val MAX_CENTS = 999_999_999_999_999L
+    private val BIG_MAX = BigDecimal.valueOf(MAX_CENTS)
+
+    /**
+     * Centésimos de um número decimal, ou null se passa do teto. `BigDecimal.toLong()` daria a volta em silêncio (um valor
+     * gigante virava outro número qualquer, até negativo) e um expoente enorme ("1e999999999") travaria o celular: as casas
+     * são conferidas antes de qualquer conta.
+     */
+    fun centsOrNull(units: BigDecimal): Long? {
+        val intDigits = units.precision() - units.scale() // casas antes da vírgula (negativo = número minúsculo)
+        if (units.signum() == 0 || intDigits < -3) return 0L
+        if (intDigits > 13) return null
+        val c = units.movePointRight(2).setScale(0, RoundingMode.HALF_UP)
+        return if (c.abs() > BIG_MAX) null else c.toLong()
+    }
+
     /** 123456 -> "R$ 1.234,56" (em pt-BR com real). [symbol] = false: só o número ("1.234,56"). */
     fun format(cents: Long, symbol: Boolean = true): String {
         val f = formats()
@@ -135,7 +155,7 @@ object Money {
             else -> t.replace(".", "")
         }
         val d = normalized.toBigDecimalOrNull() ?: return null
-        return d.movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+        return centsOrNull(d)
     }
 }
 

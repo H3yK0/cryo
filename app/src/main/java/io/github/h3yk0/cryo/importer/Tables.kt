@@ -297,7 +297,7 @@ object Columns {
 
         fun money(c: Cell?): Long? = when {
             c == null || c.isBlank -> null
-            c.number != null -> Values.cents(c.number)
+            c.number != null -> Values.centsOrNull(c.number)
             else -> Values.amount(c.text, decimalComma)
         }
 

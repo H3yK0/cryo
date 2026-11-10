@@ -638,9 +638,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Imposta prima un\'impronta, il volto o un blocco schermo in Android</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Chiede lo sblocco all\'apertura dell\'app</string>
     <string name="settings_lembretes">Promemoria</string>
-    <string name="settings_modo_teste_lembretes_continuam">In modalità di prova, i promemoria continuano ad avvisarti delle tue spese reali.</string>
-    <string name="settings_avisar_contas_vencer">Avvisa delle spese in scadenza</string>
-    <string name="settings_notificacao_dia_que_voce">Notifica nel giorno che scegli per ogni spesa fissa</string>
     <string name="settings_registro_rapido">Registrazione rapida</string>
     <string name="settings_conta_principal_usada_quando">Conto principale (usato quando non dici il conto)</string>
     <string name="settings_nomes_icones_cores_palavras">Nomi, icone, colori e parole chiave</string>
@@ -867,7 +864,6 @@
     <string name="quick_confira_lancamento">Controlla il movimento</string>
     <string name="quick_foi_isso_que_eu">Ecco cosa ho capito. Correggi quello che serve e salva.</string>
     <string name="quick_escreva_ou_fale_seu">Scrivi o parla a modo tuo: “ricevuto 3000 di stipendio”, “tv 1200 in 10 rate con carta di credito”.</string>
-    <string name="quick_falar">Parla</string>
     <string name="quick_fale_por_exemplo">Di\', per esempio: spesa 120 con bancomat</string>
     <string name="common_valor_escondido">Importo nascosto</string>
     <string name="common_transferencia">Trasferimento</string>
@@ -1136,13 +1132,11 @@
     <string name="phrase_pagamento">Pagamento · %1$s</string>
     <string name="phrase_dinheiro_guardado">Soldi messi da parte</string>
     <string name="phrase_dinheiro_retirado">Soldi prelevati</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">Avvisi di spese fisse e rate dei debiti vicine alla scadenza</string>
     <string name="reminder_venceu_ontem">è scaduta ieri</string>
     <string name="reminder_vence_hoje">scade oggi</string>
     <string name="reminder_vence_amanha">scade domani</string>
     <string name="reminder_parcela">Rata di %1$s %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · rata %2$s di %3$s · tocca per registrare</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · tocca per segnarla come pagata</string>
     <string name="backup_avisa_quando_backup_automatico">Avvisa quando il backup automatico non riesce a salvare o ha bisogno di te</string>
     <string name="backup_backup_automatico_falhou">Il backup automatico %1$s non è riuscito</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo ha protetto il tuo backup %1$s</string>
@@ -1579,8 +1573,6 @@
     <string name="sec_open_help">Inserisci la password usata per proteggere questo backup.</string>
     <string name="sec_open_button">Apri</string>
     <string name="sec_opening">Apertura…</string>
-    <string name="sec_notif_public_title">Promemoria di Cryo</string>
-    <string name="sec_notif_public_text">Hai un conto da pagare. Sblocca il telefono per vederlo.</string>
     <string name="voice_preparing">Preparazione…</string>
     <string name="voice_listening">Ascolto…</string>
     <string name="voice_thinking">Sto capendo…</string>
@@ -1826,5 +1818,6 @@
     </plurals>
     <string name="dev_voice">Voce</string>
     <string name="dev_voice_flash">Attenzione rapida in Whisper (prova)</string>
-    <string name="dev_voice_flash_desc">Sul computer il risultato è ~20% più veloce, con lo stesso testo. Il tempo appare nella schermata della voce. Disattiva se la voce si blocca o sbaglia.</string>
+    <string name="dev_voice_flash_desc" formatted="false">Sul computer il risultato è ~20% più veloce, con lo stesso testo. Il tempo appare nella schermata della voce. Disattiva se la voce si blocca o sbaglia.</string>
+    <string name="sec_protection_unavailable">La protezione con password è attiva, ma l\'archivio chiavi di questo telefono non ha rilasciato la chiave. Nulla è stato salvato senza password. In Impostazioni, disattiva e riattiva la protezione dei backup.</string>
 </resources>

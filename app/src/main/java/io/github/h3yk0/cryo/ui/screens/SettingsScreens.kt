@@ -145,7 +145,14 @@ fun SettingsScreen() {
     val exportJson = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/json")) { uri ->
         if (uri != null) c.launch {
             val now = System.currentTimeMillis()
-            val ok = writeText(ctx, uri, c.backupProtection.seal(Backup.export(c.repo.loadOnce(), exportedAt = now, testMode = c.sandbox), now, c.sandbox))
+            // RF-SEG-03: com a proteção ligada, ou a cópia sai trancada ou não sai (nunca aberta sem a pessoa saber).
+            val text = try {
+                c.backupProtection.seal(Backup.export(c.repo.loadOnce(), exportedAt = now, testMode = c.sandbox), now, c.sandbox)
+            } catch (e: io.github.h3yk0.cryo.data.BackupProtection.Unavailable) {
+                c.message(e.message ?: Res.s(R.string.settings_nao_foi_possivel_salvar))
+                return@launch
+            }
+            val ok = writeText(ctx, uri, text)
             c.message(if (ok) Res.s(R.string.settings_backup_salvo) else Res.s(R.string.settings_nao_foi_possivel_salvar))
         }
     }
@@ -162,16 +169,14 @@ fun SettingsScreen() {
     val importJson = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) c.launch {
             try {
-                val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
-                    ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
+                val text = readBackupFile(ctx, uri)
                 withContext(Dispatchers.Main) { openBackup(text) }
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
                 c.message(e.message ?: Res.s(R.string.settings_arquivo_invalido))
+            } catch (e: Exception) {
+                c.message(Res.s(R.string.settings_arquivo_invalido))
             }
         }
-    }
-    val notifPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
-        if (!granted) c.message(Res.s(R.string.settings_sem_permissao_lembretes_nao))
     }
 
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.settings), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->

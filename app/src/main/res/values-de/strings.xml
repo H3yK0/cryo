@@ -638,9 +638,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Richte zuerst einen Fingerabdruck, Gesichtserkennung oder eine Displaysperre in Android ein</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Fragt beim Öffnen nach dem Entsperren</string>
     <string name="settings_lembretes">Erinnerungen</string>
-    <string name="settings_modo_teste_lembretes_continuam">Im Testmodus erinnern dich die Erinnerungen weiter an deine echten Fixkosten.</string>
-    <string name="settings_avisar_contas_vencer">An fällige Fixkosten erinnern</string>
-    <string name="settings_notificacao_dia_que_voce">Benachrichtigung an dem Tag, den du bei jeden Fixkosten wählst</string>
     <string name="settings_registro_rapido">Schnellerfassung</string>
     <string name="settings_conta_principal_usada_quando">Hauptkonto (wird genutzt, wenn du kein Konto nennst)</string>
     <string name="settings_nomes_icones_cores_palavras">Namen, Symbole, Farben und Stichwörter</string>
@@ -867,7 +864,6 @@
     <string name="quick_confira_lancamento">Prüf den Umsatz</string>
     <string name="quick_foi_isso_que_eu">Das habe ich verstanden. Pass an, was nötig ist, und speichere.</string>
     <string name="quick_escreva_ou_fale_seu">Schreib oder sprich, wie du willst: „3000 Gehalt erhalten“, „Fernseher 1200 in 10 Raten mit Kreditkarte“.</string>
-    <string name="quick_falar">Sprechen</string>
     <string name="quick_fale_por_exemplo">Sag zum Beispiel: Supermarkt 120 mit Karte</string>
     <string name="common_valor_escondido">Betrag ausgeblendet</string>
     <string name="common_transferencia">Umbuchung</string>
@@ -1136,13 +1132,11 @@
     <string name="phrase_pagamento">Zahlung · %1$s</string>
     <string name="phrase_dinheiro_guardado">Geld zurückgelegt</string>
     <string name="phrase_dinheiro_retirado">Geld entnommen</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">Hinweise auf Fixkosten und Schuldenraten kurz vor Fälligkeit</string>
     <string name="reminder_venceu_ontem">war gestern fällig</string>
     <string name="reminder_vence_hoje">ist heute fällig</string>
     <string name="reminder_vence_amanha">ist morgen fällig</string>
     <string name="reminder_parcela">Rate für %1$s %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · Rate %2$s von %3$s · tippen zum Erfassen</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · tippen, um als bezahlt zu markieren</string>
     <string name="backup_avisa_quando_backup_automatico">Meldet, wenn die automatische Sicherung nicht speichern kann oder dich braucht</string>
     <string name="backup_backup_automatico_falhou">Automatische Sicherung %1$s fehlgeschlagen</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo hat deine Sicherung %1$s geschützt</string>
@@ -1579,8 +1573,6 @@
     <string name="sec_open_help">Gib das Passwort ein, mit dem diese Sicherung geschützt wurde.</string>
     <string name="sec_open_button">Öffnen</string>
     <string name="sec_opening">Wird geöffnet…</string>
-    <string name="sec_notif_public_title">Erinnerung von Cryo</string>
-    <string name="sec_notif_public_text">Du hast eine Rechnung zu bezahlen. Entsperre dein Handy, um sie zu sehen.</string>
     <string name="voice_preparing">Wird vorbereitet…</string>
     <string name="voice_listening">Ich höre zu…</string>
     <string name="voice_thinking">Wird verstanden…</string>
@@ -1826,5 +1818,6 @@
     </plurals>
     <string name="dev_voice">Sprache</string>
     <string name="dev_voice_flash">Schnelle Attention in Whisper (Test)</string>
-    <string name="dev_voice_flash_desc">Am Computer ~20 % schneller mit demselben Text. Die Zeit steht im Sprachfenster. Ausschalten, wenn die Spracheingabe hängt oder Fehler macht.</string>
+    <string name="dev_voice_flash_desc" formatted="false">Am Computer ~20 % schneller mit demselben Text. Die Zeit steht im Sprachfenster. Ausschalten, wenn die Spracheingabe hängt oder Fehler macht.</string>
+    <string name="sec_protection_unavailable">Der Passwortschutz ist an, aber der Schlüsselspeicher dieses Handys hat den Schlüssel nicht freigegeben. Nichts wurde ohne Passwort gespeichert. Schalte den Backup-Schutz in den Einstellungen aus und wieder ein.</string>
 </resources>

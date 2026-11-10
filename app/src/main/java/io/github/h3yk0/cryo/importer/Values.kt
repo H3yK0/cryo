@@ -6,6 +6,7 @@ import io.github.h3yk0.cryo.domain.AppLanguage
 import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.PhraseLang
 import io.github.h3yk0.cryo.domain.normalized
+import io.github.h3yk0.cryo.domain.Money
 import java.math.BigDecimal
 import java.math.RoundingMode
 import java.nio.ByteBuffer
@@ -238,12 +239,13 @@ object Values {
         val plain = if (decimal == null) t.replace(".", "").replace(",", "")
         else t.substring(0, t.lastIndexOf(decimal)).replace(".", "").replace(",", "") + "." + t.substring(t.lastIndexOf(decimal) + 1)
         val value = plain.toBigDecimalOrNull() ?: return null
-        val cents = value.movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+        // Valor absurdo (ou com expoente gigante) é uma linha que não deu para ler, nunca um número qualquer.
+        val cents = Money.centsOrNull(value) ?: return null
         return if (negative) -cents else cents
     }
 
-    /** Valor que veio como número de verdade (planilha, JSON): 12.5 -> 1250. */
-    fun cents(value: Double): Long = BigDecimal.valueOf(value).movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+    /** Valor que veio como número de verdade (planilha, JSON): 12.5 -> 1250. Null se não é um número de verdade ou é absurdo. */
+    fun centsOrNull(value: Double): Long? = if (value.isNaN() || value.isInfinite()) null else Money.centsOrNull(BigDecimal.valueOf(value))
 
     /**
      * Os valores de uma coluna usam vírgula para os centavos? Olha todos: ",50" no fim decide. Sem centavos em nenhum

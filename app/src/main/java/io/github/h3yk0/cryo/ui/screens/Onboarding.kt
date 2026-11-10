@@ -132,11 +132,12 @@ fun OnboardingScreen() {
     val pickBackup = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
         if (uri != null) c.launch {
             try {
-                val text = withContext(Dispatchers.IO) { ctx.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() } }
-                    ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
+                val text = readBackupFile(ctx, uri)
                 withContext(Dispatchers.Main) { openBackup(text) }
-            } catch (e: Exception) {
+            } catch (e: IllegalArgumentException) {
                 c.message(e.message ?: Res.s(R.string.settings_arquivo_invalido))
+            } catch (e: Exception) {
+                c.message(Res.s(R.string.settings_arquivo_invalido))
             }
         }
     }

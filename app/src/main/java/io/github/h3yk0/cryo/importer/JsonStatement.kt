@@ -59,7 +59,7 @@ object JsonStatement {
             val date = o.optString("date").let { Values.date(it) }
             val raw = o.opt("amount")
             val cents = when (raw) {
-                is Number -> Values.cents(raw.toDouble())
+                is Number -> Values.centsOrNull(raw.toDouble())
                 is String -> Values.amount(raw)
                 else -> null
             }

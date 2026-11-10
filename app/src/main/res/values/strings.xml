@@ -685,9 +685,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Cadastre uma digital, rosto ou senha de tela no Android primeiro</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Pede o desbloqueio ao abrir o app</string>
     <string name="settings_lembretes">Lembretes</string>
-    <string name="settings_modo_teste_lembretes_continuam">No modo de teste, os lembretes continuam avisando das suas contas de verdade.</string>
-    <string name="settings_avisar_contas_vencer">Avisar contas a vencer</string>
-    <string name="settings_notificacao_dia_que_voce">Notificação no dia que você escolher em cada conta fixa</string>
     <string name="settings_registro_rapido">Registro rápido</string>
     <string name="settings_conta_principal_usada_quando">Conta principal (usada quando você não diz a conta)</string>
     <string name="settings_nomes_icones_cores_palavras">Nomes, ícones, cores e palavras-chave</string>
@@ -924,7 +921,6 @@
     <string name="quick_confira_lancamento">Confira o lançamento</string>
     <string name="quick_foi_isso_que_eu">Foi isso que eu entendi. Ajuste o que precisar e salve.</string>
     <string name="quick_escreva_ou_fale_seu">Escreva ou fale do seu jeito: “recebi 3000 de salário”, “tv 1200 em 10x no cartão”.</string>
-    <string name="quick_falar">Falar</string>
     <string name="quick_fale_por_exemplo">Fale, por exemplo: mercado 120 no débito</string>
 
     <!-- Common.kt -->
@@ -1225,13 +1221,11 @@
     <string name="phrase_dinheiro_retirado">Dinheiro retirado</string>
 
     <!-- Reminders.kt -->
-    <string name="reminder_avisos_contas_fixas_parcelas">Avisos de contas fixas e parcelas de dívidas perto do vencimento</string>
     <string name="reminder_venceu_ontem">venceu ontem</string>
     <string name="reminder_vence_hoje">vence hoje</string>
     <string name="reminder_vence_amanha">vence amanhã</string>
     <string name="reminder_parcela">Parcela de %1$s %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · parcela %2$s de %3$s · toque para registrar</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · toque para marcar como paga</string>
 
     <!-- AutoBackupWork.kt -->
     <string name="backup_avisa_quando_backup_automatico">Avisa quando o backup automático não consegue salvar ou precisa de você</string>
@@ -1704,8 +1698,6 @@
     <string name="sec_open_help">Digite a senha usada quando este backup foi protegido.</string>
     <string name="sec_open_button">Abrir</string>
     <string name="sec_opening">Abrindo…</string>
-    <string name="sec_notif_public_title">Lembrete do Cryo</string>
-    <string name="sec_notif_public_text">Você tem uma conta para pagar. Desbloqueie o celular para ver.</string>
     <string name="voice_preparing">Preparando…</string>
     <string name="voice_listening">Ouvindo…</string>
     <string name="voice_thinking">Entendendo…</string>
@@ -1951,5 +1943,6 @@
     </plurals>
     <string name="dev_voice">Voz</string>
     <string name="dev_voice_flash">Atenção rápida no Whisper (teste)</string>
-    <string name="dev_voice_flash_desc">No computador deixou o resultado ~20% mais rápido, com o mesmo texto. O tempo aparece na tela de voz. Desligue se a voz travar ou errar.</string>
+    <string name="dev_voice_flash_desc" formatted="false">No computador deixou o resultado ~20% mais rápido, com o mesmo texto. O tempo aparece na tela de voz. Desligue se a voz travar ou errar.</string>
+    <string name="sec_protection_unavailable">A proteção com senha está ligada, mas o cofre deste celular não abriu a chave. Nada foi gravado sem senha. Em Ajustes, desligue e ligue de novo a proteção dos backups.</string>
 </resources>

@@ -133,7 +133,7 @@ object BackupCrypto {
             throw Damaged()
         }
         return GZIPInputStream(ByteArrayInputStream(plain)).use { input ->
-            // Limite contra "bomba de compactação": um backup de verdade fica muito abaixo de 200 MB.
+            // Limite contra "bomba de compactação": um backup de verdade fica muito abaixo disso (50 mil movimentações ≈ 20 MB).
             val out = ByteArrayOutputStream()
             val buf = ByteArray(64 * 1024)
             var total = 0L
@@ -141,7 +141,7 @@ object BackupCrypto {
                 val n = input.read(buf)
                 if (n < 0) break
                 total += n
-                if (total > 200L * 1024 * 1024) throw Damaged()
+                if (total > Backup.MAX_BYTES) throw Damaged()
                 out.write(buf, 0, n)
             }
             out.toString(Charsets.UTF_8.name())
@@ -188,9 +188,23 @@ class BackupProtection(ctx: Context, sandbox: Boolean, private val vault: Vault)
         return BackupCrypto.Key(bytes, salt, prefs.getInt(ITER, BackupCrypto.ITERATIONS))
     }
 
-    /** O texto a gravar: trancado se a proteção está ligada. */
-    fun seal(json: String, exportedAt: Long, testMode: Boolean = false): String =
-        key()?.let { BackupCrypto.encrypt(json, it, exportedAt, testMode) } ?: json
+    /** A proteção está ligada, mas o cofre do aparelho não entregou a chave: nada é gravado sem senha. */
+    class Unavailable : IllegalStateException(Res.s(R.string.sec_protection_unavailable))
+
+    /**
+     * O texto a gravar: trancado se a proteção está ligada. **Falha fechado**: com a proteção ligada e o cofre sem abrir a
+     * chave (cofre do Android reiniciado, aparelho com defeito), lança [Unavailable] em vez de devolver o backup aberto.
+     * (Até a 1.7 devolvia o texto sem senha: quem confiava na proteção podia mandar uma cópia aberta para a nuvem.)
+     */
+    fun seal(json: String, exportedAt: Long, testMode: Boolean = false): String {
+        if (!prefs.contains(KEY)) return json
+        val k = key() ?: throw Unavailable()
+        try {
+            return BackupCrypto.encrypt(json, k, exportedAt, testMode)
+        } finally {
+            Arrays.fill(k.bytes, 0) // a chave não fica na memória além da conta
+        }
+    }
 
     private companion object {
         const val KEY = "key"

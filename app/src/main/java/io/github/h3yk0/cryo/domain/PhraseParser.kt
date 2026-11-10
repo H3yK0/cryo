@@ -913,7 +913,7 @@ class PhraseParser(private val ctx: ParseContext) {
                 else -> num
             }
             val v = plain.toBigDecimalOrNull() ?: return null
-            return v.multiply(BigDecimal(factor)).movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+            return Money.centsOrNull(v.multiply(BigDecimal(factor)))
         }
 
         /** "1万5千" → 15.000, "3億2000万" → 320.000.000, "3만5천" → 35.000 (em centavos). */
@@ -931,7 +931,7 @@ class PhraseParser(private val ctx: ParseContext) {
             }
             if (last == 0) return null
             compact.substring(last).toBigDecimalOrNull()?.let { total += it }
-            return total.movePointRight(2).setScale(0, RoundingMode.HALF_UP).toLong()
+            return Money.centsOrNull(total)
         }
     }
 }

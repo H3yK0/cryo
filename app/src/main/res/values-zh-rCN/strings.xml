@@ -624,9 +624,6 @@
     <string name="settings_cadastre_digital_rosto_ou">请先在 Android 中设置指纹、面容或锁屏</string>
     <string name="settings_pede_desbloqueio_ao_abrir">打开 App 时需要解锁</string>
     <string name="settings_lembretes">提醒</string>
-    <string name="settings_modo_teste_lembretes_continuam">测试模式下，提醒仍会通知你真实的固定支出。</string>
-    <string name="settings_avisar_contas_vencer">提醒即将到期的固定支出</string>
-    <string name="settings_notificacao_dia_que_voce">在每笔固定支出设定的日期通知</string>
     <string name="settings_registro_rapido">快速记账</string>
     <string name="settings_conta_principal_usada_quando">主账户（没说账户时使用）</string>
     <string name="settings_nomes_icones_cores_palavras">名称、图标、颜色和关键词</string>
@@ -853,7 +850,6 @@
     <string name="quick_confira_lancamento">确认这笔记录</string>
     <string name="quick_foi_isso_que_eu">我是这样理解的。改一改需要调整的地方，然后保存。</string>
     <string name="quick_escreva_ou_fale_seu">随口写或说：“工资8000”“电视3000元分12期信用卡”。</string>
-    <string name="quick_falar">说话</string>
     <string name="quick_fale_por_exemplo">比如说：超市120元储蓄卡</string>
     <string name="common_valor_escondido">金额已隐藏</string>
     <string name="common_transferencia">转账</string>
@@ -1110,13 +1106,11 @@
     <string name="phrase_pagamento">付款 · %1$s</string>
     <string name="phrase_dinheiro_guardado">存钱</string>
     <string name="phrase_dinheiro_retirado">取钱</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">快到期的固定支出和债务还款提醒</string>
     <string name="reminder_venceu_ontem">昨天已到期</string>
     <string name="reminder_vence_hoje">今天到期</string>
     <string name="reminder_vence_amanha">明天到期</string>
     <string name="reminder_parcela">%1$s 的还款%2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · 第 %2$s / %3$s 期 · 点一下记录</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · 点一下标为已付</string>
     <string name="backup_avisa_quando_backup_automatico">自动备份保存失败或需要你操作时提醒你</string>
     <string name="backup_backup_automatico_falhou">自动备份（%1$s）失败</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo 保护了你的备份（%1$s）</string>
@@ -1550,8 +1544,6 @@
     <string name="sec_open_help">请输入保护此备份时使用的密码。</string>
     <string name="sec_open_button">打开</string>
     <string name="sec_opening">正在打开…</string>
-    <string name="sec_notif_public_title">Cryo 提醒</string>
-    <string name="sec_notif_public_text">你有一笔账单要付。解锁手机即可查看。</string>
     <string name="voice_preparing">准备中…</string>
     <string name="voice_listening">正在听…</string>
     <string name="voice_thinking">正在理解…</string>
@@ -1792,5 +1784,6 @@
     </plurals>
     <string name="dev_voice">语音</string>
     <string name="dev_voice_flash">Whisper 快速注意力（测试）</string>
-    <string name="dev_voice_flash_desc">在电脑上结果快了约 20%，文字相同。时间显示在语音界面。如果卡住或出错请关闭。</string>
+    <string name="dev_voice_flash_desc" formatted="false">在电脑上结果快了约 20%，文字相同。时间显示在语音界面。如果卡住或出错请关闭。</string>
+    <string name="sec_protection_unavailable">密码保护已开启，但此手机的密钥库没有交出密钥。没有保存任何不带密码的备份。请在设置中关闭再重新开启备份保护。</string>
 </resources>

@@ -125,14 +125,39 @@ object Alerts {
 
     /* ------------------------------------------ figurinhas ------------------------------------------ */
 
+    /** A figurinha de cada ilustração (lista escrita, conferida na compilação: se faltar um arquivo, o app nem compila). */
+    fun stickerRes(art: Art): Int = when (art) {
+        Art.BUDGET -> R.raw.sticker_budget
+        Art.LIMIT -> R.raw.sticker_limit
+        Art.INVOICE -> R.raw.sticker_invoice
+        Art.BILL -> R.raw.sticker_bill
+        Art.SALARY -> R.raw.sticker_salary
+        Art.NO_SPEND -> R.raw.sticker_no_spend
+        Art.STREAK -> R.raw.sticker_streak
+        Art.WEEK -> R.raw.sticker_week
+        Art.MONTH -> R.raw.sticker_month
+        Art.PRICE_UP -> R.raw.sticker_price_up
+        Art.DUPLICATE -> R.raw.sticker_duplicate
+        Art.OUTLIER -> R.raw.sticker_outlier
+        Art.NEGATIVE -> R.raw.sticker_negative
+        Art.LAST_INSTALLMENT -> R.raw.sticker_last_installment
+        Art.HEALTH -> R.raw.sticker_health
+        Art.GOAL_NEAR -> R.raw.sticker_goal_near
+        Art.DEBT_FREE -> R.raw.sticker_debt_free
+        Art.CELEBRATE -> R.raw.sticker_celebrate
+        Art.SHOPPING -> R.raw.sticker_shopping
+    }
+
     /** A figurinha animada guardada no cache e o endereço que o Android usa para lê-la (RF-AVI-09). */
     fun stickerUri(ctx: Context, art: Art): Uri? = runCatching {
-        val name = "sticker_${art.name.lowercase()}"
-        val res = ctx.resources.getIdentifier(name, "raw", ctx.packageName)
-        if (res == 0) return null
+        val res = stickerRes(art)
         val dir = File(ctx.cacheDir, "stickers").apply { mkdirs() }
-        val file = File(dir, "$name.webp")
-        if (!file.exists() || file.length() == 0L) ctx.resources.openRawResource(res).use { input -> file.outputStream().use { input.copyTo(it) } }
+        val file = File(dir, "sticker_${art.name.lowercase()}.webp")
+        // Copia de novo se o arquivo do cache não é o desta versão do app (figurinha redesenhada numa atualização).
+        val size = runCatching { ctx.resources.openRawResourceFd(res).use { it.length } }.getOrDefault(-1L)
+        if (!file.exists() || file.length() == 0L || (size > 0 && file.length() != size)) {
+            ctx.resources.openRawResource(res).use { input -> file.outputStream().use { input.copyTo(it) } }
+        }
         val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.stickers", file)
         // O Android já dá a permissão sozinho para quem desenha a notificação; aqui, por garantia.
         ctx.grantUriPermission("com.android.systemui", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -179,7 +204,10 @@ object Alerts {
         if (!Reminders.canNotify(ctx)) return false
         val channel = channelOf(a.kind)
         val id = idOf(a)
+        // Ação única por aviso: o Android compara dois pedidos pelo Intent **sem** os extras; dois avisos com códigos
+        // vizinhos podiam trocar o destino um do outro.
         val open = Intent(ctx, MainActivity::class.java)
+            .setAction("${ctx.packageName}.alert.open.$id")
             .putExtra(Reminders.EXTRA_OPEN, a.open)
             .putExtra(EXTRA_KIND, a.kind.name)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)
@@ -242,6 +270,7 @@ object Alerts {
         }
         val pi = if (act == AlertAction.LOG || act == AlertAction.OPEN) {
             val open = Intent(ctx, MainActivity::class.java)
+                .setAction("${ctx.packageName}.alert.${act.name}.$id")
                 .putExtra(Reminders.EXTRA_OPEN, if (act == AlertAction.LOG) "voice" else a.open)
                 .putExtra(EXTRA_KIND, a.kind.name)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP)

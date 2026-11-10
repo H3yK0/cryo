@@ -624,9 +624,6 @@
     <string name="settings_cadastre_digital_rosto_ou">先にAndroidで指紋、顔、または画面ロックを設定してください</string>
     <string name="settings_pede_desbloqueio_ao_abrir">アプリを開くときにロック解除を求めます</string>
     <string name="settings_lembretes">リマインダー</string>
-    <string name="settings_modo_teste_lembretes_continuam">テストモード中も、リマインダーは実際の固定費をお知らせします。</string>
-    <string name="settings_avisar_contas_vencer">固定費の期日を知らせる</string>
-    <string name="settings_notificacao_dia_que_voce">固定費ごとに選んだ日に通知します</string>
     <string name="settings_registro_rapido">クイック記録</string>
     <string name="settings_conta_principal_usada_quando">メイン口座（口座を言わなかったときに使います）</string>
     <string name="settings_nomes_icones_cores_palavras">名前、アイコン、色、キーワード</string>
@@ -853,7 +850,6 @@
     <string name="quick_confira_lancamento">記録を確認</string>
     <string name="quick_foi_isso_que_eu">このように理解しました。必要なところを直して保存してください。</string>
     <string name="quick_escreva_ou_fale_seu">いつもの言葉で書くか話してください: 「給料30万円」「テレビ10万円 12回払い カードで」。</string>
-    <string name="quick_falar">話す</string>
     <string name="quick_fale_por_exemplo">たとえば: スーパー 3000円 現金</string>
     <string name="common_valor_escondido">金額は非表示</string>
     <string name="common_transferencia">振替</string>
@@ -1110,13 +1106,11 @@
     <string name="phrase_pagamento">支払い · %1$s</string>
     <string name="phrase_dinheiro_guardado">貯金</string>
     <string name="phrase_dinheiro_retirado">取り出し</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">期日が近い固定費や借入の返済のお知らせ</string>
     <string name="reminder_venceu_ontem">期限は昨日でした</string>
     <string name="reminder_vence_hoje">期限は今日です</string>
     <string name="reminder_vence_amanha">期限は明日です</string>
     <string name="reminder_parcela">%1$sの返済 %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · %3$s回中%2$s回目 · タップして記録</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · タップして支払い済みにする</string>
     <string name="backup_avisa_quando_backup_automatico">自動バックアップが保存できないときや、操作が必要なときにお知らせします</string>
     <string name="backup_backup_automatico_falhou">自動バックアップ（%1$s）に失敗しました</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryoがバックアップ（%1$s）を守りました</string>
@@ -1550,8 +1544,6 @@
     <string name="sec_open_help">このバックアップを保護したときのパスワードを入力してください。</string>
     <string name="sec_open_button">開く</string>
     <string name="sec_opening">開いています…</string>
-    <string name="sec_notif_public_title">Cryoのリマインダー</string>
-    <string name="sec_notif_public_text">支払いがあります。端末のロックを解除すると表示されます。</string>
     <string name="voice_preparing">準備中…</string>
     <string name="voice_listening">聞いています…</string>
     <string name="voice_thinking">理解しています…</string>
@@ -1792,5 +1784,6 @@
     </plurals>
     <string name="dev_voice">音声</string>
     <string name="dev_voice_flash">Whisperの高速アテンション（テスト）</string>
-    <string name="dev_voice_flash_desc">パソコンでは同じ結果で約20%速くなりました。時間は音声画面に表示されます。止まったり間違えたりしたらオフにしてください。</string>
+    <string name="dev_voice_flash_desc" formatted="false">パソコンでは同じ結果で約20%速くなりました。時間は音声画面に表示されます。止まったり間違えたりしたらオフにしてください。</string>
+    <string name="sec_protection_unavailable">パスワード保護はオンですが、この端末のキーストアが鍵を渡しませんでした。パスワードなしでは何も保存していません。設定でバックアップの保護をいったんオフにして、もう一度オンにしてください。</string>
 </resources>

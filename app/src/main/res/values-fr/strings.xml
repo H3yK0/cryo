@@ -638,9 +638,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Configurez d\'abord une empreinte, le visage ou un verrouillage d\'écran dans Android</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Demande le déverrouillage à l\'ouverture</string>
     <string name="settings_lembretes">Rappels</string>
-    <string name="settings_modo_teste_lembretes_continuam">En mode test, les rappels continuent de vous prévenir de vos vraies charges.</string>
-    <string name="settings_avisar_contas_vencer">Prévenir des charges à venir</string>
-    <string name="settings_notificacao_dia_que_voce">Notification le jour choisi pour chaque charge fixe</string>
     <string name="settings_registro_rapido">Saisie rapide</string>
     <string name="settings_conta_principal_usada_quando">Compte principal (utilisé quand vous ne précisez pas le compte)</string>
     <string name="settings_nomes_icones_cores_palavras">Noms, icônes, couleurs et mots-clés</string>
@@ -867,7 +864,6 @@
     <string name="quick_confira_lancamento">Vérifiez l\'opération</string>
     <string name="quick_foi_isso_que_eu">Voici ce que j\'ai compris. Ajustez ce qu\'il faut et enregistrez.</string>
     <string name="quick_escreva_ou_fale_seu">Écrivez ou parlez à votre façon : « reçu 3000 de salaire », « télé 1200 en 10 fois avec la carte de crédit ».</string>
-    <string name="quick_falar">Parler</string>
     <string name="quick_fale_por_exemplo">Dites, par exemple : courses 120 par carte bancaire</string>
     <string name="common_valor_escondido">Montant masqué</string>
     <string name="common_transferencia">Virement</string>
@@ -1136,13 +1132,11 @@
     <string name="phrase_pagamento">Paiement · %1$s</string>
     <string name="phrase_dinheiro_guardado">Argent mis de côté</string>
     <string name="phrase_dinheiro_retirado">Argent retiré</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">Alertes des charges fixes et échéances de dettes proches</string>
     <string name="reminder_venceu_ontem">était dû hier</string>
     <string name="reminder_vence_hoje">est dû aujourd\'hui</string>
     <string name="reminder_vence_amanha">est dû demain</string>
     <string name="reminder_parcela">Échéance de %1$s %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · échéance %2$s sur %3$s · touchez pour enregistrer</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · touchez pour marquer comme payé</string>
     <string name="backup_avisa_quando_backup_automatico">Prévient quand la sauvegarde automatique échoue ou a besoin de vous</string>
     <string name="backup_backup_automatico_falhou">La sauvegarde automatique %1$s a échoué</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo a protégé votre sauvegarde %1$s</string>
@@ -1579,8 +1573,6 @@
     <string name="sec_open_help">Saisissez le mot de passe utilisé pour protéger cette sauvegarde.</string>
     <string name="sec_open_button">Ouvrir</string>
     <string name="sec_opening">Ouverture…</string>
-    <string name="sec_notif_public_title">Rappel de Cryo</string>
-    <string name="sec_notif_public_text">Vous avez une facture à payer. Déverrouillez le téléphone pour la voir.</string>
     <string name="voice_preparing">Préparation…</string>
     <string name="voice_listening">J\'écoute…</string>
     <string name="voice_thinking">Je comprends…</string>
@@ -1826,5 +1818,6 @@
     </plurals>
     <string name="dev_voice">Voix</string>
     <string name="dev_voice_flash">Attention rapide dans Whisper (test)</string>
-    <string name="dev_voice_flash_desc">Sur ordinateur, le résultat est ~20 % plus rapide, avec le même texte. Le temps s\'affiche sur l\'écran vocal. Désactivez si la voix bloque ou se trompe.</string>
+    <string name="dev_voice_flash_desc" formatted="false">Sur ordinateur, le résultat est ~20 % plus rapide, avec le même texte. Le temps s\'affiche sur l\'écran vocal. Désactivez si la voix bloque ou se trompe.</string>
+    <string name="sec_protection_unavailable">La protection par mot de passe est activée, mais le coffre de ce téléphone n\'a pas fourni la clé. Rien n\'a été enregistré sans mot de passe. Dans Réglages, désactivez puis réactivez la protection des sauvegardes.</string>
 </resources>

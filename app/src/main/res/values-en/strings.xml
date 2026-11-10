@@ -638,9 +638,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Set up a fingerprint, face or screen lock in Android first</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Asks to unlock when you open the app</string>
     <string name="settings_lembretes">Reminders</string>
-    <string name="settings_modo_teste_lembretes_continuam">In test mode, reminders keep alerting you about your real bills.</string>
-    <string name="settings_avisar_contas_vencer">Remind me of upcoming bills</string>
-    <string name="settings_notificacao_dia_que_voce">A notification on the day you choose for each bill</string>
     <string name="settings_registro_rapido">Quick entry</string>
     <string name="settings_conta_principal_usada_quando">Main account (used when you don\'t say the account)</string>
     <string name="settings_nomes_icones_cores_palavras">Names, icons, colors and keywords</string>
@@ -867,7 +864,6 @@
     <string name="quick_confira_lancamento">Check the entry</string>
     <string name="quick_foi_isso_que_eu">This is what I understood. Adjust what you need and save.</string>
     <string name="quick_escreva_ou_fale_seu">Type or say it your way: “got 3000 salary”, “tv 1200 in 10 installments on credit card”.</string>
-    <string name="quick_falar">Speak</string>
     <string name="quick_fale_por_exemplo">Say, for example: groceries 120 on debit</string>
     <string name="common_valor_escondido">Amount hidden</string>
     <string name="common_transferencia">Transfer</string>
@@ -1136,13 +1132,11 @@
     <string name="phrase_pagamento">Payment · %1$s</string>
     <string name="phrase_dinheiro_guardado">Money saved</string>
     <string name="phrase_dinheiro_retirado">Money taken out</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">Alerts for bills and debt payments close to their due date</string>
     <string name="reminder_venceu_ontem">was due yesterday</string>
     <string name="reminder_vence_hoje">is due today</string>
     <string name="reminder_vence_amanha">is due tomorrow</string>
     <string name="reminder_parcela">%1$s payment %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · payment %2$s of %3$s · tap to record</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · tap to mark as paid</string>
     <string name="backup_avisa_quando_backup_automatico">Lets you know when automatic backup can\'t save or needs you</string>
     <string name="backup_backup_automatico_falhou">Automatic backup %1$s failed</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo protected your backup %1$s</string>
@@ -1579,8 +1573,6 @@
     <string name="sec_open_help">Enter the password used when this backup was protected.</string>
     <string name="sec_open_button">Open</string>
     <string name="sec_opening">Opening…</string>
-    <string name="sec_notif_public_title">Cryo reminder</string>
-    <string name="sec_notif_public_text">You have a bill to pay. Unlock your phone to see it.</string>
     <string name="voice_preparing">Getting ready…</string>
     <string name="voice_listening">Listening…</string>
     <string name="voice_thinking">Understanding…</string>
@@ -1826,5 +1818,6 @@
     </plurals>
     <string name="dev_voice">Voice</string>
     <string name="dev_voice_flash">Fast attention in Whisper (test)</string>
-    <string name="dev_voice_flash_desc">On a computer it made results ~20% faster with the same text. The time shows on the voice screen. Turn it off if voice freezes or gets things wrong.</string>
+    <string name="dev_voice_flash_desc" formatted="false">On a computer it made results ~20% faster with the same text. The time shows on the voice screen. Turn it off if voice freezes or gets things wrong.</string>
+    <string name="sec_protection_unavailable">Password protection is on, but this phone\'s keystore didn\'t release the key. Nothing was saved without a password. In Settings, turn backup protection off and on again.</string>
 </resources>

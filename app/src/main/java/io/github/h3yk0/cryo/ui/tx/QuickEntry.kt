@@ -25,7 +25,6 @@ import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -185,9 +184,4 @@ fun QuickEntryHint(modifier: Modifier = Modifier) {
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
-}
-
-@Composable
-fun SpeakButton(onClick: () -> Unit) {
-    IconButton(onClick = onClick) { Icon(Icons.Rounded.Mic, Res.s(R.string.quick_falar)) }
 }

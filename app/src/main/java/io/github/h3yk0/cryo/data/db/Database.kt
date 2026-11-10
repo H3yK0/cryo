@@ -118,6 +118,7 @@ interface CryoDao {
     @Query("SELECT COUNT(*) FROM transactions WHERE categoryId = :id") suspend fun countTxForCategory(id: Long): Int
     @Query("SELECT COUNT(*) FROM categories") suspend fun categoryCount(): Int
     @Query("SELECT * FROM transactions WHERE id = :id") suspend fun txById(id: Long): Tx?
+    @Query("SELECT id FROM transactions WHERE billId = :billId AND billYm = :ym LIMIT 1") suspend fun billPaymentId(billId: Long, ym: Int): Long?
     @Query(
         "SELECT COALESCE(SUM(amount), 0) FROM transactions " +
             "WHERE type = 'EXPENSE' AND categoryId = :cat AND date BETWEEN :start AND :end",

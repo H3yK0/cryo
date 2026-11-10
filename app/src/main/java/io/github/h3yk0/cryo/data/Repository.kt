@@ -254,9 +254,10 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     suspend fun saveCategory(c: Category): Long = dao.putCategory(c)
 
     /** Se a categoria já foi usada, ela é arquivada (some das listas, mas o histórico continua certo). */
-    suspend fun deleteCategory(c: Category): Boolean {
+    suspend fun deleteCategory(c: Category): Boolean = db.withTransaction {
         dao.deleteBudget(c.id)
-        return if (dao.countTxForCategory(c.id) > 0) {
+        dao.deleteBudgetAdjustmentsOf(c.id) // senão os remanejamentos do mês ficavam soltos, sem orçamento
+        if (dao.countTxForCategory(c.id) > 0) {
             dao.putCategory(c.copy(archived = true)); false
         } else {
             dao.deleteCategory(c.id); true
@@ -305,7 +306,8 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
             invoiceYm = card?.let { CardMath.invoiceFor(it, date).key() },
             billId = bill.id, billYm = ym.key(),
         )
-        return dao.putTx(tx)
+        // Conferido e gravado juntos: dois toques seguidos (ou o botão da notificação junto com a tela) dão um pagamento só.
+        return db.withTransaction { dao.billPaymentId(bill.id, ym.key()) ?: dao.putTx(tx) }
     }
 
     suspend fun unmarkBillPaid(bill: Bill, ym: YearMonth) = dao.deleteBillPayment(bill.id, ym.key())

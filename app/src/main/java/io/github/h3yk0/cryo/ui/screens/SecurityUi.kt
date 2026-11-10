@@ -133,11 +133,30 @@ fun rememberBackupOpener(onOpened: (Backup.Restored) -> Unit): (String) -> Unit 
         }
     }
     return { text ->
-        if (BackupCrypto.isEncrypted(text)) {
-            val mine = c.backupProtection.key()?.let { BackupCrypto.decryptWithKey(text, it) }
-            if (mine != null) onOpened(Backup.import(mine)) else { error = null; locked = text }
-        } else {
-            onOpened(Backup.import(text))
+        // Ler um backup grande leva alguns segundos: fora da linha principal, para a tela não travar.
+        c.launch {
+            val r = runCatching {
+                withContext(Dispatchers.Default) {
+                    if (BackupCrypto.isEncrypted(text)) {
+                        val key = c.backupProtection.key()
+                        try {
+                            key?.let { BackupCrypto.decryptWithKey(text, it) }?.let { Backup.import(it) } // null = pede a senha
+                        } finally {
+                            key?.bytes?.fill(0)
+                        }
+                    } else Backup.import(text)
+                }
+            }
+            withContext(Dispatchers.Main) {
+                r.onSuccess { if (it != null) onOpened(it) else { error = null; locked = text } }
+                    .onFailure { c.message(it.message ?: Res.s(R.string.backup_invalid_file)) }
+            }
         }
     }
+}
+
+/** O texto de um backup escolhido pela pessoa, ou uma mensagem que ela entende (não abriu, grande demais). */
+suspend fun readBackupFile(ctx: android.content.Context, uri: android.net.Uri): String = withContext(Dispatchers.IO) {
+    runCatching { io.github.h3yk0.cryo.data.SafFiles.read(ctx.contentResolver, uri) }.getOrNull()
+        ?: throw IllegalArgumentException(Res.s(R.string.settings_nao_consegui_ler_arquivo))
 }

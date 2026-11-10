@@ -638,9 +638,6 @@
     <string name="settings_cadastre_digital_rosto_ou">पहले Android में फ़िंगरप्रिंट, चेहरा या स्क्रीन लॉक सेट करें</string>
     <string name="settings_pede_desbloqueio_ao_abrir">ऐप खोलते समय अनलॉक माँगता है</string>
     <string name="settings_lembretes">रिमाइंडर</string>
-    <string name="settings_modo_teste_lembretes_continuam">टेस्ट मोड में भी रिमाइंडर आपके असली तय खर्चों के बारे में बताते रहेंगे।</string>
-    <string name="settings_avisar_contas_vencer">आने वाले तय खर्च याद दिलाएँ</string>
-    <string name="settings_notificacao_dia_que_voce">हर तय खर्च के लिए चुने गए दिन सूचना</string>
     <string name="settings_registro_rapido">क्विक एंट्री</string>
     <string name="settings_conta_principal_usada_quando">मुख्य खाता (खाता न बताने पर इस्तेमाल होता है)</string>
     <string name="settings_nomes_icones_cores_palavras">नाम, आइकन, रंग और कीवर्ड</string>
@@ -867,7 +864,6 @@
     <string name="quick_confira_lancamento">एंट्री जाँचें</string>
     <string name="quick_foi_isso_que_eu">मैंने यह समझा। जो बदलना हो बदलें और सेव करें।</string>
     <string name="quick_escreva_ou_fale_seu">अपने तरीके से लिखें या बोलें: “वेतन 50,000 मिला”, “टीवी 30000 12 किस्तों में क्रेडिट कार्ड से”।</string>
-    <string name="quick_falar">बोलें</string>
     <string name="quick_fale_por_exemplo">बोलिए, जैसे: किराना 500 रुपये UPI</string>
     <string name="common_valor_escondido">रकम छिपी है</string>
     <string name="common_transferencia">ट्रांसफ़र</string>
@@ -1136,13 +1132,11 @@
     <string name="phrase_pagamento">भुगतान · %1$s</string>
     <string name="phrase_dinheiro_guardado">बचाया पैसा</string>
     <string name="phrase_dinheiro_retirado">निकाला पैसा</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">तारीख के पास आए तय खर्चों और कर्ज़ की किस्तों की सूचनाएँ</string>
     <string name="reminder_venceu_ontem">की तारीख बीते कल थी</string>
     <string name="reminder_vence_hoje">की तारीख आज है</string>
     <string name="reminder_vence_amanha">की तारीख आने वाला कल है</string>
     <string name="reminder_parcela">%1$s की किस्त %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · %3$s में से %2$s वीं किस्त · दर्ज करने के लिए टैप करें</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · चुकाया चिह्नित करने के लिए टैप करें</string>
     <string name="backup_avisa_quando_backup_automatico">जब ऑटो बैकअप सेव न कर पाए या आपकी ज़रूरत हो, तब बताता है</string>
     <string name="backup_backup_automatico_falhou">ऑटो बैकअप %1$s नहीं हो सका</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo ने आपका बैकअप %1$s सुरक्षित रखा</string>
@@ -1579,8 +1573,6 @@
     <string name="sec_open_help">इस बैकअप को सुरक्षित करते समय इस्तेमाल हुआ पासवर्ड लिखें।</string>
     <string name="sec_open_button">खोलें</string>
     <string name="sec_opening">खोला जा रहा है…</string>
-    <string name="sec_notif_public_title">Cryo रिमाइंडर</string>
-    <string name="sec_notif_public_text">आपको एक बिल चुकाना है। देखने के लिए फ़ोन अनलॉक करें।</string>
     <string name="voice_preparing">तैयार हो रहा है…</string>
     <string name="voice_listening">सुन रहा है…</string>
     <string name="voice_thinking">समझ रहा है…</string>
@@ -1826,5 +1818,6 @@
     </plurals>
     <string name="dev_voice">आवाज़</string>
     <string name="dev_voice_flash">Whisper में तेज़ अटेंशन (परीक्षण)</string>
-    <string name="dev_voice_flash_desc">कंप्यूटर पर वही नतीजा ~20% तेज़ आया। समय आवाज़ वाली स्क्रीन पर दिखता है। आवाज़ अटके या गलत हो तो बंद करें।</string>
+    <string name="dev_voice_flash_desc" formatted="false">कंप्यूटर पर वही नतीजा ~20% तेज़ आया। समय आवाज़ वाली स्क्रीन पर दिखता है। आवाज़ अटके या गलत हो तो बंद करें।</string>
+    <string name="sec_protection_unavailable">पासवर्ड सुरक्षा चालू है, लेकिन इस फ़ोन के कीस्टोर ने कुंजी नहीं दी। बिना पासवर्ड कुछ भी सेव नहीं किया गया। सेटिंग्स में बैकअप सुरक्षा बंद करके फिर चालू करें।</string>
 </resources>

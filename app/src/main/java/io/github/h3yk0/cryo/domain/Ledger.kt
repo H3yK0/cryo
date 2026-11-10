@@ -58,6 +58,7 @@ object CardMath {
 
     /** Divide um total em [n] parcelas; os centavos que sobram vão na primeira. */
     fun split(total: Long, n: Int): List<Long> {
+        if (n <= 1) return listOf(total) // nunca divide por zero, venha o número de onde vier
         val base = total / n
         val rest = total - base * n
         return List(n) { i -> if (i == 0) base + rest else base }

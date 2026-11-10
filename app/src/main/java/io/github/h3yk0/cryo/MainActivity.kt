@@ -57,6 +57,21 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.theme.isDarkTheme
 import kotlinx.coroutines.runBlocking
 
+/**
+ * RF-BLQ: quando um erro do desbloqueio pode abrir o app. Só num aparelho **sem trava nenhuma** (nem senha, nem digital):
+ * ali não há como pedir o desbloqueio e a pessoa ficaria presa do lado de fora. Num aparelho com trava, erro do sensor
+ * (ocupado, indisponível, desligado) nunca abre: a pessoa tenta de novo ou usa a senha do celular. (Até a 1.7, "sensor
+ * indisponível" abria o app mesmo com trava configurada.)
+ */
+object LockPolicy {
+    private val NO_LOCK_ERRORS = setOf(
+        BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL, BiometricPrompt.ERROR_HW_NOT_PRESENT, BiometricPrompt.ERROR_HW_UNAVAILABLE,
+        BiometricPrompt.ERROR_NO_BIOMETRICS,
+    )
+
+    fun unlockOnError(errorCode: Int, deviceSecure: Boolean): Boolean = !deviceSecure && errorCode in NO_LOCK_ERRORS
+}
+
 class MainActivity : FragmentActivity() {
     private var locked by mutableStateOf(false)
     /** O bloqueio está ligado (copiado dos ajustes, para usar ao voltar de segundo plano). */
@@ -194,10 +209,8 @@ class MainActivity : FragmentActivity() {
 
                 override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
                     authenticating = false
-                    // Sem nenhuma trava configurada no aparelho: libera para não prender a pessoa fora do app.
-                    if (errorCode == BiometricPrompt.ERROR_NO_DEVICE_CREDENTIAL || errorCode == BiometricPrompt.ERROR_HW_NOT_PRESENT ||
-                        errorCode == BiometricPrompt.ERROR_HW_UNAVAILABLE
-                    ) unlock()
+                    val secure = runCatching { getSystemService(android.app.KeyguardManager::class.java)?.isDeviceSecure }.getOrNull() ?: true
+                    if (LockPolicy.unlockOnError(errorCode, secure)) unlock()
                 }
             },
         )
@@ -222,6 +235,12 @@ class MainActivity : FragmentActivity() {
      */
     private fun hideFromRecents(lock: Boolean) {
         if (Build.VERSION.SDK_INT >= 33) runCatching { setRecentsScreenshotEnabled(!lock) }
+        // Android 8 a 12 não tem como tirar só a miniatura: com o bloqueio ligado, a janela inteira fica protegida (a
+        // miniatura sai em branco e capturas de tela ficam desligadas enquanto o bloqueio estiver ligado).
+        else runCatching {
+            val flag = android.view.WindowManager.LayoutParams.FLAG_SECURE
+            if (lock) window.addFlags(flag) else window.clearFlags(flag)
+        }
     }
 
     private companion object {

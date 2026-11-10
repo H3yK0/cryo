@@ -624,9 +624,6 @@
     <string name="settings_cadastre_digital_rosto_ou">먼저 Android에서 지문, 얼굴 또는 화면 잠금을 설정하세요</string>
     <string name="settings_pede_desbloqueio_ao_abrir">앱을 열 때 잠금 해제를 요청해요</string>
     <string name="settings_lembretes">알림</string>
-    <string name="settings_modo_teste_lembretes_continuam">테스트 모드에서도 알림은 실제 고정 지출을 알려 줘요.</string>
-    <string name="settings_avisar_contas_vencer">고정 지출 기한 알림</string>
-    <string name="settings_notificacao_dia_que_voce">고정 지출마다 정한 날에 알림을 보내요</string>
     <string name="settings_registro_rapido">빠른 기록</string>
     <string name="settings_conta_principal_usada_quando">주 계좌 (계좌를 말하지 않으면 사용)</string>
     <string name="settings_nomes_icones_cores_palavras">이름, 아이콘, 색상, 키워드</string>
@@ -853,7 +850,6 @@
     <string name="quick_confira_lancamento">기록 확인</string>
     <string name="quick_foi_isso_que_eu">이렇게 이해했어요. 필요한 부분을 고치고 저장하세요.</string>
     <string name="quick_escreva_ou_fale_seu">편하게 쓰거나 말하세요: “월급 300만원 받았어”, “TV 120만원 12개월 할부”.</string>
-    <string name="quick_falar">말하기</string>
     <string name="quick_fale_por_exemplo">예를 들어: 마트 5만원 체크카드</string>
     <string name="common_valor_escondido">금액 숨김</string>
     <string name="common_transferencia">이체</string>
@@ -1110,13 +1106,11 @@
     <string name="phrase_pagamento">결제 · %1$s</string>
     <string name="phrase_dinheiro_guardado">모은 돈</string>
     <string name="phrase_dinheiro_retirado">꺼낸 돈</string>
-    <string name="reminder_avisos_contas_fixas_parcelas">기한이 다가온 고정 지출과 빚 상환 알림</string>
     <string name="reminder_venceu_ontem">기한이 어제였어요</string>
     <string name="reminder_vence_hoje">오늘이 기한이에요</string>
     <string name="reminder_vence_amanha">내일이 기한이에요</string>
     <string name="reminder_parcela">%1$s 상환 %2$s</string>
     <string name="reminder_parcela_toque_para_registrar">%1$s · %3$s회 중 %2$s회차 · 눌러서 기록</string>
-    <string name="reminder_toque_para_marcar_como">%1$s · 눌러서 결제함으로 표시</string>
     <string name="backup_avisa_quando_backup_automatico">자동 백업이 저장하지 못하거나 확인이 필요할 때 알려요</string>
     <string name="backup_backup_automatico_falhou">자동 백업(%1$s)에 실패했어요</string>
     <string name="backup_cryo_protegeu_seu_backup">Cryo가 백업(%1$s)을 지켰어요</string>
@@ -1550,8 +1544,6 @@
     <string name="sec_open_help">이 백업을 보호할 때 쓴 비밀번호를 입력하세요.</string>
     <string name="sec_open_button">열기</string>
     <string name="sec_opening">여는 중…</string>
-    <string name="sec_notif_public_title">Cryo 알림</string>
-    <string name="sec_notif_public_text">납부할 항목이 있어요. 휴대폰 잠금을 풀면 볼 수 있어요.</string>
     <string name="voice_preparing">준비 중…</string>
     <string name="voice_listening">듣고 있어요…</string>
     <string name="voice_thinking">이해하는 중…</string>
@@ -1792,5 +1784,6 @@
     </plurals>
     <string name="dev_voice">음성</string>
     <string name="dev_voice_flash">Whisper 빠른 어텐션 (테스트)</string>
-    <string name="dev_voice_flash_desc">컴퓨터에서는 같은 결과로 약 20% 빨라졌어요. 시간은 음성 화면에 표시돼요. 멈추거나 틀리면 끄세요.</string>
+    <string name="dev_voice_flash_desc" formatted="false">컴퓨터에서는 같은 결과로 약 20% 빨라졌어요. 시간은 음성 화면에 표시돼요. 멈추거나 틀리면 끄세요.</string>
+    <string name="sec_protection_unavailable">비밀번호 보호가 켜져 있지만 이 휴대폰의 키 저장소가 키를 내주지 않았어요. 비밀번호 없이는 아무것도 저장하지 않았어요. 설정에서 백업 보호를 껐다가 다시 켜 주세요.</string>
 </resources>

@@ -31,6 +31,9 @@ object Backup {
     /** 1 = Cryo 1.0; 2 = Cryo 1.1 (dívidas). */
     const val VERSION = 2
 
+    /** O maior backup que o Cryo lê (64 MB de texto; 50 mil movimentações dão uns 20 MB). Acima disso não é um backup. */
+    const val MAX_BYTES = 64 * 1024 * 1024
+
     private fun JSONObject.optLongOrNull(k: String): Long? = if (isNull(k) || !has(k)) null else getLong(k)
     private fun JSONObject.optIntOrNull(k: String): Int? = if (isNull(k) || !has(k)) null else getInt(k)
     private fun JSONObject.optStr(k: String): String? = if (isNull(k) || !has(k)) null else getString(k)
@@ -139,7 +142,67 @@ object Backup {
         if (root.optString("app") != "Cryo") throw IllegalArgumentException(Res.s(R.string.backup_not_cryo_file))
         val version = root.optInt("version", 1)
         if (version > VERSION) throw NewerVersion()
-        val snapshot = Snapshot(
+        // Um arquivo estragado ou mexido à mão (tipo que não existe, data torta, campo faltando) vira uma mensagem que a
+        // pessoa entende, nunca o texto cru do erro; e o que foi lido passa por [checked] antes de chegar ao app.
+        val snapshot = try {
+            checked(read(root))
+        } catch (e: Exception) {
+            throw IllegalArgumentException(Res.s(R.string.backup_invalid_file))
+        }
+        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 }, root.optBoolean("testMode", false))
+    }
+
+    private fun money(v: Long, signed: Boolean = false): Long {
+        require(v <= io.github.h3yk0.cryo.domain.Money.MAX_CENTS && v >= (if (signed) -io.github.h3yk0.cryo.domain.Money.MAX_CENTS else 0L))
+        return v
+    }
+
+    /** Mês no formato AAAAMM de verdade (o resto do app monta datas com ele). */
+    private fun ym(v: Int): Int {
+        require(v / 100 in 1970..2200 && v % 100 in 1..12)
+        return v
+    }
+
+    private fun day(d: LocalDate): LocalDate {
+        require(d.year in 1970..2200)
+        return d
+    }
+
+    /**
+     * RF-SEG-08: confere o que veio do arquivo. O app inteiro conta com estas regras (valores nunca negativos nem absurdos,
+     * meses e datas de verdade): um backup que as quebra travaria o Cryo a cada abertura. Dias de fechamento e vencimento e
+     * contadores fora da faixa são acertados; o resto é recusado.
+     */
+    private fun checked(s: Snapshot): Snapshot = s.copy(
+        accounts = s.accounts.map { it.copy(initialBalance = money(it.initialBalance, signed = true)) },
+        cards = s.cards.map { it.copy(limitAmount = money(it.limitAmount), closingDay = it.closingDay.coerceIn(1, 31), dueDay = it.dueDay.coerceIn(1, 31)) },
+        txs = s.txs.map {
+            it.copy(
+                amount = money(it.amount), date = day(it.date), invoiceYm = it.invoiceYm?.let(::ym), billYm = it.billYm?.let(::ym),
+                installmentNumber = it.installmentNumber.coerceIn(0, 999), installmentTotal = it.installmentTotal.coerceIn(0, 999),
+            )
+        },
+        yields = s.yields.map { it.copy(amount = money(it.amount, signed = true), date = day(it.date)) },
+        goals = s.goals.map { it.copy(target = money(it.target), deadline = it.deadline?.let(::day)) },
+        bills = s.bills.map {
+            it.copy(amount = money(it.amount), dueDay = it.dueDay.coerceIn(1, 31), startYm = ym(it.startYm), remindDaysBefore = it.remindDaysBefore.coerceIn(0, 31))
+        },
+        budgets = s.budgets.map { it.copy(limitAmount = money(it.limitAmount)) },
+        debts = s.debts.map {
+            it.copy(
+                initialBalance = money(it.initialBalance), installmentAmount = money(it.installmentAmount),
+                installmentCount = it.installmentCount.coerceIn(0, 999), paidBefore = it.paidBefore.coerceIn(0, 999),
+                dueDay = it.dueDay.coerceIn(1, 31), startYm = ym(it.startYm), deadline = it.deadline?.let(::day),
+                remindDaysBefore = it.remindDaysBefore.coerceIn(0, 31),
+            )
+        },
+        debtAdjustments = s.debtAdjustments.map { it.copy(amount = money(it.amount, signed = true), date = day(it.date)) },
+        budgetAdjustments = s.budgetAdjustments.map { it.copy(amount = money(it.amount, signed = true), ym = ym(it.ym)) },
+        noSpendDays = s.noSpendDays.map { it.copy(date = day(it.date)) },
+    )
+
+    private fun read(root: JSONObject): Snapshot {
+        return Snapshot(
             accounts = root.getJSONArray("accounts").mapObj {
                 Account(
                     id = it.getLong("id"), name = it.getString("name"), type = AccountType.valueOf(it.getString("type")),
@@ -238,13 +301,19 @@ object Backup {
                 io.github.h3yk0.cryo.data.db.NoSpendDay(date = LocalDate.parse(it.getString("date")), createdAt = it.optLong("createdAt"))
             }.orEmpty(),
         )
-        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 }, root.optBoolean("testMode", false))
     }
+
+    private const val FORMULA_START = "=+-@\t\r"
 
     /** CSV com ";" (abre direto no Excel/Planilhas em português). */
     fun csv(s: Snapshot, today: LocalDate): String {
         val l = Ledger(s, today)
-        fun esc(v: String) = if (v.contains(';') || v.contains('"') || v.contains('\n')) "\"" + v.replace("\"", "\"\"") + "\"" else v
+        // Um texto que começa com = + - @ (ou tabulação) é lido como fórmula pelo Excel e pelo Planilhas: a descrição de uma
+        // movimentação importada de um extrato poderia rodar um comando ao abrir a planilha. Um apóstrofo na frente desarma.
+        fun esc(raw: String): String {
+            val v = if (raw.isNotEmpty() && raw[0] in FORMULA_START) "'" + raw else raw
+            return if (v.contains(';') || v.contains('"') || v.contains('\n') || v.contains('\r')) "\"" + v.replace("\"", "\"\"") + "\"" else v
+        }
         fun money(c: Long): String {
             val a = kotlin.math.abs(c)
             return (if (c < 0) "-" else "") + "${a / 100},${(a % 100).toString().padStart(2, '0')}"
@@ -255,7 +324,7 @@ object Backup {
             TxType.GOAL_IN to Res.s(R.string.common_guardado_meta), TxType.GOAL_OUT to Res.s(R.string.common_retirado_meta),
             TxType.DEBT_IN to Res.s(R.string.common_emprestimo_recebido),
         )
-        val sb = StringBuilder("﻿")
+        val sb = StringBuilder("\uFEFF")
         sb.append(Res.s(R.string.backup_data_tipo_descricao_categoria))
         for (t in s.txs.sortedBy { it.date }) {
             val signed = when (t.type) {

@@ -202,7 +202,8 @@ fun Shortcuts(items: List<ShortcutItem>, modifier: Modifier = Modifier) {
         contentPadding = PaddingValues(horizontal = SectionPadding - 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {
-        items(items, key = { it.label }) { Shortcut(it) }
+        // Pela posição, não pelo rótulo: duas traduções iguais derrubariam o Início ("chave repetida").
+        items(items.size, key = { it }) { Shortcut(items[it]) }
     }
 }
 
