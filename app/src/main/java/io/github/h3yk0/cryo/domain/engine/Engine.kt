@@ -51,6 +51,11 @@ data class EngineReport(
     val portfolio: InvestReturn?,
     val goals: Map<Long, GoalOutlook>,
     val insights: List<RankedInsight>,
+    /** RF-PRV-06: como cada categoria deve fechar o mês (com a chance de passar do limite). */
+    val categories: List<io.github.h3yk0.cryo.domain.predict.CategoryOutlook> = emptyList(),
+    /** RF-PRV-07: rentabilidade no tempo, sobe e desce e projeção de cada investimento, e da carteira inteira. */
+    val investOutlook: Map<Long, io.github.h3yk0.cryo.domain.predict.InvestOutlook> = emptyMap(),
+    val portfolioOutlook: io.github.h3yk0.cryo.domain.predict.InvestOutlook? = null,
 ) {
     /** Assinaturas e outras saídas que se repetem, ativas, por mês. */
     val monthlyRecurringExpense: Long
@@ -98,6 +103,11 @@ object FinanceEngine {
         val report = EngineReport(
             today, recurrences, outlook, projection, anomalies, health, pace, suggestions, rates, payoff, returns, portfolio, goals,
             insights = emptyList(),
+            categories = io.github.h3yk0.cryo.domain.predict.CategoryForecasts.of(l, recurrences, Rng.mix(seed, 3)),
+            investOutlook = l.activeInvestments.mapNotNull { inv ->
+                io.github.h3yk0.cryo.domain.predict.InvestForecasts.of(l, inv.id, Rng.mix(seed, 4))?.let { inv.id to it }
+            }.toMap(),
+            portfolioOutlook = io.github.h3yk0.cryo.domain.predict.InvestForecasts.of(l, null, Rng.mix(seed, 4)),
         )
         return report.copy(insights = Ranking.rank(l, report))
     }

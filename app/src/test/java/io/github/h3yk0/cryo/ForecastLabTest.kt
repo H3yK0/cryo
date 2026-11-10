@@ -177,4 +177,37 @@ class ForecastLabTest {
         }
         File("build/forecast-season.txt").writeText(out.toString())
     }
+
+    /** RF-PRV-06: o fechamento do mês por categoria, o ritmo da 1.5 ([Pacing.projected]) contra o conjunto. */
+    @Test fun categorias() {
+        assumeTrue(arg != "false")
+        val out = StringBuilder()
+        out.append(String.format("%-11s %5s %9s %9s %6s\n", "mundo", "casos", "1.5", "novo", "cob%"))
+        var to = 0.0; var tn = 0.0; var tc = 0; var ti = 0
+        for (kind in worlds) {
+            var old = 0.0; var new = 0.0; var n = 0; var inside = 0
+            for (seed in 1L..(seeds ?: 2L)) {
+                val full = ForecastWorld.generate(ForecastWorld.spec(kind), end, seed * 97 + kind.ordinal)
+                val actual = Ledger(full, end)
+                for (back in 1..10) {
+                    val ym = end.ym().minusMonths(back.toLong())
+                    for (day in listOf(5, 10, 15, 20, 25)) {
+                        val today = ym.atDay(day)
+                        val l = Ledger(Personas.asOf(full, today), today)
+                        for (o in io.github.h3yk0.cryo.domain.predict.CategoryForecasts.of(l, Recurrences.detect(l.s.txs, today), seed)) {
+                            val real = actual.categorySpent(ym, o.categoryId)
+                            old += abs(io.github.h3yk0.cryo.domain.engine.Pacing.projected(l, o.categoryId, o.spent) - real)
+                            new += abs(o.mid - real)
+                            if (real in o.low..o.high) inside++
+                            n++
+                        }
+                    }
+                }
+            }
+            out.append(String.format("%-11s %5d %9.2f %9.2f %6.1f\n", kind.name, n, old / n / 100, new / n / 100, inside * 100.0 / n))
+            to += old; tn += new; tc += n; ti += inside
+        }
+        out.append(String.format("%-11s %5d %9.2f %9.2f %6.1f\n", "TODOS", tc, to / tc / 100, tn / tc / 100, ti * 100.0 / tc))
+        File("build/forecast-categories.txt").writeText(out.toString())
+    }
 }

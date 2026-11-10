@@ -83,16 +83,26 @@ class View(val s: DailySeries, val t: Int) {
         val m = t + 1
         var c = Double.MAX_VALUE
         if (m >= 20) {
-            val seen = s.raw.copyOf(m)
-            c = Stats.quantile(seen, 0.975)
-            val nonZero = seen.filter { it > 0.0 }.toDoubleArray()
-            if (nonZero.isNotEmpty()) c = maxOf(c, Stats.quantile(nonZero, 0.80))
+            // Uma cópia ordenada só (RF-MOT-15, economia de recursos): os dias com movimento são o fim dela.
+            val sorted = s.raw.copyOf(m).also { it.sort() }
+            c = quantile(sorted, 0, m, 0.975)
+            var z = 0
+            while (z < m && sorted[z] <= 0.0) z++
+            if (z < m) c = maxOf(c, quantile(sorted, z, m, 0.80))
             if (c <= 0.0) c = Double.MAX_VALUE
         }
         cap = c
         x = DoubleArray(m) { minOf(s.raw[it], c) }
         prefix = DoubleArray(m + 1)
         for (i in 0 until m) prefix[i + 1] = prefix[i] + x[i]
+    }
+
+    /** O quantil [q] do pedaço [from]..[to) de um vetor ordenado (a mesma conta de [Stats.quantileSorted]). */
+    private fun quantile(sorted: DoubleArray, from: Int, to: Int, q: Double): Double {
+        val pos = q * (to - from - 1)
+        val lo = pos.toInt()
+        val hi = minOf(lo + 1, to - from - 1)
+        return sorted[from + lo] + (sorted[from + hi] - sorted[from + lo]) * (pos - lo)
     }
 
     /** Soma (sem os extremos) dos dias [a]..[b], inclusive; fora do que se conhece conta zero. */

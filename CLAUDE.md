@@ -153,18 +153,19 @@ código anterior. Todos os testes passam.
 ### Continuar a 1.8 (roteiro para a próxima sessão)
 
 O Hanry pediu (10/11/2026): auditar e corrigir o código, e criar do zero um previsor "que se compara a IA, mas algoritmo
-puro". **Feito**: auditoria (RF-AUD, `Audit18Test`, `Audit18DataTest`) e a previsão do mês (RF-PRV-01..05 e 09). **Falta**, nesta ordem:
+puro". **Feito**: auditoria (RF-AUD, `Audit18Test`, `Audit18DataTest`), a previsão do mês (RF-PRV-01..05 e 09), por
+categoria (06), de investimentos (07) e a **biblioteca de erros** (`docs/ERROS.md`). **Falta**, nesta ordem:
 
-1. **RF-PRV-06 — categorias**: `Ensemble.forecast(DailySeries.of(txs, hoje, { gasto da categoria }), n - 1, diasQueFaltam)`
-   dá o quanto ainda vai somar; `gasto até hoje + point` = como a categoria fecha o mês; sorteando `drawError` sai a chance de
-   passar do limite (`l.monthLimit`). Entra no lugar de `Pacing.alerts` (`domain/engine/Signals.kt`) **só se errar menos**
-   (medir no `ForecastLabTest`, como foi feito com o mês).
-2. **RF-PRV-07 — investimentos** (`domain/engine/Wealth.kt` já tem `Returns.xirr`): rentabilidade no tempo (Dietz modificado
-   mês a mês com `yields` e aportes), volatilidade, maior queda, e projeção com aportes em cenários (faixa de 80% em 1, 3 e 5
-   anos e chance de chegar a um valor). O `ForecastWorld` já gera o "Fundo Horizonte" para os testes. Texto sem promessa de ganho.
+1. ~~RF-PRV-06 — categorias~~ **feito** (`domain/predict/CategoryForecast.kt`, `EngineReport.categories`: `spent`, `low/mid/high`,
+   `chanceOver`). Erra 10% menos que `Pacing.projected` no laboratório. `Pacing.alerts` (o aviso de ritmo e a tela de
+   orçamentos) ainda usa a conta da 1.5: trocar junto com as telas, medindo. Faixa estreita em categorias de compras raras.
+2. ~~RF-PRV-07 — investimentos~~ **feito** (`domain/predict/InvestForecast.kt`, `EngineReport.investOutlook` por investimento e
+   `portfolioOutlook`: `monthly`, `annual`, `volatility`, `maxDrawdown`, `negativeShare`, `contribution`, `horizons` de 1, 3 e
+   5 anos com `low/mid/high`, `putIn` e `chanceOf(valor)`). Menos de 6 rendimentos lançados: `horizons` vazio.
 3. **RF-PRV-08 — telas e textos**: mostrar em Análises (cartão da previsão, `InsightsScreen.kt` / `EngineScreens.kt`) a
    conferência do passado (`outlook.calibration`: "nos seus últimos N meses, a faixa acertou X"), os modelos que pesaram
-   (`outlook.models`, nomes simples) e os cartões de categorias e investimentos. Strings nas 10 línguas (o script
+   (`outlook.models`, nomes simples) e os cartões de categorias (`report.categories`, na tela de orçamentos e no painel do
+   mês) e de investimentos (`report.investOutlook`, na Carteira; texto sem promessa de ganho: "se continuar como foi"). Strings nas 10 línguas (o script
    `i18n/apply.py` da sessão antiga não existe mais: editar os 10 `strings.xml`; `PrdConformanceTest` confere). Imagens novas.
 4. **Fechar a versão**: `versionCode 9` / `versionName "1.8"`, `CHANGELOG.md` (inglês), `docs/CHANGELOG.pt-BR.md`, fastlane
    `changelogs/9.txt` nas 10 línguas (≤ 500 caracteres), PRD (marcar feitos, histórico, roadmap), este arquivo, suíte completa,
@@ -210,6 +211,10 @@ Como medir qualquer mudança no previsor (não confiar no palpite: várias ideia
   guardada (só a chave derivada, trancada pelo cofre do Android). Nada de `Log`, `println` ou `printStackTrace` (RF-SEG-07).
 
 **Processo**
+- **Biblioteca de erros = lei** (pedido do Hanry, 10/11/2026): **[docs/ERROS.md](docs/ERROS.md)** lista cada erro já corrigido, a
+  lei ("o que nunca mais pode acontecer") e o teste que guarda. Antes de mexer numa área, ler as linhas dela. Nenhum
+  teste-guarda pode ser apagado, desligado ou afrouxado. Todo defeito novo corrigido entra lá no mesmo commit, com teste que
+  falha no código anterior. `KnownIssuesTest` confere; a suíte inteira passa antes de qualquer entrega.
 - **O Hanry quer baixar e testar o APK antes de qualquer push** (GitHub, GitLab, F-Droid). Nunca dar push, criar tag ou release
   sem a aprovação explícita dele.
 - Commits com a identidade pública: `Hanry Franco <102742894+H3yK0@users.noreply.github.com>` (nunca o e-mail pessoal).
@@ -403,7 +408,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `WhisperHostTest` | A ponte JNI e o modelo de verdade, compilados para o computador (só com `-PwhisperHost=true`, depois de `app/src/test/cpp/build-host.sh`) |
 | `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.7): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
 | `MomentsTest`, `BudgetMonthTest`, `Screens17Test` | Momentos depois de salvar e o modo compras; remanejar só no mês e backup; imagens 71–81 (painel, avisos, momentos, compras, botão de voz, fonte em 200%) |
-| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria |
+| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -610,6 +615,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 | Arquivo | Para quê |
 |---|---|
 | `docs/PRD.md` | **Documento de requisitos: manda em tudo** (catálogo de telas e requisitos, design system, processo) |
+| `docs/ERROS.md` | **Biblioteca de erros já corrigidos (lei)**: ler antes de mexer; cada linha tem o teste que guarda |
 | `README.md` | Apresentação pública (GitHub), em inglês; as outras 9 línguas em `docs/readme/` |
 | `CHANGELOG.md` | Novidades de cada versão, em inglês (em português: `docs/CHANGELOG.pt-BR.md`) |
 | `docs/VISUAL.md` | Guia visual: cores, tipografia, componentes, telas, textos |

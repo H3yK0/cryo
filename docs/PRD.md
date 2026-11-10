@@ -46,7 +46,7 @@ anexo é corrigido no mesmo commit.
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 | 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
-| 3.2 | 10/11/2026 | Pedido do Hanry: auditoria do código inteiro e **previsor novo, do zero** (RF-PRV, seção 6.12b), para a **1.8**. Auditoria feita e corrigida (RF-AUD); previsor do mês pronto e ligado ao motor, medido contra o da 1.5. Falta (RF-PRV-06..08): categorias, investimentos, telas. |
+| 3.2 | 10/11/2026 | Pedido do Hanry: auditoria do código inteiro e **previsor novo, do zero** (RF-PRV, seção 6.12b), para a **1.8**. Auditoria feita e corrigida (RF-AUD); previsor do mês pronto e ligado ao motor, medido contra o da 1.5. Categorias e investimentos calculados (RF-PRV-06, 07); **falta só RF-PRV-08** (telas e textos). **Biblioteca de erros** `docs/ERROS.md` criada como lei (PRC-08), conferida por `KnownIssuesTest`. |
 | 3.1 | 09/11/2026 | **1.7 construída**: requisitos marcados como feitos; avisos só em dois horários (RF-AVI-04, sem "horário silencioso" separado); telas TELA-ORCAMENTO-MES e TELA-AVISOS; voz mais rápida medida com o modelo de verdade (RF-VOZ-13: a janela curta erra valores e ficou de fora; atenção rápida como teste no modo desenvolvedor); fonte em 200% conferida (RF-ALC-04). |
 | 3.0 | 09/11/2026 | **1.7 aprovada pelo Hanry**: barra com o botão de voz, tom "amigo", sons, **banco de dados mais flexível** (versão 4: remanejar o orçamento só no mês, dias sem gastos, ilustração das metas) com um **painel geral dos gastos**, sem mascote, lembrete do dia ligado **perguntando antes o horário**. Pedido novo: **nada de emoji de teclado**; ilustrações próprias no estilo do Cryo (RF-ILU). Estudo das notificações animadas e "ao vivo" do Android e da One UI (RF-AVI-09/10). |
 | 2.9 | 09/11/2026 | Retorno do Hanry sobre a 1.6 ("gostei pra caramba", "lentinho, coisa de 5 segundos") e **proposta da 1.7** (seção 6.19c): avisos inteligentes no estilo Duolingo (RF-AVI), sons próprios (RF-SOM), momentos animados (RF-MOM), alertas de orçamento ao salvar e pelo ritmo (RF-ORC-04/05), botão de voz ao alcance do polegar como na One UI (RF-ALC) e voz mais rápida (RF-VOZ-13). |
@@ -467,8 +467,8 @@ no passado da própria pessoa**, e uma faixa que é **conferida** contra esse pa
 | RF-PRV-03 | **Conjunto** (`Ensemble.kt`): para cada previsão, o Cryo refaz a pergunta em até 20 dias do passado (o mesmo dia do mês nos últimos 12 meses e algumas semanas atrás) e pesa cada modelo pelo erro (1/erro⁴), encolhendo para pesos iguais quando há pouco passado. Os erros "de fora" (pesos refeitos sem aquele dia) dão o espalhamento. **Época do ano** (`Season.kt`): só multiplica a previsão quando os mesmos dias se destacaram **nos dois anos anteriores**, para o mesmo lado. | O conjunto erra menos que o melhor modelo sozinho na média dos mundos. | ✅ 1.8 |
 | RF-PRV-04 | **Previsão do mês** (`Forecaster.month`, no lugar de RF-MOT-03): o que é certo (já aconteceu, agendados, contas fixas, parcelas, recorrências) entra como na 1.5; o incerto (gasto do dia a dia e entradas avulsas) vem do conjunto; 2.000 cenários dão a faixa. Mesmos dados, mesmo resultado. | `ForecastTest`: erra menos que `Outlook.month` (1.5). | ✅ 1.8 |
 | RF-PRV-05 | **Conferência no passado** (calibração conforme): o Cryo refaz a previsão no mesmo dia de até 12 meses anteriores e alarga ou estreita a faixa até ela conter 80% do que aconteceu; corrige o centro só quando o erro para um lado é maior que o acaso. Guarda `Calibration(meses, acertos, erro típico, viés)` para a tela dizer "nos seus últimos N meses, a faixa acertou X". | A faixa de 80% contém o real em 68%–93% dos casos de `ForecastTest`. | ✅ 1.8 |
-| RF-PRV-06 | **Categorias**: a mesma previsão por categoria com orçamento (fecha o mês em quanto, chance de passar do limite), no lugar do ritmo de RF-MOT-07. | Erro menor que `Pacing.alerts` no laboratório. | ⏳ |
-| RF-PRV-07 | **Investimentos**: rentabilidade no tempo (Dietz modificado), sobe e desce (volatilidade), maior queda, e projeção com aportes em cenários (faixa e chance de chegar a um valor). | Testes com rendimentos inventados; nada de promessa de ganho no texto. | ⏳ |
+| RF-PRV-06 | **Categorias** (`CategoryForecast.kt`): como cada categoria fecha o mês = o que já saiu + o que tem dia certo (lançado, conta fixa, o que se repete) + o gasto do dia a dia previsto pelo conjunto; com limite, a **chance de passar**. Sai em `EngineReport.categories`. O alerta de ritmo (`Pacing.alerts`, RF-MOT-07) continua o da 1.5 até as telas trocarem (RF-PRV-08). | `ForecastTest`: erra menos que `Pacing.projected`. Laboratório (7.198 casos): erro 109,79 contra 122,05 (−10%), melhor em 8 de 9 mundos (perde no de compra semanal); a faixa conteve o real em 75% (57% no mundo de compras raras: faixa estreita demais ali, a melhorar). | ✅ 1.8 (cálculo) |
+| RF-PRV-07 | **Investimentos** (`InvestForecast.kt`): rentabilidade **do investimento** (Dietz modificado entre um rendimento lançado e o seguinte: não se deixa levar por quando a pessoa aportou), sobe e desce ao ano, maior queda, parte dos períodos no negativo, aporte típico, e projeção de 1, 3 e 5 anos em 1.000 cenários (sorteio dos rendimentos passados + a incerteza da média), com faixa de 80% e chance de chegar a um valor (`chanceOf`). Menos de 6 períodos: mostra o retrato, não projeta. Sai em `EngineReport.investOutlook` e `portfolioOutlook`. | `ForecastTest`: renda fixa de 1% ao mês dá 1%, sem queda, e o valor futuro bate com a fórmula; aporte grande não muda a taxa. Texto das telas sem promessa de ganho. | ✅ 1.8 (cálculo) |
 | RF-PRV-08 | **A previsão se explica** nas telas: quais modelos pesaram (`MonthOutlook.models`), a conferência do passado (`calibration`), a época do ano. Textos nas 10 línguas. | Imagens novas em `ScreensTest`. | ⏳ |
 | RF-PRV-09 | **Laboratório** (`ForecastLabTest`, só com `-PforecastLab=true`) e **teste permanente** (`ForecastTest`): 9 "mundos" inventados e difíceis (`ForecastWorld`: estável, pós-pagamento, tendência, mudança de vida, sazonal, compra semanal, gastos raros, renda irregular, quem cortou gastos). | O previsor só substitui o da 1.5 onde ganha. | ✅ 1.8 |
 
@@ -495,7 +495,7 @@ histórico, que é o jeito da 1.5); o "pulso do mês" (aprender se um mês que c
 mundos); época do ano com um ano só de confirmação (alarmes falsos custavam mais do que ela rendia).
 **Limite conhecido**: num mês fora do padrão que nunca se repetiu (o primeiro dezembro caro), o motor da 1.5 reage mais
 depressa; o novo ganha nos outros meses e no conjunto. Os mundos são inventados: a medida de verdade virá do uso.
-Código: `domain/predict/` (`Series.kt`, `Models.kt`, `Season.kt`, `Ensemble.kt`, `Forecaster.kt`). O motor da 1.5
+Código: `domain/predict/` (`Series.kt`, `Models.kt`, `Season.kt`, `Ensemble.kt`, `Forecaster.kt`, `CategoryForecast.kt`, `InvestForecast.kt`). O motor da 1.5
 (`Outlook.month`) continua no código como régua dos testes.
 
 ### 6.12c Auditoria da 1.8 — RF-AUD
@@ -510,7 +510,8 @@ Código: `domain/predict/` (`Series.kt`, `Models.kt`, `Season.kt`, `Ensemble.kt`
 | RF-AUD-06 | Banco: "Já paguei" duas vezes grava um pagamento só (transação); apagar categoria leva os remanejamentos. | ✅ 1.8 |
 | RF-AUD-07 | Avisos: cada aviso abre a sua tela (`PendingIntent` com ação própria); figurinhas por tabela fixa. | ✅ 1.8 |
 
-Testes: `Audit18Test`, `Audit18DataTest`.
+Testes: `Audit18Test`, `Audit18DataTest`. **Situação: todos os achados da auditoria estão corrigidos e com teste** (suíte inteira
+passando); cada um está na biblioteca de erros (`docs/ERROS.md`, ERR-003..006, 011, 015..019) com a lei e a guarda.
 
 ### 6.13 Importação de extratos — RF-IMP (TELA-IMPORTAR, TELA-RELATORIO)
 
@@ -1064,6 +1065,12 @@ Uma mudança só está pronta quando **tudo** abaixo é verdade:
 | S4 | Melhoria pequena | Entra no roadmap. |
 
 Todo defeito corrigido ganha um teste que falha no código anterior e, se for regra nova, um ID no PRD.
+
+**Biblioteca de erros (lei).** Todo defeito corrigido entra também em **[docs/ERROS.md](ERROS.md)**, com um ID `ERR-`, a lei em
+uma frase ("o que nunca mais pode acontecer") e o teste que guarda essa lei. Quem mexe numa área lê antes as linhas dela;
+nenhum teste-guarda pode ser apagado, desligado ou afrouxado sem mudar primeiro o PRD e a tabela. `KnownIssuesTest` confere
+sozinho (IDs em ordem, toda linha com lei e guarda, toda guarda existindo e ligada). Pedido do Hanry (10/11/2026): "qualquer
+nova requisição deve passar por essas correções já feitas e seguir essa matriz".
 
 ### 11.9 Conformidade automática (PRC-09)
 

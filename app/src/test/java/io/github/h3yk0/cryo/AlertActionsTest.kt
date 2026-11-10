@@ -113,6 +113,18 @@ class AlertActionsTest {
         assertEquals("${app.packageName}.stickers", sticker.dataUri!!.authority)
     }
 
+    /** ERR-011: dois avisos diferentes não podem dividir o mesmo `PendingIntent` (o segundo abriria a tela do primeiro). */
+    @Test fun cadaAvisoAbreASuaTela() {
+        val state = AlertState(app)
+        val nm = app.getSystemService(NotificationManager::class.java)
+        val actions = listOf(AlertGroup.BILLS, AlertGroup.BUDGET, AlertGroup.GOALS).map { g ->
+            val a = AlertExamples.of(g, AlertTone.FRIEND)
+            assertTrue(Alerts.post(app, a, state, record = false))
+            shadowOf(shadowOf(nm).getNotification(Alerts.idOf(a)).contentIntent).savedIntent.action
+        }
+        assertEquals(actions.toString(), 3, actions.filterNotNull().toSet().size)
+    }
+
     @Test fun sonsRespeitamOCelularEOAjuste() {
         Sounds.testLog = mutableListOf()
         val audio = app.getSystemService(AudioManager::class.java)

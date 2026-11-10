@@ -180,6 +180,18 @@ object Pacing {
         return (curve[i] + (curve[i + 1] - curve[i]) * f).coerceIn(0.0, 1.0)
     }
 
+    /** Como a categoria fecha o mês no ritmo atual (a conta da 1.5; a 1.8 a compara com RF-PRV-06 no laboratório). */
+    fun projected(l: Ledger, categoryId: Long, spent: Long, c: DoubleArray? = curve(l, categoryId, l.today.ym())): Double {
+        val ym = l.today.ym()
+        val share = shareAt(c, l.today.dayOfMonth, ym.lengthOfMonth())
+        val history = (1..6).map { l.categorySpent(ym.minusMonths(it.toLong()), categoryId).toDouble() }.filter { it > 0 }
+        val usual = if (history.isEmpty()) 0.0 else Stats.median(history.toDoubleArray())
+        // Quanto mais o mês anda, mais vale o ritmo deste mês; no começo, vale mais o normal da categoria.
+        val byPace = if (share >= 0.05) spent / share else spent.toDouble()
+        val byUsual = spent + usual * (1 - share)
+        return maxOf(spent.toDouble(), share * byPace + (1 - share) * byUsual)
+    }
+
     fun alerts(l: Ledger): List<PaceAlert> {
         val today = l.today
         val ym = today.ym()
@@ -196,12 +208,7 @@ object Pacing {
             if (spent >= limit) continue // já passou: o app já mostra
             val c = curve(l, cat.id, ym)
             val share = shareAt(c, d, len)
-            val history = (1..6).map { l.categorySpent(ym.minusMonths(it.toLong()), cat.id).toDouble() }.filter { it > 0 }
-            val usual = if (history.isEmpty()) 0.0 else Stats.median(history.toDoubleArray())
-            // Quanto mais o mês anda, mais vale o ritmo deste mês; no começo, vale mais o normal da categoria.
-            val byPace = if (share >= 0.05) spent / share else spent.toDouble()
-            val byUsual = spent + usual * (1 - share)
-            val projected = maxOf(spent.toDouble(), share * byPace + (1 - share) * byUsual)
+            val projected = projected(l, cat.id, spent, c)
             if (projected <= limit * 1.02) continue
             var cross = len
             for (k in d + 1..len) {
