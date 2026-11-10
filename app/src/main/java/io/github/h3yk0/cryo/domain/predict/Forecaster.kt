@@ -168,6 +168,7 @@ object Forecaster {
             scenarios = n,
             calibration = calibration,
             models = fcVar.weights.entries.sortedByDescending { it.value }.map { ModelShare(it.key, it.value) },
+            season = if (remaining > 0) fcVar.season else 1.0,
         )
     }
 

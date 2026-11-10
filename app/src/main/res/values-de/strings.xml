@@ -1820,4 +1820,31 @@
     <string name="dev_voice_flash">Schnelle Attention in Whisper (Test)</string>
     <string name="dev_voice_flash_desc" formatted="false">Am Computer ~20 % schneller mit demselben Text. Die Zeit steht im Sprachfenster. Ausschalten, wenn die Spracheingabe hängt oder Fehler macht.</string>
     <string name="sec_protection_unavailable">Der Passwortschutz ist an, aber der Schlüsselspeicher dieses Handys hat den Schlüssel nicht freigegeben. Nichts wurde ohne Passwort gespeichert. Schalte den Backup-Schutz in den Einstellungen aus und wieder ein.</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">Mit deiner Vergangenheit geprüft: in %1$d von %2$d Monaten getroffen (typische Abweichung %3$s)</string>
+    <string name="prv_models">Am stärksten gezählt hat: %1$s</string>
+    <string name="prv_model_profile">wie jeder Wochentag meistens läuft</string>
+    <string name="prv_model_pace91">der Durchschnitt der letzten 3 Monate</string>
+    <string name="prv_model_pace182">der Durchschnitt der letzten 6 Monate</string>
+    <string name="prv_model_same_phase">dieser Teil des Monats in früheren Monaten</string>
+    <string name="prv_model_phase_level">dieser Teil des Monats im heutigen Tempo</string>
+    <string name="prv_model_holt">der Trend der letzten Wochen</string>
+    <string name="prv_model_theta">die Wochen ohne das Auf und Ab</string>
+    <string name="prv_season_up">In dieser Jahreszeit gibst du meist %1$s mehr aus, und die Prognose rechnet schon damit.</string>
+    <string name="prv_season_down">In dieser Jahreszeit gibst du meist %1$s weniger aus, und die Prognose rechnet schon damit.</string>
+    <string name="prv_cat_close">Endet den Monat wohl bei etwa %1$s · %2$s Chance, das Limit zu überschreiten</string>
+    <string name="prv_cat_close_ok">Endet den Monat wohl bei etwa %1$s, im Limit</string>
+    <string name="prv_inv_title">Wenn es so weitergeht wie bisher</string>
+    <string name="prv_inv_wait">Nach 6 Wertaktualisierungen (eine pro Monat, mit „Wert aktualisieren“) zeigt Cryo, wohin diese Anlage kommen kann.</string>
+    <string name="prv_inv_month">Die Anlage selbst brachte im Schnitt %1$s pro Monat (egal, wann du eingezahlt hast)</string>
+    <string name="prv_inv_swing">Auf und Ab: %1$s pro Jahr · größter Rückgang: %2$s</string>
+    <string name="prv_inv_contrib">Mit Einzahlungen von %1$s pro Monat, wie du es bisher machst.</string>
+    <string name="prv_inv_no_contrib">Ohne neue Einzahlungen: nur das, was schon da ist.</string>
+    <string name="prv_inv_chance">Chance, in %1$d Jahren mehr zu haben, als du eingezahlt hast (%2$s): %3$s</string>
+    <string name="prv_inv_note">Das ist eine Rechnung mit der Vergangenheit dieser Anlage, kein Versprechen: Die Zukunft kann anders sein.</string>
+    <string name="prv_inv_portfolio">Wenn es so weitergeht wie bisher, liegt dein Depot in %1$d Jahren bei etwa %2$s</string>
+    <plurals name="prv_inv_years">
+        <item quantity="one">In %1$d Jahr</item>
+        <item quantity="other">In %1$d Jahren</item>
+    </plurals>
 </resources>

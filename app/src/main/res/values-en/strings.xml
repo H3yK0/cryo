@@ -1820,4 +1820,31 @@
     <string name="dev_voice_flash">Fast attention in Whisper (test)</string>
     <string name="dev_voice_flash_desc" formatted="false">On a computer it made results ~20% faster with the same text. The time shows on the voice screen. Turn it off if voice freezes or gets things wrong.</string>
     <string name="sec_protection_unavailable">Password protection is on, but this phone\'s keystore didn\'t release the key. Nothing was saved without a password. In Settings, turn backup protection off and on again.</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">Checked against your past: right in %1$d of %2$d months (typical miss of %3$s)</string>
+    <string name="prv_models">What weighed most: %1$s</string>
+    <string name="prv_model_profile">how each weekday usually goes</string>
+    <string name="prv_model_pace91">the average of the last 3 months</string>
+    <string name="prv_model_pace182">the average of the last 6 months</string>
+    <string name="prv_model_same_phase">this part of the month, in past months</string>
+    <string name="prv_model_phase_level">this part of the month, at today\'s pace</string>
+    <string name="prv_model_holt">the trend of recent weeks</string>
+    <string name="prv_model_theta">the weeks, without the ups and downs</string>
+    <string name="prv_season_up">At this time of year you usually spend %1$s more, and the forecast already counts on it.</string>
+    <string name="prv_season_down">At this time of year you usually spend %1$s less, and the forecast already counts on it.</string>
+    <string name="prv_cat_close">Should end the month near %1$s · %2$s chance of going over the limit</string>
+    <string name="prv_cat_close_ok">Should end the month near %1$s, within the limit</string>
+    <string name="prv_inv_title">If it keeps going like before</string>
+    <string name="prv_inv_wait">After 6 value updates (one a month, with “Update value”), Cryo shows where this investment could get to.</string>
+    <string name="prv_inv_month">The investment itself earned %1$s a month on average (regardless of when you put money in)</string>
+    <string name="prv_inv_swing">Ups and downs: %1$s a year · biggest drop: %2$s</string>
+    <string name="prv_inv_contrib">Counting contributions of %1$s a month, as you have been doing.</string>
+    <string name="prv_inv_no_contrib">No new contributions: only what is already there.</string>
+    <string name="prv_inv_chance">Chance of having more than you put in (%2$s) in %1$d years: %3$s</string>
+    <string name="prv_inv_note">This is a calculation based on this investment\'s past, not a promise: the future may be different.</string>
+    <string name="prv_inv_portfolio">If it keeps going like before, in %1$d years your portfolio will be near %2$s</string>
+    <plurals name="prv_inv_years">
+        <item quantity="one">In %1$d year</item>
+        <item quantity="other">In %1$d years</item>
+    </plurals>
 </resources>

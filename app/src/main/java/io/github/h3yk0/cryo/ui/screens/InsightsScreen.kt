@@ -7,6 +7,7 @@ import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.domain.Num
 import io.github.h3yk0.cryo.domain.engine.Certainty
 import io.github.h3yk0.cryo.domain.engine.MonthOutlook
+import io.github.h3yk0.cryo.domain.predict.ModelKind
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.clickable
@@ -259,6 +260,13 @@ private fun ForecastCard(f: MonthForecast, o: MonthOutlook?) {
                 Res.s(R.string.engine_between_80, if (hide) Money.HIDDEN else Money.format(o.low), if (hide) Money.HIDDEN else Money.format(o.high)),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
+            // RF-PRV-05: a faixa já foi conferida no passado da própria pessoa.
+            o.calibration?.let { cal ->
+                Text(
+                    Res.s(R.string.prv_checked, cal.hits, cal.months, if (hide) Money.HIDDEN else Money.format(cal.typicalError)),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (o.chanceNegative >= 0.05) {
                 Text(
                     Res.s(R.string.engine_ins_chance_red, Num.percent((o.chanceNegative * 100).roundToInt())),
@@ -301,6 +309,20 @@ private fun ForecastCard(f: MonthForecast, o: MonthOutlook?) {
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(top = 6.dp),
             )
+            // RF-PRV-08: a previsão se explica (o que mais pesou e a época do ano).
+            val top = o.models.filter { it.weight >= 0.15 }.take(3)
+            if (f.remainingDays > 0 && top.isNotEmpty()) {
+                Text(
+                    Res.s(R.string.prv_models, top.joinToString(" · ") { Res.s(modelName(it.kind)) + " " + Num.percent((it.weight * 100).roundToInt()) }),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            if (f.remainingDays > 0 && kotlin.math.abs(o.season - 1) >= 0.05) {
+                Text(
+                    Res.s(if (o.season > 1) R.string.prv_season_up else R.string.prv_season_down, Num.percent((kotlin.math.abs(o.season - 1) * 100).roundToInt())),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
             if (o.certainty == Certainty.LOW) {
                 Text(Res.s(R.string.engine_forecast_low), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
@@ -312,6 +334,17 @@ private fun ForecastCard(f: MonthForecast, o: MonthOutlook?) {
             )
         }
     }
+}
+
+/** O nome simples de cada modelo do previsor (RF-PRV-02), para a tela explicar a conta. */
+internal fun modelName(k: ModelKind): Int = when (k) {
+    ModelKind.PROFILE -> R.string.prv_model_profile
+    ModelKind.PACE_91 -> R.string.prv_model_pace91
+    ModelKind.PACE_182 -> R.string.prv_model_pace182
+    ModelKind.SAME_PHASE -> R.string.prv_model_same_phase
+    ModelKind.PHASE_LEVEL -> R.string.prv_model_phase_level
+    ModelKind.HOLT -> R.string.prv_model_holt
+    ModelKind.THETA -> R.string.prv_model_theta
 }
 
 @Composable

@@ -361,6 +361,16 @@ cenários). A nota de saúde usa verde (Bem/Ótima), âmbar (Em construção) e 
 |---|---|---|
 | <img src="visual/saude-financeira.png" width="220"><br>Saúde financeira | <img src="visual/recorrencias.png" width="220"><br>O que se repete | <img src="visual/plano-dividas.png" width="220"><br>Plano para quitar |
 
+**Previsor (1.8)**: toda previsão diz de onde veio e se já foi conferida ("Conferida no seu passado: acertou em 10 de 12 meses").
+Os modelos aparecem com nomes do dia a dia ("a média dos últimos 3 meses", "este trecho do mês, nos meses passados"), nunca com o
+nome técnico, e só os que pesaram 15% ou mais. Chance de passar do limite só aparece a partir de 5%, e em âmbar só a partir de 50%.
+Investimento: "Se continuar como foi", sempre com a frase de que é o passado projetado, não promessa; a rentabilidade da projeção é
+"o investimento em si", para não ser confundida com o rendimento real (TIR) logo acima.
+
+| | | |
+|---|---|---|
+| <img src="visual/previsao-conferida.png" width="220"><br>Previsão conferida | <img src="visual/orcamentos-fechamento.png" width="220"><br>Orçamentos: como fecha o mês | <img src="visual/investimento-projecao.png" width="220"><br>Se continuar como foi |
+
 **Como usar o Cryo (passeio, 1.4)**: cada página anima a ilustração e para no quadro final (aqui, o final).
 
 | | | | | |

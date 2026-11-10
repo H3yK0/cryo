@@ -148,6 +148,8 @@ data class MonthOutlook(
     val calibration: io.github.h3yk0.cryo.domain.predict.Calibration? = null,
     /** RF-PRV-08: quanto cada modelo pesou na previsão do gasto do dia a dia. */
     val models: List<io.github.h3yk0.cryo.domain.predict.ModelShare> = emptyList(),
+    /** RF-PRV-03: a época do ano aplicada ao gasto do dia a dia (1 = época comum; 1,4 = estes dias costumam custar 40% a mais). */
+    val season: Double = 1.0,
 ) {
     val expectedIncome: Long get() = expected.filter { it.recurrence.type == TxType.INCOME }.sumOf { (it.recurrence.amount * it.probability).roundToLong() }
     val expectedExpense: Long get() = expected.filter { it.recurrence.type == TxType.EXPENSE }.sumOf { (it.recurrence.amount * it.probability).roundToLong() }

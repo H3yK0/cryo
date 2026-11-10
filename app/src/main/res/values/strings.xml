@@ -1945,4 +1945,31 @@
     <string name="dev_voice_flash">Atenção rápida no Whisper (teste)</string>
     <string name="dev_voice_flash_desc" formatted="false">No computador deixou o resultado ~20% mais rápido, com o mesmo texto. O tempo aparece na tela de voz. Desligue se a voz travar ou errar.</string>
     <string name="sec_protection_unavailable">A proteção com senha está ligada, mas o cofre deste celular não abriu a chave. Nada foi gravado sem senha. Em Ajustes, desligue e ligue de novo a proteção dos backups.</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">Conferida no seu passado: acertou em %1$d de %2$d meses (erro típico de %3$s)</string>
+    <string name="prv_models">O que mais pesou na conta: %1$s</string>
+    <string name="prv_model_profile">o jeito de cada dia da semana</string>
+    <string name="prv_model_pace91">a média dos últimos 3 meses</string>
+    <string name="prv_model_pace182">a média dos últimos 6 meses</string>
+    <string name="prv_model_same_phase">este trecho do mês, nos meses passados</string>
+    <string name="prv_model_phase_level">este trecho do mês, no ritmo de agora</string>
+    <string name="prv_model_holt">a tendência das últimas semanas</string>
+    <string name="prv_model_theta">as semanas, sem os altos e baixos</string>
+    <string name="prv_season_up">Nesta época do ano você costuma gastar %1$s a mais, e a previsão já conta com isso.</string>
+    <string name="prv_season_down">Nesta época do ano você costuma gastar %1$s a menos, e a previsão já conta com isso.</string>
+    <string name="prv_cat_close">Deve fechar o mês perto de %1$s · %2$s de chance de passar do limite</string>
+    <string name="prv_cat_close_ok">Deve fechar o mês perto de %1$s, dentro do limite</string>
+    <string name="prv_inv_title">Se continuar como foi</string>
+    <string name="prv_inv_wait">Depois de 6 atualizações do valor (uma por mês, em “Atualizar valor”), o Cryo mostra onde este investimento pode chegar.</string>
+    <string name="prv_inv_month">O investimento em si rendeu %1$s ao mês, em média (sem contar quando você aportou)</string>
+    <string name="prv_inv_swing">Sobe e desce: %1$s ao ano · maior queda: %2$s</string>
+    <string name="prv_inv_contrib">Contando aportes de %1$s por mês, como você vem fazendo.</string>
+    <string name="prv_inv_no_contrib">Sem aportes novos: só o que já está lá.</string>
+    <string name="prv_inv_chance">Chance de, em %1$d anos, ter mais do que você colocou (%2$s): %3$s</string>
+    <string name="prv_inv_note">É uma conta feita com o passado deste investimento, não uma promessa: o futuro pode ser diferente.</string>
+    <string name="prv_inv_portfolio">Se continuar como foi, em %1$d anos sua carteira fica perto de %2$s</string>
+    <plurals name="prv_inv_years">
+        <item quantity="one">Em %1$d ano</item>
+        <item quantity="other">Em %1$d anos</item>
+    </plurals>
 </resources>

@@ -7,7 +7,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.collectAsState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import io.github.h3yk0.cryo.domain.Num
+import kotlin.math.roundToInt
 import io.github.h3yk0.cryo.domain.engine.Returns
+import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.layout.Box
@@ -243,6 +245,14 @@ fun WalletScreen() {
                             Text(
                                 Res.s(R.string.engine_return_portfolio, Num.percent1(it)), style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp),
+                            )
+                        }
+                        // RF-PRV-07: onde a carteira pode estar, se continuar como foi (o mais provável dos cenários).
+                        rememberEngine()?.portfolioOutlook?.horizons?.lastOrNull()?.let { h ->
+                            Text(
+                                Res.s(R.string.prv_inv_portfolio, h.years, if (LocalSettings.current.hideValues) Money.HIDDEN else Money.format(h.mid)),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 8.dp),
                             )
                         }
                     }
@@ -842,6 +852,7 @@ fun InvestmentDetailScreen(id: Long) {
                 }
             }
             item { ReturnCard(l, id) }
+            item { InvestOutlookCard(l, id) }
             item {
                 FlowRow(Modifier.fillMaxWidth().padding(16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilledTonalButton(onClick = { action = "in" }) { Text(Res.s(R.string.wallet_aportar)) }
@@ -996,6 +1007,61 @@ fun EmptyWallet() {
  * informou a inflação, quanto rende acima dela. Sem internet não há índice: a inflação é digitada pela pessoa.
  */
 @OptIn(ExperimentalMaterial3Api::class)
+/**
+ * RF-PRV-07: o investimento "se continuar como foi": a rentabilidade do próprio investimento, o sobe e desce e onde ele
+ * pode estar em 1, 3 e 5 anos com os aportes de sempre. É o passado projetado, nunca promessa (o texto diz isso).
+ */
+@Composable
+private fun InvestOutlookCard(l: Ledger, id: Long) {
+    val o = rememberEngine()?.investOutlook?.get(id) ?: return
+    val hide = LocalSettings.current.hideValues
+    fun money(v: Long) = if (hide) Money.HIDDEN else Money.format(v)
+    FlatItem(Modifier.padding(horizontal = 16.dp)) {
+        Text(Res.s(R.string.prv_inv_title), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        if (o.horizons.isEmpty()) {
+            Text(Res.s(R.string.prv_inv_wait), style = MaterialTheme.typography.bodyMedium)
+        } else {
+            Text(
+                Res.s(R.string.prv_inv_month, Num.percent1(o.monthly)), style = MaterialTheme.typography.titleMedium,
+                color = if (o.monthly >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+            )
+            o.volatility?.let {
+                Text(
+                    Res.s(R.string.prv_inv_swing, Num.percent1(it), Num.percent1(o.maxDrawdown)),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            o.horizons.forEach { h ->
+                Row(Modifier.fillMaxWidth().padding(top = 6.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Text(Res.p(R.plurals.prv_inv_years, h.years, h.years), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f))
+                    MoneyText(h.mid, style = MaterialTheme.typography.titleSmall)
+                }
+                Text(
+                    Res.s(R.string.engine_between_80, money(h.low), money(h.high)),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(8.dp))
+            Text(
+                if (o.contribution > 0) Res.s(R.string.prv_inv_contrib, money(o.contribution)) else Res.s(R.string.prv_inv_no_contrib),
+                style = MaterialTheme.typography.bodySmall,
+            )
+            // A chance de ter mais do que o dinheiro que a pessoa colocou (sem nenhum rendimento) no prazo mais longo.
+            val far = o.horizons.last()
+            val principal = (l.invested(id) + o.contribution * far.years * 12L).coerceAtLeast(0L)
+            Text(
+                Res.s(R.string.prv_inv_chance, far.years, money(principal), Num.percent((far.chanceOf(principal) * 100).roundToInt())),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+        Text(
+            Res.s(R.string.prv_inv_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+    }
+}
+
 @Composable
 private fun ReturnCard(l: Ledger, id: Long) {
     val c = LocalContainer.current

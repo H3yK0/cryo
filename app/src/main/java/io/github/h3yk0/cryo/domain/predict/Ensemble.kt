@@ -130,8 +130,7 @@ object Ensemble {
     ): DoubleArray {
         val m = f.size
         val score = DoubleArray(m) { Double.NaN }
-        var used = 0
-        for (o in origins.indices) if (o != skip) used++
+        val count = IntArray(m)
         for (k in 0 until m) {
             if (!target[k].isFinite()) continue
             var sw = 0.0; var se = 0.0; var c = 0
@@ -139,7 +138,7 @@ object Ensemble {
                 if (o == skip || !f[k][o].isFinite()) continue
                 sw += origins[o].weight; se += origins[o].weight * abs(f[k][o] - actual[o]); c++
             }
-            if (c >= MIN_SCORED && sw > 0) score[k] = se / sw
+            if (c >= MIN_SCORED && sw > 0) { score[k] = se / sw; count[k] = c }
         }
         val w = DoubleArray(m)
         val scored = (0 until m).filter { score[it].isFinite() }
@@ -148,12 +147,15 @@ object Ensemble {
             for (k in answering) w[k] = 1.0 / answering.size
             return w
         }
+        // Pouco passado = pouca certeza de quem é o melhor: o erro de cada modelo encolhe para o erro médio de todos, tanto
+        // mais quanto menos dias do passado o mediram. (Encolher os pesos para "todos iguais", como antes, dava uma fatia fixa
+        // até a quem errava feio: no mercado que se gasta todo no começo do mês, era um alarme falso.)
+        val pooled = scored.sumOf { score[it] } / scored.size
+        for (k in scored) score[k] = (count[k] * score[k] + prior * pooled) / (count[k] + prior)
         val best = scored.minOf { score[it] }.coerceAtLeast(1e-9)
         var sum = 0.0
         for (k in scored) { w[k] = (best / maxOf(score[k], 1e-9)).pow(power); sum += w[k] }
-        // Pouco passado = pouca certeza de quem é o melhor: os pesos encolhem para "todos iguais".
-        val trust = used / (used + prior)
-        for (k in scored) w[k] = trust * w[k] / sum + (1 - trust) / scored.size
+        for (k in scored) w[k] /= sum
         return w
     }
 

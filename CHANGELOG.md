@@ -2,6 +2,16 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.8 — a new forecast engine, checked against your own past
+
+- **New forecast engine, built from scratch** (still all on your phone, no AI model): seven simple methods each look at your past in a different way, and Cryo weighs them by how well each one would have predicted your own past months. In tests with invented histories, the month forecast makes ~7% smaller errors than 1.7, and up to 57% smaller for people who do one big monthly shop
+- **The range keeps its promise**: "between X and Y, in 8 of 10 scenarios" is now checked against your past months before it is shown (in tests it held 80% of the time, up from 68%), and the card says how it went: "checked against your past: right in 10 of 12 months"
+- **The forecast explains itself**: what weighed most in the calculation, and whether this time of year usually costs you more (only when that repeated in the two previous years)
+- **Budgets**: each category shows how it should close the month and the chance of going over its limit; the "at this pace" warnings use the new forecast
+- **Investments, "if it keeps going like before"**: the return of the investment itself, its ups and downs, the biggest drop, where it could be in 1, 3 and 5 years with your usual contributions, and the chance of ending above what you put in. It is based on the past, never a promise
+- **Security and reliability fixes** from a full code review: a password-protected backup is never saved without protection; damaged or oversized backup files are refused with a clear message; spreadsheet export no longer runs formulas typed in descriptions; a fingerprint sensor error only unlocks phones that have no screen lock; on Android 8 to 12, screenshots of Cryo are blocked while the lock is on; huge amounts no longer wrap around into other numbers; tapping "Paid" twice records one payment; deleting a category also removes its monthly budget moves; each notification opens its own screen
+- No new permissions and no database change
+
 ## 1.7 — smart alerts, sounds and the voice button within thumb reach
 
 - **The voice button now sits in the middle of the bottom bar**, on every tab, where your thumb reaches (like Samsung's One UI): tap to speak, **hold to type**. The phrase field on Home is now for typing only

@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.h3yk0.cryo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "1.7"
+        versionCode = 9
+        versionName = "1.8"
 
         // RF-VOZ-01: o Whisper de verdade só no ARM de 64 bits; nos outros, uma biblioteca "vazia" (plano B), para o
         // APK continuar instalando em todo celular.

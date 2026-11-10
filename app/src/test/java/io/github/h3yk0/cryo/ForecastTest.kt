@@ -151,6 +151,32 @@ class ForecastTest {
         assertTrue("categorias: novo ${new / n} x 1.5 ${old / n}", new < old)
     }
 
+    /**
+     * ERR-037: o mercado que se gasta todo no começo do mês não pode virar alarme no dia 6 (o conjunto dava 61% de chance de
+     * passar, porque uma fatia fixa de peso ia para os modelos que erravam feio). E o lazer gasto rápido demais avisa.
+     */
+    @Test fun mercadoDoComecoDoMesNaoDaAlarmeFalso() {
+        val today = LocalDate.of(2026, 10, 6)
+        val txs = ArrayList<Tx>()
+        var id = 1L
+        for (m in 0 until 6) {
+            val ym = java.time.YearMonth.of(2026, 4).plusMonths(m.toLong())
+            for (d in 1..4) txs += Tx(id++, TxType.EXPENSE, 20000, ym.atDay(d), "Supermercado", categoryId = 2, accountId = 1)
+            for (d in listOf(8, 16, 24)) txs += Tx(id++, TxType.EXPENSE, 5000, ym.atDay(d), "Lazer", categoryId = 4, accountId = 1)
+        }
+        for (d in 1..4) txs += Tx(id++, TxType.EXPENSE, 19000, LocalDate.of(2026, 10, d), "Supermercado", categoryId = 2, accountId = 1)
+        txs += Tx(id++, TxType.EXPENSE, 9000, LocalDate.of(2026, 10, 3), "Lazer", categoryId = 4, accountId = 1)
+        txs += Tx(id++, TxType.EXPENSE, 9000, LocalDate.of(2026, 10, 5), "Lazer", categoryId = 4, accountId = 1)
+        val s = Snapshot(categories = Personas.categories, txs = txs, budgets = listOf(Budget(2, 82000), Budget(4, 20000)))
+        val l = Ledger(s, today)
+        val list = CategoryForecasts.of(l, Recurrences.detect(s.txs, today), 1)
+        val market = list.first { it.categoryId == 2L }
+        assertTrue("mercado: $market", market.mid <= 82000 && market.chanceOver < 0.1)
+        val alerts = Pacing.alerts(l, list.associateBy { it.categoryId })
+        assertTrue("sem alarme no mercado: $alerts", alerts.none { it.categoryId == 2L })
+        assertTrue(alerts.first { it.categoryId == 4L }.crossDay in 7..20)
+    }
+
     /** RF-PRV-06: com limite, sai a chance de passar; o que já passou é certeza, o que está longe é quase zero. */
     @Test fun chanceDePassarDoLimite() {
         val full = ForecastWorld.generate(ForecastWorld.spec(ForecastWorld.Kind.STEADY), end, 11)
@@ -215,8 +241,10 @@ class ForecastTest {
         assertEquals(0.02, five.chanceOf(five.high * 10), 0.0)
         assertEquals(0.98, five.chanceOf(1), 0.0)
         assertTrue(five.chanceOf(five.low) > five.chanceOf(five.high))
-        // A carteira inteira (id nulo) com um investimento só dá o mesmo retrato.
-        assertEquals(o.monthly, InvestForecasts.of(Ledger(investment(36) { rates[it] }, today), null, 7)!!.monthly, 1e-12)
+        // A carteira inteira (id nulo) com um investimento só dá o mesmo retrato e a mesma projeção (a tela mostra as duas).
+        val all = InvestForecasts.of(Ledger(investment(36) { rates[it] }, today), null, 7)!!
+        assertEquals(o.monthly, all.monthly, 1e-12)
+        assertEquals(o.horizons, all.horizons)
     }
 
     /** RF-PRV-07: a rentabilidade é a do investimento, não a de quando a pessoa aportou (um aporte grande não muda a taxa). */

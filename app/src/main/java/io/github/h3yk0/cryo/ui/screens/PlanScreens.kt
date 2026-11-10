@@ -3,7 +3,9 @@
 package io.github.h3yk0.cryo.ui.screens
 
 import io.github.h3yk0.cryo.domain.Num
+import kotlin.math.roundToInt
 import io.github.h3yk0.cryo.domain.engine.GoalOutlook
+import io.github.h3yk0.cryo.domain.predict.CategoryOutlook
 import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
@@ -154,6 +156,8 @@ private fun BudgetsTab(l: Ledger) {
     val engine = rememberEngine()
     val suggestions = engine?.budgetSuggestions?.mapNotNull { sg -> l.category[sg.categoryId]?.let { it to sg.amount } } ?: remember(l) { budgetSuggestions(l) }
     val pace = engine?.pace?.associateBy { it.categoryId }.orEmpty()
+    // RF-PRV-06: como cada categoria deve fechar o mês (só enquanto o mês não acabou).
+    val forecasts = if (l.today.dayOfMonth < ym.lengthOfMonth()) engine?.categories?.associateBy { it.categoryId }.orEmpty() else emptyMap()
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (usages.isNotEmpty()) {
@@ -189,7 +193,7 @@ private fun BudgetsTab(l: Ledger) {
                 )
             }
         }
-        items(usages, key = { it.category.id }) { u -> BudgetRow(u, hide, pace[u.category.id]?.crossDay) { editing = u.category.id to u.limit } }
+        items(usages, key = { it.category.id }) { u -> BudgetRow(u, hide, pace[u.category.id]?.crossDay, forecasts[u.category.id]) { editing = u.category.id to u.limit } }
         if (suggestions.isNotEmpty()) {
             item {
                 Column {
@@ -234,7 +238,7 @@ private fun budgetSuggestions(l: Ledger): List<Pair<io.github.h3yk0.cryo.data.db
 }
 
 @Composable
-private fun BudgetRow(u: BudgetUsage, hide: Boolean, crossDay: Int?, onClick: () -> Unit) {
+private fun BudgetRow(u: BudgetUsage, hide: Boolean, crossDay: Int?, forecast: CategoryOutlook?, onClick: () -> Unit) {
     FlatItem(onClick = onClick) {
         Row(verticalAlignment = Alignment.CenterVertically) {
             IconBadge(categoryIcon(u.category.icon), Color(u.category.color), 36.dp)
@@ -261,6 +265,15 @@ private fun BudgetRow(u: BudgetUsage, hide: Boolean, crossDay: Int?, onClick: ()
             color = if (u.remaining >= 0) MaterialTheme.colorScheme.onSurfaceVariant else CryoTheme.colors.expense,
             modifier = Modifier.padding(top = 4.dp),
         )
+        if (forecast != null && u.remaining >= 0) {
+            val close = if (hide) Money.HIDDEN else Money.format(forecast.mid)
+            val chance = (forecast.chanceOver * 100).roundToInt()
+            Text(
+                if (chance >= 5) Res.s(R.string.prv_cat_close, close, Num.percent(chance)) else Res.s(R.string.prv_cat_close_ok, close),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (chance >= 50) CryoTheme.colors.warning else MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
         if (crossDay != null) {
             Text(Res.s(R.string.engine_pace_row, crossDay), style = MaterialTheme.typography.bodySmall, color = CryoTheme.colors.warning)
         }

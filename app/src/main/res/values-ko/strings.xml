@@ -1786,4 +1786,30 @@
     <string name="dev_voice_flash">Whisper 빠른 어텐션 (테스트)</string>
     <string name="dev_voice_flash_desc" formatted="false">컴퓨터에서는 같은 결과로 약 20% 빨라졌어요. 시간은 음성 화면에 표시돼요. 멈추거나 틀리면 끄세요.</string>
     <string name="sec_protection_unavailable">비밀번호 보호가 켜져 있지만 이 휴대폰의 키 저장소가 키를 내주지 않았어요. 비밀번호 없이는 아무것도 저장하지 않았어요. 설정에서 백업 보호를 껐다가 다시 켜 주세요.</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">지난 기록으로 확인했어요: %2$d개월 중 %1$d개월 적중 (보통 오차 %3$s)</string>
+    <string name="prv_models">가장 크게 반영된 것: %1$s</string>
+    <string name="prv_model_profile">요일별 패턴</string>
+    <string name="prv_model_pace91">최근 3개월 평균</string>
+    <string name="prv_model_pace182">최근 6개월 평균</string>
+    <string name="prv_model_same_phase">지난달들의 같은 시기</string>
+    <string name="prv_model_phase_level">지난달들의 같은 시기 (지금 속도로 조정)</string>
+    <string name="prv_model_holt">최근 몇 주의 추세</string>
+    <string name="prv_model_theta">오르내림을 고른 주별 흐름</string>
+    <string name="prv_season_up">이맘때는 평소보다 %1$s 더 쓰는 편이고, 예측에 이미 반영했어요.</string>
+    <string name="prv_season_down">이맘때는 평소보다 %1$s 덜 쓰는 편이고, 예측에 이미 반영했어요.</string>
+    <string name="prv_cat_close">이번 달은 %1$s 정도로 마칠 것 같아요 · 한도 초과 확률 %2$s</string>
+    <string name="prv_cat_close_ok">이번 달은 %1$s 정도로 마칠 것 같아요, 한도 안이에요</string>
+    <string name="prv_inv_title">지금까지처럼 간다면</string>
+    <string name="prv_inv_wait">평가액을 6번 업데이트하면 (한 달에 한 번, “평가액 업데이트”로) 이 투자가 어디까지 갈 수 있는지 보여 드려요.</string>
+    <string name="prv_inv_month">투자 자체의 수익은 월평균 %1$s예요 (언제 넣었는지는 빼고 계산)</string>
+    <string name="prv_inv_swing">변동: 연 %1$s · 최대 하락: %2$s</string>
+    <string name="prv_inv_contrib">지금처럼 매달 %1$s씩 넣는다고 계산했어요.</string>
+    <string name="prv_inv_no_contrib">추가 납입 없이: 지금 있는 금액만으로 계산했어요.</string>
+    <string name="prv_inv_chance">%1$d년 후 넣은 돈(%2$s)보다 많을 확률: %3$s</string>
+    <string name="prv_inv_note">이 투자의 과거로 계산한 것이지 약속이 아니에요. 앞으로는 다를 수 있어요.</string>
+    <string name="prv_inv_portfolio">지금까지처럼 간다면 %1$d년 후 포트폴리오는 %2$s 정도예요</string>
+    <plurals name="prv_inv_years">
+        <item quantity="other">%1$d년 후</item>
+    </plurals>
 </resources>

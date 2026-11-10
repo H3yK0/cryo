@@ -1786,4 +1786,30 @@
     <string name="dev_voice_flash">Whisperの高速アテンション（テスト）</string>
     <string name="dev_voice_flash_desc" formatted="false">パソコンでは同じ結果で約20%速くなりました。時間は音声画面に表示されます。止まったり間違えたりしたらオフにしてください。</string>
     <string name="sec_protection_unavailable">パスワード保護はオンですが、この端末のキーストアが鍵を渡しませんでした。パスワードなしでは何も保存していません。設定でバックアップの保護をいったんオフにして、もう一度オンにしてください。</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">あなたの過去で確認済み：%2$dか月中%1$dか月で的中（典型的なずれ %3$s）</string>
+    <string name="prv_models">いちばん効いた要素：%1$s</string>
+    <string name="prv_model_profile">曜日ごとの傾向</string>
+    <string name="prv_model_pace91">直近3か月の平均</string>
+    <string name="prv_model_pace182">直近6か月の平均</string>
+    <string name="prv_model_same_phase">過去の月の同じ時期</string>
+    <string name="prv_model_phase_level">過去の月の同じ時期（今のペースに調整）</string>
+    <string name="prv_model_holt">最近数週間のトレンド</string>
+    <string name="prv_model_theta">週ごとの動き（上下をならしたもの）</string>
+    <string name="prv_season_up">この時期はふだんより%1$s多く使う傾向があり、予測に反映済みです。</string>
+    <string name="prv_season_down">この時期はふだんより%1$s少なく使う傾向があり、予測に反映済みです。</string>
+    <string name="prv_cat_close">月末は%1$s前後の見込み・上限を超える確率 %2$s</string>
+    <string name="prv_cat_close_ok">月末は%1$s前後の見込み、上限内</string>
+    <string name="prv_inv_title">これまでと同じペースなら</string>
+    <string name="prv_inv_wait">評価額を6回更新すると（月1回、「評価額を更新」で）、この投資がどこまで伸びそうかを表示します。</string>
+    <string name="prv_inv_month">投資そのものの利回りは月平均%1$s（いつ積み立てたかは含めません）</string>
+    <string name="prv_inv_swing">値動き：年%1$s・最大下落：%2$s</string>
+    <string name="prv_inv_contrib">これまでどおり毎月%1$sを積み立てる前提です。</string>
+    <string name="prv_inv_no_contrib">追加の積立なし：今ある分だけで計算。</string>
+    <string name="prv_inv_chance">%1$d年後に積み立てた額（%2$s）を上回る確率：%3$s</string>
+    <string name="prv_inv_note">この投資の過去をもとにした計算で、約束ではありません。将来は違う結果になることもあります。</string>
+    <string name="prv_inv_portfolio">これまでと同じペースなら、%1$d年後のポートフォリオは%2$s前後です</string>
+    <plurals name="prv_inv_years">
+        <item quantity="other">%1$d年後</item>
+    </plurals>
 </resources>

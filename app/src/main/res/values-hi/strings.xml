@@ -1820,4 +1820,31 @@
     <string name="dev_voice_flash">Whisper में तेज़ अटेंशन (परीक्षण)</string>
     <string name="dev_voice_flash_desc" formatted="false">कंप्यूटर पर वही नतीजा ~20% तेज़ आया। समय आवाज़ वाली स्क्रीन पर दिखता है। आवाज़ अटके या गलत हो तो बंद करें।</string>
     <string name="sec_protection_unavailable">पासवर्ड सुरक्षा चालू है, लेकिन इस फ़ोन के कीस्टोर ने कुंजी नहीं दी। बिना पासवर्ड कुछ भी सेव नहीं किया गया। सेटिंग्स में बैकअप सुरक्षा बंद करके फिर चालू करें।</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">आपके पिछले रिकॉर्ड से जाँचा: %2$d में से %1$d महीनों में सही (आम अंतर %3$s)</string>
+    <string name="prv_models">सबसे ज़्यादा असर: %1$s</string>
+    <string name="prv_model_profile">हफ़्ते के हर दिन का रुझान</string>
+    <string name="prv_model_pace91">पिछले 3 महीनों का औसत</string>
+    <string name="prv_model_pace182">पिछले 6 महीनों का औसत</string>
+    <string name="prv_model_same_phase">पिछले महीनों में महीने का यही हिस्सा</string>
+    <string name="prv_model_phase_level">महीने का यही हिस्सा, अभी की रफ़्तार से</string>
+    <string name="prv_model_holt">पिछले कुछ हफ़्तों का रुझान</string>
+    <string name="prv_model_theta">उतार-चढ़ाव हटाकर हफ़्तों की चाल</string>
+    <string name="prv_season_up">साल के इस समय आप आम तौर पर %1$s ज़्यादा खर्च करते हैं, और अनुमान में यह पहले से शामिल है।</string>
+    <string name="prv_season_down">साल के इस समय आप आम तौर पर %1$s कम खर्च करते हैं, और अनुमान में यह पहले से शामिल है।</string>
+    <string name="prv_cat_close">महीना लगभग %1$s पर खत्म होना चाहिए · सीमा पार होने की संभावना %2$s</string>
+    <string name="prv_cat_close_ok">महीना लगभग %1$s पर खत्म होना चाहिए, सीमा के अंदर</string>
+    <string name="prv_inv_title">अगर पहले जैसा ही चलता रहे</string>
+    <string name="prv_inv_wait">वैल्यू 6 बार अपडेट करने के बाद (महीने में एक बार, “वैल्यू अपडेट करें” से), Cryo दिखाएगा कि यह निवेश कहाँ तक पहुँच सकता है।</string>
+    <string name="prv_inv_month">निवेश ने खुद औसतन %1$s प्रति माह कमाया (आपने कब पैसा लगाया, यह गिने बिना)</string>
+    <string name="prv_inv_swing">उतार-चढ़ाव: %1$s प्रति वर्ष · सबसे बड़ी गिरावट: %2$s</string>
+    <string name="prv_inv_contrib">हर महीने %1$s निवेश जोड़कर, जैसा आप करते आ रहे हैं।</string>
+    <string name="prv_inv_no_contrib">बिना नया निवेश: सिर्फ़ जो पहले से है।</string>
+    <string name="prv_inv_chance">%1$d साल में लगाई रकम (%2$s) से ज़्यादा होने की संभावना: %3$s</string>
+    <string name="prv_inv_note">यह इस निवेश के पिछले रिकॉर्ड से किया गया हिसाब है, वादा नहीं: भविष्य अलग हो सकता है।</string>
+    <string name="prv_inv_portfolio">अगर पहले जैसा ही चलता रहे, तो %1$d साल में आपका पोर्टफ़ोलियो लगभग %2$s होगा</string>
+    <plurals name="prv_inv_years">
+        <item quantity="one">%1$d साल में</item>
+        <item quantity="other">%1$d साल में</item>
+    </plurals>
 </resources>

@@ -2,6 +2,16 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.8 — previsão nova, conferida no seu próprio passado
+
+- **Previsão nova, feita do zero** (continua toda no celular, sem modelo de IA): sete métodos simples olham o seu passado, cada um de um jeito, e o Cryo dá mais peso a quem teria acertado mais nos seus próprios meses anteriores. Nos testes com históricos inventados, a previsão do mês erra ~7% menos que a da 1.7, e até 57% menos para quem faz uma compra grande do mês
+- **A faixa cumpre o que promete**: "entre X e Y, em 8 de cada 10 cenários" agora é conferida nos seus meses passados antes de aparecer (nos testes, acertou 80% das vezes; antes, 68%), e o cartão conta como foi: "conferida no seu passado: acertou em 10 de 12 meses"
+- **A previsão se explica**: o que mais pesou na conta e se esta época do ano costuma sair mais cara para você (só quando isso se repetiu nos dois anos anteriores)
+- **Orçamentos**: cada categoria mostra como deve fechar o mês e a chance de passar do limite; os avisos "no ritmo atual" usam a previsão nova
+- **Investimentos, "se continuar como foi"**: quanto o investimento em si rendeu, o sobe e desce, a maior queda, onde ele pode estar em 1, 3 e 5 anos com os seus aportes de sempre e a chance de terminar acima do que você colocou. É o passado projetado, nunca promessa
+- **Correções de segurança e confiabilidade**, de uma revisão do código inteiro: backup com senha nunca é gravado sem proteção; arquivo de backup estragado ou grande demais é recusado com uma mensagem clara; a planilha exportada não roda mais fórmulas escritas nas descrições; erro do sensor de digital só libera o app em celular sem trava de tela; no Android 8 a 12, com o bloqueio ligado, não dá para tirar print do Cryo; valores enormes não "dão a volta" e viram outro número; tocar "Já paguei" duas vezes grava um pagamento só; apagar uma categoria leva junto os remanejamentos do mês; cada notificação abre a sua própria tela
+- Nenhuma permissão nova e nenhuma mudança no banco de dados
+
 ## 1.7 — avisos inteligentes, sons e o botão de voz ao alcance do polegar
 
 - **O botão de voz agora fica no meio da barra de baixo**, em todas as abas, onde o polegar alcança (como na One UI da Samsung): tocar = falar, **segurar = escrever**. O campo de frase do Início fica só para escrever

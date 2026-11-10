@@ -93,7 +93,9 @@ object FinanceEngine {
         val projection = Projections.project(l, recurrences, Rng.mix(seed, 1))
         val anomalies = Anomalies.find(l, recurrences)
         val health = HealthScore.of(l)
-        val pace = Pacing.alerts(l)
+        // RF-PRV-06: as categorias vêm do previsor da 1.8, e o aviso de ritmo usa esse número.
+        val categories = io.github.h3yk0.cryo.domain.predict.CategoryForecasts.of(l, recurrences, Rng.mix(seed, 3))
+        val pace = Pacing.alerts(l, categories.associateBy { it.categoryId })
         val suggestions = Pacing.suggestions(l)
         val rates = DebtPlanner.rates(l)
         val payoff = DebtPlanner.plan(l, options.debtExtra, options.strategy)
@@ -103,7 +105,7 @@ object FinanceEngine {
         val report = EngineReport(
             today, recurrences, outlook, projection, anomalies, health, pace, suggestions, rates, payoff, returns, portfolio, goals,
             insights = emptyList(),
-            categories = io.github.h3yk0.cryo.domain.predict.CategoryForecasts.of(l, recurrences, Rng.mix(seed, 3)),
+            categories = categories,
             investOutlook = l.activeInvestments.mapNotNull { inv ->
                 io.github.h3yk0.cryo.domain.predict.InvestForecasts.of(l, inv.id, Rng.mix(seed, 4))?.let { inv.id to it }
             }.toMap(),

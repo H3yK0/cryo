@@ -1786,4 +1786,30 @@
     <string name="dev_voice_flash">Whisper 快速注意力（测试）</string>
     <string name="dev_voice_flash_desc" formatted="false">在电脑上结果快了约 20%，文字相同。时间显示在语音界面。如果卡住或出错请关闭。</string>
     <string name="sec_protection_unavailable">密码保护已开启，但此手机的密钥库没有交出密钥。没有保存任何不带密码的备份。请在设置中关闭再重新开启备份保护。</string>
+    <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
+    <string name="prv_checked">已用你的历史核对：%2$d个月中有%1$d个月落在范围内（典型误差 %3$s）</string>
+    <string name="prv_models">影响最大的是：%1$s</string>
+    <string name="prv_model_profile">每周各天的规律</string>
+    <string name="prv_model_pace91">最近3个月的平均</string>
+    <string name="prv_model_pace182">最近6个月的平均</string>
+    <string name="prv_model_same_phase">过去几个月的同一时段</string>
+    <string name="prv_model_phase_level">过去几个月的同一时段（按现在的节奏调整）</string>
+    <string name="prv_model_holt">最近几周的趋势</string>
+    <string name="prv_model_theta">去掉起伏后的每周走势</string>
+    <string name="prv_season_up">每年这个时候你通常多花%1$s，预测已经算进去了。</string>
+    <string name="prv_season_down">每年这个时候你通常少花%1$s，预测已经算进去了。</string>
+    <string name="prv_cat_close">本月预计在%1$s左右结束 · 超出限额的概率 %2$s</string>
+    <string name="prv_cat_close_ok">本月预计在%1$s左右结束，在限额内</string>
+    <string name="prv_inv_title">如果照以前的样子继续</string>
+    <string name="prv_inv_wait">更新6次市值后（每月一次，用“更新市值”），Cryo 会显示这笔投资可能到达多少。</string>
+    <string name="prv_inv_month">这笔投资本身平均每月回报 %1$s（不考虑你何时投入）</string>
+    <string name="prv_inv_swing">波动：每年 %1$s · 最大回撤：%2$s</string>
+    <string name="prv_inv_contrib">按你现在的习惯，每月投入%1$s。</string>
+    <string name="prv_inv_no_contrib">不再投入：只算已有的部分。</string>
+    <string name="prv_inv_chance">%1$d年后超过投入本金（%2$s）的概率：%3$s</string>
+    <string name="prv_inv_note">这是根据这笔投资过去的表现算出来的，不是承诺：未来可能不同。</string>
+    <string name="prv_inv_portfolio">如果照以前的样子继续，%1$d年后你的投资组合约为%2$s</string>
+    <plurals name="prv_inv_years">
+        <item quantity="other">%1$d年后</item>
+    </plurals>
 </resources>

@@ -49,7 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.8 | 9 (ainda **não** subido no `build.gradle.kts`) | **Em construção** (10/11/2026, PRD 6.12b e 6.12c), sem push: auditoria do código corrigida (commit `ca08339`) e **previsor novo** do mês pronto e ligado ao motor. **Falta** o que está em "Continuar a 1.8" logo abaixo. Branch de trabalho `ccr-e0054817-ha2fkn` (a partir da 1.7). |
+| 1.8 | 9 | **Pronta** (10/11/2026, PRD 6.12b e 6.12c), sem push, aguardando o teste do Hanry: auditoria do código com as correções, **biblioteca de erros como lei** (`docs/ERROS.md`) e **previsor novo, feito do zero** (mês, categorias, investimentos) com as telas que explicam a conta. Branch `versao-1.8` (a partir da 1.7). |
 | 1.7 | 8 | **Pronta** (09/11/2026, PRD 6.19c), sem push, aguardando o teste do Hanry: avisos inteligentes estilo Duolingo, sons, momentos animados, painel do mês, botão de voz embaixo (One UI), modo compras ao vivo. Branch `versao-1.7` (a partir da 1.6). |
 | 1.6 | 7 | **Testada e aprovada pelo Hanry** (09/11/2026: "gostei pra caramba"; ~5 s no A55), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
 | 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
@@ -150,34 +150,31 @@ código anterior. Todos os testes passam.
   experimental "Atenção rápida no Whisper" no modo desenvolvedor. Estudo de outras IAs de fala no PRD (RF-VOZ-14).
 - **Banco de dados versão 4** (`budget_adjustments`, `no_spend_days`, `goals.art`; migração 3→4 automática com `Migration3To4`).
 
-### Continuar a 1.8 (roteiro para a próxima sessão)
+### O que a 1.8 traz (branch `versao-1.8`, a partir da 1.7)
 
-O Hanry pediu (10/11/2026): auditar e corrigir o código, e criar do zero um previsor "que se compara a IA, mas algoritmo
-puro". **Feito**: auditoria (RF-AUD, `Audit18Test`, `Audit18DataTest`), a previsão do mês (RF-PRV-01..05 e 09), por
-categoria (06), de investimentos (07) e a **biblioteca de erros** (`docs/ERROS.md`). **Falta**, nesta ordem:
-
-1. ~~RF-PRV-06 — categorias~~ **feito** (`domain/predict/CategoryForecast.kt`, `EngineReport.categories`: `spent`, `low/mid/high`,
-   `chanceOver`). Erra 10% menos que `Pacing.projected` no laboratório. `Pacing.alerts` (o aviso de ritmo e a tela de
-   orçamentos) ainda usa a conta da 1.5: trocar junto com as telas, medindo. Faixa estreita em categorias de compras raras.
-2. ~~RF-PRV-07 — investimentos~~ **feito** (`domain/predict/InvestForecast.kt`, `EngineReport.investOutlook` por investimento e
-   `portfolioOutlook`: `monthly`, `annual`, `volatility`, `maxDrawdown`, `negativeShare`, `contribution`, `horizons` de 1, 3 e
-   5 anos com `low/mid/high`, `putIn` e `chanceOf(valor)`). Menos de 6 rendimentos lançados: `horizons` vazio.
-3. **RF-PRV-08 — telas e textos**: mostrar em Análises (cartão da previsão, `InsightsScreen.kt` / `EngineScreens.kt`) a
-   conferência do passado (`outlook.calibration`: "nos seus últimos N meses, a faixa acertou X"), os modelos que pesaram
-   (`outlook.models`, nomes simples) e os cartões de categorias (`report.categories`, na tela de orçamentos e no painel do
-   mês) e de investimentos (`report.investOutlook`, na Carteira; texto sem promessa de ganho: "se continuar como foi"). Strings nas 10 línguas (o script
-   `i18n/apply.py` da sessão antiga não existe mais: editar os 10 `strings.xml`; `PrdConformanceTest` confere). Imagens novas.
-4. **Fechar a versão**: `versionCode 9` / `versionName "1.8"`, `CHANGELOG.md` (inglês), `docs/CHANGELOG.pt-BR.md`, fastlane
-   `changelogs/9.txt` nas 10 línguas (≤ 500 caracteres), PRD (marcar feitos, histórico, roadmap), este arquivo, suíte completa,
-   commit local, APK reproduzível de clone limpo (seção 11) e entrega ao Hanry. **Sem push.**
-5. Avisar o Hanry na entrega: no Android 8–12, com o bloqueio ligado, não dá mais para tirar print do app (`FLAG_SECURE`);
-   backup estragado agora é recusado com mensagem; a 1.5 reage mais rápido num mês fora do padrão que nunca se repetiu.
-
-Como medir qualquer mudança no previsor (não confiar no palpite: várias ideias "óbvias" pioraram, lista no PRD 6.12b):
-```bash
-./gradlew testDebugUnitTest --tests '*ForecastLabTest' -PforecastLab=true     # tudo (~4 min); tabelas em app/build/forecast-*.txt
-./gradlew testDebugUnitTest --tests '*ForecastLabTest.tabela' -PforecastLab=SEASONAL,STEADY:6   # só alguns mundos, 6 sementes
-```
+- **Auditoria do código inteiro** (RF-AUD, PRD 6.12c): backup com senha nunca sai aberto (falha fechada), backup lido com limite e
+  conferido campo a campo, planilha sem fórmulas, erro do sensor só libera aparelho sem trava, `FLAG_SECURE` no Android 8–12 com o
+  bloqueio ligado, valores enormes por `Money.centsOrNull`, "Já paguei" em transação, apagar categoria leva os remanejamentos,
+  cada aviso com o seu `PendingIntent`. Testes `Audit18Test`, `Audit18DataTest`.
+- **Biblioteca de erros = lei** (`docs/ERROS.md`, PRC-08): cada erro já corrigido, a regra e o teste que guarda; `KnownIssuesTest`.
+- **Previsor novo, do zero** (RF-PRV, PRD 6.12b, `domain/predict/`): série diária sem os extremos (`Series.kt`), 7 modelos clássicos
+  (`Models.kt`: perfil da semana, médias de 3 e 6 meses, o mesmo trecho do mês puro e no nível de agora, Holt amortecido, Theta),
+  conjunto pesado pelo erro de cada modelo no passado da própria pessoa, com o **erro encolhido para a média** quando há pouco
+  passado (`Ensemble.kt`), época do ano só confirmada em dois anos (`Season.kt`), previsão do mês com a faixa **conferida no
+  passado** (calibração conforme, `Forecaster.kt`), **categorias** com a chance de passar do limite (`CategoryForecast.kt`, também
+  usada no aviso de ritmo) e **investimentos** "se continuar como foi" (`InvestForecast.kt`: Dietz modificado, sobe e desce, maior
+  queda, 1/3/5 anos). O motor da 1.5 (`Outlook.month`, `Pacing.projected`) fica como régua dos testes.
+- **Telas** (RF-PRV-08): Análises (conferida no passado, o que mais pesou, época do ano), Planejar › Orçamentos (como cada categoria
+  fecha o mês e a chance de passar), investimento e Carteira ("se continuar como foi"). 23 textos novos nas 10 línguas.
+- **Laboratório** (`ForecastLabTest`, só com `-PforecastLab=true`; mundos inventados em `ForecastWorld`, 10 com `MONTHLY_SHOP`).
+  Medir qualquer mudança no previsor antes de aceitar (várias ideias "óbvias" pioraram; lista no PRD 6.12b):
+  ```bash
+  ./gradlew testDebugUnitTest --tests '*ForecastLabTest' -PforecastLab=true     # tudo (~5 min); tabelas em app/build/forecast-*.txt
+  ./gradlew testDebugUnitTest --tests '*ForecastLabTest.tabela' -PforecastLab=SEASONAL,STEADY:6   # só alguns mundos, 6 sementes
+  ```
+- Nenhuma permissão nova; banco de dados continua na versão 4.
+- **Avisar o Hanry**: no Android 8–12, com o bloqueio ligado, não dá para tirar print do app (`FLAG_SECURE`); backup estragado agora é
+  recusado com mensagem; num mês fora do padrão que nunca se repetiu, a 1.5 reagia mais depressa (o novo ganha no conjunto).
 
 ### Próximos passos imediatos
 
@@ -191,7 +188,10 @@ Como medir qualquer mudança no previsor (não confiar no palpite: várias ideia
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
 5. **1.6** (branch `versao-1.6`): testada e aprovada pelo Hanry no A55 (09/11/2026; ~5 s até a transcrição). **No lançamento**:
    a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em `docs/fdroid/1.6-receita.md`).
-6. **1.7** (branch `versao-1.7`, a partir da 1.6): pronta em 09/11/2026, APK entregue para o teste do Hanry. **Conferir no A55**:
+6. **1.8** (branch `versao-1.8`, a partir da 1.7): pronta em 10/11/2026, APK entregue para o teste do Hanry. **Conferir no celular**:
+   os cartões da previsão em Análises, Orçamentos e no investimento com os dados de verdade dele; se algum número parecer estranho,
+   pedir o relatório anônimo (nunca o dado real) e medir no laboratório antes de mudar.
+7. **1.7** (branch `versao-1.7`, a partir da 1.6): pronta em 09/11/2026, APK entregue para o teste do Hanry. **Conferir no A55**:
    a figurinha anima na cortina (RF-AVI-09)? o modo compras aparece na Now Bar (RF-AVI-10)? o tempo da voz com e sem a chave
    "Atenção rápida no Whisper" (modo desenvolvedor › Voz; RF-VOZ-13: se ficar estável e mais rápida, ligar por padrão).
 
@@ -286,7 +286,8 @@ app/src/main/java/io/github/h3yk0/cryo/
 │                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res),
 │                       engine/ (o motor financeiro: Engine.kt junta tudo; Stats, Recurrences, Outlook, Projection,
 │                       Signals, Health, Wealth, CategoryModel, TxKey),
-│                       predict/ (1.8, o previsor: Series, Models, Season, Ensemble, Forecaster)
+│                       predict/ (1.8, o previsor: Series, Models, Season, Ensemble, Forecaster, CategoryForecast,
+│                       InvestForecast)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
 ├── voice/            Voz no aparelho (1.6): WhisperNative (JNI), WhisperEngine, Listener (WhisperListener e o medidor de
 │                       volume/sílabas), SystemListener (plano B), AudioInput/MicInput, VoiceSettings e VoicePrompt
@@ -408,7 +409,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `WhisperHostTest` | A ponte JNI e o modelo de verdade, compilados para o computador (só com `-PwhisperHost=true`, depois de `app/src/test/cpp/build-host.sh`) |
 | `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.7): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
 | `MomentsTest`, `BudgetMonthTest`, `Screens17Test` | Momentos depois de salvar e o modo compras; remanejar só no mês e backup; imagens 71–81 (painel, avisos, momentos, compras, botão de voz, fonte em 200%) |
-| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas |
+| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest`, `Screens18Test` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas; imagens 82–85 (previsão conferida, orçamentos, investimento, carteira) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -419,7 +420,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 proposta da 1.7, 69–70 ilustrações, 71–81 telas da 1.7.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 proposta da 1.7, 69–70 ilustrações, 71–81 telas da 1.7, 82–85 previsor da 1.8.
 - **Recebedor do manifesto** (`AlertActionReceiver`) não recebe `sendBroadcast` no Robolectric: os testes chamam `handle()` direto.
 - `FileProvider` funciona no Robolectric (a figurinha da notificação dá para conferir); `renderArt` precisa de `@GraphicsMode(NATIVE)`.
 - **Chaves de `LazyColumn`** com ids de tabelas diferentes colidem (categoria 1 e remanejamento 1): use prefixo (`"b$id"`, `"a$id"`).
@@ -493,6 +494,8 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
+- **1.8** (pronta em 10/11/2026, aguardando o teste do Hanry): auditoria do código com as correções, biblioteca de erros como lei,
+  previsor novo do zero (mês, categorias, investimentos) com a faixa conferida no passado e as telas que explicam a conta.
 - **1.7** (pronta em 09/11/2026, aguardando o teste do Hanry): avisos inteligentes com figurinhas animadas, modo compras ao vivo,
   sons próprios, momentos, ilustrações no lugar de emoji, painel do mês e remanejar só no mês, botão de voz no meio da barra.
 - **1.6** (aprovada em 09/11/2026): voz no aparelho com o Whisper e a animação de eco.
@@ -582,6 +585,12 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
   pessoa, sem internet, tudo explicável). O que decide é o laboratório (`ForecastLabTest`): o motor da 1.5 fica no código como
   régua e o novo só entra onde erra menos. Faixa conferida contra o passado (calibração conforme): prometer 80% e cumprir.
 - **Época do ano só com dois anos de confirmação** (1.8): com um ano, os alarmes falsos custavam mais do que ela rendia.
+- **Encolher o erro, não o peso** (1.8): com pouco passado, o conjunto antes misturava os pesos com "todos iguais", e cada modelo
+  ganhava uma fatia fixa mesmo errando feio (mercado gasto no começo do mês virava alarme, ERR-037). Agora o erro medido de cada
+  modelo encolhe para o erro médio, tanto mais quanto menos dias o mediram: a cautela continua, sem dar voz a quem errou.
+- **Duas rentabilidades na tela do investimento** (1.8): a TIR ("Rendimento real", o que a pessoa ganhou, conta quando ela aportou)
+  e a do investimento em si (Dietz modificado, usada na projeção). Elas podem diferir bastante (aportes grandes em meses ruins);
+  por isso o texto da segunda diz "o investimento em si ... (sem contar quando você aportou)".
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 
@@ -606,7 +615,8 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta e guardada; lançamento por volta de 07/12/2026.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
 4. **1.6**: **voz melhor e no aparelho** (feita e aprovada). **1.7**: avisos inteligentes, sons, momentos animados, alertas de
-   orçamento, voz ao alcance do polegar (pronta, aguardando o teste). Depois: widgets na tela inicial; dívida quitada e última
+   orçamento, voz ao alcance do polegar (pronta, aguardando o teste). **1.8**: auditoria, biblioteca de erros e previsor novo
+   (pronta, aguardando o teste). Depois: widgets na tela inicial; dívida quitada e última
    parcela como momentos (RF-MOM-04).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 

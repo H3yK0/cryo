@@ -47,6 +47,8 @@ object ForecastWorld {
         FREELANCER,
         /** Cortou gastos há poucos meses (mudança para baixo). */
         SAVER,
+        /** A compra do mês no mercado logo depois do pagamento, e só miudezas no resto do mês (categoria com dia certo). */
+        MONTHLY_SHOP,
     }
 
     data class Spec(
@@ -70,6 +72,7 @@ object ForecastWorld {
         Kind.LUMPY -> Spec(kind, perDay = 0.22, ticket = 16000.0, sigma = 0.9, bigEvery = 45)
         Kind.FREELANCER -> Spec(kind, salary = 0, ticket = 5200.0, sigma = 0.75, perDay = 1.6, bigEvery = 40)
         Kind.SAVER -> Spec(kind, perDay = 1.7)
+        Kind.MONTHLY_SHOP -> Spec(kind, perDay = 1.1)
     }
 
     private val shops = listOf(
@@ -167,6 +170,9 @@ object ForecastWorld {
                     if (onCard) Tx(type = TxType.EXPENSE, amount = amount, date = d, description = desc, categoryId = cat, cardId = 1, invoiceYm = CardMath.invoiceFor(card, d).key())
                     else Tx(type = TxType.EXPENSE, amount = amount, date = d, description = desc, categoryId = cat, accountId = if (rng.nextDouble() < 0.2) 2 else 1),
                 )
+            }
+            if (spec.kind == Kind.MONTHLY_SHOP && d.dayOfMonth in spec.salaryDay + 1..spec.salaryDay + 3) {
+                add(Tx(type = TxType.EXPENSE, amount = lognormal(32000.0, 0.15).roundToLong(), date = d, description = "Supermercado Bom Preço", categoryId = 2, accountId = 1))
             }
             if (spec.kind == Kind.WEEKLY && d.dayOfWeek == DayOfWeek.SATURDAY) {
                 add(Tx(type = TxType.EXPENSE, amount = lognormal(42000.0, 0.18).roundToLong(), date = d, description = "Supermercado Bom Preço", categoryId = 2, accountId = 1))

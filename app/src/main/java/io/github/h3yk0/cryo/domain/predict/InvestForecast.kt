@@ -140,7 +140,10 @@ object InvestForecasts {
 
         val horizons = ArrayList<InvestHorizon>()
         if (n >= MIN_PERIODS && value > 0) {
-            val rng = Rng(Rng.mix(seed, investmentId ?: -1L))
+            // A semente vem dos investimentos da conta: a carteira com um investimento só dá exatamente o mesmo que ele.
+            var key = seed
+            for (i in ids.sorted()) key = Rng.mix(key, i)
+            val rng = Rng(key)
             val sims = scenarios.coerceAtLeast(20)
             val maxMonths = YEARS.max() * 12
             val finals = Array(YEARS.size) { DoubleArray(sims) }

@@ -192,7 +192,11 @@ object Pacing {
         return maxOf(spent.toDouble(), share * byPace + (1 - share) * byUsual)
     }
 
-    fun alerts(l: Ledger): List<PaceAlert> {
+    /**
+     * [forecasts]: como cada categoria fecha o mês pelo previsor da 1.8 (RF-PRV-06). Quando a categoria está lá, é esse o
+     * número (errou menos no laboratório e no caso do mercado do começo do mês); senão, a conta da 1.5 ([projected]).
+     */
+    fun alerts(l: Ledger, forecasts: Map<Long, io.github.h3yk0.cryo.domain.predict.CategoryOutlook> = emptyMap()): List<PaceAlert> {
         val today = l.today
         val ym = today.ym()
         val d = today.dayOfMonth
@@ -208,7 +212,7 @@ object Pacing {
             if (spent >= limit) continue // já passou: o app já mostra
             val c = curve(l, cat.id, ym)
             val share = shareAt(c, d, len)
-            val projected = projected(l, cat.id, spent, c)
+            val projected = forecasts[cat.id]?.mid?.toDouble()?.coerceAtLeast(spent.toDouble()) ?: projected(l, cat.id, spent, c)
             if (projected <= limit * 1.02) continue
             var cross = len
             for (k in d + 1..len) {
