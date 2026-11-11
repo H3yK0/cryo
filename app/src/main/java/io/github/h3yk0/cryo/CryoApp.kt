@@ -67,6 +67,9 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
     /** Como foi a leitura do último extrato (para o relatório do modo desenvolvedor). */
     val lastImport = MutableStateFlow<ImportReport?>(null)
 
+    /** RF-CFX-08: a conta fixa que acabou de ser salva, para a tela de Contas fixas perguntar pelos pagamentos que já existem. */
+    val billReview = MutableStateFlow<Long?>(null)
+
     /** Arquivo de exemplo escolhido no modo desenvolvedor, esperando a tela de importação abrir. */
     val pendingSample = MutableStateFlow<SampleFiles.Sample?>(null)
 

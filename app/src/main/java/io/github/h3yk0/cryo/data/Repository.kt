@@ -312,6 +312,24 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
 
     suspend fun unmarkBillPaid(bill: Bill, ym: YearMonth) = dao.deleteBillPayment(bill.id, ym.key())
 
+    /**
+     * RF-CFX: liga uma movimentação que já existe (veio do extrato ou foi digitada) como o pagamento da conta fixa no mês.
+     * Nada é criado nem muda de conta. Conferido e gravado juntos: se o mês já tem pagamento, não liga outro.
+     */
+    suspend fun linkBillPayment(txId: Long, bill: Bill, ym: YearMonth): Boolean = db.withTransaction {
+        if (dao.billPaymentId(bill.id, ym.key()) != null) false else { dao.setBill(txId, bill.id, ym.key()); true }
+    }
+
+    /** Desfaz a ligação e deixa a movimentação onde está. [never]: a pessoa disse que ela não é pagamento de conta fixa. */
+    suspend fun unlinkBillPayment(txId: Long, never: Boolean) =
+        dao.setBill(txId, null, if (never) io.github.h3yk0.cryo.domain.BillMatcher.NOT_A_BILL else null)
+
+    /** RF-CFX-05, paga em dobro: fica a movimentação do extrato ([keepId]) como o pagamento e sai a marcada à mão. */
+    suspend fun mergeBillPayment(keepId: Long, manual: Tx) = db.withTransaction {
+        dao.deleteTxs(listOf(manual.id))
+        dao.setBill(keepId, manual.billId, manual.billYm)
+    }
+
     /* ----------------------------- orçamentos ---------------------------- */
 
     suspend fun saveBudget(categoryId: Long, limit: Long) = dao.putBudget(Budget(categoryId, limit))

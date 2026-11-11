@@ -102,6 +102,7 @@ interface CryoDao {
     @Query("DELETE FROM transactions WHERE goalId = :id") suspend fun deleteTxsOfGoal(id: Long)
     @Query("DELETE FROM bills WHERE id = :id") suspend fun deleteBill(id: Long)
     @Query("UPDATE transactions SET billId = NULL, billYm = NULL WHERE billId = :id") suspend fun unlinkBill(id: Long)
+    @Query("UPDATE transactions SET billId = :billId, billYm = :ym WHERE id = :id") suspend fun setBill(id: Long, billId: Long?, ym: Int?)
     @Query("DELETE FROM budgets WHERE categoryId = :id") suspend fun deleteBudget(id: Long)
     @Query("DELETE FROM debts WHERE id = :id") suspend fun deleteDebt(id: Long)
     @Query("DELETE FROM debt_adjustments WHERE debtId = :id") suspend fun deleteAdjustmentsOf(id: Long)

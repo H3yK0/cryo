@@ -1812,4 +1812,31 @@
     <plurals name="prv_inv_years">
         <item quantity="other">%1$d년 후</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">고정 지출: %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">고정 지출 %1$s (%2$s) 같아요: 눌러서 알려 주세요</string>
+    <string name="cfx_row_already">%1$s은(는) 이미 납부로 표시했어요</string>
+    <string name="cfx_is_payment">%1$s (%2$s) 납부예요</string>
+    <string name="cfx_is_payment_hint">이 내역으로 고정 지출이 납부 처리돼요. 새 내역은 만들지 않아요.</string>
+    <string name="cfx_found_on">%1$s 내역에서 찾았어요 · 확인해 주세요</string>
+    <string name="cfx_confirm">확인</string>
+    <string name="cfx_sheet_title">이 납부가 맞나요?</string>
+    <string name="cfx_sheet_text">고정 지출 납부로 보이는 내역을 찾았어요. 연결해도 새 내역이 생기거나 금액이 바뀌지 않아요.</string>
+    <string name="cfx_yes">맞아요</string>
+    <string name="cfx_no">아니에요</string>
+    <string name="cfx_merge">합치기</string>
+    <string name="cfx_double_text">두 번 납부된 것 같아요. 이미 납부로 표시했는데 이 내역은 명세서에서 왔어요. 합치면 명세서 내역만 남아요.</string>
+    <string name="cfx_merged">%1$s: 명세서 내역만 남겼어요</string>
+    <string name="cfx_linked">%1$s을(를) 이 납부에 연결했어요</string>
+    <string name="cfx_other">아니요, 다른 납부를 기록할게요</string>
+    <string name="cfx_card_button">확인하기</string>
+    <string name="cfx_undo_text">%1$s 납부를 어떻게 할까요?</string>
+    <string name="cfx_undo_keep">고정 지출 연결만 해제</string>
+    <string name="cfx_undo_delete">내역 삭제</string>
+    <plurals name="cfx_found">
+        <item quantity="other">%1$d줄이 고정 지출 납부로 보여요: 연결된 상태로 들어와요</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="other">고정 지출 납부로 보이는 내역 %1$d건을 찾았어요</item>
+    </plurals>
 </resources>

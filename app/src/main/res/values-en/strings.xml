@@ -1847,4 +1847,33 @@
         <item quantity="one">In %1$d year</item>
         <item quantity="other">In %1$d years</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">Bill: %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">Looks like your bill %1$s (%2$s): tap to tell</string>
+    <string name="cfx_row_already">You already marked %1$s as paid</string>
+    <string name="cfx_is_payment">This is the payment for %1$s (%2$s)</string>
+    <string name="cfx_is_payment_hint">The bill is marked paid with this transaction, without creating another one.</string>
+    <string name="cfx_found_on">Found in your transactions on %1$s · confirm</string>
+    <string name="cfx_confirm">Confirm</string>
+    <string name="cfx_sheet_title">Is this the payment?</string>
+    <string name="cfx_sheet_text">Cryo found transactions that look like payments of your bills. Linking them creates nothing and changes no amounts.</string>
+    <string name="cfx_yes">Yes, this one</string>
+    <string name="cfx_no">Not this</string>
+    <string name="cfx_merge">Merge</string>
+    <string name="cfx_double_text">Looks paid twice: you already marked this bill as paid, and this transaction came from the statement. Merging keeps only the statement one.</string>
+    <string name="cfx_merged">%1$s: kept only the statement transaction</string>
+    <string name="cfx_linked">%1$s linked to this payment</string>
+    <string name="cfx_other">No, record another payment</string>
+    <string name="cfx_card_button">Review</string>
+    <string name="cfx_undo_text">What should happen to the payment for %1$s?</string>
+    <string name="cfx_undo_keep">Just unlink it from the bill</string>
+    <string name="cfx_undo_delete">Delete the transaction</string>
+    <plurals name="cfx_found">
+        <item quantity="one">%1$d line looks like a payment of one of your bills: it comes in already linked</item>
+        <item quantity="other">%1$d lines look like payments of your bills: they come in already linked</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="one">Cryo found %1$d transaction that looks like a bill payment</item>
+        <item quantity="other">Cryo found %1$d transactions that look like bill payments</item>
+    </plurals>
 </resources>

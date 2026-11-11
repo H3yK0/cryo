@@ -1847,4 +1847,33 @@
         <item quantity="one">Tra %1$d anno</item>
         <item quantity="other">Tra %1$d anni</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">Spesa fissa: %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">Sembra la spesa fissa %1$s (%2$s): tocca per dirlo</string>
+    <string name="cfx_row_already">Hai già segnato %1$s come pagata</string>
+    <string name="cfx_is_payment">È il pagamento di %1$s (%2$s)</string>
+    <string name="cfx_is_payment_hint">La spesa fissa risulta pagata con questo movimento, senza crearne un altro.</string>
+    <string name="cfx_found_on">Trovato nei movimenti il %1$s · conferma</string>
+    <string name="cfx_confirm">Conferma</string>
+    <string name="cfx_sheet_title">È il pagamento?</string>
+    <string name="cfx_sheet_text">Cryo ha trovato movimenti che sembrano pagamenti delle tue spese fisse. Collegarli non crea nulla e non cambia gli importi.</string>
+    <string name="cfx_yes">È questo</string>
+    <string name="cfx_no">Non è</string>
+    <string name="cfx_merge">Unisci</string>
+    <string name="cfx_double_text">Sembra pagata due volte: hai già segnato questa spesa come pagata e questo movimento arriva dall\'estratto. Unire tiene solo quello dell\'estratto.</string>
+    <string name="cfx_merged">%1$s: tenuto solo il movimento dell\'estratto</string>
+    <string name="cfx_linked">%1$s collegata a questo pagamento</string>
+    <string name="cfx_other">No, registra un altro pagamento</string>
+    <string name="cfx_card_button">Controlla</string>
+    <string name="cfx_undo_text">Cosa fare con il pagamento di %1$s?</string>
+    <string name="cfx_undo_keep">Solo scollegare dalla spesa fissa</string>
+    <string name="cfx_undo_delete">Elimina il movimento</string>
+    <plurals name="cfx_found">
+        <item quantity="one">%1$d riga sembra il pagamento di una tua spesa fissa: entra già collegata</item>
+        <item quantity="other">%1$d righe sembrano pagamenti delle tue spese fisse: entrano già collegate</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="one">Cryo ha trovato %1$d movimento che sembra il pagamento di una spesa fissa</item>
+        <item quantity="other">Cryo ha trovato %1$d movimenti che sembrano pagamenti di spese fisse</item>
+    </plurals>
 </resources>

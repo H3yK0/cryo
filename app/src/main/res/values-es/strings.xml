@@ -1847,4 +1847,33 @@
         <item quantity="one">En %1$d año</item>
         <item quantity="other">En %1$d años</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">Cuenta fija: %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">Parece la cuenta fija %1$s (%2$s): toca para decirlo</string>
+    <string name="cfx_row_already">Ya marcaste %1$s como pagada</string>
+    <string name="cfx_is_payment">Es el pago de %1$s (%2$s)</string>
+    <string name="cfx_is_payment_hint">La cuenta fija queda pagada con este movimiento, sin crear otro.</string>
+    <string name="cfx_found_on">Lo encontré en el Extracto el %1$s · confirma</string>
+    <string name="cfx_confirm">Confirmar</string>
+    <string name="cfx_sheet_title">¿Es el pago?</string>
+    <string name="cfx_sheet_text">Cryo encontró en el Extracto movimientos que parecen pagos de tus cuentas fijas. Vincularlos no crea nada ni cambia importes.</string>
+    <string name="cfx_yes">Es este</string>
+    <string name="cfx_no">No es</string>
+    <string name="cfx_merge">Unir</string>
+    <string name="cfx_double_text">Parece pagada dos veces: ya marcaste esta cuenta como pagada y este movimiento vino del extracto. Unir deja solo el del extracto.</string>
+    <string name="cfx_merged">%1$s: me quedé solo con el movimiento del extracto</string>
+    <string name="cfx_linked">%1$s vinculada a este pago</string>
+    <string name="cfx_other">No, registrar otro pago</string>
+    <string name="cfx_card_button">Revisar</string>
+    <string name="cfx_undo_text">¿Qué hacer con el pago de %1$s?</string>
+    <string name="cfx_undo_keep">Solo desvincular de la cuenta fija</string>
+    <string name="cfx_undo_delete">Borrar el movimiento</string>
+    <plurals name="cfx_found">
+        <item quantity="one">%1$d línea parece el pago de una cuenta fija tuya: entra ya vinculada</item>
+        <item quantity="other">%1$d líneas parecen pagos de tus cuentas fijas: entran ya vinculadas</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="one">Cryo encontró %1$d movimiento que parece el pago de una cuenta fija</item>
+        <item quantity="other">Cryo encontró %1$d movimientos que parecen pagos de tus cuentas fijas</item>
+    </plurals>
 </resources>

@@ -8,6 +8,10 @@ import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
+import io.github.h3yk0.cryo.domain.BillMatch
+import io.github.h3yk0.cryo.domain.BillMatcher
+import io.github.h3yk0.cryo.domain.MatchLevel
+import io.github.h3yk0.cryo.domain.PayLine
 import io.github.h3yk0.cryo.domain.CardMath
 import io.github.h3yk0.cryo.domain.PhraseLang
 import io.github.h3yk0.cryo.domain.PhraseParser
@@ -57,6 +61,10 @@ data class ImportRow(
      * dinheiro saiu, quando o extrato é do cartão). Com ele, a linha vira um "pagamento de fatura", e não um gasto.
      */
     val pairedId: Long? = null,
+    /** RF-CFX-02: a conta fixa (e o mês) de que esta linha parece ser o pagamento. */
+    val bill: BillMatch? = null,
+    /** Entra já ligada à conta fixa. Com certeza vem marcado; quando só parece, a pessoa decide. */
+    val payBill: Boolean = bill?.level == MatchLevel.CERTAIN,
 ) {
     val signed: Long get() = if (type == TxType.INCOME) amount else -amount
 
@@ -206,6 +214,8 @@ object ImportPlanner {
         learned: Map<String, Long>,
         invert: Boolean,
         model: CategoryModel? = null,
+        /** RF-CFX-04: a conta fixa que a pessoa já confirmou para uma descrição (só o código dela fica guardado). */
+        alias: (String) -> Long? = { null },
     ): List<ImportRow> {
         val guesser = CategoryGuesser(snapshot.categories, learned, model?.let { m ->
             { kind: CategoryKind, desc: String ->
@@ -219,7 +229,7 @@ object ImportPlanner {
         val used = HashSet<Long>()
         val seen = HashMap<String, Int>()
 
-        return st.lines.mapIndexed { i, line ->
+        val rows = st.lines.mapIndexed { i, line ->
             val base = baseKeyOf(line)
             val occurrence = seen.merge(base, 1, Int::plus)!! - 1
             val key = keyOf(line, occurrence, target, st.format)
@@ -252,6 +262,38 @@ object ImportPlanner {
             }
             ImportRow(i, line, type, abs(signed), category, key, flag, before ?: similar)
         }
+        return withBills(rows, snapshot, alias)
+    }
+
+    /**
+     * RF-CFX-02 e 03: marca as linhas que são o pagamento de uma conta fixa em aberto, e as que repetem um pagamento que a
+     * pessoa já marcou à mão ("Já paguei"), em qualquer conta ou cartão (a busca comum por repetidas só olha a conta de destino).
+     */
+    private fun withBills(rows: List<ImportRow>, snapshot: Snapshot, alias: (String) -> Long?): List<ImportRow> {
+        val bills = snapshot.bills.filter { it.active }
+        if (bills.isEmpty()) return rows
+        val byId = bills.associateBy { it.id }
+        val linked = snapshot.txs.filter { it.billId != null && it.billYm != null && it.billId in byId }
+        val paid = linked.mapTo(HashSet()) { it.billId!! to it.billYm!! }
+        val used = HashSet<Long>()
+        fun plain(r: ImportRow) = r.flag == RowFlag.NONE && r.pairedId == null && (r.type == TxType.EXPENSE || r.type == TxType.INCOME)
+        val checked = rows.map { r ->
+            if (!plain(r)) return@map r
+            val same = linked.firstOrNull { t ->
+                val days = abs(ChronoUnit.DAYS.between(t.date, r.line.date))
+                t.id !in used && t.type == r.type && abs(t.amount - r.amount) <= r.amount / 100 && (
+                    days <= 3 || days <= 7 && byId.getValue(t.billId!!).let { b -> BillMatcher.sameName(b.name, r.line.description) || alias(r.line.description) == b.id }
+                    )
+            } ?: return@map r
+            used += same.id
+            r.copy(flag = RowFlag.LOOKS_DUPLICATE, match = same, selected = false)
+        }
+        // O que já está no app sem ligação, mas é o pagamento com certeza, também conta como pago.
+        paid += BillMatcher.certain(bills, snapshot.txs, paid).keys
+        val lines = LinkedHashMap<Int, PayLine>()
+        for (r in checked) if (plain(r)) lines[r.index] = PayLine(r.line.date, r.amount, r.line.description, r.type == TxType.EXPENSE)
+        val found = BillMatcher.assign(lines, bills, paid) { alias(it.description) }
+        return if (found.isEmpty()) checked else checked.map { r -> found[r.index]?.let { r.copy(bill = it, payBill = it.level == MatchLevel.CERTAIN) } ?: r }
     }
 
     /**
@@ -282,7 +324,7 @@ object ImportPlanner {
             categoryId = row.categoryId, importKey = row.key, createdAt = now,
         )
         val paired = row.pairedId?.takeIf { row.canBeInvoicePayment }
-        return when {
+        val tx = when {
             // Crédito na fatura que é o pagamento dela: sai da conta escolhida e entra no cartão.
             paired != null && target.isCard && card != null && row.type == TxType.INCOME -> base.copy(
                 type = TxType.CARD_PAYMENT, categoryId = null, accountId = paired, cardId = card.id,
@@ -296,6 +338,15 @@ object ImportPlanner {
             target.isCard && card != null ->
                 base.copy(cardId = card.id, invoiceYm = target.invoiceYm ?: CardMath.invoiceFor(card, row.line.date).key())
             else -> base.copy(accountId = target.accountId)
+        }
+        // RF-CFX-02: o pagamento da conta fixa nasce ligado a ela, na conta ou no cartão do extrato (onde aconteceu).
+        val m = row.bill
+        return when {
+            m == null || tx.type == TxType.CARD_PAYMENT -> tx
+            row.payBill -> tx.copy(billId = m.bill.id, billYm = m.ym.key(), categoryId = tx.categoryId ?: m.bill.categoryId)
+            // Era certo e a pessoa desmarcou: fica dito no lançamento, para o Cryo não reconhecer sozinho depois.
+            m.level == MatchLevel.CERTAIN -> tx.copy(billYm = BillMatcher.NOT_A_BILL)
+            else -> tx
         }
     }
 }

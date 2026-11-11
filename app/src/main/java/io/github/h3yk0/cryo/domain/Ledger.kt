@@ -98,6 +98,8 @@ data class BillStatus(
     val payment: Tx?,
     val state: BillState,
     val daysUntil: Long,
+    /** RF-CFX-07: o pagamento foi reconhecido pelo Cryo (mesmo nome e valor) e a pessoa ainda não confirmou a ligação. */
+    val inferred: Boolean = false,
 )
 
 data class BudgetUsage(val category: Category, val limit: Long, val spent: Long) {
@@ -366,11 +368,19 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
         s.txs.filter { it.billId != null && it.billYm != null }.associateBy { it.billId!! to it.billYm!! }
     }
 
+    /**
+     * RF-CFX-07: pagamentos que estão no app sem a ligação com a conta fixa (vieram do extrato ou foram digitados) e que o
+     * casador reconhece com certeza. Contam como pagos em tudo o que lê [billStatuses] (previsão, avisos, telas), para nada
+     * ser contado em dobro enquanto a pessoa não confirma.
+     */
+    val inferredBillPayments: Map<Pair<Long, Int>, Tx> by lazy { BillMatcher.certain(s.bills, s.txs, billPayments.keys) }
+
     fun billStatuses(ym: YearMonth): List<BillStatus> = s.bills
         .filter { it.active && it.startYm <= ym.key() }
         .map { b ->
             val due = ym.dayClamped(b.dueDay)
-            val pay = billPayments[b.id to ym.key()]
+            val linked = billPayments[b.id to ym.key()]
+            val pay = linked ?: inferredBillPayments[b.id to ym.key()]
             val days = ChronoUnit.DAYS.between(today, due)
             val state = when {
                 pay != null -> BillState.PAID
@@ -378,7 +388,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
                 days <= 3 -> BillState.DUE_SOON
                 else -> BillState.UPCOMING
             }
-            BillStatus(b, ym, due, pay, state, days)
+            BillStatus(b, ym, due, pay, state, days, inferred = linked == null && pay != null)
         }
         .sortedBy { it.due }
 

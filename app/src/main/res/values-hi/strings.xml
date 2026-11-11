@@ -1847,4 +1847,33 @@
         <item quantity="one">%1$d साल में</item>
         <item quantity="other">%1$d साल में</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">नियमित बिल: %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">नियमित बिल %1$s (%2$s) जैसा लगता है: बताने के लिए टैप करें</string>
+    <string name="cfx_row_already">आपने %1$s को पहले ही चुकाया हुआ मार्क किया है</string>
+    <string name="cfx_is_payment">यह %1$s (%2$s) का भुगतान है</string>
+    <string name="cfx_is_payment_hint">इस लेन-देन से बिल चुकाया हुआ माना जाएगा, कोई नया लेन-देन नहीं बनेगा।</string>
+    <string name="cfx_found_on">%1$s के लेन-देन में मिला · पुष्टि करें</string>
+    <string name="cfx_confirm">पुष्टि करें</string>
+    <string name="cfx_sheet_title">क्या यही भुगतान है?</string>
+    <string name="cfx_sheet_text">Cryo को ऐसे लेन-देन मिले जो आपके नियमित बिलों के भुगतान जैसे लगते हैं। जोड़ने से कुछ नया नहीं बनता और रकम नहीं बदलती।</string>
+    <string name="cfx_yes">यही है</string>
+    <string name="cfx_no">यह नहीं</string>
+    <string name="cfx_merge">मिलाएँ</string>
+    <string name="cfx_double_text">दो बार चुकाया हुआ लगता है: आपने यह बिल पहले ही चुकाया हुआ मार्क किया था और यह लेन-देन स्टेटमेंट से आया है। मिलाने पर सिर्फ़ स्टेटमेंट वाला रहेगा।</string>
+    <string name="cfx_merged">%1$s: सिर्फ़ स्टेटमेंट वाला लेन-देन रखा</string>
+    <string name="cfx_linked">%1$s इस भुगतान से जोड़ा गया</string>
+    <string name="cfx_other">नहीं, दूसरा भुगतान दर्ज करें</string>
+    <string name="cfx_card_button">जाँचें</string>
+    <string name="cfx_undo_text">%1$s के भुगतान का क्या करें?</string>
+    <string name="cfx_undo_keep">सिर्फ़ बिल से अलग करें</string>
+    <string name="cfx_undo_delete">लेन-देन हटाएँ</string>
+    <plurals name="cfx_found">
+        <item quantity="one">%1$d लाइन आपके नियमित बिल का भुगतान लगती है: यह जुड़ी हुई आएगी</item>
+        <item quantity="other">%1$d लाइनें आपके नियमित बिलों के भुगतान लगती हैं: ये जुड़ी हुई आएँगी</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="one">Cryo को %1$d लेन-देन मिला जो बिल का भुगतान लगता है</item>
+        <item quantity="other">Cryo को %1$d लेन-देन मिले जो बिलों के भुगतान लगते हैं</item>
+    </plurals>
 </resources>

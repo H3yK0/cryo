@@ -1812,4 +1812,31 @@
     <plurals name="prv_inv_years">
         <item quantity="other">%1$d年後</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">固定費：%1$s（%2$s）</string>
+    <string name="cfx_row_maybe">固定費「%1$s」（%2$s）のようです。タップして教えてください</string>
+    <string name="cfx_row_already">%1$sはすでに支払い済みにしています</string>
+    <string name="cfx_is_payment">%1$s（%2$s）の支払いです</string>
+    <string name="cfx_is_payment_hint">この取引で固定費が支払い済みになります。別の取引は作りません。</string>
+    <string name="cfx_found_on">%1$sの取引で見つけました・確認してください</string>
+    <string name="cfx_confirm">確認</string>
+    <string name="cfx_sheet_title">この支払いですか？</string>
+    <string name="cfx_sheet_text">固定費の支払いと思われる取引が見つかりました。ひも付けても、取引は増えず金額も変わりません。</string>
+    <string name="cfx_yes">これです</string>
+    <string name="cfx_no">違います</string>
+    <string name="cfx_merge">まとめる</string>
+    <string name="cfx_double_text">二重払いのようです。この固定費はすでに支払い済みにしていて、この取引は明細から取り込まれました。まとめると明細の取引だけが残ります。</string>
+    <string name="cfx_merged">%1$s：明細の取引だけを残しました</string>
+    <string name="cfx_linked">%1$sをこの支払いにひも付けました</string>
+    <string name="cfx_other">いいえ、別の支払いを記録する</string>
+    <string name="cfx_card_button">確認する</string>
+    <string name="cfx_undo_text">%1$sの支払いをどうしますか？</string>
+    <string name="cfx_undo_keep">固定費とのひも付けだけ外す</string>
+    <string name="cfx_undo_delete">取引を削除</string>
+    <plurals name="cfx_found">
+        <item quantity="other">%1$d行が固定費の支払いのようです。ひも付けて取り込みます</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="other">固定費の支払いと思われる取引が%1$d件見つかりました</item>
+    </plurals>
 </resources>

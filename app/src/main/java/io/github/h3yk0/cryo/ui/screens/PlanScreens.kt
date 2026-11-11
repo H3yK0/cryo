@@ -5,6 +5,9 @@ package io.github.h3yk0.cryo.ui.screens
 import io.github.h3yk0.cryo.domain.Num
 import kotlin.math.roundToInt
 import io.github.h3yk0.cryo.domain.engine.GoalOutlook
+import io.github.h3yk0.cryo.domain.BillMatcher
+import io.github.h3yk0.cryo.domain.BillReconciler
+import io.github.h3yk0.cryo.domain.BillSuggestion
 import io.github.h3yk0.cryo.domain.predict.CategoryOutlook
 import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.R
@@ -57,6 +60,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableLongStateOf
@@ -336,6 +341,19 @@ private fun BillsTab(l: Ledger) {
     var paying by remember { mutableStateOf<BillStatus?>(null) }
     var undoing by remember { mutableStateOf<BillStatus?>(null) }
     var payingDebt by remember { mutableStateOf<DebtInfo?>(null) }
+    // RF-CFX-05: o que já está no app e parece pagamento de conta fixa (o reconhecido com certeza e o que só parece).
+    val found = remember(l) { BillReconciler.suggestions(l.s, l.today) { d -> c.engineStore.billAlias(d) } }
+    // Qual conta fixa a folha de sugestões mostra: -1 = todas; [thenPay] = a pessoa tocou "Já paguei" e o Cryo achou um candidato.
+    var reviewing by remember { mutableStateOf<Long?>(null) }
+    var thenPay by remember { mutableStateOf<BillStatus?>(null) }
+    val justSaved by c.billReview.collectAsState()
+    LaunchedEffect(justSaved, found) {
+        // RF-CFX-08: a conta fixa acabou de ser criada ou mudada e já existem movimentações que parecem ela.
+        val id = justSaved ?: return@LaunchedEffect
+        if (l.bill[id] == null) return@LaunchedEffect
+        if (found.any { it.bill.id == id }) reviewing = id
+        c.billReview.value = null
+    }
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
@@ -351,13 +369,28 @@ private fun BillsTab(l: Ledger) {
                 )
             }
         }
+        if (found.isNotEmpty()) {
+            item {
+                Column(Modifier.fillMaxWidth().depthCard().padding(16.dp)) {
+                    Text(Res.p(R.plurals.cfx_card_title, found.size, found.size), style = MaterialTheme.typography.bodyLarge)
+                    TextButton(onClick = { reviewing = -1L }, contentPadding = PaddingValues(0.dp)) { Text(Res.s(R.string.cfx_card_button)) }
+                }
+            }
+        }
         if (pay.isNotEmpty()) {
             item {
                 val total = pay.sumOf { it.bill.amount }
                 val paid = pay.filter { it.payment != null }
                 SummaryLine(Res.s(R.string.plan_pagar), Res.s(R.string.plan_pagas, paid.size, pay.size), total, hide)
             }
-            items(pay, key = { "p${it.bill.id}" }) { s -> BillRow(s, l, hide, onPay = { paying = s }, onUndo = { undoing = s }) }
+            items(pay, key = { "p${it.bill.id}" }) { s ->
+                BillRow(
+                    s, l, hide,
+                    // RF-CFX-06: antes de criar um pagamento, o Cryo olha se ele já está no Extrato.
+                    onPay = { if (found.any { it.bill.id == s.bill.id && it.ym == s.ym }) { thenPay = s; reviewing = s.bill.id } else paying = s },
+                    onUndo = { if (s.inferred) reviewing = s.bill.id else undoing = s },
+                )
+            }
         }
         if (installments.isNotEmpty()) {
             item {
@@ -374,7 +407,14 @@ private fun BillsTab(l: Ledger) {
                 val got = receive.count { it.payment != null }
                 SummaryLine(Res.s(R.string.plan_receber), Res.s(R.string.plan_recebidos, got, receive.size), total, hide)
             }
-            items(receive, key = { "r${it.bill.id}" }) { s -> BillRow(s, l, hide, onPay = { paying = s }, onUndo = { undoing = s }) }
+            items(receive, key = { "r${it.bill.id}" }) { s ->
+                BillRow(
+                    s, l, hide,
+                    // RF-CFX-06: antes de criar um pagamento, o Cryo olha se ele já está no Extrato.
+                    onPay = { if (found.any { it.bill.id == s.bill.id && it.ym == s.ym }) { thenPay = s; reviewing = s.bill.id } else paying = s },
+                    onUndo = { if (s.inferred) reviewing = s.bill.id else undoing = s },
+                )
+            }
         }
         item {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
@@ -410,13 +450,104 @@ private fun BillsTab(l: Ledger) {
         )
     }
     undoing?.let { s ->
-        ConfirmDialog(
-            Res.s(R.string.plan_desmarcar_pagamento), Res.s(R.string.plan_lancamento_neste_mes_sera, s.bill.name), Res.s(R.string.plan_desmarcar),
-            onConfirm = { undoing = null; c.launch { c.repo.unmarkBillPaid(s.bill, s.ym) } },
-            onDismiss = { undoing = null },
-        )
+        val tx = s.payment
+        ModalBottomSheet(onDismissRequest = { undoing = null }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+            Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+                Text(Res.s(R.string.plan_desmarcar_pagamento), style = MaterialTheme.typography.titleLarge)
+                Text(
+                    Res.s(R.string.cfx_undo_text, s.bill.name), style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp),
+                )
+                // A movimentação continua no Extrato e a conta fixa volta a ficar em aberto.
+                CryoButton(
+                    onClick = { undoing = null; if (tx != null) c.launch { c.repo.unlinkBillPayment(tx.id, never = true) } },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                ) { Text(Res.s(R.string.cfx_undo_keep)) }
+                // Apagar só o que nasceu do botão "Já paguei": o que veio do extrato se apaga no Extrato, de propósito.
+                if (tx?.importKey == null) {
+                    Spacer(Modifier.height(8.dp))
+                    OutlinedButton(
+                        onClick = { undoing = null; c.launch { c.repo.unmarkBillPaid(s.bill, s.ym) } },
+                        modifier = Modifier.fillMaxWidth().height(52.dp),
+                    ) { Text(Res.s(R.string.cfx_undo_delete)) }
+                }
+            }
+        }
+    }
+    reviewing?.let { id ->
+        val list = found.filter { id == -1L || it.bill.id == id }
+        val pending = thenPay
+        if (list.isEmpty()) {
+            // Tudo resolvido (ou nada a mostrar): fecha; se a pessoa queria pagar e ainda está em aberto, segue para o pagamento.
+            LaunchedEffect(list) {
+                reviewing = null
+                thenPay = null
+                if (pending != null && l.billStatuses(pending.ym).any { it.bill.id == pending.bill.id && it.payment == null }) paying = pending
+            }
+        } else {
+            BillSuggestionsSheet(
+                list, l,
+                onOther = pending?.let { p -> { reviewing = null; thenPay = null; paying = p } },
+                onDismiss = { reviewing = null; thenPay = null },
+            )
+        }
     }
     payingDebt?.let { info -> DebtPaySheet(info, l, payoff = false, onDismiss = { payingDebt = null }) }
+}
+
+/**
+ * RF-CFX-05, 06 e 08: as movimentações que já estão no app e parecem pagamentos de contas fixas. Cada uma com "É este"
+ * (liga, sem criar nem mudar valor), "Não é" (o Cryo não pergunta de novo) ou, quando está pago em dobro, "Juntar".
+ */
+@Composable
+private fun BillSuggestionsSheet(list: List<BillSuggestion>, l: Ledger, onOther: (() -> Unit)?, onDismiss: () -> Unit) {
+    val c = LocalContainer.current
+    val hide = LocalSettings.current.hideValues
+    val undo = Res.s(R.string.wallet_desfazer)
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+            Text(Res.s(R.string.cfx_sheet_title), style = MaterialTheme.typography.titleLarge)
+            Text(
+                Res.s(R.string.cfx_sheet_text), style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp, bottom = 8.dp),
+            )
+            list.forEach { s ->
+                val tx = s.tx
+                val where = if (tx.cardId != null) l.cardName(tx.cardId) else l.accountName(tx.accountId)
+                FlatItem {
+                    Text(s.bill.name + " · " + Dates.monthName(s.ym), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        listOf(tx.description.ifBlank { s.bill.name }, Dates.short(tx.date), where, if (hide) Money.HIDDEN else Money.format(tx.amount)).joinToString(" · "),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    if (s.duplicateOf != null) {
+                        Text(Res.s(R.string.cfx_double_text), style = MaterialTheme.typography.bodySmall, color = CryoTheme.colors.warning)
+                    }
+                    Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.End, verticalAlignment = Alignment.CenterVertically) {
+                        TextButton(onClick = { c.launch { c.repo.unlinkBillPayment(tx.id, never = true) } }) { Text(Res.s(R.string.cfx_no)) }
+                        Spacer(Modifier.width(8.dp))
+                        val manual = s.duplicateOf
+                        FilledTonalButton(onClick = {
+                            c.launch {
+                                if (manual != null) {
+                                    c.repo.mergeBillPayment(tx.id, manual)
+                                    c.message(Res.s(R.string.cfx_merged, s.bill.name), undo) { c.repo.unlinkBillPayment(tx.id, never = false); c.repo.restore(listOf(manual)) }
+                                } else if (c.repo.linkBillPayment(tx.id, s.bill, s.ym)) {
+                                    // RF-CFX-04: o nome que o banco usa passa a valer para esta conta fixa.
+                                    if (!BillMatcher.sameName(s.bill.name, tx.description)) c.engineStore.learnBill(tx.description, s.bill.id)
+                                    c.message(Res.s(R.string.cfx_linked, s.bill.name), undo) { c.repo.unlinkBillPayment(tx.id, never = false) }
+                                }
+                            }
+                        }) { Text(Res.s(if (manual != null) R.string.cfx_merge else R.string.cfx_yes)) }
+                    }
+                }
+            }
+            if (onOther != null) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(onClick = onOther, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.cfx_other)) }
+            }
+        }
+    }
 }
 
 /** Parcela de uma dívida no mês escolhido (vem da área de Dívidas, não é uma conta fixa). */
@@ -427,7 +558,7 @@ private fun DebtInstallmentRow(m: DebtMath.MonthInstallment, l: Ledger, hide: Bo
     val d = info.debt
     val amount = if (m.payable) info.nextAmount else d.installmentAmount
     val (status, statusColor) = when {
-        m.paid -> "paga" to CryoTheme.colors.income
+        m.paid -> Res.s(R.string.wallet_paga) to CryoTheme.colors.income
         m.due.isBefore(l.today) -> Res.s(R.string.bill_was_due, Dates.relative(m.due, l.today)) to CryoTheme.colors.expense
         ChronoUnit.DAYS.between(l.today, m.due) <= 3 -> Res.s(R.string.bill_due, Dates.relative(m.due, l.today)) to CryoTheme.colors.warning
         else -> Res.s(R.string.plan_vence_dia, m.due.dayOfMonth) to MaterialTheme.colorScheme.onSurfaceVariant
@@ -488,7 +619,9 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
     val income = b.kind == CategoryKind.INCOME
     val value = if (hide) Money.HIDDEN else Money.format(s.payment?.amount ?: b.amount)
     val (status, statusColor) = when (s.state) {
-        BillState.PAID -> Res.s(if (income) R.string.bill_received_on else R.string.bill_paid_on, Dates.short(s.payment!!.date)) to CryoTheme.colors.income
+        BillState.PAID ->
+            if (s.inferred) Res.s(R.string.cfx_found_on, Dates.short(s.payment!!.date)) to MaterialTheme.colorScheme.primary
+            else Res.s(if (income) R.string.bill_received_on else R.string.bill_paid_on, Dates.short(s.payment!!.date)) to CryoTheme.colors.income
         BillState.OVERDUE -> Res.s(if (income) R.string.bill_late_since else R.string.bill_was_due, Dates.relative(s.due, l.today)) to CryoTheme.colors.expense
         BillState.DUE_SOON -> Res.s(if (income) R.string.bill_arrives else R.string.bill_due, Dates.relative(s.due, l.today)) to CryoTheme.colors.warning
         BillState.UPCOMING -> Res.s(if (income) R.string.bill_arrives_day else R.string.bill_due_day, s.due.dayOfMonth) to MaterialTheme.colorScheme.onSurfaceVariant
@@ -511,7 +644,10 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
                     Text(if (income) Res.s(R.string.plan_recebi) else Res.s(R.string.debt_paguei))
                 }
             } else {
-                TextButton(
+                if (s.inferred) {
+                // RF-CFX-07: o Cryo reconheceu o pagamento no Extrato; a pessoa só confirma (ou diz que não é).
+                FilledTonalButton(onClick = onUndo, contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)) { Text(Res.s(R.string.cfx_confirm)) }
+                } else TextButton(
                     onClick = onUndo,
                     modifier = Modifier.semantics { contentDescription = if (income) Res.s(R.string.plan_recebido_toque_para_desmarcar) else Res.s(R.string.plan_paga_toque_para_desmarcar) },
                 ) {
@@ -555,7 +691,7 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
                 remind = remind, remindDaysBefore = before, active = active,
             )
             if (remind && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            c.launch { c.repo.saveBill(b); c.message(Res.s(R.string.plan_salvo)) }
+            c.launch { val saved = c.repo.saveBill(b); c.billReview.value = if (b.id != 0L) b.id else saved; c.message(Res.s(R.string.plan_salvo)) }
             nav.back()
         },
         onDelete = existing?.let { { confirmDelete = true } },

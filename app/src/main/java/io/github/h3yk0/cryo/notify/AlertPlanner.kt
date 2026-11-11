@@ -388,6 +388,7 @@ class AlertPlanner(private val l: Ledger, private val report: EngineReport?, pri
     companion object {
         /** A conta fixa ainda não foi paga neste mês (para "Já paguei" não pagar duas vezes). */
         fun billOpen(l: Ledger, billId: Long, ymKey: Int): Boolean =
-            l.s.txs.none { it.billId == billId && it.billYm == ymKey } && l.s.bills.any { it.id == billId && it.kind == CategoryKind.EXPENSE }
+            // RF-CFX-07: pelo livro-caixa, que também reconhece o pagamento que veio do extrato sem a ligação.
+            l.billStatuses(io.github.h3yk0.cryo.domain.ymOf(ymKey)).any { it.bill.id == billId && it.payment == null && it.bill.kind == CategoryKind.EXPENSE }
     }
 }

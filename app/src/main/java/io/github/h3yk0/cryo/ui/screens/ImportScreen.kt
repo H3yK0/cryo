@@ -672,6 +672,16 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
                     )
                 }
             }
+            val billRows = vm.billRows
+            if (billRows > 0) {
+                item {
+                    Banner(
+                        Icons.Rounded.Info, Res.p(R.plurals.cfx_found, billRows, billRows),
+                        MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer,
+                        Modifier.padding(start = 16.dp, end = 16.dp, top = 12.dp),
+                    )
+                }
+            }
             item { Totals(rows) }
             items(rows, key = { it.index }) { r ->
                 ReviewRow(r, l, t, onToggle = { vm.toggle(r.index) }, onClick = { editing = r.index })
@@ -684,8 +694,8 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
             RowEditor(
                 r, t, l,
                 onDismiss = { editing = null },
-                onSave = { desc, cat, kind, paired, selected ->
-                    vm.saveRow(idx, desc, cat, kind, paired, selected)
+                onSave = { desc, cat, kind, paired, selected, payBill ->
+                    vm.saveRow(idx, desc, cat, kind, paired, selected, payBill)
                     editing = null
                 },
             )
@@ -781,6 +791,10 @@ private fun Totals(rows: List<ImportRow>) {
 private fun flagLabel(r: ImportRow, t: ImportTarget, l: Ledger): String? = when {
     r.pairedId != null && r.canBeInvoicePayment ->
         if (t.isCard) Res.s(R.string.import_pagamento_fatura_saindo, l.accountName(r.pairedId)) else Res.s(R.string.import_pagamento_fatura_cartao, l.cardName(r.pairedId))
+    r.bill != null && r.flag == RowFlag.NONE ->
+        Res.s(if (r.payBill) R.string.cfx_row_pays else R.string.cfx_row_maybe, r.bill.bill.name, Dates.monthName(r.bill.ym))
+    r.flag == RowFlag.LOOKS_DUPLICATE && r.match?.billId != null ->
+        Res.s(R.string.cfx_row_already, l.s.bills.firstOrNull { it.id == r.match.billId }?.name ?: r.match.description)
     r.flag == RowFlag.IMPORTED_BEFORE -> Res.s(R.string.import_ja_importada_antes)
     r.flag == RowFlag.LOOKS_DUPLICATE -> r.match?.let { Res.s(R.string.import_parece_repetida_2, it.description.ifBlank { Res.s(R.string.import_sem_descricao) }, Dates.short(it.date)) } ?: Res.s(R.string.import_parece_repetida)
     r.flag == RowFlag.CARD_CREDIT -> Res.s(R.string.import_pagamento_fatura_toque_para_2)
@@ -817,7 +831,7 @@ private fun ReviewRow(r: ImportRow, l: Ledger, t: ImportTarget, onToggle: () -> 
                 if (flag != null) {
                     Text(
                         flag, style = MaterialTheme.typography.labelMedium, maxLines = 2, overflow = TextOverflow.Ellipsis,
-                        color = if (paired) MaterialTheme.colorScheme.primary else CryoTheme.colors.onWarningContainer,
+                        color = if (paired || r.bill != null && r.flag == RowFlag.NONE && r.payBill) MaterialTheme.colorScheme.primary else CryoTheme.colors.onWarningContainer,
                         fontWeight = FontWeight.Medium,
                     )
                 }
@@ -839,13 +853,14 @@ private fun RowEditor(
     t: ImportTarget,
     l: Ledger,
     onDismiss: () -> Unit,
-    onSave: (description: String, categoryId: Long?, kind: CategoryKind, paired: Long?, selected: Boolean) -> Unit,
+    onSave: (description: String, categoryId: Long?, kind: CategoryKind, paired: Long?, selected: Boolean, payBill: Boolean?) -> Unit,
 ) {
     // Se a linha mudar de tipo enquanto a folha está aberta (sinais invertidos), as escolhas recomeçam.
     var description by remember(r.index, r.type) { mutableStateOf(r.line.description) }
     var category by remember(r.index, r.type) { mutableStateOf(r.categoryId) }
     var paired by remember(r.index, r.type) { mutableStateOf(r.pairedId) }
     var selected by remember(r.index, r.type) { mutableStateOf(r.selected) }
+    var payBill by remember(r.index, r.type) { mutableStateOf(r.payBill) }
     val kind = ImportModel.kindOf(r.type)
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
@@ -888,6 +903,23 @@ private fun RowEditor(
                     )
                 }
             }
+            // RF-CFX-02: a linha é o pagamento de uma conta fixa? A pessoa confirma (ou diz que não) aqui.
+            r.bill?.takeIf { r.flag == RowFlag.NONE }?.let { m ->
+                Spacer(Modifier.height(8.dp))
+                Row(
+                    Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+                        .toggleable(value = payBill, role = Role.Checkbox, onValueChange = { payBill = it })
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Checkbox(checked = payBill, onCheckedChange = null)
+                    Spacer(Modifier.width(8.dp))
+                    Column {
+                        Text(Res.s(R.string.cfx_is_payment, m.bill.name, Dates.monthName(m.ym)), style = MaterialTheme.typography.bodyLarge)
+                        Text(Res.s(R.string.cfx_is_payment_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+            }
             if (paired == null) {
                 FieldLabel(Res.s(R.string.plan_categoria))
                 CategoryGrid(l.categories(kind), category, { category = it.id })
@@ -906,7 +938,7 @@ private fun RowEditor(
             }
             Spacer(Modifier.height(12.dp))
             CryoButton(
-                onClick = { onSave(description, if (paired == null) category else null, kind, paired, selected) },
+                onClick = { onSave(description, if (paired == null) category else null, kind, paired, selected, if (r.bill != null) payBill else null) },
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.import_pronto)) }
             Spacer(Modifier.height(8.dp))

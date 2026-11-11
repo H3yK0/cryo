@@ -178,7 +178,9 @@ object Backup {
         cards = s.cards.map { it.copy(limitAmount = money(it.limitAmount), closingDay = it.closingDay.coerceIn(1, 31), dueDay = it.dueDay.coerceIn(1, 31)) },
         txs = s.txs.map {
             it.copy(
-                amount = money(it.amount), date = day(it.date), invoiceYm = it.invoiceYm?.let(::ym), billYm = it.billYm?.let(::ym),
+                amount = money(it.amount), date = day(it.date), invoiceYm = it.invoiceYm?.let(::ym),
+                // RF-CFX: 0 sem conta fixa = a pessoa disse que a movimentação não é pagamento de conta fixa.
+                billYm = it.billYm?.let { v -> if (v == io.github.h3yk0.cryo.domain.BillMatcher.NOT_A_BILL && it.billId == null) v else ym(v) },
                 installmentNumber = it.installmentNumber.coerceIn(0, 999), installmentTotal = it.installmentTotal.coerceIn(0, 999),
             )
         },

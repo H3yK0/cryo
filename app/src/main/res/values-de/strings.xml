@@ -1847,4 +1847,33 @@
         <item quantity="one">In %1$d Jahr</item>
         <item quantity="other">In %1$d Jahren</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">Fixkosten: %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">Sieht aus wie %1$s (%2$s): zum Bestätigen tippen</string>
+    <string name="cfx_row_already">Du hast %1$s schon als bezahlt markiert</string>
+    <string name="cfx_is_payment">Das ist die Zahlung für %1$s (%2$s)</string>
+    <string name="cfx_is_payment_hint">Die Fixkosten gelten mit dieser Buchung als bezahlt, ohne eine weitere anzulegen.</string>
+    <string name="cfx_found_on">In den Buchungen am %1$s gefunden · bestätigen</string>
+    <string name="cfx_confirm">Bestätigen</string>
+    <string name="cfx_sheet_title">Ist das die Zahlung?</string>
+    <string name="cfx_sheet_text">Cryo hat Buchungen gefunden, die wie Zahlungen deiner Fixkosten aussehen. Verknüpfen legt nichts an und ändert keine Beträge.</string>
+    <string name="cfx_yes">Ja, diese</string>
+    <string name="cfx_no">Nein</string>
+    <string name="cfx_merge">Zusammenführen</string>
+    <string name="cfx_double_text">Sieht doppelt bezahlt aus: Du hast diese Fixkosten schon als bezahlt markiert, und diese Buchung kam aus dem Auszug. Zusammenführen behält nur die aus dem Auszug.</string>
+    <string name="cfx_merged">%1$s: nur die Buchung aus dem Auszug behalten</string>
+    <string name="cfx_linked">%1$s mit dieser Zahlung verknüpft</string>
+    <string name="cfx_other">Nein, andere Zahlung erfassen</string>
+    <string name="cfx_card_button">Prüfen</string>
+    <string name="cfx_undo_text">Was soll mit der Zahlung für %1$s passieren?</string>
+    <string name="cfx_undo_keep">Nur von den Fixkosten lösen</string>
+    <string name="cfx_undo_delete">Buchung löschen</string>
+    <plurals name="cfx_found">
+        <item quantity="one">%1$d Zeile sieht wie die Zahlung deiner Fixkosten aus: sie wird gleich verknüpft</item>
+        <item quantity="other">%1$d Zeilen sehen wie Zahlungen deiner Fixkosten aus: sie werden gleich verknüpft</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="one">Cryo hat %1$d Buchung gefunden, die wie eine Fixkosten-Zahlung aussieht</item>
+        <item quantity="other">Cryo hat %1$d Buchungen gefunden, die wie Fixkosten-Zahlungen aussehen</item>
+    </plurals>
 </resources>

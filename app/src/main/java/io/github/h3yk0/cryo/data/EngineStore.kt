@@ -4,6 +4,7 @@ package io.github.h3yk0.cryo.data
 
 import android.content.Context
 import io.github.h3yk0.cryo.domain.engine.EngineOptions
+import io.github.h3yk0.cryo.domain.engine.TxKey
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 
@@ -36,6 +37,21 @@ class EngineStore(ctx: Context, sandbox: Boolean, private val vault: Vault) {
     private val _inflation = MutableStateFlow(inflation)
     val inflationFlow: StateFlow<Double?> = _inflation
 
+    /**
+     * RF-CFX-04: a conta fixa que a pessoa já confirmou para uma descrição de extrato ("DEB AUT CIA ENERG" = Luz). Como nas
+     * recorrências, fica só o HMAC da descrição normalizada, nunca o texto.
+     */
+    fun billAlias(description: String): Long? {
+        val key = TxKey.of(description)
+        if (key.isEmpty()) return null
+        return prefs.getLong(BILL + vault.hmac(BILL_PREFIX + key), -1L).takeIf { it >= 0 }
+    }
+
+    fun learnBill(description: String, billId: Long) {
+        val key = TxKey.of(description)
+        if (key.isNotEmpty()) prefs.edit().putLong(BILL + vault.hmac(BILL_PREFIX + key), billId).apply()
+    }
+
     private fun update(set: Set<String>) {
         prefs.edit().putStringSet(DISMISSED, set).apply()
         _options.value = read(set)
@@ -53,5 +69,7 @@ class EngineStore(ctx: Context, sandbox: Boolean, private val vault: Vault) {
         const val DISMISSED = "dismissed"
         const val INFLATION = "inflation"
         const val PREFIX = "recorrencia:"
+        const val BILL = "bill."
+        const val BILL_PREFIX = "contafixa:"
     }
 }

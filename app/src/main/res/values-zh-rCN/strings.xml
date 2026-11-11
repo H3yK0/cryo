@@ -1812,4 +1812,31 @@
     <plurals name="prv_inv_years">
         <item quantity="other">%1$d年后</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">固定账单：%1$s（%2$s）</string>
+    <string name="cfx_row_maybe">看起来是固定账单 %1$s（%2$s）：点按确认</string>
+    <string name="cfx_row_already">你已把 %1$s 标为已付</string>
+    <string name="cfx_is_payment">这是 %1$s（%2$s）的付款</string>
+    <string name="cfx_is_payment_hint">这笔记录会把固定账单标为已付，不会再新建一笔。</string>
+    <string name="cfx_found_on">在 %1$s 的记录里找到了 · 请确认</string>
+    <string name="cfx_confirm">确认</string>
+    <string name="cfx_sheet_title">是这笔付款吗？</string>
+    <string name="cfx_sheet_text">Cryo 在记录里找到了像是固定账单付款的交易。关联不会新建任何记录，也不会改动金额。</string>
+    <string name="cfx_yes">是这笔</string>
+    <string name="cfx_no">不是</string>
+    <string name="cfx_merge">合并</string>
+    <string name="cfx_double_text">看起来付了两次：你已把这笔账单标为已付，而这笔记录来自对账单。合并后只保留对账单的那笔。</string>
+    <string name="cfx_merged">%1$s：只保留了对账单的记录</string>
+    <string name="cfx_linked">%1$s 已关联到这笔付款</string>
+    <string name="cfx_other">不是，另记一笔付款</string>
+    <string name="cfx_card_button">去核对</string>
+    <string name="cfx_undo_text">如何处理 %1$s 的付款？</string>
+    <string name="cfx_undo_keep">只取消与账单的关联</string>
+    <string name="cfx_undo_delete">删除这笔记录</string>
+    <plurals name="cfx_found">
+        <item quantity="other">有 %1$d 行像是固定账单的付款：导入时会直接关联</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="other">Cryo 找到了 %1$d 笔像是固定账单付款的记录</item>
+    </plurals>
 </resources>

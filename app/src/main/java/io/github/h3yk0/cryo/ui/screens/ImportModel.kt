@@ -3,6 +3,7 @@
 package io.github.h3yk0.cryo.ui.screens
 
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.BillMatcher
 import io.github.h3yk0.cryo.domain.Res
 import android.net.Uri
 import androidx.compose.runtime.getValue
@@ -70,6 +71,8 @@ class ImportModel(
         /** Pagamento de fatura: o outro lado escolhido (ou nenhum). */
         val paired: Long? = null,
         val pairedSet: Boolean = false,
+        /** RF-CFX-02: a pessoa disse se a linha é (ou não é) o pagamento da conta fixa sugerida. */
+        val payBill: Boolean? = null,
     )
 
     var step: Step by mutableStateOf(Step.Pick)
@@ -268,7 +271,7 @@ class ImportModel(
         target = nt
         invert = inv
         autoInverted = inv
-        val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, nt, snap, lg.learnedCategories, inv, lg.categoryModel) } }
+        val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, nt, snap, lg.learnedCategories, inv, lg.categoryModel, alias = { d -> c.engineStore.billAlias(d) }) } }
         planned = result
         rows = result.map(::applyEdit)
         planning = false
@@ -295,7 +298,7 @@ class ImportModel(
         planning = true
         planJob = viewModelScope.launch {
             val snap = snapshot()
-            val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, t, snap, lg.learnedCategories, inv, lg.categoryModel) } }
+            val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, t, snap, lg.learnedCategories, inv, lg.categoryModel, alias = { d -> c.engineStore.billAlias(d) }) } }
             planned = result
             rows = result.map(::applyEdit)
             planning = false
@@ -332,6 +335,7 @@ class ImportModel(
         if (e.categoryId != null && e.categoryKind == kindOf(r.type)) r = r.copy(categoryId = e.categoryId)
         if (e.pairedSet && r.canBeInvoicePayment) r = r.copy(pairedId = e.paired)
         if (e.selected != null && e.selectedFlag == r.flag) r = r.copy(selected = e.selected)
+        if (e.payBill != null && r.bill != null) r = r.copy(payBill = e.payBill)
         return r
     }
 
@@ -357,7 +361,7 @@ class ImportModel(
      * [categoryKind]: de que tipo era a lista de categorias na tela (se a linha virou de tipo nesse meio-tempo,
      * a categoria escolhida não vale).
      */
-    fun saveRow(index: Int, description: String, categoryId: Long?, categoryKind: CategoryKind, paired: Long?, selected: Boolean) {
+    fun saveRow(index: Int, description: String, categoryId: Long?, categoryKind: CategoryKind, paired: Long?, selected: Boolean, payBill: Boolean? = null) {
         val row = rows.firstOrNull { it.index == index } ?: return
         edit(index) {
             it.copy(
@@ -368,6 +372,7 @@ class ImportModel(
                 categoryKind = if (categoryId != null) categoryKind else it.categoryKind,
                 paired = paired,
                 pairedSet = row.canBeInvoicePayment,
+                payBill = payBill ?: it.payBill,
             )
         }
     }
@@ -382,6 +387,9 @@ class ImportModel(
     val selectedUnpairedPayments: Int get() = rows.count { it.selected && it.canBeInvoicePayment && it.pairedId == null }
 
     val selectedCount: Int get() = rows.count { it.selected }
+
+    /** RF-CFX-02: linhas marcadas que são (ou parecem ser) pagamento de conta fixa. */
+    val billRows: Int get() = rows.count { it.selected && it.bill != null }
 
     /* ------------------------------------- importar ------------------------------------ */
 
@@ -398,6 +406,11 @@ class ImportModel(
                 val now = System.currentTimeMillis()
                 val txs = chosen.map { ImportPlanner.toTx(it, t, card, now, cards) }
                 val ids = c.repo.importTxs(txs)
+                // RF-CFX-04: o nome que o banco usa passa a valer para a conta fixa que a pessoa confirmou.
+                for (r in chosen) {
+                    val b = r.bill?.bill ?: continue
+                    if (r.payBill && !BillMatcher.sameName(b.name, r.line.description)) c.engineStore.learnBill(r.line.description, b.id)
+                }
                 c.lastImport.value = c.lastImport.value?.copy(imported = ids.size)
                 step = Step.Done(ids.size, ids, t)
             } catch (e: CancellationException) {

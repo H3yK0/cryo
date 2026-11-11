@@ -1847,4 +1847,33 @@
         <item quantity="one">Dans %1$d an</item>
         <item quantity="other">Dans %1$d ans</item>
     </plurals>
+    <!-- 1.9: contas fixas que se acertam com o extrato (RF-CFX) -->
+    <string name="cfx_row_pays">Facture fixe : %1$s (%2$s)</string>
+    <string name="cfx_row_maybe">Ressemble à la facture %1$s (%2$s) : touchez pour le dire</string>
+    <string name="cfx_row_already">Vous avez déjà marqué %1$s comme payée</string>
+    <string name="cfx_is_payment">C\'est le paiement de %1$s (%2$s)</string>
+    <string name="cfx_is_payment_hint">La facture est payée avec cette opération, sans en créer une autre.</string>
+    <string name="cfx_found_on">Trouvé dans le relevé le %1$s · confirmez</string>
+    <string name="cfx_confirm">Confirmer</string>
+    <string name="cfx_sheet_title">Est-ce le paiement ?</string>
+    <string name="cfx_sheet_text">Cryo a trouvé des opérations qui ressemblent aux paiements de vos factures fixes. Les lier ne crée rien et ne change aucun montant.</string>
+    <string name="cfx_yes">C\'est celui-ci</string>
+    <string name="cfx_no">Ce n\'est pas ça</string>
+    <string name="cfx_merge">Fusionner</string>
+    <string name="cfx_double_text">Semble payée deux fois : vous avez déjà marqué cette facture comme payée et cette opération vient du relevé. Fusionner ne garde que celle du relevé.</string>
+    <string name="cfx_merged">%1$s : seule l\'opération du relevé est gardée</string>
+    <string name="cfx_linked">%1$s liée à ce paiement</string>
+    <string name="cfx_other">Non, enregistrer un autre paiement</string>
+    <string name="cfx_card_button">Vérifier</string>
+    <string name="cfx_undo_text">Que faire du paiement de %1$s ?</string>
+    <string name="cfx_undo_keep">Seulement délier de la facture</string>
+    <string name="cfx_undo_delete">Supprimer l\'opération</string>
+    <plurals name="cfx_found">
+        <item quantity="one">%1$d ligne ressemble au paiement d\'une de vos factures : elle arrive déjà liée</item>
+        <item quantity="other">%1$d lignes ressemblent aux paiements de vos factures : elles arrivent déjà liées</item>
+    </plurals>
+    <plurals name="cfx_card_title">
+        <item quantity="one">Cryo a trouvé %1$d opération qui ressemble au paiement d\'une facture</item>
+        <item quantity="other">Cryo a trouvé %1$d opérations qui ressemblent à des paiements de factures</item>
+    </plurals>
 </resources>
