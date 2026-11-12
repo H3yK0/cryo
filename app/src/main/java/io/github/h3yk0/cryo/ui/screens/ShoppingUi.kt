@@ -99,6 +99,7 @@ fun ShoppingStartSheet(onDismiss: () -> Unit) {
                 onClick = {
                     onDismiss()
                     Shopping.start(ctx, cap, c.repo.snapshot.value)
+                    c.guideCount(io.github.h3yk0.cryo.domain.GuideCount.SHOPPING)
                     if (Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) ask.launch(Manifest.permission.POST_NOTIFICATIONS)
                 },
                 enabled = cap > 0, modifier = Modifier.fillMaxWidth().height(56.dp),

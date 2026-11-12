@@ -78,6 +78,7 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
     fun submit(t: String) {
         if (t.isBlank()) return
         draft = TxDraft.fromParsed(PhraseParser(l.parseContext(settings)).parse(t))
+        c.guideCount(io.github.h3yk0.cryo.domain.GuideCount.PHRASE)
         focus.clearFocus()
     }
 

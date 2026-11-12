@@ -446,6 +446,8 @@ fun MoneyActionSheet(
     onDismiss: () -> Unit,
     onConfirm: (amount: Long, accountId: Long?, date: LocalDate) -> Unit,
     amountLabel: String = Res.s(R.string.amount_label),
+    showDate: Boolean = true,
+    allowZero: Boolean = false,
 ) {
     var amount by remember { mutableLongStateOf(initialAmount) }
     var acc by remember { mutableStateOf(initialAccount ?: l.activeAccounts.firstOrNull()?.id) }
@@ -464,12 +466,14 @@ fun MoneyActionSheet(
                 FieldLabel(accountLabel)
                 AccountChips(l.activeAccounts, acc, { acc = it })
             }
-            FieldLabel(Res.s(R.string.wallet_data))
-            DateChooser(date, l.today, { date = it })
+            if (showDate) {
+                FieldLabel(Res.s(R.string.wallet_data))
+                DateChooser(date, l.today, { date = it })
+            }
             Spacer(Modifier.height(20.dp))
             CryoButton(
                 onClick = { onConfirm(amount, acc, date) },
-                enabled = amount > 0 && (accountLabel == null || acc != null),
+                enabled = (amount > 0 || allowZero && amount == 0L) && (accountLabel == null || acc != null),
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text(confirmLabel) }
             Spacer(Modifier.height(8.dp))
@@ -632,6 +636,7 @@ fun EditorScaffold(
 
 /* ================================ Cartão ================================ */
 
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
 fun CardDetailScreen(id: Long) {
     val l = rememberLedger() ?: return LoadingBox()
@@ -643,6 +648,7 @@ fun CardDetailScreen(id: Long) {
     val inv = l.invoice(card, ym)
     val st = inv.status(l.today)
     var paying by rememberSaveable { mutableStateOf(false) }
+    var adjusting by rememberSaveable { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -710,10 +716,13 @@ fun CardDetailScreen(id: Long) {
                 }
             }
             item {
-                Row(Modifier.padding(horizontal = 16.dp)) {
+                // RF-CAR-07 e RF-CAR-11: além da compra, o estorno (crédito na fatura) e o acerto do total com o do banco.
+                FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilledTonalButton(onClick = { nav.go(Routes.txNew(TxType.EXPENSE, card = id)) }) {
                         Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.wallet_nova_compra))
                     }
+                    OutlinedButton(onClick = { nav.go(Routes.txNew(TxType.INCOME, card = id)) }) { Text(Res.s(R.string.card_refund)) }
+                    OutlinedButton(onClick = { adjusting = true }) { Text(Res.s(R.string.card_adjust)) }
                 }
             }
             item { SectionTitle(Res.s(R.string.wallet_compras_desta_fatura), Modifier.padding(horizontal = 16.dp, vertical = 4.dp)) }
@@ -728,6 +737,25 @@ fun CardDetailScreen(id: Long) {
                 itemsIndexed(payments, key = { _, t -> "p${t.id}" }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true, modifier = Modifier.groupedRow(i, payments.size)) }
             }
         }
+    }
+    if (adjusting) {
+        MoneyActionSheet(
+            title = Res.s(R.string.card_adjust_title), subtitle = Res.s(R.string.card_adjust_hint),
+            initialAmount = inv.total.coerceAtLeast(0), l = l, accountLabel = null, initialAccount = null,
+            confirmLabel = Res.s(R.string.card_adjust), amountLabel = Res.s(R.string.card_adjust_amount),
+            showDate = false, allowZero = true,
+            onDismiss = { adjusting = false },
+            onConfirm = { amount, _, _ ->
+                adjusting = false
+                c.launch {
+                    // O ajuste fica dentro do período da fatura (o dia antes do fechamento), ou hoje se ela ainda está aberta.
+                    val day = minOf(l.today, inv.closing.minusDays(1))
+                    val made = c.repo.adjustInvoice(card, ym, inv.total, amount, day)
+                    if (made == null) c.message(Res.s(R.string.card_adjust_same))
+                    else c.message(Res.s(R.string.card_adjust_done, Money.format(amount)), Res.s(R.string.wallet_desfazer)) { c.repo.deleteTx(made) }
+                }
+            },
+        )
     }
     if (paying) {
         MoneyActionSheet(

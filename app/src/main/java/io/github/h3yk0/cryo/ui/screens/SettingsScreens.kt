@@ -39,6 +39,7 @@ import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.NotificationsActive
 import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.AutoStories
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Code
@@ -342,6 +343,8 @@ fun SettingsScreen() {
                 SettingsGroup {
                 // RF-AJU-11, RF-TOUR-03: o passeio animado, para ver de novo quando quiser.
                 SettingLink(Icons.Rounded.Explore, Res.s(R.string.tour_how_to_use), Res.s(R.string.tour_how_to_use_sub)) { nav.go(Routes.TOUR) }
+                // RF-GUI-06: a lista de tudo o que o Cryo faz e a chave das dicas.
+                SettingLink(Icons.Rounded.AutoStories, Res.s(R.string.learn_title), Res.s(R.string.learn_tips_hint)) { nav.go(Routes.LEARN) }
                 SettingLink(Icons.Rounded.Code, Res.s(R.string.settings_codigo_fonte), Res.s(R.string.settings_github_com_h3yk0_cryo)) {
                     openLink(ctx, SOURCE_URL)
                 }

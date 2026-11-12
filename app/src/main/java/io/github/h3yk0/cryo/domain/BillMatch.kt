@@ -145,28 +145,33 @@ object BillMatcher {
 
     /**
      * RF-CFX-07: os pagamentos que o Cryo reconhece sozinho (só os CERTOS: mesmo nome e mesmo valor), para a previsão e os
-     * avisos não contarem em dobro antes de a pessoa confirmar. Procura pelo valor primeiro (busca binária), para não
-     * comparar nomes em milhares de movimentações.
+     * avisos não contarem em dobro antes de a pessoa confirmar. Olha o valor primeiro e só compara nomes no que bate.
+     * Uma passada só, **sem ordenar nem copiar a lista**: o previsor refaz esta conta para vários meses do passado, e
+     * ordenar milhares de movimentações a cada vez estourava o limite de memória do motor (RF-MOT-15, `EngineResourcesTest`).
      */
     fun certain(bills: List<Bill>, txs: List<Tx>, paid: Set<Pair<Long, Int>>): Map<Pair<Long, Int>, Tx> {
         val active = bills.filter { it.active && it.amount > 0 }
         if (active.isEmpty()) return emptyMap()
-        val open = txs.filter(::eligible).sortedBy { it.amount }
-        if (open.isEmpty()) return emptyMap()
-        val lines = LinkedHashMap<Long, PayLine>()
-        val byId = HashMap<Long, Tx>()
-        for (b in active) {
-            val lo = (b.amount * (1 - EQUAL)).toLong()
-            val hi = (b.amount * (1 + EQUAL)).toLong() + 1
-            var i = open.binarySearchBy(lo) { it.amount }.let { if (it < 0) -it - 1 else it }
-            while (i > 0 && open[i - 1].amount >= lo) i--
-            while (i < open.size && open[i].amount <= hi) {
-                val t = open[i++]
-                if (sameName(b.name, t.description)) { lines[t.id] = line(t); byId[t.id] = t }
+        val lo = LongArray(active.size) { (active[it].amount * (1 - EQUAL)).toLong() }
+        val hi = LongArray(active.size) { (active[it].amount * (1 + EQUAL)).toLong() + 1 }
+        var lines: LinkedHashMap<Long, PayLine>? = null
+        var byId: HashMap<Long, Tx>? = null
+        for (t in txs) {
+            val a = t.amount
+            var named = false
+            for (i in active.indices) {
+                if (a < lo[i] || a > hi[i]) continue
+                if (!eligible(t)) break
+                if (sameName(active[i].name, t.description)) { named = true; break }
             }
+            if (!named) continue
+            (lines ?: LinkedHashMap<Long, PayLine>().also { lines = it })[t.id] = line(t)
+            (byId ?: HashMap<Long, Tx>().also { byId = it })[t.id] = t
         }
+        val found = lines ?: return emptyMap()
+        val owner = byId ?: return emptyMap()
         val out = HashMap<Pair<Long, Int>, Tx>()
-        for ((id, m) in assign(lines, active, paid)) if (m.level == MatchLevel.CERTAIN) out[m.bill.id to m.ym.key()] = byId.getValue(id)
+        for ((id, m) in assign(found, active, paid)) if (m.level == MatchLevel.CERTAIN) out[m.bill.id to m.ym.key()] = owner.getValue(id)
         return out
     }
 }

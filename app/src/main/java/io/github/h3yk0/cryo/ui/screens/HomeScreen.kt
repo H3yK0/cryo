@@ -87,6 +87,7 @@ import io.github.h3yk0.cryo.ui.components.categoryIcon
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
+import io.github.h3yk0.cryo.ui.components.guideTarget
 import io.github.h3yk0.cryo.ui.tx.QuickEntryBar
 import io.github.h3yk0.cryo.ui.tx.QuickEntryHint
 
@@ -131,7 +132,7 @@ fun HomeScreen() {
 
             item {
                 Column(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) {
-                    QuickEntryBar(l)
+                    QuickEntryBar(l, Modifier.guideTarget(io.github.h3yk0.cryo.domain.Lesson.PHRASE))
                     QuickEntryHint(Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp))
                 }
             }

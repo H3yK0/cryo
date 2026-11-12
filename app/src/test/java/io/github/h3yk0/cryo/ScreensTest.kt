@@ -93,6 +93,8 @@ class TestApp : Application() {
         LocaleSettings.install(systemBase)
         // As imagens mostram o app já em uso: a pergunta do horário do lembrete (RF-AVI-11) já foi respondida.
         io.github.h3yk0.cryo.notify.AlertState(this).reminderAsked = true
+        // RF-GUI-07: e o guia nasce desligado, para as imagens e os fluxos não ganharem uma dica por cima.
+        io.github.h3yk0.cryo.data.GuideStore(this).enabled = false
     }
 }
 

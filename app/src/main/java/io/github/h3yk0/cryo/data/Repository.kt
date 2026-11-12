@@ -164,8 +164,9 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     suspend fun saveTx(tx: Tx): Long = dao.putTx(tx)
 
     /** Compra no cartão, opcionalmente parcelada: cria uma movimentação por parcela, cada uma na sua fatura. */
-    suspend fun saveCardPurchase(base: Tx, card: CreditCard, installments: Int): Tx {
-        val first = CardMath.invoiceFor(card, base.date)
+    suspend fun saveCardPurchase(base: Tx, card: CreditCard, installments: Int, firstInvoice: YearMonth? = null): Tx {
+        // RF-CAR-10: a primeira fatura pode vir escolhida pela pessoa; as parcelas seguem dela em diante.
+        val first = firstInvoice ?: CardMath.invoiceFor(card, base.date)
         if (installments <= 1) {
             val t = base.copy(cardId = card.id, accountId = null, invoiceYm = first.key())
             return t.copy(id = dao.putTx(t))
@@ -248,6 +249,21 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         if (dao.countTxForCard(c.id) > 0) return false
         dao.deleteCard(c.id)
         return true
+    }
+
+    /**
+     * RF-CAR-11: acerta o total da fatura com o do banco. A diferença entra como um lançamento de ajuste nessa fatura
+     * (compra se faltava, crédito se sobrava), à vista no Extrato e apagável; nada é escondido nem reescrito.
+     * Devolve o ajuste criado, ou null se o total já era esse.
+     */
+    suspend fun adjustInvoice(card: CreditCard, ym: YearMonth, currentTotal: Long, bankTotal: Long, date: LocalDate): Tx? {
+        val diff = bankTotal - currentTotal
+        if (diff == 0L || bankTotal < 0) return null
+        val t = Tx(
+            type = if (diff > 0) TxType.EXPENSE else TxType.INCOME, amount = kotlin.math.abs(diff), date = date,
+            description = Res.s(R.string.card_adjust_name), cardId = card.id, invoiceYm = ym.key(),
+        )
+        return t.copy(id = saveTx(t))
     }
 
     suspend fun payInvoice(card: CreditCard, ym: YearMonth, amount: Long, accountId: Long, date: LocalDate) {

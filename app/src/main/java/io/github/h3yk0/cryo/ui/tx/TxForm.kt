@@ -43,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.FinanceRepository
 import io.github.h3yk0.cryo.data.db.CategoryKind
+import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.CardMath
@@ -52,6 +53,7 @@ import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.ParsedEntry
 import io.github.h3yk0.cryo.domain.key
 import io.github.h3yk0.cryo.domain.ym
+import io.github.h3yk0.cryo.domain.ymOf
 import io.github.h3yk0.cryo.domain.normalized
 import io.github.h3yk0.cryo.ui.components.AccountChips
 import io.github.h3yk0.cryo.ui.components.AmountField
@@ -84,15 +86,32 @@ class TxDraft(
     goalId: Long? = null,
     debtId: Long? = null,
     val original: Tx? = null,
+    invoiceYm: Int? = null,
 ) {
-    var type by mutableStateOf(type)
+    /**
+     * RF-CAR-10: a fatura em que o lançamento do cartão entra (ou, no pagamento, a fatura que ele quita). null = o Cryo
+     * decide pela data. Ao editar, começa na fatura em que o lançamento **já está** (ERR-044: mexer na categoria de uma
+     * compra importada não pode mudá-la de fatura); só volta a seguir a data quando a pessoa muda a data, o cartão ou o tipo.
+     */
+    var invoiceYm by mutableStateOf(invoiceYm)
+
+    private var typeState by mutableStateOf(type)
+    var type: TxType
+        get() = typeState
+        set(v) { if (v != typeState) invoiceYm = null; typeState = v }
     var amount by mutableLongStateOf(amount)
     var description by mutableStateOf(description)
     var categoryId by mutableStateOf(categoryId)
-    var source by mutableStateOf(source)
+    private var sourceState by mutableStateOf(source)
+    var source: Source?
+        get() = sourceState
+        set(v) { if (v != sourceState && typeState != TxType.CARD_PAYMENT) invoiceYm = null; sourceState = v }
     var toAccountId by mutableStateOf(toAccountId)
     var installments by mutableIntStateOf(installments)
-    var date by mutableStateOf(date)
+    private var dateState by mutableStateOf(date)
+    var date: LocalDate
+        get() = dateState
+        set(v) { if (v != dateState && typeState != TxType.CARD_PAYMENT) invoiceYm = null; dateState = v }
     var note by mutableStateOf(note)
     var investmentId by mutableStateOf(investmentId)
     var goalId by mutableStateOf(goalId)
@@ -100,11 +119,20 @@ class TxDraft(
 
     val isEditing get() = original != null
 
+    /** A fatura deste lançamento do cartão: a escolhida; senão a da parcela (que não segue a data); senão a da data. */
+    fun invoiceFor(card: CreditCard): java.time.YearMonth {
+        invoiceYm?.let { return ymOf(it) }
+        val o = original
+        if (o != null && o.installmentTotal > 1 && o.cardId == card.id && o.invoiceYm != null) return ymOf(o.invoiceYm)
+        return CardMath.invoiceFor(card, date)
+    }
+
     /** O que falta preencher (null = pode salvar). */
     fun problem(): String? = when {
         amount <= 0 -> Res.s(R.string.tx_informe_valor)
         type == TxType.EXPENSE && source == null -> Res.s(R.string.tx_escolha_onde_saiu_dinheiro)
-        type == TxType.INCOME && source !is Source.Acc -> Res.s(R.string.tx_escolha_qual_conta_entrou)
+        // RF-CAR-07: a receita pode entrar numa conta ou num cartão (estorno, que diminui a fatura).
+        type == TxType.INCOME && source == null -> Res.s(R.string.tx_escolha_qual_conta_entrou)
         type == TxType.TRANSFER && (source !is Source.Acc || toAccountId == null) -> Res.s(R.string.tx_escolha_duas_contas)
         type == TxType.TRANSFER && (source as? Source.Acc)?.id == toAccountId -> Res.s(R.string.tx_contas_precisam_ser_diferentes)
         (type == TxType.INVEST_IN || type == TxType.INVEST_OUT) && investmentId == null -> Res.s(R.string.tx_escolha_investimento)
@@ -126,9 +154,12 @@ class TxDraft(
 
         fun fromTx(t: Tx) = TxDraft(
             type = t.type, amount = t.amount, description = t.description, categoryId = t.categoryId,
-            source = if (t.type == TxType.EXPENSE && t.cardId != null) Source.Card(t.cardId) else t.accountId?.let { Source.Acc(it) },
+            // ERR-043: o crédito no cartão (estorno importado) continua no cartão ao editar; antes ele abria sem origem,
+            // o formulário exigia uma conta e o estorno saía da fatura para virar receita da conta.
+            source = if ((t.type == TxType.EXPENSE || t.type == TxType.INCOME) && t.cardId != null) Source.Card(t.cardId) else t.accountId?.let { Source.Acc(it) },
             toAccountId = t.toAccountId, installments = 1, date = t.date, note = t.note,
             investmentId = t.investmentId, goalId = t.goalId, debtId = t.debtId, original = t,
+            invoiceYm = if (t.cardId != null) t.invoiceYm else null,
         )
     }
 }
@@ -213,24 +244,25 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
         },
     )
     val saved: Tx
-    if (d.type == TxType.EXPENSE && cardId != null) {
+    if ((d.type == TxType.EXPENSE || d.type == TxType.INCOME) && cardId != null) {
+        // Compra ou estorno no cartão: fica no cartão, na fatura do rascunho (a escolhida, a que já tinha ou a da data).
         val card = l.card[cardId]!!
-        saved = if (o != null) {
-            val keepParcel = o.installmentTotal > 1 && o.cardId == cardId
-            val t = base.copy(
-                cardId = cardId, accountId = null,
-                invoiceYm = if (keepParcel) o.invoiceYm else CardMath.invoiceFor(card, d.date).key(),
-                installmentGroup = if (keepParcel) o.installmentGroup else null,
-                installmentNumber = if (keepParcel) o.installmentNumber else 0,
-                installmentTotal = if (keepParcel) o.installmentTotal else 0,
-            )
-            repo.saveTx(t); t
+        val invoice = d.invoiceFor(card)
+        saved = if (o == null && d.type == TxType.EXPENSE) {
+            repo.saveCardPurchase(base.copy(id = 0), card, d.installments, invoice)
         } else {
-            repo.saveCardPurchase(base.copy(id = 0), card, d.installments)
+            val keepParcel = o != null && d.type == TxType.EXPENSE && o.installmentTotal > 1 && o.cardId == cardId
+            val t = base.copy(
+                cardId = cardId, accountId = null, invoiceYm = invoice.key(),
+                installmentGroup = if (keepParcel) o?.installmentGroup else null,
+                installmentNumber = if (keepParcel) o?.installmentNumber ?: 0 else 0,
+                installmentTotal = if (keepParcel) o?.installmentTotal ?: 0 else 0,
+            )
+            t.copy(id = repo.saveTx(t))
         }
     } else {
         val t = base.copy(
-            invoiceYm = if (d.type == TxType.CARD_PAYMENT) o?.invoiceYm else null,
+            invoiceYm = if (d.type == TxType.CARD_PAYMENT) d.invoiceYm ?: o?.invoiceYm else null,
             installmentGroup = null, installmentNumber = 0, installmentTotal = 0,
         )
         saved = t.copy(id = repo.saveTx(t))
@@ -265,6 +297,22 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
         momentAfterSave(d, l, added, isNew = o == null)
     }.getOrNull()
     return SaveResult(alert, undo, summary, moment)
+}
+
+/** RF-CAR-10: as faturas vizinhas da sugerida ([center]), para escolher em qual o lançamento entra. */
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
+@Composable
+private fun InvoiceChips(label: String, center: java.time.YearMonth, selected: java.time.YearMonth, today: LocalDate, onSelect: (Int) -> Unit) {
+    val months = (listOf(center.minusMonths(1), center, center.plusMonths(1)) + selected).distinct().sorted()
+    FieldLabel(label)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        months.forEach { ym ->
+            FilterChip(
+                selected = ym == selected, onClick = { onSelect(ym.key()) },
+                label = { Text(if (ym.year == today.year) Dates.monthName(ym) else Dates.monthShortYear(ym)) },
+            )
+        }
+    }
 }
 
 /**
@@ -344,27 +392,33 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                 FieldLabel(if (d.type == TxType.EXPENSE) Res.s(R.string.plan_pago_com) else Res.s(R.string.plan_recebido_2))
                 SourceChips(
                     accounts = l.activeAccounts,
-                    cards = if (d.type == TxType.EXPENSE && d.debtId == null) l.activeCards else emptyList(),
+                    // RF-CAR-07: o estorno entra no cartão (diminui a fatura). Pagamento de dívida só sai de conta.
+                    cards = if (d.debtId == null) l.activeCards else emptyList(),
                     selected = d.source,
                     onSelect = { d.source = it },
                 )
                 val card = (d.source as? Source.Card)?.let { l.card[it.id] }
-                if (card != null && d.type == TxType.EXPENSE) {
-                    if (d.original == null) {
+                if (card != null) {
+                    if (d.type == TxType.EXPENSE && d.original == null) {
                         Spacer(Modifier.height(8.dp))
                         Stepper(
                             value = d.installments, onChange = { d.installments = it }, range = 1..24, label = Res.s(R.string.tx_parcelas),
                             format = { if (it == 1) Res.s(R.string.tx_vista) else "${it}x" },
                         )
                     }
-                    val inv = CardMath.invoiceFor(card, d.date)
-                    val per = if (d.installments > 1) Res.s(R.string.tx_1x, d.installments, Money.format(CardMath.split(d.amount, d.installments).last())) else ""
+                    // RF-CAR-10: o Cryo sugere a fatura pela data; a pessoa pode mudar (o banco fecha em dias que variam).
+                    val inv = d.invoiceFor(card)
+                    InvoiceChips(Res.s(R.string.tx_invoice_label), CardMath.invoiceFor(card, d.date), inv, l.today) { d.invoiceYm = it }
+                    val per = if (d.type == TxType.EXPENSE && d.installments > 1) Res.s(R.string.tx_1x, d.installments, Money.format(CardMath.split(d.amount, d.installments).last())) else ""
                     Text(
                         Res.s(R.string.tx_entra_fatura_vence, Dates.monthInSentence(inv), Dates.short(CardMath.dueDate(card, inv)), per),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 4.dp),
                     )
-                    if (d.original != null && d.original.installmentTotal > 1) {
+                    if (d.type == TxType.INCOME) {
+                        Text(Res.s(R.string.card_refund_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    if (d.type == TxType.EXPENSE && d.original != null && d.original.installmentTotal > 1) {
                         Text(
                             Res.s(R.string.tx_parcela_alteracoes_valem_so, d.original.installmentNumber, d.original.installmentTotal),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -427,6 +481,10 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                         Icon(Icons.Rounded.CreditCard, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(Res.s(R.string.home_card_title, l.cardName(cid)), style = MaterialTheme.typography.bodyMedium)
+                    }
+                    // RF-CAR-10: qual fatura este pagamento quita (o Cryo sugere; dá para mudar quando o banco diz outra).
+                    (d.invoiceYm ?: d.original.invoiceYm)?.let { paid ->
+                        InvoiceChips(Res.s(R.string.tx_invoice_paid_label), ymOf(d.original.invoiceYm ?: paid), ymOf(paid), l.today) { d.invoiceYm = it }
                     }
                 }
             }

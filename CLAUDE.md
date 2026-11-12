@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **10/11/2026**.
+Situação descrita aqui: **12/11/2026**.
 
 ---
 
@@ -49,6 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
+| 1.9 | 10 | **Pronta** (12/11/2026, PRD 6.19d), sem push, aguardando o teste do Hanry: contas fixas que se acertam com o extrato (RF-CFX), perfil (RF-PRF), guia "Aprender o Cryo" (RF-GUI), sons mais abafados e, do issue #3 de quem usa, estorno no cartão, escolha da fatura e ajustar o total (RF-CAR-07, 10, 11). Branch `versao-1.9` (a partir da 1.8). |
 | 1.8 | 9 | **Pronta** (10/11/2026, PRD 6.12b e 6.12c), sem push, aguardando o teste do Hanry: auditoria do código com as correções, **biblioteca de erros como lei** (`docs/ERROS.md`) e **previsor novo, feito do zero** (mês, categorias, investimentos) com as telas que explicam a conta. Branch `versao-1.8` (a partir da 1.7). |
 | 1.7 | 8 | **Pronta** (09/11/2026, PRD 6.19c), sem push, aguardando o teste do Hanry: avisos inteligentes estilo Duolingo, sons, momentos animados, painel do mês, botão de voz embaixo (One UI), modo compras ao vivo. Branch `versao-1.7` (a partir da 1.6). |
 | 1.6 | 7 | **Testada e aprovada pelo Hanry** (09/11/2026: "gostei pra caramba"; ~5 s no A55), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
@@ -178,32 +179,34 @@ código anterior. Todos os testes passam.
 - **Avisar o Hanry**: no Android 8–12, com o bloqueio ligado, não dá para tirar print do app (`FLAG_SECURE`); backup estragado agora é
   recusado com mensagem; num mês fora do padrão que nunca se repetiu, a 1.5 reagia mais depressa (o novo ganha no conjunto).
 
-### Continuar: a 1.9 (roteiro; a especificação completa está no PRD 6.19d)
+### O que a 1.9 traz (branch `versao-1.9`, a partir da 1.8)
 
-Pedido do Hanry (10/11/2026). Tudo no aparelho, **sem permissão nova e sem mudar o banco** (versão 4). Nesta ordem:
-
-1. **RF-CFX — contas fixas × extrato** (conserta número errado: fazer primeiro). Causa conferida: a importação não conhece contas
-   fixas (`importer/ImportPlan.kt` só compara valor + conta + 3 dias); "paga" = movimentação com `billId`/`billYm`. A linha
-   importada entra sem vínculo → conta fixa segue pendente, a previsão conta em dobro (`pendingBillsExpense` em
-   `domain/Analytics.kt`) e "Já paguei" depois cria uma segunda movimentação.
-   - Começar pela regra pura `BillMatcher` (em `importer/`, com testes JVM) e por RF-CFX-07 (previsão sem dobro: mexer em
-     `Ledger.billStatuses`/`forecast` com cuidado: o motor, as categorias e os avisos leem daí). Depois a conferência
-     (`ImportRow` ganha o casamento; `ImportModel` grava com `billId`), "Já paguei" (`Repository.markBillPaid`, mantendo a
-     transação do ERR-018), a tela "Organizar contas fixas" (`BillReconciler` puro + desfazer) e os apelidos por HMAC no `EngineStore`.
-   - Decisão do Hanry: o pagamento fica **na conta em que aconteceu** (a do extrato); e **criar a conta fixa depois** pergunta se os
-     lançamentos já existentes são ela (RF-CFX-08).
-   - Nomes: normalizar com `TxKey.of` (já tira números e pontuação). Parcelas (`installmentTotal > 1`) e `CARD_PAYMENT` não casam.
-2. **RF-PRF — perfil**: `HomeHeader` (`ui/components/Sections.kt`) troca a engrenagem pela bolinha clicável; rota nova `profile`
-   (entrar no catálogo de telas do PRD 5.2, senão `PrdConformanceTest.todaTelaEstaNoCatalogo` falha); ajustes novos `avatar` e
-   `avatarColor` no DataStore (`SettingsRepository`). Emoji = dado da pessoa (um grafema, `BreakIterator`), nunca texto do app.
-   **Foto própria** também (decisão do Hanry): seletor de fotos do Android (`PickVisualMedia`, sem permissão), cópia de 256 px na
-   área privada, fora do backup.
-   Folha de editar com campo de texto: usar `ModalBottomSheet` (o `AlertDialog` com campo trava o Robolectric).
-3. **RF-GUI — guia "Aprender o Cryo"**: `GuidePlanner` puro (molde: `AlertPlanner` + `AlertPlannerTest`), `GuideState` (molde:
-   `AlertState`), anfitrião no molde do `MomentHost`. **O `TestApp` precisa desligar o guia** (como faz com `reminderAsked`), senão
-   as telas de teste ganham um cartão por cima. Um destaque por vez; animação finita.
-4. Fechar: textos nas 10 línguas, imagens 86+, `versionCode 10` / `"1.9"`, changelogs (3 arquivos + 10 da loja), PRD (marcar feitos,
-   catálogo), `docs/ERROS.md` (os defeitos do item 1 viram `ERR-039+` com guarda), suíte inteira, APK de clone limpo. **Sem push.**
+- **Contas fixas × extrato** (RF-CFX, PRD 6.19d): `domain/BillMatch.kt` = `BillMatcher` (regra pura: CERTA = nome + valor igual, ou
+  apelido aprendido; PROVÁVEL = nome com outro valor, ou valor igual perto do vencimento) e `BillReconciler` (sugestões do mês e dos
+  3 anteriores). A importação liga a linha à conta fixa (`ImportRow.bill`/`payBill`, `ImportPlanner.withBills`); o `Ledger` trata o
+  casamento CERTO ainda não ligado como pago (`inferredBillPayments`, `BillStatus.inferred`), para a previsão e os avisos não
+  contarem em dobro; "Já paguei" (tela e notificação) liga ao que já existe antes de gravar; desfazer só apaga o que foi feito à
+  mão. `billYm = 0` sem `billId` = "a pessoa disse que não é conta fixa" (`BillMatcher.NOT_A_BILL`). Apelidos por HMAC no
+  `EngineStore` (`billAlias`, `learnBill`). Criar a conta fixa depois pergunta pelos lançamentos que já existem (`c.billReview`).
+- **Perfil** (RF-PRF): `ui/components/Avatar.kt` (letra, desenho, emoji ou foto; `Avatars.savePhoto` guarda 256 px em
+  `filesDir/avatar.jpg`, fora do backup), `ui/screens/ProfileScreens.kt` (rota `profile`); a bolinha do `HomeHeader` abre o painel
+  no lugar da engrenagem. Ajustes novos `avatar` e `avatarColor`.
+- **Guia "Aprender o Cryo"** (RF-GUI): `domain/Guide.kt` (18 lições em 6 degraus, `GuideFacts` só com quantidades, `GuidePlanner`
+  puro: no máximo 1 dica por dia e 3 por semana, a lição volta em 7 dias uma vez, 3 "Agora não" pausam 14 dias),
+  `data/GuideStore.kt` (SharedPreferences `cryo_guide`: só contagens e dias), `ui/components/Guide.kt` (`GuideHost` = o cartão acima
+  da barra, `GuideSpotlight` = o destaque, `Modifier.guideTarget`, `showLesson`), `ui/screens/LearnScreen.kt` (rota `learn`).
+  Contadores pelo `AppContainer.guideCount` (o modo de teste não conta nem recebe dicas).
+- **Cartão, a partir do issue #3** (RF-CAR-07 corrigido, RF-CAR-10, RF-CAR-11): a receita pode entrar num cartão (estorno, botão na
+  tela do cartão); `TxDraft.invoiceYm` guarda a fatura do lançamento: ao editar ela **fica onde está** e só volta a seguir a data
+  quando a data, o cartão ou o tipo mudam (os setters do rascunho zeram a escolha); "Fatura em que entra" e "Fatura que este
+  pagamento quita" no formulário; `FinanceRepository.adjustInvoice` lança a diferença para o total do banco como um ajuste à vista.
+- **Sons** (RF-SOM-01 revisto): kit refeito, abafado e grave (`tools/sons/make_sounds.py`, com `--medir` e `--ogg`).
+- **Auditoria**: ERR-040 a ERR-045 em `docs/ERROS.md` (previsão em dobro, conta paga à mão × extrato do cartão, desfazer que apagava
+  o importado, estorno que saía do cartão, compra que mudava de fatura ao editar, "Já paguei" da notificação sem olhar o extrato).
+- 106 textos novos nas 10 línguas. Nenhuma permissão nova; banco de dados continua na versão 4.
+- **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.9: agora dá para
+  devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
+  rascunho de resposta na entrega da 1.9; só o Hanry posta).
 
 ### Próximos passos imediatos
 
@@ -217,6 +220,10 @@ Pedido do Hanry (10/11/2026). Tudo no aparelho, **sem permissão nova e sem muda
 4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
 5. **1.6** (branch `versao-1.6`): testada e aprovada pelo Hanry no A55 (09/11/2026; ~5 s até a transcrição). **No lançamento**:
    a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em `docs/fdroid/1.6-receita.md`).
+6. **1.9** (branch `versao-1.9`, a partir da 1.8): pronta em 12/11/2026, APK entregue para o teste do Hanry. **Conferir no celular**:
+   importar um extrato com uma conta fixa (a linha vem como "Paga: ..."), o cartão "Conferir" em Planejar › Contas fixas, a foto do
+   perfil (seletor do Android), a primeira dica do guia (só depois de 2 minutos de uso e de um lançamento) e os sons novos.
+   Responder o issue #3 depois de publicar (as duas coisas pedidas estão na 1.9).
 6. **1.8** (branch `versao-1.8`, a partir da 1.7): pronta em 10/11/2026, APK entregue para o teste do Hanry. **Conferir no celular**:
    os cartões da previsão em Análises, Orçamentos e no investimento com os dados de verdade dele; se algum número parecer estranho,
    pedir o relatório anônimo (nunca o dado real) e medir no laboratório antes de mudar.
@@ -413,11 +420,14 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Momentos, ilustrações | `ui/components/Moments.kt`, `ui/components/Art.kt` |
 | Painel do mês (orçamento) | `ui/screens/BudgetMonthScreen.kt` |
 | Motor financeiro (previsão com faixa, recorrências, próximos meses, saúde, dívidas, rendimento) | `domain/engine/`, `ui/screens/EngineScreens.kt`, cartões em `InsightsScreen.kt` |
+| Contas fixas × extrato (1.9) | `domain/BillMatch.kt`, `importer/ImportPlan.kt` (`withBills`), `ui/screens/PlanScreens.kt` (`BillSuggestionsSheet`) |
+| Perfil (1.9) | `ui/components/Avatar.kt`, `ui/screens/ProfileScreens.kt` |
+| Guia "Aprender o Cryo" (1.9) | `domain/Guide.kt`, `data/GuideStore.kt`, `ui/components/Guide.kt`, `ui/screens/LearnScreen.kt` |
 | Proteção dos dados (cofre, HMAC, backup com senha) | `data/Vault.kt`, `data/BackupCrypto.kt`, `data/EngineStore.kt`, `ui/screens/SecurityUi.kt` |
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 790 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 940 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -439,6 +449,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.7): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
 | `MomentsTest`, `BudgetMonthTest`, `Screens17Test` | Momentos depois de salvar e o modo compras; remanejar só no mês e backup; imagens 71–81 (painel, avisos, momentos, compras, botão de voz, fonte em 200%) |
 | `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest`, `Screens18Test` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas; imagens 82–85 (previsão conferida, orçamentos, investimento, carteira) |
+| `BillMatchTest`, `BillFlowTest`, `ProfileTest`, `GuidePlannerTest`, `GuideFlowTest`, `CardFixTest`, `Screens19Test` | 1.9: o casador de contas fixas e a previsão sem dobro; importar, ligar, desligar, juntar e criar a conta fixa depois; o perfil (imagens 86–88); as regras do guia com datas inventadas e as telas dele (89–91); estorno, fatura mantida ao editar, escolha da fatura e ajustar total (92–94) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -449,7 +460,18 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 proposta da 1.7, 69–70 ilustrações, 71–81 telas da 1.7, 82–85 previsor da 1.8.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 proposta da 1.7, 69–70 ilustrações, 71–81 telas da 1.7, 82–85 previsor da 1.8, 86–88 perfil, 89–91 guia, 92–94 cartão (1.9).
+- **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
+  na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
+- **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
+  testar o guia, ligue a chave e ponha a primeira abertura no passado (`GuideFlowTest.guideOn`): nos 2 primeiros minutos ele não fala.
+- **`TxDraft`**: mudar `date`, `source` ou `type` zera `invoiceYm` (a fatura volta a seguir a data). Para testar a escolha da
+  fatura, escolha-a **depois** de mexer nesses campos.
+- **O `Ledger` é refeito para vários meses do passado** (o previsor confere a faixa em ~12 meses): nada do que ele calcula pode
+  ordenar ou copiar todas as movimentações. Um `sortedBy { it.amount }` no casador de contas fixas (cada comparação encaixota dois
+  `Long`) somou 8 MB e derrubou o `EngineResourcesTest`; a correção foi uma passada só, sem ordenar (`BillMatcher.certain`).
+- **Suíte inteira em lotes**: aqui o comando tem limite de 10 minutos; rode por letra inicial da classe
+  (`--tests 'io.github.h3yk0.cryo.E*'` etc.). O Gradle apaga os resultados a cada rodada: some os lotes à mão.
 - **Recebedor do manifesto** (`AlertActionReceiver`) não recebe `sendBroadcast` no Robolectric: os testes chamam `handle()` direto.
 - `FileProvider` funciona no Robolectric (a figurinha da notificação dá para conferir); `renderArt` precisa de `@GraphicsMode(NATIVE)`.
 - **Chaves de `LazyColumn`** com ids de tabelas diferentes colidem (categoria 1 e remanejamento 1): use prefixo (`"b$id"`, `"a$id"`).
@@ -523,6 +545,8 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
+- **1.9** (pronta em 12/11/2026, aguardando o teste do Hanry): contas fixas que se acertam com o extrato, perfil com desenho,
+  emoji ou foto, guia "Aprender o Cryo", sons mais abafados; do issue #3: estorno no cartão, escolha da fatura, ajustar o total.
 - **1.8** (pronta em 10/11/2026, aguardando o teste do Hanry): auditoria do código com as correções, biblioteca de erros como lei,
   previsor novo do zero (mês, categorias, investimentos) com a faixa conferida no passado e as telas que explicam a conta.
 - **1.7** (pronta em 09/11/2026, aguardando o teste do Hanry): avisos inteligentes com figurinhas animadas, modo compras ao vivo,
@@ -620,6 +644,16 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 - **Duas rentabilidades na tela do investimento** (1.8): a TIR ("Rendimento real", o que a pessoa ganhou, conta quando ela aportou)
   e a do investimento em si (Dietz modificado, usada na projeção). Elas podem diferir bastante (aportes grandes em meses ruins);
   por isso o texto da segunda diz "o investimento em si ... (sem contar quando você aportou)".
+- **Casamento de conta fixa em dois níveis** (1.9): só o CERTO (nome + valor igual, ou apelido confirmado) age sozinho; o PROVÁVEL
+  sempre pergunta. Ligar errado sozinho custaria mais confiança do que perguntar.
+- **"Não é conta fixa" guardado no próprio lançamento** (`billYm = 0`): não pede migração do banco, vai junto no backup e some
+  quando o lançamento some.
+- **Guia por regras, sem IA** (1.9): cada lição tem uma condição que dá para ler e testar; mesmo estado, mesma dica. O guia só
+  guarda contagens e dias, num arquivo à parte, e só conta o que nenhuma lição conseguiria deduzir dos dados.
+- **A fatura guardada manda** (1.9, issue #3): o banco fecha em dias que variam, então a regra da data é só uma sugestão. Editar não
+  recalcula; a pessoa escolhe a fatura quando precisa.
+- **"Ajustar total" é um lançamento à vista**, não um número escondido: quem olha a fatura vê o ajuste e pode apagá-lo; os totais
+  continuam sendo sempre a soma do que está lançado.
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 
@@ -645,8 +679,8 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
 4. **1.6**: **voz melhor e no aparelho** (feita e aprovada). **1.7**: avisos inteligentes, sons, momentos animados, alertas de
    orçamento, voz ao alcance do polegar (pronta, aguardando o teste). **1.8**: auditoria, biblioteca de erros e previsor novo
-   (pronta, aguardando o teste). **1.9** (proposta, PRD 6.19d): contas fixas que se acertam com o extrato, perfil, guia
-   "Aprender o Cryo". Depois: widgets na tela inicial; dívida quitada e última
+   (pronta, aguardando o teste). **1.9** (pronta, aguardando o teste, PRD 6.19d): contas fixas que se acertam com o extrato,
+   perfil, guia "Aprender o Cryo", cartão (estorno, fatura, ajustar total). Depois: widgets na tela inicial; dívida quitada e última
    parcela como momentos (RF-MOM-04).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 

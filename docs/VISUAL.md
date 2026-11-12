@@ -371,6 +371,17 @@ Investimento: "Se continuar como foi", sempre com a frase de que é o passado pr
 |---|---|---|
 | <img src="visual/previsao-conferida.png" width="220"><br>Previsão conferida | <img src="visual/orcamentos-fechamento.png" width="220"><br>Orçamentos: como fecha o mês | <img src="visual/investimento-projecao.png" width="220"><br>Se continuar como foi |
 
+**Perfil, guia e cartão (1.9)**: a bolinha do Início é um botão (48 dp) e abre o painel do perfil; "Todos os ajustes" fica à vista
+sem rolar. O guia fala pouco: um cartão acima da barra de abas, com o ícone do assunto, uma ou duas frases e dois botões
+("Me mostra" é o principal, `CryoButton`; "Agora não" é texto). O destaque escurece o resto e contorna o ponto com um anel na cor
+principal; um toque fecha. Em "Aprender o Cryo", o que a pessoa já usa ganha o visto na cor principal (nunca verde: verde é
+dinheiro que entra). Na tela do cartão, "Nova compra" continua sendo a ação cheia; "Estorno" e "Ajustar total" são contornadas.
+
+| | | |
+|---|---|---|
+| <img src="visual/perfil.png" width="220"><br>Perfil | <img src="visual/perfil-editar.png" width="220"><br>Editar perfil | <img src="visual/guia-dica.png" width="220"><br>Dica do guia |
+| <img src="visual/guia-destaque.png" width="220"><br>"Me mostra": o destaque | <img src="visual/aprender-o-cryo.png" width="220"><br>Aprender o Cryo | <img src="visual/cartao-estorno-ajuste.png" width="220"><br>Cartão: estorno e ajustar total |
+
 **Como usar o Cryo (passeio, 1.4)**: cada página anima a ilustração e para no quadro final (aqui, o final).
 
 | | | | | |

@@ -2,6 +2,18 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.9 — contas fixas que se acertam com o extrato, o seu perfil e um guia que ensina o Cryo
+
+- **As contas fixas agora se acertam com o extrato do banco**: ao importar, o Cryo reconhece a linha que paga uma conta fixa ("NETFLIX.COM 59,99" é a sua Netflix), liga a ela em vez de criar um segundo lançamento, e a conta fixa aparece como paga. A previsão do mês não conta mais essa conta duas vezes
+- **Arrumar o que já tinha sido importado**: Planejar › Contas fixas mostra as sugestões "pagamentos encontrados" e "pagas em dobro", um toque cada, sempre com desfazer. "Já paguei" agora procura o pagamento no extrato antes de criar outro (também pela notificação), e desfazer nunca apaga um lançamento importado
+- **Criar a conta fixa depois**: cadastre a conta fixa e o Cryo pergunta se os lançamentos que você já tem são ela. Ele também aprende o apelido que o banco usa ("DEB AUT CIA ENERG" = Luz), guardando só um código
+- **Estorno no cartão de crédito, à mão** (pedido de quem usa): botão **Estorno** na tela do cartão, ou escolha o cartão numa receita. O estorno diminui a fatura, e editar um estorno o mantém no cartão
+- **Total da fatura batendo com o banco** (pedido de quem usa): editar uma compra do cartão não a muda mais de fatura (antes a fatura era recalculada pela data, e compras importadas pulavam de mês). Agora dá para **escolher a fatura** de uma compra, de um estorno ou de um pagamento, e **Ajustar total** lança a diferença para o que o banco mostra como um ajuste à vista, que dá para apagar
+- **Seu perfil**: a bolinha do Início virou botão e abre o painel do perfil (no lugar da engrenagem). Use a sua inicial, um desenho do Cryo, um emoji ou **uma foto sua** (escolhida pelo seletor de fotos do Android, sem permissão nova; fica só neste celular)
+- **"Aprender o Cryo"**: um guia local que percebe o que você ainda não usa e mostra uma dica por vez, no máximo uma por dia e três por semana, com **Me mostra** (abre a tela certa e destaca o ponto) e **Agora não**. Uma lista com as 18 lições mostra o que você já usa. São regras simples rodando no celular, sem IA e sem sair dele; o guia só guarda contagens e datas
+- **Sons mais suaves**: o kit inteiro foi refeito, abafado e mais grave (como um trinco macio), com só um fio do cristal de gelo por cima
+- Nenhuma permissão nova e nenhuma mudança no banco de dados
+
 ## 1.8 — previsão nova, conferida no seu próprio passado
 
 - **Previsão nova, feita do zero** (continua toda no celular, sem modelo de IA): sete métodos simples olham o seu passado, cada um de um jeito, e o Cryo dá mais peso a quem teria acertado mais nos seus próprios meses anteriores. Nos testes com históricos inventados, a previsão do mês erra ~7% menos que a da 1.7, e até 57% menos para quem faz uma compra grande do mês

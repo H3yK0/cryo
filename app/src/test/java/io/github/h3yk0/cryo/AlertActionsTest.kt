@@ -79,6 +79,24 @@ class AlertActionsTest {
         assertEquals(12_990L, paid.single().amount)
     }
 
+    /** ERR-045 (RF-CFX-06): com o pagamento já no extrato, "Já paguei" na notificação liga a ele; não nasce um segundo. */
+    @Test fun jaPagueiComOPagamentoNoExtratoSoLiga() {
+        val acc = runBlocking { app.real.repo.saveAccount(Account(name = "Conta", color = 0)) }
+        val billId = runBlocking { app.real.repo.saveBill(Bill(name = "Internet", amount = 12_990, dueDay = today.dayOfMonth, startYm = 202601, accountId = acc)) }
+        // A linha do banco, importada antes de a pessoa tocar no aviso (que já estava na cortina).
+        val imported = runBlocking {
+            app.real.repo.saveTx(io.github.h3yk0.cryo.data.db.Tx(type = io.github.h3yk0.cryo.data.db.TxType.EXPENSE, amount = 12_990, date = today, description = "INTERNET FIBRA SA", accountId = acc, importKey = "a$acc|ofx.id:77"))
+        }
+        val ym = today.year * 100 + today.monthValue
+        send(AlertAction.PAID.name, Alert(AlertKind.BILL_DUE, "bill:$billId", "Internet", "", listOf(AlertAction.PAID), billId = billId, ym = ym))
+        waitFor { runBlocking { app.real.repo.loadOnce() }.txs.any { it.billId == billId } }
+        val txs = runBlocking { app.real.repo.loadOnce() }.txs
+        assertEquals("uma movimentação só", 1, txs.size)
+        assertEquals(imported, txs.single().id)
+        assertEquals(ym, txs.single().billYm)
+        assertEquals("a$acc|ofx.id:77", txs.single().importKey)
+    }
+
     @Test fun diaSemGastosERegistrarSalario() {
         runBlocking { app.real.repo.saveAccount(Account(name = "Conta", color = 0)) }
         send(AlertAction.NO_SPEND.name, Alert(AlertKind.DAILY, "daily", "", ""))

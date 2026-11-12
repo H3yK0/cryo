@@ -37,6 +37,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import io.github.h3yk0.cryo.R
+import io.github.h3yk0.cryo.domain.GuideCount
+import io.github.h3yk0.cryo.domain.GuidePlace
+import io.github.h3yk0.cryo.domain.Lesson
+import io.github.h3yk0.cryo.ui.components.guideTarget
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
@@ -151,6 +155,7 @@ object Routes {
     const val BUDGET_MONTH = "plan/budgets/month"
     const val ALERT_SETTINGS = "settings/alerts"
     const val PROFILE = "profile"
+    const val LEARN = "learn"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
@@ -185,6 +190,12 @@ class Navigator(private val nav: NavHostController) {
         popUpTo(nav.graph.findStartDestination().id) { saveState = true }
         launchSingleTop = true
     }
+
+    /**
+     * Volta para o Início fechando o que estiver aberto por cima, **sem guardar para restaurar**. (O [tab] para o Início
+     * guardaria as telas fechadas e as reabriria em seguida: é assim que a aba "lembra onde a pessoa estava".)
+     */
+    fun home() { nav.popBackStack(nav.graph.findStartDestination().id, inclusive = false) }
 
     /** Escolhe sozinho: rotas de aba abrem como aba; o resto empilha uma tela nova. */
     fun smart(route: String) = if (route.startsWith("plan") || route.startsWith("txs")) open(route) else go(route)
@@ -269,7 +280,30 @@ fun CryoRoot(openOnStart: String?) {
         }
     }
 
-    androidx.compose.runtime.CompositionLocalProvider(LocalNav provides navigator) {
+    // RF-GUI: os pontos que o guia sabe destacar e as poucas telas que ele conta (o que não dá para deduzir dos dados).
+    val guideSpots = remember { io.github.h3yk0.cryo.ui.components.GuideSpots() }
+    LaunchedEffect(currentPattern) {
+        when (currentPattern) {
+            Routes.TX_EDIT -> GuideCount.EDIT
+            Routes.CATEGORIES, Routes.CATEGORY_EDIT -> GuideCount.CATEGORIES
+            Routes.BUDGET_MONTH -> GuideCount.MONTH
+            Routes.DEBTS -> GuideCount.DEBTS
+            Routes.INSIGHTS -> GuideCount.INSIGHTS
+            Routes.HEALTH -> GuideCount.HEALTH
+            Routes.RECURRING -> GuideCount.RECURRING
+            Routes.IMPORT -> GuideCount.IMPORT
+            else -> null
+        }?.let(c::guideCount)
+    }
+    val guidePlace = when (currentPattern) {
+        Routes.HOME -> GuidePlace.HOME
+        Routes.TXS -> GuidePlace.TXS
+        Routes.PLAN -> GuidePlace.PLAN
+        Routes.INSIGHTS -> GuidePlace.INSIGHTS
+        else -> null
+    }
+
+    androidx.compose.runtime.CompositionLocalProvider(LocalNav provides navigator, io.github.h3yk0.cryo.ui.components.LocalGuideSpots provides guideSpots) {
         Scaffold(
             snackbarHost = { SnackbarHost(snackbar) },
             bottomBar = {
@@ -289,6 +323,7 @@ fun CryoRoot(openOnStart: String?) {
                 }
             },
         ) { pad ->
+          androidx.compose.foundation.layout.Box {
             NavHost(
                 navController = nav,
                 startDestination = Routes.HOME,
@@ -382,6 +417,7 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.WALLET_ARCHIVE) { WalletArchiveScreen() }
                 composable(Routes.SETTINGS) { SettingsScreen() }
                 composable(Routes.PROFILE) { io.github.h3yk0.cryo.ui.screens.ProfileScreen() }
+                composable(Routes.LEARN) { io.github.h3yk0.cryo.ui.screens.LearnScreen() }
                 composable(Routes.AUTO_BACKUP) { AutoBackupScreen() }
                 composable(
                     Routes.IMPORT,
@@ -417,8 +453,15 @@ fun CryoRoot(openOnStart: String?) {
                     )
                 }
             }
+            // RF-GUI-05: a dica sobe logo acima da barra de abas, por cima do conteúdo (como uma snackbar), sem travar a tela.
+            io.github.h3yk0.cryo.ui.components.GuideHost(
+                guidePlace, ready = ledger != null, blocked = askReminder,
+                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = pad.calculateBottomPadding()),
+            )
+          }
         }
         MomentHost(c.moments)
+        io.github.h3yk0.cryo.ui.components.GuideSpotlight(guideSpots)
         if (askReminder) ReminderTimeSheet(alertState.reminderMinutes, onDismiss = { askReminder = false; alertState.reminderAsked = true }) { m ->
             askReminder = false
             saveReminder(context, m)
@@ -466,6 +509,7 @@ private fun VoiceTabBar(currentPattern: String?, navigator: Navigator, onListen:
         Box(
             Modifier.align(Alignment.TopCenter)
                 .size(68.dp)
+                .guideTarget(Lesson.VOICE)
                 .pressScale(interaction, 0.92f)
                 .raised(CircleShape, primary, shadowColor = primary.copy(alpha = 0.42f), glow = 14.dp)
                 .combinedClickable(

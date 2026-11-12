@@ -28,6 +28,11 @@ import org.robolectric.annotation.GraphicsMode
 class AppFlowTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 
+    /** RF-GUI-07: o guia fica desligado nos fluxos (uma dica por cima mudaria o que estes testes procuram na tela). */
+    @org.junit.Before fun guideOff() {
+        io.github.h3yk0.cryo.data.GuideStore(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.app.Application>()).enabled = false
+    }
+
     private fun back() {
         rule.runOnUiThread { rule.activity.onBackPressedDispatcher.onBackPressed() }
         rule.waitForIdle()

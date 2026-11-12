@@ -2,6 +2,18 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.9 — bills that match your bank statement, your profile, and a guide that teaches Cryo
+
+- **Bills now match your bank statement**: when you import a statement, Cryo recognises the line that pays a bill ("NETFLIX.COM 59.99" is your Netflix bill), links it instead of creating a second entry, and the bill shows as paid. The month forecast no longer counts that bill twice
+- **Tidy up what was already imported**: Plan › Bills shows "payments found" and "paid twice" suggestions, one tap each, always with undo. "Paid" now looks for the payment in your statement before creating a new one (also from the notification), and undoing never deletes an imported entry
+- **Create the bill later**: add a bill and Cryo asks whether entries you already have are that bill. It also learns your bank's nickname for it ("DEB AUT CIA ENERG" = Electricity), keeping only a hash
+- **Credit card refunds, by hand** (requested by a user): a **Refund** button on the card screen, or choose the card for an income entry. A refund lowers the statement, and editing one keeps it on the card
+- **Card statement totals that match your bank** (requested by a user): editing a card purchase no longer moves it to another statement (it used to recalculate the statement from the date, so imported purchases jumped months). You can now **choose the statement** a purchase, refund or payment belongs to, and **Adjust total** records the difference to what your bank shows as a visible, deletable adjustment
+- **Your profile**: the circle on Home is now a button that opens a profile panel (it replaces the gear). Use your initial, a Cryo drawing, an emoji or **your own photo** (picked with Android's photo picker, no new permission; it stays on this phone only)
+- **"Learn Cryo"**: a local guide that notices what you have not used yet and shows one tip at a time, at most one a day and three a week, with **Show me** (it opens the right screen and highlights the spot) and **Not now**. A list with all 18 lessons shows what you already use. Plain rules running on your phone, no AI and nothing leaves it; the guide only stores counts and dates
+- **Softer sounds**: the whole kit was redone, muffled and lower (like a soft latch) with just a thread of the ice crystal on top
+- No new permissions and no database change
+
 ## 1.8 — a new forecast engine, checked against your own past
 
 - **New forecast engine, built from scratch** (still all on your phone, no AI model): seven simple methods each look at your past in a different way, and Cryo weighs them by how well each one would have predicted your own past months. In tests with invented histories, the month forecast makes ~7% smaller errors than 1.7, and up to 57% smaller for people who do one big monthly shop

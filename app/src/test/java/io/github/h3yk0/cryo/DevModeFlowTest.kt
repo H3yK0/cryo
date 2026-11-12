@@ -56,6 +56,11 @@ import java.time.LocalDateTime
 class DevModeFlowTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 
+    /** RF-GUI-07: o guia fica desligado nos fluxos (uma dica por cima mudaria o que estes testes procuram na tela). */
+    @org.junit.Before fun guideOff() {
+        io.github.h3yk0.cryo.data.GuideStore(androidx.test.core.app.ApplicationProvider.getApplicationContext<android.app.Application>()).enabled = false
+    }
+
     /** RF-PRF-02: os Ajustes abrem pela bolinha do perfil e por "Todos os ajustes". */
     private fun openSettings() {
         rule.onNodeWithContentDescription("Perfil e ajustes").performClick()

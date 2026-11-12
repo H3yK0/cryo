@@ -103,6 +103,7 @@ fun rememberVoiceLauncher(l: Ledger?): VoiceLauncher {
 
     fun listen() {
         if (l == null) return
+        c.guideCount(io.github.h3yk0.cryo.domain.GuideCount.VOICE)
         val engine = voiceSettings.engine
         val inApp = (engine == VoiceEngineKind.WHISPER && WhisperEngine.supported) || SystemListener.available(context)
         if (!inApp) return legacyListen()
@@ -113,7 +114,7 @@ fun rememberVoiceLauncher(l: Ledger?): VoiceLauncher {
 
     if (l != null) {
         draft?.let { d -> QuickConfirmSheet(d, l, onDismiss = { draft = null }, onSaved = { draft = null }) }
-        if (typing) TypeSheet(onDismiss = { typing = false }, onSend = { typing = false; submit(it) })
+        if (typing) TypeSheet(onDismiss = { typing = false }, onSend = { typing = false; c.guideCount(io.github.h3yk0.cryo.domain.GuideCount.PHRASE); submit(it) })
         if (askMic) MicPermissionSheet(onDismiss = { askMic = false }, onAllow = { micPermission.launch(Manifest.permission.RECORD_AUDIO) })
         listening?.let { kind -> VoiceSheet(l, kind, onDismiss = { listening = null }, onLegacy = { listening = null; legacyListen() }) }
     }

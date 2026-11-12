@@ -28,6 +28,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoStories
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Notifications
@@ -65,6 +66,7 @@ import io.github.h3yk0.cryo.data.AppSettings
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.domain.GoalArt
+import io.github.h3yk0.cryo.domain.GuidePlanner
 import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
@@ -94,6 +96,7 @@ fun ProfileScreen() {
     val lock by c.lockSettings.flow.collectAsState(initial = null)
     val autoBackup by c.autoBackup.flow.collectAsState(initial = null)
     var editing by rememberSaveable { mutableStateOf(false) }
+    val guide = rememberGuide()
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.prf_title), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
             Modifier.fillMaxSize().padding(pad),
@@ -143,6 +146,8 @@ fun ProfileScreen() {
             }
             item {
                 SettingsGroup {
+                    // RF-GUI-06: "Aprender o Cryo", com quanto a pessoa já conhece.
+                    SettingLink(Icons.Rounded.AutoStories, Res.s(R.string.learn_title), Res.s(R.string.learn_count, GuidePlanner.progress(guide.first, guide.second), GuidePlanner.total)) { nav.go(Routes.LEARN) }
                     SettingLink(Icons.Rounded.School, Res.s(R.string.tour_how_to_use), Res.s(R.string.prf_tour_hint)) { nav.go(Routes.TOUR) }
                 }
             }

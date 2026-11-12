@@ -81,6 +81,12 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
     /** RF-MOM: os momentos animados (um por vez). */
     val moments = io.github.h3yk0.cryo.ui.components.MomentBus()
 
+    /** RF-GUI-01: o caderninho do guia "Aprender o Cryo" (só contagens e dias, deste aparelho). */
+    val guide = io.github.h3yk0.cryo.data.GuideStore(app)
+
+    /** Conta um uso para o guia (uma chave de GuideCount). O modo de teste não conta: lá os dados são de mentira. */
+    fun guideCount(key: String) { if (!sandbox) guide.count(key) }
+
     /**
      * Depois de salvar um lançamento: o momento que ele provocou (com o som dele) ou o som de salvar (RF-SOM), e a mensagem
      * com "Desfazer".
