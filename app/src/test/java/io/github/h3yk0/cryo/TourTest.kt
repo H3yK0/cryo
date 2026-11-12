@@ -66,6 +66,14 @@ import java.time.LocalDate
 class TourTest {
     @get:Rule val rule = createComposeRule()
 
+    /** RF-PRF-02: os Ajustes abrem pela bolinha do perfil e por "Todos os ajustes". */
+    private fun openSettings() {
+        rule.onNodeWithContentDescription("Perfil e ajustes").performClick()
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("Todos os ajustes").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithText("Todos os ajustes").performClick()
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("Todos os ajustes").fetchSemanticsNodes().isEmpty() }
+    }
+
     private val titles = listOf("Registre em segundos", "Saiba como o mês vai terminar", "Cartões e parcelas sem susto", "Planeje e não esqueça nada", "Seus dados são seus")
 
     private fun waitText(t: String, ms: Long = 8000) =
@@ -115,7 +123,7 @@ class TourTest {
     @Test fun passeioPelosAjustes() {
         rule.setContent { Wrap { CryoRoot(null) } }
         waitText("Saldo em contas")
-        rule.onNodeWithContentDescription("Ajustes").performClick()
+        openSettings()
         rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Como usar o Cryo"))
         rule.onNodeWithText("Como usar o Cryo").performClick()
         waitText(titles[0])

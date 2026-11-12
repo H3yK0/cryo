@@ -119,7 +119,8 @@ fun HomeScreen() {
                 HomeHeader(
                     name = settings.userName, subtitle = Dates.longDate(l.today), hideValues = hide,
                     onToggleHide = { c.launch { c.settings.setHideValues(!hide) } },
-                    onSettings = { nav.go(Routes.SETTINGS) },
+                    onProfile = { nav.go(Routes.PROFILE) },
+                    avatar = { io.github.h3yk0.cryo.ui.components.ProfileAvatar(settings, 40.dp, onHeader = true) },
                 ) { BalanceBlock(l, onClick = { nav.go(Routes.WALLET) }) }
             }
 

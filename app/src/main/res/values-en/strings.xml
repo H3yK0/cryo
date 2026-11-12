@@ -1876,4 +1876,26 @@
         <item quantity="one">Cryo found %1$d transaction that looks like a bill payment</item>
         <item quantity="other">Cryo found %1$d transactions that look like bill payments</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">Profile</string>
+    <string name="prf_open">Profile and settings</string>
+    <string name="prf_edit">Edit profile</string>
+    <string name="prf_all_settings">All settings</string>
+    <string name="prf_all_settings_hint">Categories, backups, voice, language and the rest</string>
+    <string name="prf_lock">App lock</string>
+    <string name="prf_on">On</string>
+    <string name="prf_alerts_hint">Tone, the daily reminder and sounds</string>
+    <string name="prf_tour_hint">The 5-step tour, whenever you want to see it again</string>
+    <string name="prf_name">What should we call you</string>
+    <string name="prf_avatar">Your picture</string>
+    <string name="prf_kind_letter">Letter</string>
+    <string name="prf_kind_art">Drawings</string>
+    <string name="prf_kind_emoji">Emoji</string>
+    <string name="prf_kind_photo">Photo</string>
+    <string name="prf_emoji_label">One emoji from your keyboard</string>
+    <string name="prf_photo_pick">Choose photo</string>
+    <string name="prf_photo_remove">Remove photo</string>
+    <string name="prf_photo_hint">The photo stays on this device only: it is not in the backup, and Cryo asks for no permission to see your photos.</string>
+    <string name="prf_photo_failed">Could not open that photo</string>
+    <string name="prf_color">Colour</string>
 </resources>

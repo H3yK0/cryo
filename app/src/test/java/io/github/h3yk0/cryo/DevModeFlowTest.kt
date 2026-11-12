@@ -56,6 +56,14 @@ import java.time.LocalDateTime
 class DevModeFlowTest {
     @get:Rule val rule = createAndroidComposeRule<MainActivity>()
 
+    /** RF-PRF-02: os Ajustes abrem pela bolinha do perfil e por "Todos os ajustes". */
+    private fun openSettings() {
+        rule.onNodeWithContentDescription("Perfil e ajustes").performClick()
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("Todos os ajustes").fetchSemanticsNodes().isNotEmpty() }
+        rule.onNodeWithText("Todos os ajustes").performClick()
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("Todos os ajustes").fetchSemanticsNodes().isEmpty() }
+    }
+
     private val app get() = rule.activity.application as CryoApp
 
     private fun waitFor(ms: Long = 10_000, condition: () -> Boolean) = rule.waitUntil(ms) {
@@ -85,7 +93,7 @@ class DevModeFlowTest {
     @Test fun modoDeTesteNaoMexeNosDadosDeVerdade() {
         realData()
         waitText("Saldo em contas")
-        rule.onNodeWithContentDescription("Ajustes").performClick()
+        openSettings()
         waitText("Aparência")
         val version = "Cryo ${BuildConfig.VERSION_NAME}"
         rule.onNode(hasScrollAction()).performScrollToNode(hasText(version))
@@ -104,6 +112,8 @@ class DevModeFlowTest {
         waitFor(20_000) { app.container.sandbox && exists("Recriar os dados de exemplo") }
         assertTrue(runBlocking { app.container.repo.loadOnce().txs.size } > 50)
 
+        // Modo desenvolvedor → Ajustes → Perfil → Início (RF-PRF-02: os Ajustes abrem pelo perfil).
+        Espresso.pressBack()
         Espresso.pressBack()
         Espresso.pressBack()
         waitText("Modo de teste: dados de exemplo")
@@ -130,7 +140,7 @@ class DevModeFlowTest {
         app.real.lastImport.value = ImportReport("extrato-joao-silva.csv", sample.bytes.size.toLong(), LocalDateTime.of(2026, 10, 3, 14, 5), st)
         app.real.dev.enabled = true
         waitText("Saldo em contas")
-        rule.onNodeWithContentDescription("Ajustes").performClick()
+        openSettings()
         rule.onNode(hasScrollAction()).performScrollToNode(hasText("Dados de teste, arquivos de exemplo", substring = true))
         rule.onNodeWithText("Dados de teste, arquivos de exemplo", substring = true).performClick()
         waitText("Relatório da última leitura")
@@ -213,7 +223,7 @@ class DevModeFlowTest {
         try {
             // Um extrato de exemplo na conferência, com o diálogo "Sair da conferência?" aberto.
             app.container.pendingSample.value = SampleFiles.ofx(LocalDate.now())
-            rule.onNodeWithContentDescription("Ajustes").performClick()
+            openSettings()
             rule.onNode(hasScrollAction()).performScrollToNode(hasText("Importar extrato do banco"))
             rule.onNodeWithText("Importar extrato do banco").performClick()
             waitText("Conferir extrato")

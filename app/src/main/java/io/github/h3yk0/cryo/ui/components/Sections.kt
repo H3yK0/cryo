@@ -264,7 +264,9 @@ fun HomeHeader(
     subtitle: String,
     hideValues: Boolean,
     onToggleHide: () -> Unit,
-    onSettings: () -> Unit,
+    /** RF-PRF-02: a bolinha abre o perfil (no lugar da engrenagem que havia aqui). */
+    onProfile: () -> Unit,
+    avatar: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val dark = CryoTheme.colors.isDark
@@ -290,14 +292,21 @@ fun HomeHeader(
       CompositionLocalProvider(LocalContentColor provides onContainer) {
         Column(Modifier.statusBarsPadding().padding(start = SectionPadding, end = 8.dp, top = 8.dp, bottom = 24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // RF-PRF-02: a bolinha é o botão do perfil (48 dp de área de toque em volta dos 40 dp do desenho).
+                val open = stringResource(R.string.prf_open)
                 Box(
-                    Modifier.size(40.dp).clip(CircleShape).background(onContainer.copy(alpha = 0.16f)),
+                    Modifier.size(48.dp).clip(CircleShape).clickable(role = Role.Button, onClick = onProfile).semantics { contentDescription = open },
                     contentAlignment = Alignment.Center,
                 ) {
-                    // A inicial do nome, como nos apps de banco; sem nome, um ícone de pessoa.
-                    val initial = name.trim().firstOrNull()?.uppercaseChar()
-                    if (initial != null) Text(initial.toString(), style = MaterialTheme.typography.titleMedium)
-                    else Icon(Icons.Rounded.Person, null, modifier = Modifier.size(22.dp))
+                    if (avatar != null) avatar() else Box(
+                        Modifier.size(40.dp).clip(CircleShape).background(onContainer.copy(alpha = 0.16f)),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        // A inicial do nome, como nos apps de banco; sem nome, um ícone de pessoa.
+                        val initial = name.trim().firstOrNull()?.uppercaseChar()
+                        if (initial != null) Text(initial.toString(), style = MaterialTheme.typography.titleMedium)
+                        else Icon(Icons.Rounded.Person, null, modifier = Modifier.size(22.dp))
+                    }
                 }
                 Spacer(Modifier.width(12.dp))
                 Column(Modifier.weight(1f)) {
@@ -314,7 +323,6 @@ fun HomeHeader(
                         stringResource(if (hideValues) R.string.show_values else R.string.hide_values),
                     )
                 }
-                IconButton(onClick = onSettings) { Icon(Icons.Rounded.Settings, stringResource(R.string.settings)) }
             }
             Spacer(Modifier.height(20.dp))
             Column(Modifier.padding(end = 12.dp), content = content)

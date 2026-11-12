@@ -1876,4 +1876,26 @@
         <item quantity="one">Cryo a trouvé %1$d opération qui ressemble au paiement d\'une facture</item>
         <item quantity="other">Cryo a trouvé %1$d opérations qui ressemblent à des paiements de factures</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">Profil</string>
+    <string name="prf_open">Profil et réglages</string>
+    <string name="prf_edit">Modifier le profil</string>
+    <string name="prf_all_settings">Tous les réglages</string>
+    <string name="prf_all_settings_hint">Catégories, sauvegardes, voix, langue et le reste</string>
+    <string name="prf_lock">Verrouillage de l\'appli</string>
+    <string name="prf_on">Activé</string>
+    <string name="prf_alerts_hint">Le ton, le rappel du jour et les sons</string>
+    <string name="prf_tour_hint">La visite en 5 étapes, quand vous voulez la revoir</string>
+    <string name="prf_name">Comment vous appeler</string>
+    <string name="prf_avatar">Votre image</string>
+    <string name="prf_kind_letter">Lettre</string>
+    <string name="prf_kind_art">Dessins</string>
+    <string name="prf_kind_emoji">Emoji</string>
+    <string name="prf_kind_photo">Photo</string>
+    <string name="prf_emoji_label">Un emoji de votre clavier</string>
+    <string name="prf_photo_pick">Choisir une photo</string>
+    <string name="prf_photo_remove">Retirer la photo</string>
+    <string name="prf_photo_hint">La photo reste sur cet appareil : elle n\'est pas dans la sauvegarde et Cryo ne demande aucune permission pour voir vos photos.</string>
+    <string name="prf_photo_failed">Impossible d\'ouvrir cette photo</string>
+    <string name="prf_color">Couleur</string>
 </resources>

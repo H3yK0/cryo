@@ -1876,4 +1876,26 @@
         <item quantity="one">Cryo को %1$d लेन-देन मिला जो बिल का भुगतान लगता है</item>
         <item quantity="other">Cryo को %1$d लेन-देन मिले जो बिलों के भुगतान लगते हैं</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">प्रोफ़ाइल</string>
+    <string name="prf_open">प्रोफ़ाइल और सेटिंग</string>
+    <string name="prf_edit">प्रोफ़ाइल बदलें</string>
+    <string name="prf_all_settings">सभी सेटिंग</string>
+    <string name="prf_all_settings_hint">कैटेगरी, बैकअप, आवाज़, भाषा और बाकी सब</string>
+    <string name="prf_lock">ऐप लॉक</string>
+    <string name="prf_on">चालू</string>
+    <string name="prf_alerts_hint">लहजा, रोज़ का रिमाइंडर और आवाज़ें</string>
+    <string name="prf_tour_hint">5 चरणों का टूर, जब चाहें दोबारा देखें</string>
+    <string name="prf_name">आपको क्या कहकर बुलाएँ</string>
+    <string name="prf_avatar">आपकी तस्वीर</string>
+    <string name="prf_kind_letter">अक्षर</string>
+    <string name="prf_kind_art">चित्र</string>
+    <string name="prf_kind_emoji">इमोजी</string>
+    <string name="prf_kind_photo">फ़ोटो</string>
+    <string name="prf_emoji_label">कीबोर्ड से एक इमोजी</string>
+    <string name="prf_photo_pick">फ़ोटो चुनें</string>
+    <string name="prf_photo_remove">फ़ोटो हटाएँ</string>
+    <string name="prf_photo_hint">फ़ोटो सिर्फ़ इसी डिवाइस पर रहती है: बैकअप में नहीं जाती और Cryo आपकी फ़ोटो देखने की अनुमति नहीं माँगता।</string>
+    <string name="prf_photo_failed">वह फ़ोटो नहीं खुल सकी</string>
+    <string name="prf_color">रंग</string>
 </resources>

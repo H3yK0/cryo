@@ -7,6 +7,7 @@ import io.github.h3yk0.cryo.domain.Res
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.intPreferencesKey
 import androidx.datastore.preferences.core.longPreferencesKey
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
@@ -59,6 +60,10 @@ data class AppSettings(
     val onboardingDone: Boolean = false,
     val userName: String = "",
     val remindersEnabled: Boolean = true,
+    /** RF-PRF-01: a bolinha do perfil: "" (letra), "art:<chave>", "emoji:<grafema>" ou "photo:<carimbo>". */
+    val avatar: String = "",
+    /** A cor de fundo da bolinha (0 = a do tema). */
+    val avatarColor: Int = 0,
 )
 
 private val Context.dataStore by preferencesDataStore("settings")
@@ -78,6 +83,8 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
         val onboarding = booleanPreferencesKey("onboarding")
         val name = stringPreferencesKey("name")
         val reminders = booleanPreferencesKey("reminders")
+        val avatar = stringPreferencesKey("avatar")
+        val avatarColor = intPreferencesKey("avatar_color")
     }
 
     val flow: Flow<AppSettings> = store.data.map { p ->
@@ -90,6 +97,8 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
             onboardingDone = p[K.onboarding] ?: false,
             userName = p[K.name] ?: "",
             remindersEnabled = p[K.reminders] ?: true,
+            avatar = p[K.avatar] ?: "",
+            avatarColor = p[K.avatarColor] ?: 0,
         )
     }
 
@@ -100,6 +109,7 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
     suspend fun setHideValues(v: Boolean) = store.edit { it[K.hide] = v }
     suspend fun setOnboardingDone(v: Boolean) = store.edit { it[K.onboarding] = v }
     suspend fun setName(v: String) = store.edit { it[K.name] = v.trim() }
+    suspend fun setAvatar(value: String, color: Int) = store.edit { it[K.avatar] = value.take(64); it[K.avatarColor] = color }
     suspend fun setReminders(v: Boolean) = store.edit { it[K.reminders] = v }
     /** Volta todos os ajustes ao padrão. */
     suspend fun clear() = store.edit { it.clear() }

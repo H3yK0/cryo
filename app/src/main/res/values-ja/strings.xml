@@ -1839,4 +1839,26 @@
     <plurals name="cfx_card_title">
         <item quantity="other">固定費の支払いと思われる取引が%1$d件見つかりました</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">プロフィール</string>
+    <string name="prf_open">プロフィールと設定</string>
+    <string name="prf_edit">プロフィールを編集</string>
+    <string name="prf_all_settings">すべての設定</string>
+    <string name="prf_all_settings_hint">カテゴリ、バックアップ、音声、言語など</string>
+    <string name="prf_lock">アプリのロック</string>
+    <string name="prf_on">オン</string>
+    <string name="prf_alerts_hint">トーン、毎日のリマインダー、サウンド</string>
+    <string name="prf_tour_hint">5ステップのツアーをいつでも見直せます</string>
+    <string name="prf_name">呼び名</string>
+    <string name="prf_avatar">アイコン</string>
+    <string name="prf_kind_letter">文字</string>
+    <string name="prf_kind_art">イラスト</string>
+    <string name="prf_kind_emoji">絵文字</string>
+    <string name="prf_kind_photo">写真</string>
+    <string name="prf_emoji_label">キーボードの絵文字をひとつ</string>
+    <string name="prf_photo_pick">写真を選ぶ</string>
+    <string name="prf_photo_remove">写真を外す</string>
+    <string name="prf_photo_hint">写真はこの端末だけに保存されます。バックアップには入らず、写真へのアクセス許可も求めません。</string>
+    <string name="prf_photo_failed">その写真を開けませんでした</string>
+    <string name="prf_color">色</string>
 </resources>

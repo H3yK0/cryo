@@ -150,6 +150,7 @@ object Routes {
     const val DEBT_PLAN = "debts/plan"
     const val BUDGET_MONTH = "plan/budgets/month"
     const val ALERT_SETTINGS = "settings/alerts"
+    const val PROFILE = "profile"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
@@ -380,6 +381,7 @@ fun CryoRoot(openOnStart: String?) {
                 }
                 composable(Routes.WALLET_ARCHIVE) { WalletArchiveScreen() }
                 composable(Routes.SETTINGS) { SettingsScreen() }
+                composable(Routes.PROFILE) { io.github.h3yk0.cryo.ui.screens.ProfileScreen() }
                 composable(Routes.AUTO_BACKUP) { AutoBackupScreen() }
                 composable(
                     Routes.IMPORT,

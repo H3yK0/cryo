@@ -1876,4 +1876,26 @@
         <item quantity="one">Cryo encontró %1$d movimiento que parece el pago de una cuenta fija</item>
         <item quantity="other">Cryo encontró %1$d movimientos que parecen pagos de tus cuentas fijas</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">Perfil</string>
+    <string name="prf_open">Perfil y ajustes</string>
+    <string name="prf_edit">Editar perfil</string>
+    <string name="prf_all_settings">Todos los ajustes</string>
+    <string name="prf_all_settings_hint">Categorías, copias, voz, idioma y el resto</string>
+    <string name="prf_lock">Bloqueo de la app</string>
+    <string name="prf_on">Activado</string>
+    <string name="prf_alerts_hint">El tono, el recordatorio del día y los sonidos</string>
+    <string name="prf_tour_hint">El recorrido de 5 pasos, cuando quieras repasarlo</string>
+    <string name="prf_name">Cómo quieres que te llamemos</string>
+    <string name="prf_avatar">Tu imagen</string>
+    <string name="prf_kind_letter">Letra</string>
+    <string name="prf_kind_art">Dibujos</string>
+    <string name="prf_kind_emoji">Emoji</string>
+    <string name="prf_kind_photo">Foto</string>
+    <string name="prf_emoji_label">Un emoji de tu teclado</string>
+    <string name="prf_photo_pick">Elegir foto</string>
+    <string name="prf_photo_remove">Quitar la foto</string>
+    <string name="prf_photo_hint">La foto se queda solo en este dispositivo: no entra en la copia y Cryo no pide permiso para ver tus fotos.</string>
+    <string name="prf_photo_failed">No pude abrir esa foto</string>
+    <string name="prf_color">Color</string>
 </resources>

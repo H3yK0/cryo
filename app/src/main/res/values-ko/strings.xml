@@ -1839,4 +1839,26 @@
     <plurals name="cfx_card_title">
         <item quantity="other">고정 지출 납부로 보이는 내역 %1$d건을 찾았어요</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">프로필</string>
+    <string name="prf_open">프로필 및 설정</string>
+    <string name="prf_edit">프로필 수정</string>
+    <string name="prf_all_settings">모든 설정</string>
+    <string name="prf_all_settings_hint">카테고리, 백업, 음성, 언어 등</string>
+    <string name="prf_lock">앱 잠금</string>
+    <string name="prf_on">켜짐</string>
+    <string name="prf_alerts_hint">말투, 하루 알림, 소리</string>
+    <string name="prf_tour_hint">5단계 둘러보기를 언제든 다시 볼 수 있어요</string>
+    <string name="prf_name">어떻게 불러 드릴까요</string>
+    <string name="prf_avatar">내 아이콘</string>
+    <string name="prf_kind_letter">글자</string>
+    <string name="prf_kind_art">그림</string>
+    <string name="prf_kind_emoji">이모지</string>
+    <string name="prf_kind_photo">사진</string>
+    <string name="prf_emoji_label">키보드의 이모지 하나</string>
+    <string name="prf_photo_pick">사진 선택</string>
+    <string name="prf_photo_remove">사진 지우기</string>
+    <string name="prf_photo_hint">사진은 이 기기에만 저장돼요. 백업에 들어가지 않고, 사진 접근 권한도 요청하지 않아요.</string>
+    <string name="prf_photo_failed">그 사진을 열 수 없었어요</string>
+    <string name="prf_color">색</string>
 </resources>

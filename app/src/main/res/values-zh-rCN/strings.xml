@@ -1839,4 +1839,26 @@
     <plurals name="cfx_card_title">
         <item quantity="other">Cryo 找到了 %1$d 笔像是固定账单付款的记录</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">个人资料</string>
+    <string name="prf_open">个人资料和设置</string>
+    <string name="prf_edit">编辑资料</string>
+    <string name="prf_all_settings">全部设置</string>
+    <string name="prf_all_settings_hint">类别、备份、语音、语言等</string>
+    <string name="prf_lock">应用锁</string>
+    <string name="prf_on">已开启</string>
+    <string name="prf_alerts_hint">语气、每日提醒和声音</string>
+    <string name="prf_tour_hint">5 步导览，随时可以重看</string>
+    <string name="prf_name">怎么称呼你</string>
+    <string name="prf_avatar">你的头像</string>
+    <string name="prf_kind_letter">字母</string>
+    <string name="prf_kind_art">图案</string>
+    <string name="prf_kind_emoji">表情</string>
+    <string name="prf_kind_photo">照片</string>
+    <string name="prf_emoji_label">键盘里的一个表情</string>
+    <string name="prf_photo_pick">选择照片</string>
+    <string name="prf_photo_remove">移除照片</string>
+    <string name="prf_photo_hint">照片只保存在这台设备上：不进备份，Cryo 也不会申请查看照片的权限。</string>
+    <string name="prf_photo_failed">打不开这张照片</string>
+    <string name="prf_color">颜色</string>
 </resources>

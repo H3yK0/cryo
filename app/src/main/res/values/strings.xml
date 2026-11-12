@@ -2001,4 +2001,26 @@
         <item quantity="one">O Cryo achou %1$d movimentação que parece pagamento de uma conta fixa</item>
         <item quantity="other">O Cryo achou %1$d movimentações que parecem pagamentos das suas contas fixas</item>
     </plurals>
+    <!-- 1.9: perfil (RF-PRF) -->
+    <string name="prf_title">Perfil</string>
+    <string name="prf_open">Perfil e ajustes</string>
+    <string name="prf_edit">Editar perfil</string>
+    <string name="prf_all_settings">Todos os ajustes</string>
+    <string name="prf_all_settings_hint">Categorias, cópias, voz, idioma e o resto</string>
+    <string name="prf_lock">Bloqueio do app</string>
+    <string name="prf_on">Ligado</string>
+    <string name="prf_alerts_hint">O tom, o lembrete do dia e os sons</string>
+    <string name="prf_tour_hint">O passeio de 5 passos, quando quiser rever</string>
+    <string name="prf_name">Como quer ser chamado</string>
+    <string name="prf_avatar">Sua bolinha</string>
+    <string name="prf_kind_letter">Letra</string>
+    <string name="prf_kind_art">Desenhos</string>
+    <string name="prf_kind_emoji">Emoji</string>
+    <string name="prf_kind_photo">Foto</string>
+    <string name="prf_emoji_label">Um emoji do seu teclado</string>
+    <string name="prf_photo_pick">Escolher foto</string>
+    <string name="prf_photo_remove">Tirar a foto</string>
+    <string name="prf_photo_hint">A foto fica só neste aparelho: não entra no backup e o Cryo não pede permissão para ver suas fotos.</string>
+    <string name="prf_photo_failed">Não consegui abrir essa foto</string>
+    <string name="prf_color">Cor</string>
 </resources>

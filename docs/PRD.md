@@ -179,6 +179,7 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | TELA-PLANO-DIVIDAS | Plano para quitar as dívidas (RF-MOT-08) | `debts/plan` | `ui/screens/EngineScreens.kt` |
 | TELA-ORCAMENTO-MES | Painel geral dos gastos do mês: categorias com o limite deste mês, sem orçamento, remanejar e desfazer (RF-ORC-06) | `plan/budgets/month` | `ui/screens/BudgetMonthScreen.kt` |
 | TELA-AVISOS | Ajustes › Avisos e sons: tom, lembrete do dia, tipos com "Ver exemplo", sons (RF-AVI-08) | `settings/alerts` | `ui/screens/AlertScreens.kt` |
+| TELA-PERFIL | Painel do perfil: a bolinha (letra, desenho, emoji ou foto), atalhos e a situação do backup, do bloqueio e dos avisos; abre pela bolinha do Início (RF-PRF-01..04) | `profile` | `ui/screens/ProfileScreens.kt` |
 | TELA-BOAS-VINDAS | Apresentação inicial (sem rota: antes do app); inclui o passeio (RF-TOUR-02) | — | `ui/screens/Onboarding.kt`, `ui/screens/Tour.kt` |
 | TELA-BLOQUEIO | Cryo bloqueado (sem rota: no lugar do app) | — | `ui/screens/Onboarding.kt` (`LockScreen`) |
 
