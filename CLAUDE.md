@@ -49,7 +49,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.5 | 10 | **Pronta** (12/11/2026), sem push, aguardando o teste e o "pode publicar" do Hanry. **Junta tudo o que foi feito depois da 1.4** (decisão do Hanry, 12/11/2026): as versões de trabalho 1.5 a 1.5 nunca foram publicadas e viraram as **cinco etapas da 1.5**, descritas abaixo. `versionCode` 10 (os números de 6 a 9 foram só APKs de teste; não voltar atrás, para instalar por cima deles). Branch `versao-1.5`. |
+| 1.5 | 10 | **Pronta** (12/11/2026), sem push, aguardando o teste e o "pode publicar" do Hanry. **Junta tudo o que foi feito depois da 1.4** (decisão do Hanry, 12/11/2026): as versões de trabalho 1.5 a 1.9 nunca foram publicadas e viraram as **cinco etapas da 1.5**, descritas abaixo. `versionCode` 10 (os números de 6 a 9 foram só APKs de teste; não voltar atrás, para instalar por cima deles). Branch `versao-1.5`. |
 
 > **Numeração (decisão do Hanry, 12/11/2026).** A próxima versão pública é a **1.5** e ela junta tudo o que veio depois da 1.4.
 > O trabalho foi feito em cinco etapas, que na época tinham nome de versão mas nunca saíram: **etapa 1** (ícone, profundidade,
@@ -677,7 +677,7 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
 2. **1.5** (tudo o que veio depois da 1.4, numa versão só): pronta, aguardando o teste e o "pode publicar" do Hanry.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. Depois da 1.5 (a próxima será a 1.5): widgets na tela inicial; dívida quitada e última parcela como momentos (RF-MOM-04);
+4. Depois da 1.5 (a próxima será a 1.6): widgets na tela inicial; dívida quitada e última parcela como momentos (RF-MOM-04);
    as lições que ficaram fora do guia (esconder valores, transferir, calendário, backup com senha).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
