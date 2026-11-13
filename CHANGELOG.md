@@ -2,73 +2,53 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
-## 1.9 — bills that match your bank statement, your profile, and a guide that teaches Cryo
+## 1.5 — voice on your phone, a financial engine, smart alerts and bills that match your statement
 
-- **Bills now match your bank statement**: when you import a statement, Cryo recognises the line that pays a bill ("NETFLIX.COM 59.99" is your Netflix bill), links it instead of creating a second entry, and the bill shows as paid. The month forecast no longer counts that bill twice
-- **Tidy up what was already imported**: Plan › Bills shows "payments found" and "paid twice" suggestions, one tap each, always with undo. "Paid" now looks for the payment in your statement before creating a new one (also from the notification), and undoing never deletes an imported entry
+Everything built since 1.4, in one release. All of it still runs on your phone, with no internet.
+
+**New look**
+- **New icon**: the square C, now golden, with thickness and a thread of light
+- **Depth across the app**: soft cards on a grouped background, grouped lists, a main button with volume and a light vibration on touch
+- Cryo's own illustrations instead of keyboard emoji; large text (200%) checked on the main screens
+
+**Log faster**
+- **Voice understood on your phone** (Whisper, running locally; the audio never becomes a file): a live "echo" screen shows the words as you speak. It understands spoken numbers, corrections ("32, no, 35"), your own nicknames and several entries in one sentence. Phones that cannot run it use the phone's own offline recogniser
+- **The voice button sits in the middle of the bottom bar**, on every tab: tap to speak, **hold to type**
+
+**Understand your money**
+- **Financial engine**: finds what repeats by itself (salary, rent, subscriptions, a new price, a late payment), shows the next 3, 6 and 12 months, flags out-of-pattern and repeated charges, gives a financial health score (0–100, in six parts), the interest hidden in your debts with a plan to pay them off, the real return of your investments and when each goal gets there
+- **A month forecast whose range keeps its promise**: several simple methods, weighed by how well each one would have predicted your own past months. "Between X and Y, in 8 of 10 scenarios" is checked against your past before it is shown, and the forecast says what weighed most
+- **Budgets**: how each category should close the month and the chance of going over its limit, a monthly overview, and **moving budget between categories for this month only**
+- **Investments, "if it keeps going like before"**: where they could be in 1, 3 and 5 years with your usual contributions
+
+**Alerts that help and never nag**
+- **Smart alerts, one at a time**: a bill due tomorrow (with **Paid** and **Remind me tomorrow** right in the notification), a budget close to its limit, a card statement closing, payday, weekly and monthly summaries. At most one regular alert a day, at two times only
+- **Daily reminder** at the time you choose, only if you logged nothing that day
+- **Animated notifications** with a sticker drawn for each situation, and **shopping mode, live** (Android 16 Live Updates and the Now Bar on One UI 8)
+- **Celebration moments**: goal reached, budget at 80% or over (with a tip on where to cover it from), logging streaks, how last month closed
+- **Cryo's own sounds**, soft and muffled with a thread of ice crystal on top. They follow your phone's silent mode and can be turned off
+
+**Bills, cards and your bank statement**
+- **Bills match your bank statement**: when you import a statement, Cryo recognises the line that pays a bill ("NETFLIX.COM 59.99" is your Netflix bill), links it instead of creating a second entry, and the bill shows as paid. The forecast no longer counts that bill twice
+- **Tidy up what was already imported**: Plan › Bills shows "payments found" and "paid twice" suggestions, one tap each, always with undo. "Paid" looks for the payment in your statement before creating a new one, and undoing never deletes an imported entry
 - **Create the bill later**: add a bill and Cryo asks whether entries you already have are that bill. It also learns your bank's nickname for it ("DEB AUT CIA ENERG" = Electricity), keeping only a hash
 - **Credit card refunds, by hand** (requested by a user): a **Refund** button on the card screen, or choose the card for an income entry. A refund lowers the statement, and editing one keeps it on the card
-- **Card statement totals that match your bank** (requested by a user): editing a card purchase no longer moves it to another statement (it used to recalculate the statement from the date, so imported purchases jumped months). You can now **choose the statement** a purchase, refund or payment belongs to, and **Adjust total** records the difference to what your bank shows as a visible, deletable adjustment
-- **Your profile**: the circle on Home is now a button that opens a profile panel (it replaces the gear). Use your initial, a Cryo drawing, an emoji or **your own photo** (picked with Android's photo picker, no new permission; it stays on this phone only)
-- **"Learn Cryo"**: a local guide that notices what you have not used yet and shows one tip at a time, at most one a day and three a week, with **Show me** (it opens the right screen and highlights the spot) and **Not now**. A list with all 18 lessons shows what you already use. Plain rules running on your phone, no AI and nothing leaves it; the guide only stores counts and dates
-- **Softer sounds**: the whole kit was redone, muffled and lower (like a soft latch) with just a thread of the ice crystal on top
-- No new permissions and no database change
+- **Card statement totals that match your bank** (requested by a user): editing a card purchase no longer moves it to another statement. You can **choose the statement** a purchase, refund or payment belongs to, and **Adjust total** records the difference to what your bank shows as a visible, deletable adjustment
 
-## 1.8 — a new forecast engine, checked against your own past
+**Yours**
+- **Your profile**: the circle on Home is a button that opens a profile panel (it replaces the gear). Use your initial, a Cryo drawing, an emoji or **your own photo** (picked with Android's photo picker, no new permission; it stays on this phone only)
+- **"Learn Cryo"**: a local guide that notices what you have not used yet and shows one tip at a time, at most one a day and three a week, with **Show me** (it opens the right screen and highlights the spot) and **Not now**. A list with all 18 lessons shows what you already use. Plain rules running on your phone, no AI; the guide only stores counts and dates
 
-- **New forecast engine, built from scratch** (still all on your phone, no AI model): seven simple methods each look at your past in a different way, and Cryo weighs them by how well each one would have predicted your own past months. In tests with invented histories, the month forecast makes ~7% smaller errors than 1.7, and up to 57% smaller for people who do one big monthly shop
-- **The range keeps its promise**: "between X and Y, in 8 of 10 scenarios" is now checked against your past months before it is shown (in tests it held 80% of the time, up from 68%), and the card says how it went: "checked against your past: right in 10 of 12 months"
-- **The forecast explains itself**: what weighed most in the calculation, and whether this time of year usually costs you more (only when that repeated in the two previous years)
-- **Budgets**: each category shows how it should close the month and the chance of going over its limit; the "at this pace" warnings use the new forecast
-- **Investments, "if it keeps going like before"**: the return of the investment itself, its ups and downs, the biggest drop, where it could be in 1, 3 and 5 years with your usual contributions, and the chance of ending above what you put in. It is based on the past, never a promise
-- **Security and reliability fixes** from a full code review: a password-protected backup is never saved without protection; damaged or oversized backup files are refused with a clear message; spreadsheet export no longer runs formulas typed in descriptions; a fingerprint sensor error only unlocks phones that have no screen lock; on Android 8 to 12, screenshots of Cryo are blocked while the lock is on; huge amounts no longer wrap around into other numbers; tapping "Paid" twice records one payment; deleting a category also removes its monthly budget moves; each notification opens its own screen; with the lock on, closing Cryo and opening it again always asks to unlock (before, not within the first minute), and turning the lock on now confirms it with your fingerprint, face or phone password
-- No new permissions and no database change
+**Protected**
+- **Password-protected backups** (optional, AES-256): the password is asked for when restoring and is never stored. Reminders show no name or amount on the lock screen
+- **A firmer lock**: every fresh start asks to unlock, and turning the lock on confirms it once. On Android 8 to 12, the app is hidden from screenshots and recent apps while the lock is on
+- **Fixes from a full code review**: a protected backup is never saved without protection, damaged or oversized backup files are refused with a clear message, and the spreadsheet export no longer runs formulas typed into descriptions
+- Every bug fixed so far now has a test that fails if it comes back (about 940 automated tests)
 
-## 1.7 — smart alerts, sounds and the voice button within thumb reach
-
-- **The voice button now sits in the middle of the bottom bar**, on every tab, where your thumb reaches (like Samsung's One UI): tap to speak, **hold to type**. The phrase field on Home is now for typing only
-- **Smart alerts, one at a time**: a bill due tomorrow (with **Paid** and **Remind me tomorrow** right in the notification), a budget close to or over its limit, a category on pace to go over, a card statement closing tomorrow, payday ("Log salary" with the usual amount), a late salary, a subscription that got more expensive, a duplicate charge, unusual spending, a balance about to go negative, a goal almost reached, a last installment, a better financial health score, your week on Sunday and how the month closed
-- **Never annoying**: at most one regular alert a day, only at two times (morning and your reminder time), nothing for new users besides bills; types you keep dismissing come less often. Everything is calculated on your phone
-- **Daily reminder at the time you choose** (Cryo asks once): only if you logged nothing that day, with **No-spend day** and **Log** buttons
-- **Animated notifications**: each alert comes as a message from Cryo with an animated sticker drawn for the situation (Android plays animations only in this conversation style). No keyboard emoji anywhere: all images are Cryo's own
-- **Shopping mode, live**: "Going shopping, up to $300" shows a live notification with how much is gone and how much is left (Android 16 Live Updates and the Now Bar on One UI 8)
-- **Celebration moments**: goal reached (full screen, with ice crystals), budget at 80% or over (the bar crosses the line and the card shakes, with a tip on where to cover it from), logging streaks (3, 7, 14, 30... days) and how last month closed
-- **Monthly spending overview** with every budgeted category, plus categories without a budget; **move budget between categories for this month only**, with undo
-- **Cryo's own sounds** ("ice crystal" sounds made from scratch): saving, money in, warnings, achievements, voice start and end. They always follow your phone's silent mode and can be turned off
-- **Settings › Alerts and sounds**: Friendly or Discreet tone, the reminder time, each alert type with **See example**, and sounds
-- **Voice**: the "go ahead" sound is no longer recorded together with what you say; developer mode shows the timing and has an experimental faster mode to test
-- Large text (200%) checked on the main screens
-- Database version 4 (monthly budget moves, no-spend days, goal illustrations); old backups still open, and goals get the illustration matching their old emoji
-- New permission: **promoted notifications** (Android 16 live updates; it asks you nothing)
-
-## 1.6 — voice, understood on your phone
-
-- **Voice entry inside Cryo, with Whisper** (an open speech-recognition model, built into the app): what you say is understood on the phone itself, with no internet. The audio only lives in memory and is erased right away; Cryo still has no internet permission
-- **Words appear while you speak**, with an echo animation: the microphone grows with your voice, each syllable sends out a ring, and what Cryo understood (amount, category, card, date) pops up as little cards. It stops by itself when you stop talking
-- **Knows your names**: your accounts, cards, categories and goals help it hear right ("Roxo", "Pet Shop")
-- **Understands the way people talk** (Portuguese first): "dezoito e noventa" or "18 e 90" = 18.90, "trinta e dois e cinquenta", "cento e vinte", "dois mil e quinhentos", "conto", nicknames like "roxinho" for your "Roxo" card
-- **Several entries at once**: "lunch 30 and uber 15" becomes two entries to check; the card or date said once counts for all
-- **Spoken corrections**: "32, no, 35" keeps 35
-- Choose the recognizer in Settings › Quick entry › Speech recognition: Whisper (default) or your phone's own (on-device). Phones that can't run Whisper use the phone's recognizer
-- The app is bigger (about 65 MB) because the voice model comes inside it
-- New permission: **microphone**, asked only the first time you tap the mic, with an explanation
-
-## 1.5 — financial engine, protected backups and a new look
-
-- **Financial engine on your phone** (all offline): the end-of-month forecast now shows a range and the chance of ending in the red, from 2,000 scenarios simulated with your own history, and makes ~38% smaller errors than before when tested against past months
-- **Recurring payments found automatically**: salary, rent, subscriptions; Cryo warns when one gets more expensive or when your salary is late, and turns them into bills with one tap
-- **Coming months**: your balance day by day for 3, 6 or 12 months, with card bills, installments, bills and debts, the tightest day and the chance of going negative
-- **Financial health score** (0 to 100) in 6 explained parts, with what to do to improve; **out of the ordinary** spending and **repeated charges**; category pace ("at this pace, Food goes over the limit around day 24") and smarter budget suggestions
-- **Debts**: the interest built into each debt, a payoff plan (highest interest first or smallest debt first) with how much you save, and the fair price to pay installments early
-- **Investments**: real yearly return counting each deposit on its date, optionally compared with inflation; **goals** show when you'll get there
-- **Learned categories**: Cryo learns how you categorize and helps when importing statements and logging by phrase
-- **Password-protected backups** (optional, AES-256, key kept in Android's secure keystore); bill reminders show no names or amounts on the lock screen
-- 500 extra guarantee tests (stability, scalability, performance, resources and security)
-- **New icon**: the square C is now gold, with thickness and a touch of light, on the same Cryo blue. The little star is gone. Chosen by comparing 11 designs with research on visual attention
-- **Depth across the app**: content sits on cards with soft shadows over a "grouped" background, like the best iPhone apps; the Home header uses the icon's gradient; shortcuts and the main button have volume and shrink with a spring when touched
-- **Grouped lists**: each day in Activity, a card's bill and the account history form a single card; Settings is grouped like the iPhone's
-- **Haptic feedback**: confirming, switching on and off, changing tabs and segments. It follows your phone's "touch vibration" setting and needs no new permission
-- Cryo's icon shows up inside the app (welcome, lock screen and About)
+**Good to know**
+- New permissions: **microphone** (asked only on your first tap on the voice button) and **promoted notifications** (Android 16 live updates; it asks you nothing). Still no internet permission
+- The app grows from about 6 MB to about 65 MB, because the speech model ships inside it
+- Database version 4 (monthly budget moves, no-spend days, goal illustrations); old backups still open
 
 ## 1.4 — 10 languages, currencies and a new look
 

@@ -1,1 +1,0 @@
-Voce capita sul telefono, con Whisper dentro l'app e senza internet: le parole compaiono mentre parli, con un'animazione a eco. Più movimenti in una frase, correzioni a voce, e riconosce i nomi dei tuoi conti e carte. L'audio viene cancellato subito. Nuovo permesso: microfono. L'app è più grande (~65 MB) per il modello vocale.

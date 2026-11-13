@@ -245,7 +245,7 @@ Estão em `ui/components/` (Common.kt, Inputs.kt, Charts.kt, Sections.kt, Motion
 | `ColorChooser` / `IconChooser` / `EmojiChooser` | Personalizar itens | Círculos selecionáveis |
 | Gráficos (`Charts.kt`) | Ver seção 8 | Desenhados à mão em Canvas, sem biblioteca; `ForecastChart` mostra a faixa do motor (1.5) |
 
-### 6.1 Tela de eco (voz, 1.6)
+### 6.1 Tela de eco (voz, 1.5)
 
 A folha de voz (`ui/tx/VoiceSheet.kt`, RF-VOZ-08) segue o protótipo aprovado pelo Hanry em 09/11/2026:
 
@@ -262,7 +262,7 @@ A folha de voz (`ui/tx/VoiceSheet.kt`, RF-VOZ-08) segue o protótipo aprovado pe
   R$ 45,00"), "Ajustar" e "Falar de novo".
 - "Remover animações": sem anéis, e palavras e cartõezinhos já no lugar. Imagens 58–62.
 
-### 6.2 Barra com voz, ilustrações e momentos (1.7)
+### 6.2 Barra com voz, ilustrações e momentos (1.5)
 
 - **Barra de baixo com o botão de voz no centro** (RF-ALC-01): 2 abas de cada lado; o botão tem 68 dp, a cor principal com
   volume (`raised`) e sobe 22 dp acima da linha da barra; o conteúdo continua por baixo dessa parte. Tocar = falar, segurar =
@@ -361,7 +361,7 @@ cenários). A nota de saúde usa verde (Bem/Ótima), âmbar (Em construção) e 
 |---|---|---|
 | <img src="visual/saude-financeira.png" width="220"><br>Saúde financeira | <img src="visual/recorrencias.png" width="220"><br>O que se repete | <img src="visual/plano-dividas.png" width="220"><br>Plano para quitar |
 
-**Previsor (1.8)**: toda previsão diz de onde veio e se já foi conferida ("Conferida no seu passado: acertou em 10 de 12 meses").
+**Previsor (1.5)**: toda previsão diz de onde veio e se já foi conferida ("Conferida no seu passado: acertou em 10 de 12 meses").
 Os modelos aparecem com nomes do dia a dia ("a média dos últimos 3 meses", "este trecho do mês, nos meses passados"), nunca com o
 nome técnico, e só os que pesaram 15% ou mais. Chance de passar do limite só aparece a partir de 5%, e em âmbar só a partir de 50%.
 Investimento: "Se continuar como foi", sempre com a frase de que é o passado projetado, não promessa; a rentabilidade da projeção é
@@ -371,7 +371,7 @@ Investimento: "Se continuar como foi", sempre com a frase de que é o passado pr
 |---|---|---|
 | <img src="visual/previsao-conferida.png" width="220"><br>Previsão conferida | <img src="visual/orcamentos-fechamento.png" width="220"><br>Orçamentos: como fecha o mês | <img src="visual/investimento-projecao.png" width="220"><br>Se continuar como foi |
 
-**Perfil, guia e cartão (1.9)**: a bolinha do Início é um botão (48 dp) e abre o painel do perfil; "Todos os ajustes" fica à vista
+**Perfil, guia e cartão (1.5)**: a bolinha do Início é um botão (48 dp) e abre o painel do perfil; "Todos os ajustes" fica à vista
 sem rolar. O guia fala pouco: um cartão acima da barra de abas, com o ícone do assunto, uma ou duas frases e dois botões
 ("Me mostra" é o principal, `CryoButton`; "Agora não" é texto). O destaque escurece o resto e contorna o ponto com um anel na cor
 principal; um toque fecha. Em "Aprender o Cryo", o que a pessoa já usa ganha o visto na cor principal (nunca verde: verde é

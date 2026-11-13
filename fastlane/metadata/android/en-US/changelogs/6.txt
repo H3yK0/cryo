@@ -1,1 +1,0 @@
-Financial engine, all offline: month forecast with a range and the chance of ending in the red; salary, rent and subscriptions found automatically; your balance for the next 12 months; a financial health score; unusual or repeated charges; debt payoff plan; real investment returns. Password-protected backups (AES-256). New gold icon and depth across the app, with haptic feedback.

@@ -2,73 +2,53 @@
 
 [English](../CHANGELOG.md) · **Português**
 
-## 1.9 — contas fixas que se acertam com o extrato, o seu perfil e um guia que ensina o Cryo
+## 1.5 — voz no celular, motor financeiro, avisos inteligentes e contas fixas que se acertam com o extrato
 
-- **As contas fixas agora se acertam com o extrato do banco**: ao importar, o Cryo reconhece a linha que paga uma conta fixa ("NETFLIX.COM 59,99" é a sua Netflix), liga a ela em vez de criar um segundo lançamento, e a conta fixa aparece como paga. A previsão do mês não conta mais essa conta duas vezes
-- **Arrumar o que já tinha sido importado**: Planejar › Contas fixas mostra as sugestões "pagamentos encontrados" e "pagas em dobro", um toque cada, sempre com desfazer. "Já paguei" agora procura o pagamento no extrato antes de criar outro (também pela notificação), e desfazer nunca apaga um lançamento importado
+Tudo o que foi feito depois da 1.4, numa versão só. Continua tudo rodando no seu celular, sem internet.
+
+**Visual novo**
+- **Ícone novo**: o C quadrado, agora dourado, com espessura e um fio de luz
+- **Profundidade em todo o app**: cartões suaves sobre um fundo agrupado, listas agrupadas, botão principal com volume e uma vibração leve ao toque
+- Ilustrações do próprio Cryo no lugar dos emojis de teclado; fonte grande (200%) conferida nas telas principais
+
+**Anotar mais depressa**
+- **Voz entendida no próprio celular** (Whisper, rodando no aparelho; o áudio nunca vira arquivo): uma tela de "eco" mostra as palavras enquanto você fala. Entende números por extenso, correções ("32, não, 35"), os seus apelidos e vários lançamentos numa frase só. Celulares que não conseguem rodá-lo usam o reconhecedor do próprio aparelho, sem internet
+- **O botão de voz fica no meio da barra de baixo**, em todas as abas: tocar = falar, **segurar = escrever**
+
+**Entender o seu dinheiro**
+- **Motor financeiro**: descobre sozinho o que se repete (salário, aluguel, assinaturas, preço novo, atraso), mostra os próximos 3, 6 e 12 meses, aponta o que está fora do padrão e cobranças repetidas, dá a nota da saúde financeira (0 a 100, em seis partes), os juros embutidos nas dívidas com um plano para quitar, o rendimento real dos investimentos e quando cada meta chega lá
+- **Previsão do mês com uma faixa que cumpre o que promete**: vários métodos simples, pesados por quanto cada um teria acertado nos seus próprios meses passados. "Entre X e Y, em 8 de cada 10 cenários" é conferido no seu passado antes de aparecer, e a previsão conta o que mais pesou
+- **Orçamentos**: como cada categoria deve fechar o mês e a chance de passar do limite, um painel do mês e **remanejar o limite entre categorias só neste mês**
+- **Investimentos, "se continuar como foi"**: onde eles podem estar em 1, 3 e 5 anos com os seus aportes de sempre
+
+**Avisos que ajudam, sem chatice**
+- **Avisos inteligentes, um de cada vez**: conta que vence amanhã (com **Já paguei** e **Lembrar amanhã** na própria notificação), orçamento perto do limite, fatura que fecha, dia do salário, resumos da semana e do mês. No máximo um aviso comum por dia, só em dois horários
+- **Lembrete do dia** no horário que você escolher, só se nada foi anotado
+- **Notificações animadas**, com uma figurinha desenhada para cada situação, e **modo compras ao vivo** (atualizações ao vivo do Android 16 e a Now Bar da One UI 8)
+- **Momentos de comemoração**: meta alcançada, orçamento em 80% ou estourado (com a dica de onde cobrir), sequência de dias anotando, como o mês passado fechou
+- **Sons do próprio Cryo**, suaves e abafados, com um fio do cristal de gelo por cima. Seguem o modo silencioso do celular e dá para desligar
+
+**Contas fixas, cartões e o extrato do banco**
+- **As contas fixas se acertam com o extrato**: ao importar, o Cryo reconhece a linha que paga uma conta fixa ("NETFLIX.COM 59,99" é a sua Netflix), liga a ela em vez de criar um segundo lançamento, e a conta fixa aparece como paga. A previsão não conta mais essa conta duas vezes
+- **Arrumar o que já tinha sido importado**: Planejar › Contas fixas mostra as sugestões "pagamentos encontrados" e "pagas em dobro", um toque cada, sempre com desfazer. "Já paguei" procura o pagamento no extrato antes de criar outro, e desfazer nunca apaga um lançamento importado
 - **Criar a conta fixa depois**: cadastre a conta fixa e o Cryo pergunta se os lançamentos que você já tem são ela. Ele também aprende o apelido que o banco usa ("DEB AUT CIA ENERG" = Luz), guardando só um código
 - **Estorno no cartão de crédito, à mão** (pedido de quem usa): botão **Estorno** na tela do cartão, ou escolha o cartão numa receita. O estorno diminui a fatura, e editar um estorno o mantém no cartão
-- **Total da fatura batendo com o banco** (pedido de quem usa): editar uma compra do cartão não a muda mais de fatura (antes a fatura era recalculada pela data, e compras importadas pulavam de mês). Agora dá para **escolher a fatura** de uma compra, de um estorno ou de um pagamento, e **Ajustar total** lança a diferença para o que o banco mostra como um ajuste à vista, que dá para apagar
-- **Seu perfil**: a bolinha do Início virou botão e abre o painel do perfil (no lugar da engrenagem). Use a sua inicial, um desenho do Cryo, um emoji ou **uma foto sua** (escolhida pelo seletor de fotos do Android, sem permissão nova; fica só neste celular)
-- **"Aprender o Cryo"**: um guia local que percebe o que você ainda não usa e mostra uma dica por vez, no máximo uma por dia e três por semana, com **Me mostra** (abre a tela certa e destaca o ponto) e **Agora não**. Uma lista com as 18 lições mostra o que você já usa. São regras simples rodando no celular, sem IA e sem sair dele; o guia só guarda contagens e datas
-- **Sons mais suaves**: o kit inteiro foi refeito, abafado e mais grave (como um trinco macio), com só um fio do cristal de gelo por cima
-- Nenhuma permissão nova e nenhuma mudança no banco de dados
+- **Total da fatura batendo com o banco** (pedido de quem usa): editar uma compra do cartão não a muda mais de fatura. Dá para **escolher a fatura** de uma compra, de um estorno ou de um pagamento, e **Ajustar total** lança a diferença para o que o banco mostra como um ajuste à vista, que dá para apagar
 
-## 1.8 — previsão nova, conferida no seu próprio passado
+**Do seu jeito**
+- **Seu perfil**: a bolinha do Início é um botão que abre o painel do perfil (no lugar da engrenagem). Use a sua inicial, um desenho do Cryo, um emoji ou **uma foto sua** (escolhida pelo seletor de fotos do Android, sem permissão nova; fica só neste celular)
+- **"Aprender o Cryo"**: um guia local que percebe o que você ainda não usa e mostra uma dica por vez, no máximo uma por dia e três por semana, com **Me mostra** (abre a tela certa e destaca o ponto) e **Agora não**. Uma lista com as 18 lições mostra o que você já usa. São regras simples rodando no celular, sem IA; o guia só guarda contagens e datas
 
-- **Previsão nova, feita do zero** (continua toda no celular, sem modelo de IA): sete métodos simples olham o seu passado, cada um de um jeito, e o Cryo dá mais peso a quem teria acertado mais nos seus próprios meses anteriores. Nos testes com históricos inventados, a previsão do mês erra ~7% menos que a da 1.7, e até 57% menos para quem faz uma compra grande do mês
-- **A faixa cumpre o que promete**: "entre X e Y, em 8 de cada 10 cenários" agora é conferida nos seus meses passados antes de aparecer (nos testes, acertou 80% das vezes; antes, 68%), e o cartão conta como foi: "conferida no seu passado: acertou em 10 de 12 meses"
-- **A previsão se explica**: o que mais pesou na conta e se esta época do ano costuma sair mais cara para você (só quando isso se repetiu nos dois anos anteriores)
-- **Orçamentos**: cada categoria mostra como deve fechar o mês e a chance de passar do limite; os avisos "no ritmo atual" usam a previsão nova
-- **Investimentos, "se continuar como foi"**: quanto o investimento em si rendeu, o sobe e desce, a maior queda, onde ele pode estar em 1, 3 e 5 anos com os seus aportes de sempre e a chance de terminar acima do que você colocou. É o passado projetado, nunca promessa
-- **Correções de segurança e confiabilidade**, de uma revisão do código inteiro: backup com senha nunca é gravado sem proteção; arquivo de backup estragado ou grande demais é recusado com uma mensagem clara; a planilha exportada não roda mais fórmulas escritas nas descrições; erro do sensor de digital só libera o app em celular sem trava de tela; no Android 8 a 12, com o bloqueio ligado, não dá para tirar print do Cryo; valores enormes não "dão a volta" e viram outro número; tocar "Já paguei" duas vezes grava um pagamento só; apagar uma categoria leva junto os remanejamentos do mês; cada notificação abre a sua própria tela; com o bloqueio ligado, fechar o Cryo e abrir de novo sempre pede o desbloqueio (antes, não pedia no primeiro minuto), e ligar o bloqueio agora confirma na hora com a digital, o rosto ou a senha do celular
-- Nenhuma permissão nova e nenhuma mudança no banco de dados
+**Protegido**
+- **Backup com senha** (opcional, AES-256): a senha é pedida ao restaurar e nunca fica guardada. Os lembretes não mostram nome nem valor na tela de bloqueio
+- **Bloqueio mais firme**: toda abertura do zero pede o desbloqueio, e ligar o bloqueio confirma uma vez. No Android 8 a 12, com o bloqueio ligado, o app não aparece em capturas de tela nem nos apps recentes
+- **Correções de uma revisão do código inteiro**: backup protegido nunca é gravado sem proteção, arquivo de backup estragado ou grande demais é recusado com uma mensagem clara, e a planilha exportada não roda fórmulas escritas em descrições
+- Todo erro já corrigido agora tem um teste que falha se ele voltar (cerca de 940 testes automáticos)
 
-## 1.7 — avisos inteligentes, sons e o botão de voz ao alcance do polegar
-
-- **O botão de voz agora fica no meio da barra de baixo**, em todas as abas, onde o polegar alcança (como na One UI da Samsung): tocar = falar, **segurar = escrever**. O campo de frase do Início fica só para escrever
-- **Avisos inteligentes, um de cada vez**: conta que vence amanhã (com **Já paguei** e **Lembrar amanhã** na própria notificação), orçamento perto ou acima do limite, categoria no ritmo de passar, fatura que fecha amanhã, dia do salário ("Registrar salário" com o valor de sempre), salário atrasado, assinatura que ficou mais cara, cobrança repetida, gasto fora do comum, saldo que vai ficar negativo, meta quase lá, última parcela, saúde financeira que subiu, a semana no domingo e como o mês fechou
-- **Nada de chatice**: no máximo um aviso comum por dia, só em dois horários (de manhã e no horário do lembrete), nada para quem acabou de chegar além das contas; tipos que você dispensa sempre passam a vir menos. Tudo calculado no celular
-- **Lembrete do dia no horário que você escolher** (o Cryo pergunta uma vez): só se nada foi anotado no dia, com os botões **Dia sem gastos** e **Anotar**
-- **Notificações animadas**: cada aviso vem como uma mensagem do Cryo com uma figurinha animada desenhada para a situação (o Android só anima neste estilo de conversa). Nenhum emoji de teclado: todas as imagens são do próprio Cryo
-- **Modo compras ao vivo**: "Vou às compras, até R$ 300" mostra uma notificação ao vivo com quanto já foi e quanto falta (atualizações ao vivo do Android 16 e a Now Bar da One UI 8)
-- **Momentos de comemoração**: meta completa (tela cheia, com cristais de gelo), orçamento em 80% ou estourado (a barra passa da linha e o cartão treme, com a dica de onde cobrir), sequência de dias anotando (3, 7, 14, 30...) e como o mês passado fechou
-- **Painel dos gastos do mês** com todas as categorias com orçamento e as sem orçamento; **remanejar o orçamento entre categorias só neste mês**, com desfazer
-- **Sons próprios do Cryo** (de "cristal de gelo", feitos do zero): salvar, entrou dinheiro, atenção, conquista, começo e fim da voz. Sempre seguem o modo silencioso do celular e dá para desligar
-- **Ajustes › Avisos e sons**: tom Amigo ou Discreto, o horário do lembrete, cada tipo de aviso com **Ver exemplo** e os sons
-- **Voz**: o som de "pode falar" não entra mais na gravação junto com o que você diz; o modo desenvolvedor mostra o tempo e tem um modo mais rápido experimental para testar
-- Fonte grande (200%) conferida nas telas principais
-- Banco de dados versão 4 (remanejamentos do mês, dias sem gastos, ilustrações das metas); backups antigos continuam abrindo e as metas ganham a ilustração do emoji que tinham
-- Permissão nova: **notificações promovidas** (as atualizações ao vivo do Android 16; não pergunta nada)
-
-## 1.6 — voz entendida no celular
-
-- **Registro por voz dentro do Cryo, com o Whisper** (um modelo aberto de reconhecimento de fala, dentro do app): o que você fala é entendido no próprio celular, sem internet. O áudio só passa pela memória e é apagado na hora; o Cryo continua sem permissão de internet
-- **As palavras aparecem enquanto você fala**, com uma animação de eco: o microfone cresce com a sua voz, cada sílaba solta um anel e o que o Cryo entendeu (valor, categoria, cartão, data) salta em cartõezinhos. Termina sozinho quando você para de falar
-- **Conhece os seus nomes**: contas, cartões, categorias e metas ajudam a ouvir certo ("Roxo", "Pet Shop")
-- **Entende o jeito falado** (português primeiro): "dezoito e noventa" ou "18 e 90" = 18,90, "trinta e dois e cinquenta", "cento e vinte", "dois mil e quinhentos", "conto", apelidos como "roxinho" para o Cartão Roxo
-- **Vários lançamentos de uma vez**: "almoço 30 e uber 15" vira dois lançamentos para conferir; o cartão ou a data ditos uma vez valem para todos
-- **Correção falada**: "32, não, 35" fica 35
-- Escolha o reconhecedor em Ajustes › Registro rápido › Reconhecimento de voz: Whisper (padrão) ou o do celular (só no aparelho). Celulares que não rodam o Whisper usam o do celular
-- O app ficou maior (cerca de 65 MB) porque o modelo de voz vem dentro dele
-- Permissão nova: **microfone**, pedida só no primeiro toque no microfone, com explicação
-
-## 1.5 — motor financeiro, backups protegidos e visual novo
-
-- **Motor financeiro no celular** (tudo sem internet): a previsão do fim do mês agora mostra uma faixa e a chance de fechar no vermelho, com 2.000 cenários simulados a partir do seu histórico, e erra ~38% menos que antes no teste com meses passados
-- **Recorrências achadas sozinhas**: salário, aluguel, assinaturas; o Cryo avisa quando uma fica mais cara ou quando o salário atrasa, e vira conta fixa com um toque
-- **Próximos meses**: o saldo dia a dia por 3, 6 ou 12 meses, com faturas, parcelas, contas fixas e dívidas, o dia mais apertado e a chance de ficar negativo
-- **Nota de saúde financeira** (0 a 100) em 6 partes explicadas, com o que fazer para melhorar; gastos **fora do padrão** e **cobranças repetidas**; ritmo das categorias ("no ritmo atual, Alimentação passa do limite por volta do dia 24") e sugestões de limite mais espertas
-- **Dívidas**: os juros embutidos de cada uma, um plano para quitar (maior juro primeiro ou menor dívida primeiro) com quanto você economiza, e o valor justo para antecipar parcelas
-- **Investimentos**: rendimento real ao ano, contando cada aporte na sua data, com comparação opcional com a inflação; **metas** mostram quando você chega lá
-- **Categoria aprendida**: o Cryo aprende como você classifica e ajuda na importação de extratos e no registro por frase
-- **Backups protegidos com senha** (opcional, AES-256, chave no cofre seguro do Android); os lembretes de contas não mostram nome nem valor com o celular bloqueado
-- 500 testes de garantia a mais (estabilidade, escalabilidade, desempenho, economia de recursos e segurança)
-- **Ícone novo**: o C quadrado agora é dourado, com espessura e um fio de luz, sobre o mesmo azul do Cryo. A estrelinha saiu. Escolhido comparando 11 desenhos com pesquisa sobre atenção visual
-- **Profundidade em todo o app**: o conteúdo fica em cartões com sombra suave sobre um fundo "agrupado", como nos melhores apps de iPhone; o cabeçalho do Início usa o degradê do ícone; atalhos e o botão principal têm volume e encolhem com mola ao toque
-- **Listas agrupadas**: cada dia do Extrato, a fatura de um cartão e o histórico de uma conta formam um cartão só; os Ajustes ficam agrupados como no iPhone
-- **Vibração ao toque**: ao confirmar, ligar e desligar, trocar de aba e de opção. Segue o ajuste "vibração ao toque" do celular e não precisa de permissão nova
-- O ícone do Cryo aparece dentro do app (boas-vindas, bloqueio e Sobre)
+**Bom saber**
+- Permissões novas: **microfone** (pedido só no primeiro toque no botão de voz) e **notificações promovidas** (as atualizações ao vivo do Android 16; não pergunta nada). Continua sem permissão de internet
+- O app passa de uns 6 MB para uns 65 MB, porque o modelo de fala vai dentro dele
+- Banco de dados versão 4 (remanejar orçamento no mês, dias sem gastos, ilustrações das metas); backups antigos continuam abrindo
 
 ## 1.4 — 10 línguas, moedas e visual novo
 

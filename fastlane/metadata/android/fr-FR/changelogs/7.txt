@@ -1,1 +1,0 @@
-Voix comprise sur le téléphone, avec Whisper intégré et sans Internet : les mots s'affichent pendant que vous parlez, avec une animation d'écho. Plusieurs opérations en une phrase, corrections à l'oral, et il connaît les noms de vos comptes et cartes. L'audio est effacé aussitôt. Nouvelle autorisation : micro. L'app est plus lourde (~65 Mo) à cause du modèle vocal.

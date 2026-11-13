@@ -49,11 +49,15 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.9 | 10 | **Pronta** (12/11/2026, PRD 6.19d), sem push, aguardando o teste do Hanry: contas fixas que se acertam com o extrato (RF-CFX), perfil (RF-PRF), guia "Aprender o Cryo" (RF-GUI), sons mais abafados e, do issue #3 de quem usa, estorno no cartão, escolha da fatura e ajustar o total (RF-CAR-07, 10, 11). Branch `versao-1.9` (a partir da 1.8). |
-| 1.8 | 9 | **Pronta** (10/11/2026, PRD 6.12b e 6.12c), sem push, aguardando o teste do Hanry: auditoria do código com as correções, **biblioteca de erros como lei** (`docs/ERROS.md`) e **previsor novo, feito do zero** (mês, categorias, investimentos) com as telas que explicam a conta. Branch `versao-1.8` (a partir da 1.7). |
-| 1.7 | 8 | **Pronta** (09/11/2026, PRD 6.19c), sem push, aguardando o teste do Hanry: avisos inteligentes estilo Duolingo, sons, momentos animados, painel do mês, botão de voz embaixo (One UI), modo compras ao vivo. Branch `versao-1.7` (a partir da 1.6). |
-| 1.6 | 7 | **Testada e aprovada pelo Hanry** (09/11/2026: "gostei pra caramba"; ~5 s no A55), sem push: **voz no aparelho** com o Whisper (RF-VOZ). Branch `versao-1.6` (a partir da 1.5). Lançamento depois da 1.5. |
-| 1.5 | 6 | **Pronta e guardada** (07/11/2026), sem push: ícone G4 + profundidade + **motor financeiro** + **proteção dos dados** (o Hanry pediu para juntar tudo numa versão só, já que a 1.5 ainda não tinha saído). APK `Cryo-1.5.apk` (SHA-256 `a575908b…8941`) entregue. **O Hanry pediu para lançar só daqui a um mês (por volta de 07/12/2026).** O código está no branch `versao-1.5` e numa cópia (`git bundle`) entregue a ele; só publicar com o "pode publicar" dele (seção 11). |
+| 1.5 | 10 | **Pronta** (12/11/2026), sem push, aguardando o teste e o "pode publicar" do Hanry. **Junta tudo o que foi feito depois da 1.4** (decisão do Hanry, 12/11/2026): as versões de trabalho 1.5 a 1.5 nunca foram publicadas e viraram as **cinco etapas da 1.5**, descritas abaixo. `versionCode` 10 (os números de 6 a 9 foram só APKs de teste; não voltar atrás, para instalar por cima deles). Branch `versao-1.5`. |
+
+> **Numeração (decisão do Hanry, 12/11/2026).** A próxima versão pública é a **1.5** e ela junta tudo o que veio depois da 1.4.
+> O trabalho foi feito em cinco etapas, que na época tinham nome de versão mas nunca saíram: **etapa 1** (ícone, profundidade,
+> motor financeiro, proteção dos dados), **etapa 2** (voz no aparelho), **etapa 3** (avisos, sons, momentos), **etapa 4**
+> (auditoria, biblioteca de erros, previsor novo) e **etapa 5** (contas fixas × extrato, perfil, guia, cartão). Onde o histórico
+> do PRD, os comentários do código, os nomes de testes (`Screens17Test`, `Audit18Test`, `Screens18Test`, `Screens19Test`) ou os
+> branches antigos (`versao-1.6` a `versao-1.9`, marcos de trabalho que não serão publicados) disserem 1.6, 1.7, 1.8 ou 1.9,
+> leia etapas 2 a 5 da 1.5. A versão seguinte a esta será a 1.6 de verdade.
 
 A inclusão no F-Droid foi aceita (merge request !50813 no fdroiddata, "New app: Cryo", aceito em 06/10/2026). A receita usa
 compilação reproduzível com a chave do Hanry e atualização automática por tag (veja a seção 11).
@@ -94,7 +98,7 @@ código anterior. Todos os testes passam.
 - Dados de exemplo na escala de cada moeda (`SampleData.m()`): salário de R$ 4.200 vira ¥210.000, ₩2.520.000.
 - Loja (fastlane) nas 10 línguas. Banco de dados continua na versão 3 (sem migração nova).
 
-### O que a 1.5 traz (branch `versao-1.5`)
+### O que a 1.5 traz — etapa 1: ícone, profundidade, motor financeiro e proteção dos dados
 
 - **Ícone novo G4** (DS-ICO-02..05): o C quadrado agora **dourado, com espessura e fio de luz**, sem a estrela. Escolhido depois
   de uma pesquisa de psicologia da atenção (cor quente sobre o azul puxa o olho; continuidade com o C conhecido) e da comparação
@@ -117,7 +121,7 @@ código anterior. Todos os testes passam.
 - **500 testes de garantia** (RF-MOT-15): estabilidade, escalabilidade, desempenho, economia de recursos e segurança, 100 cada.
 - Imagens da loja e do guia visual refeitas. Banco de dados continua na versão 3 (sem migração nova).
 
-### O que a 1.6 traz (branch `versao-1.6`, a partir da 1.5)
+### O que a 1.5 traz — etapa 2: voz no aparelho
 
 - **Voz no aparelho** (RF-VOZ, PRD 6.2a): o Whisper (whisper.cpp v1.9.5, MIT, cópia em `app/src/main/cpp/whisper/`) compilado
   pelo NDK numa biblioteca só (`libcryo_whisper.so`, 1,6 MB, só arm64 com fp16+dotprod; nos outros, uma biblioteca vazia) e o
@@ -129,7 +133,7 @@ código anterior. Todos os testes passam.
 - Escolha do ouvido em Ajustes (Whisper ou o reconhecedor do celular só no aparelho); sem nenhum dos dois, a tela de voz do sistema.
 - Permissão nova `RECORD_AUDIO`. APK de ~6 MB para ~65 MB. Banco de dados continua na versão 3.
 
-### O que a 1.7 traz (branch `versao-1.7`, a partir da 1.6)
+### O que a 1.5 traz — etapa 3: avisos, sons e momentos
 
 - **Botão de voz no meio da barra de baixo** (RF-ALC, `ui/Nav.kt` `VoiceTabBar` + `ui/tx/VoiceLauncher.kt`): tocar = falar, segurar = escrever. O campo de frase do Início ficou só para escrever.
 - **Avisos inteligentes** (RF-AVI, `notify/AlertPlanner.kt` = regras puras; `Alerts.kt` = canais e notificação; `AlertWork.kt` = os dois horários e
@@ -147,11 +151,11 @@ código anterior. Todos os testes passam.
 - **Painel do mês** (`plan/budgets/month`, `ui/screens/BudgetMonthScreen.kt`) e **remanejar só no mês** (`budget_adjustments`).
 - **Ajustes › Avisos e sons** (`settings/alerts`, `ui/screens/AlertScreens.kt`, com "Ver exemplo" = `AlertExamples`).
 - **Sons** (RF-SOM, `notify/Sounds.kt`, `res/raw/som_*.ogg`, gerados por `tools/sons/make_sounds.py`): só com o celular no modo normal.
-- **Voz**: o som de "pode falar" não entra na gravação; fim da fala em 1,2 s (como na 1.6); tempo na tela de voz e chave
+- **Voz**: o som de "pode falar" não entra na gravação; fim da fala em 1,2 s (como na 1.5); tempo na tela de voz e chave
   experimental "Atenção rápida no Whisper" no modo desenvolvedor. Estudo de outras IAs de fala no PRD (RF-VOZ-14).
 - **Banco de dados versão 4** (`budget_adjustments`, `no_spend_days`, `goals.art`; migração 3→4 automática com `Migration3To4`).
 
-### O que a 1.8 traz (branch `versao-1.8`, a partir da 1.7)
+### O que a 1.5 traz — etapa 4: auditoria, biblioteca de erros e previsor novo
 
 - **Auditoria do código inteiro** (RF-AUD, PRD 6.12c): backup com senha nunca sai aberto (falha fechada), backup lido com limite e
   conferido campo a campo, planilha sem fórmulas, erro do sensor só libera aparelho sem trava, `FLAG_SECURE` no Android 8–12 com o
@@ -166,7 +170,7 @@ código anterior. Todos os testes passam.
   passado (`Ensemble.kt`), época do ano só confirmada em dois anos (`Season.kt`), previsão do mês com a faixa **conferida no
   passado** (calibração conforme, `Forecaster.kt`), **categorias** com a chance de passar do limite (`CategoryForecast.kt`, também
   usada no aviso de ritmo) e **investimentos** "se continuar como foi" (`InvestForecast.kt`: Dietz modificado, sobe e desce, maior
-  queda, 1/3/5 anos). O motor da 1.5 (`Outlook.month`, `Pacing.projected`) fica como régua dos testes.
+  queda, 1/3/5 anos). O primeiro motor, o da etapa 1 (`Outlook.month`, `Pacing.projected`), fica como régua dos testes.
 - **Telas** (RF-PRV-08): Análises (conferida no passado, o que mais pesou, época do ano), Planejar › Orçamentos (como cada categoria
   fecha o mês e a chance de passar), investimento e Carteira ("se continuar como foi"). 23 textos novos nas 10 línguas.
 - **Laboratório** (`ForecastLabTest`, só com `-PforecastLab=true`; mundos inventados em `ForecastWorld`, 10 com `MONTHLY_SHOP`).
@@ -177,9 +181,9 @@ código anterior. Todos os testes passam.
   ```
 - Nenhuma permissão nova; banco de dados continua na versão 4.
 - **Avisar o Hanry**: no Android 8–12, com o bloqueio ligado, não dá para tirar print do app (`FLAG_SECURE`); backup estragado agora é
-  recusado com mensagem; num mês fora do padrão que nunca se repetiu, a 1.5 reagia mais depressa (o novo ganha no conjunto).
+  recusado com mensagem; num mês fora do padrão que nunca se repetiu, o primeiro motor reagia mais depressa (o novo ganha no conjunto).
 
-### O que a 1.9 traz (branch `versao-1.9`, a partir da 1.8)
+### O que a 1.5 traz — etapa 5: contas fixas × extrato, perfil, guia e cartão
 
 - **Contas fixas × extrato** (RF-CFX, PRD 6.19d): `domain/BillMatch.kt` = `BillMatcher` (regra pura: CERTA = nome + valor igual, ou
   apelido aprendido; PROVÁVEL = nome com outro valor, ou valor igual perto do vencimento) e `BillReconciler` (sugestões do mês e dos
@@ -204,32 +208,32 @@ código anterior. Todos os testes passam.
 - **Auditoria**: ERR-040 a ERR-045 em `docs/ERROS.md` (previsão em dobro, conta paga à mão × extrato do cartão, desfazer que apagava
   o importado, estorno que saía do cartão, compra que mudava de fatura ao editar, "Já paguei" da notificação sem olhar o extrato).
 - 106 textos novos nas 10 línguas. Nenhuma permissão nova; banco de dados continua na versão 4.
-- **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.9: agora dá para
+- **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
-  rascunho de resposta na entrega da 1.9; só o Hanry posta).
+  rascunho de resposta na entrega da 1.5; só o Hanry posta).
 
 ### Próximos passos imediatos
 
-1. **1.5**: guardada para lançar por volta de 07/12/2026 (pedido do Hanry). Se esta sessão não existir mais, recuperar o código do
-   `git bundle` que o Hanry guardou (`git fetch cryo-1.5.bundle versao-1.5:versao-1.5`, sobre o `main` do GitHub). Na data, com o
-   "pode publicar": push de `versao-1.5` e de `main`, Release `v1.5` (seção 11). O F-Droid pega sozinho pela etiqueta.
-2. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
-   receita oficial. Conferir em https://f-droid.org/packages/io.github.h3yk0.cryo/ que a 1.4 apareceu (alguns dias). Se não
-   aparecer em ~1 semana, olhar o registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
-3. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
-4. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-5. **1.6** (branch `versao-1.6`): testada e aprovada pelo Hanry no A55 (09/11/2026; ~5 s até a transcrição). **No lançamento**:
-   a receita do F-Droid precisa da linha do NDK (merge request no fdroiddata; rascunho em `docs/fdroid/1.6-receita.md`).
-6. **1.9** (branch `versao-1.9`, a partir da 1.8): pronta em 12/11/2026, APK entregue para o teste do Hanry. **Conferir no celular**:
-   importar um extrato com uma conta fixa (a linha vem como "Paga: ..."), o cartão "Conferir" em Planejar › Contas fixas, a foto do
-   perfil (seletor do Android), a primeira dica do guia (só depois de 2 minutos de uso e de um lançamento) e os sons novos.
-   Responder o issue #3 depois de publicar (as duas coisas pedidas estão na 1.9).
-6. **1.8** (branch `versao-1.8`, a partir da 1.7): pronta em 10/11/2026, APK entregue para o teste do Hanry. **Conferir no celular**:
-   os cartões da previsão em Análises, Orçamentos e no investimento com os dados de verdade dele; se algum número parecer estranho,
-   pedir o relatório anônimo (nunca o dado real) e medir no laboratório antes de mudar.
-7. **1.7** (branch `versao-1.7`, a partir da 1.6): pronta em 09/11/2026, APK entregue para o teste do Hanry. **Conferir no A55**:
-   a figurinha anima na cortina (RF-AVI-09)? o modo compras aparece na Now Bar (RF-AVI-10)? o tempo da voz com e sem a chave
-   "Atenção rápida no Whisper" (modo desenvolvedor › Voz; RF-VOZ-13: se ficar estável e mais rápida, ligar por padrão).
+1. **1.5** (branch `versao-1.5`, `versionCode` 10): pronta em 12/11/2026, sem push, `Cryo-1.5.apk` para o teste do Hanry.
+   **Conferir no celular** o que ele ainda não testou: importar um extrato com uma conta fixa (a linha vem como "Paga: ...") e o
+   cartão "Conferir" em Planejar › Contas fixas; a foto do perfil (seletor do Android); a primeira dica do guia (só depois de
+   2 minutos de uso e de um lançamento); os sons novos; os cartões da previsão em Análises, Orçamentos e no investimento com os
+   dados de verdade dele (se um número parecer estranho, pedir o relatório anônimo, nunca o dado real, e medir no laboratório
+   antes de mudar); a figurinha animando na cortina (RF-AVI-09) e o modo compras na Now Bar (RF-AVI-10).
+   O APK antigo chamado `Cryo-1.5.apk` (07/11/2026, `versionCode` 6) e o `git bundle` daquela etapa ficaram para trás: valem só
+   o APK e o branch novos.
+2. **Lançar a 1.5** só com o "pode publicar" do Hanry (seção 11): push de `versao-1.5` e de `main`, Release `v1.5` com
+   `Cryo-1.5.apk` e, **porque a 1.5 tem código nativo**, o merge request no fdroiddata com a linha do NDK (rascunho em
+   `docs/fdroid/1.5-receita.md`). Ele tinha pedido para lançar por volta de 07/12/2026: confirmar a data com ele.
+3. **Issue #3** do GitHub (estorno no cartão e total da fatura): as duas coisas estão na 1.5; responder depois de publicar (só o
+   Hanry posta; há um rascunho na entrega).
+4. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
+   receita oficial. Conferir em https://f-droid.org/packages/io.github.h3yk0.cryo/ que a 1.4 apareceu. Se não aparecer, olhar o
+   registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
+5. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
+6. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
+7. Voz: medir no A55 o tempo com e sem a chave "Atenção rápida no Whisper" (modo desenvolvedor › Voz; RF-VOZ-13: se ficar
+   estável e mais rápida, ligar por padrão).
 
 ---
 
@@ -237,8 +241,8 @@ código anterior. Todos os testes passam.
 
 **Privacidade**
 - O app **não tem permissão de INTERNET** e não pode ganhar. Nada de bibliotecas de analytics, anúncios, crash reporting
-  online ou qualquer coisa que fale com servidores. Permissões atuais: `POST_NOTIFICATIONS`, `USE_BIOMETRIC`, (1.6)
-  `RECORD_AUDIO` e (1.7) `POST_PROMOTED_NOTIFICATIONS` (notificação ao vivo do modo compras), só. O áudio da voz nunca vira arquivo e é apagado da memória ao terminar (RF-VOZ-02).
+  online ou qualquer coisa que fale com servidores. Permissões atuais: `POST_NOTIFICATIONS`, `USE_BIOMETRIC`, (1.5)
+  `RECORD_AUDIO` e (1.5) `POST_PROMOTED_NOTIFICATIONS` (notificação ao vivo do modo compras), só. O áudio da voz nunca vira arquivo e é apagado da memória ao terminar (RF-VOZ-02).
 - Dados ficam só no aparelho. Nuvem só pelo seletor de arquivos do Android (o app da nuvem é quem envia).
 - `android:allowBackup="false"`; `data_extraction_rules.xml` só permite transferência direta entre aparelhos e exclui as
   permissões do backup automático e tudo do modo de teste.
@@ -322,19 +326,19 @@ app/src/main/java/io/github/h3yk0/cryo/
 │                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res),
 │                       engine/ (o motor financeiro: Engine.kt junta tudo; Stats, Recurrences, Outlook, Projection,
 │                       Signals, Health, Wealth, CategoryModel, TxKey),
-│                       predict/ (1.8, o previsor: Series, Models, Season, Ensemble, Forecaster, CategoryForecast,
+│                       predict/ (1.5, o previsor: Series, Models, Season, Ensemble, Forecaster, CategoryForecast,
 │                       InvestForecast)
 ├── importer/           Leitura de extratos e conferência (veja docs/IMPORTACAO.md)
-├── voice/            Voz no aparelho (1.6): WhisperNative (JNI), WhisperEngine, Listener (WhisperListener e o medidor de
+├── voice/            Voz no aparelho (1.5): WhisperNative (JNI), WhisperEngine, Listener (WhisperListener e o medidor de
 │                       volume/sílabas), SystemListener (plano B), AudioInput/MicInput, VoiceSettings e VoicePrompt
-├── notify/             Avisos (1.7): AlertPlanner (regras), Alerts (canais e notificação), AlertWork (manhã, noite, botões),
+├── notify/             Avisos (1.5): AlertPlanner (regras), Alerts (canais e notificação), AlertWork (manhã, noite, botões),
 │                       AlertState, Shopping (modo compras ao vivo), Sounds; Reminders (contas e dívidas); backup automático
 └── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento,
                         Depth.kt = profundidade e vibração), screens/ (telas; Tour.kt = passeio), tx/ (lançamento),
                         theme/ (Theme.kt: cores, CryoTheme.colors, CryoTheme.depth)
 ```
 
-Código nativo (1.6): `app/src/main/cpp/` = `CMakeLists.txt` (opções da compilação reproduzível), `cryo_whisper.cpp` (a ponte
+Código nativo (1.5): `app/src/main/cpp/` = `CMakeLists.txt` (opções da compilação reproduzível), `cryo_whisper.cpp` (a ponte
 JNI), `cryo_whisper_stub.cpp` (32 bits e x86) e `whisper/` (cópia do whisper.cpp v1.9.5; única mudança: o commit do ggml vem
 do Cryo, não do git). O modelo fica em `app/src/main/assets/whisper/ggml-base-q5_1.bin` (SHA-256 `422f1ae4…8898`).
 
@@ -367,7 +371,7 @@ do Cryo, não do git). O modelo fica em `app/src/main/assets/whisper/ggml-base-q
 ## 8. Banco de dados e formatos
 
 **Room** (`cryo.db`, versão 4; teste: `cryo-teste.db`). Tabelas: `accounts`, `cards`, `categories`, `transactions`,
-`investments`, `investment_yields`, `goals`, `bills`, `budgets`, `debts`, `debt_adjustments` e (1.7) `budget_adjustments`
+`investments`, `investment_yields`, `goals`, `bills`, `budgets`, `debts`, `debt_adjustments` e (1.5) `budget_adjustments`
 (remanejar só no mês; `moveGroup` liga as duas pontas) e `no_spend_days`.
 Migrações automáticas: 1→2 (dívidas, com `Migration1To2`), 2→3 (`transactions.importKey` + índice) e 3→4 (tabelas novas e
 `goals.art`, preenchido a partir do emoji por `Migration3To4`). Schemas em `app/schemas/`.
@@ -400,7 +404,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Área | Arquivos principais |
 |---|---|
 | Início (saldo, patrimônio, resumo do mês, alertas, previsão) | `ui/screens/HomeScreen.kt` |
-| Registro rápido por frase/voz | `ui/tx/QuickEntry.kt`, `domain/PhraseParser.kt`; voz (1.6): `ui/tx/VoiceSheet.kt`, `voice/`, `domain/Spoken.kt`, `src/main/cpp/` |
+| Registro rápido por frase/voz | `ui/tx/QuickEntry.kt`, `domain/PhraseParser.kt`; voz (1.5): `ui/tx/VoiceSheet.kt`, `voice/`, `domain/Spoken.kt`, `src/main/cpp/` |
 | Lançamento completo | `ui/tx/TxEditorScreen.kt`, `ui/tx/TxForm.kt` |
 | Extrato (movimentações) | `ui/screens/TransactionsScreen.kt` |
 | Planejar: orçamentos, contas fixas, metas | `ui/screens/PlanScreens.kt` |
@@ -416,13 +420,13 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Movimento (transições, contagem, aparecer) | `ui/components/Motion.kt`, `ui/Nav.kt` |
 | Profundidade (cartões, volume, sombras, vibração) | `ui/components/Depth.kt`, `ui/theme/Theme.kt` (`CryoDepth`) |
 | Ícone do app e marca | `res/drawable/ic_launcher_*.xml`, `ic_notification.xml`, `ic_cryo_badge.xml`, `ic_cryo_mark.xml` |
-| Lembretes e avisos (1.7) | `notify/` (`AlertPlanner.kt`, `Alerts.kt`, `AlertWork.kt`, `Shopping.kt`, `Sounds.kt`), `ui/screens/AlertScreens.kt` |
+| Lembretes e avisos (1.5) | `notify/` (`AlertPlanner.kt`, `Alerts.kt`, `AlertWork.kt`, `Shopping.kt`, `Sounds.kt`), `ui/screens/AlertScreens.kt` |
 | Momentos, ilustrações | `ui/components/Moments.kt`, `ui/components/Art.kt` |
 | Painel do mês (orçamento) | `ui/screens/BudgetMonthScreen.kt` |
 | Motor financeiro (previsão com faixa, recorrências, próximos meses, saúde, dívidas, rendimento) | `domain/engine/`, `ui/screens/EngineScreens.kt`, cartões em `InsightsScreen.kt` |
-| Contas fixas × extrato (1.9) | `domain/BillMatch.kt`, `importer/ImportPlan.kt` (`withBills`), `ui/screens/PlanScreens.kt` (`BillSuggestionsSheet`) |
-| Perfil (1.9) | `ui/components/Avatar.kt`, `ui/screens/ProfileScreens.kt` |
-| Guia "Aprender o Cryo" (1.9) | `domain/Guide.kt`, `data/GuideStore.kt`, `ui/components/Guide.kt`, `ui/screens/LearnScreen.kt` |
+| Contas fixas × extrato (1.5) | `domain/BillMatch.kt`, `importer/ImportPlan.kt` (`withBills`), `ui/screens/PlanScreens.kt` (`BillSuggestionsSheet`) |
+| Perfil (1.5) | `ui/components/Avatar.kt`, `ui/screens/ProfileScreens.kt` |
+| Guia "Aprender o Cryo" (1.5) | `domain/Guide.kt`, `data/GuideStore.kt`, `ui/components/Guide.kt`, `ui/screens/LearnScreen.kt` |
 | Proteção dos dados (cofre, HMAC, backup com senha) | `data/Vault.kt`, `data/BackupCrypto.kt`, `data/EngineStore.kt`, `ui/screens/SecurityUi.kt` |
 
 ## 10. Testes
@@ -444,12 +448,12 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `MotionTest` | Saldo que conta até o valor exato; "Remover animações" mostra o final |
 | `StoreScreenshotsTest`, `StoreAssetsTest` | Imagens da loja e dos READMEs nas 10 línguas; ícone e banner (só com `-PstoreAssets=true`) |
 | `EngineTest` | Motor: um teste por requisito RF-MOT, inclusive o **teste contra o passado** (backtest) da previsão; dados de `EngineFixtures` (`Personas`) |
-| `SpokenTest`, `VoiceListenerTest`, `VoiceFlowTest` | Voz (1.6): português falado; a escuta com microfone e Whisper falsos (início, fim, cancelar, nada ouvido); a tela de eco (imagens 58–62) |
+| `SpokenTest`, `VoiceListenerTest`, `VoiceFlowTest` | Voz (1.5): português falado; a escuta com microfone e Whisper falsos (início, fim, cancelar, nada ouvido); a tela de eco (imagens 58–62) |
 | `WhisperHostTest` | A ponte JNI e o modelo de verdade, compilados para o computador (só com `-PwhisperHost=true`, depois de `app/src/test/cpp/build-host.sh`) |
-| `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.7): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
+| `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.5): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
 | `MomentsTest`, `BudgetMonthTest`, `Screens17Test` | Momentos depois de salvar e o modo compras; remanejar só no mês e backup; imagens 71–81 (painel, avisos, momentos, compras, botão de voz, fonte em 200%) |
-| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest`, `Screens18Test` | 1.8: o previsor contra o motor da 1.5 em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas; imagens 82–85 (previsão conferida, orçamentos, investimento, carteira) |
-| `BillMatchTest`, `BillFlowTest`, `ProfileTest`, `GuidePlannerTest`, `GuideFlowTest`, `CardFixTest`, `Screens19Test` | 1.9: o casador de contas fixas e a previsão sem dobro; importar, ligar, desligar, juntar e criar a conta fixa depois; o perfil (imagens 86–88); as regras do guia com datas inventadas e as telas dele (89–91); estorno, fatura mantida ao editar, escolha da fatura e ajustar total (92–94) |
+| `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest`, `Screens18Test` | Etapa 4: o previsor contra o primeiro motor em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas; imagens 82–85 (previsão conferida, orçamentos, investimento, carteira) |
+| `BillMatchTest`, `BillFlowTest`, `ProfileTest`, `GuidePlannerTest`, `GuideFlowTest`, `CardFixTest`, `Screens19Test` | Etapa 5: o casador de contas fixas e a previsão sem dobro; importar, ligar, desligar, juntar e criar a conta fixa depois; o perfil (imagens 86–88); as regras do guia com datas inventadas e as telas dele (89–91); estorno, fatura mantida ao editar, escolha da fatura e ajustar total (92–94) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -460,7 +464,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 proposta da 1.7, 69–70 ilustrações, 71–81 telas da 1.7, 82–85 previsor da 1.8, 86–88 perfil, 89–91 guia, 92–94 cartão (1.9).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão.
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -498,7 +502,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   é testado no Robolectric. `java.lang.management` não está na biblioteca do Android que compila os testes: use reflexão.
 - PBKDF2 com 310 mil voltas leva ~0,3 s na JVM e ~1 s no celular: nos testes, passe menos voltas (`iterations = 1_000`).
 - Imagens das telas do motor: sem `EngineRunner.inline = true` no `@Before`, a primeira composição sai sem o resultado do motor.
-- **Compilação nativa** (1.6): precisa de `ANDROID_HOME` (o Gradle não acha o SDK sem ele aqui), do NDK `27.2.12479018` e do
+- **Compilação nativa** (1.5): precisa de `ANDROID_HOME` (o Gradle não acha o SDK sem ele aqui), do NDK `27.2.12479018` e do
   CMake `3.22.1` do SDK (`sdkmanager "cmake;3.22.1"`). A primeira compilação do Whisper leva ~3 min.
 - **Whisper e silêncio**: com áudio vazio ele inventa frases ("O que é isso", "Legendas pela comunidade Amara.org"). Por isso
   ele só é chamado depois de voz de verdade, áudio sem energia nem chega a ele e `Spoken.clean` descarta essas frases.
@@ -545,15 +549,10 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
-- **1.9** (pronta em 12/11/2026, aguardando o teste do Hanry): contas fixas que se acertam com o extrato, perfil com desenho,
-  emoji ou foto, guia "Aprender o Cryo", sons mais abafados; do issue #3: estorno no cartão, escolha da fatura, ajustar o total.
-- **1.8** (pronta em 10/11/2026, aguardando o teste do Hanry): auditoria do código com as correções, biblioteca de erros como lei,
-  previsor novo do zero (mês, categorias, investimentos) com a faixa conferida no passado e as telas que explicam a conta.
-- **1.7** (pronta em 09/11/2026, aguardando o teste do Hanry): avisos inteligentes com figurinhas animadas, modo compras ao vivo,
-  sons próprios, momentos, ilustrações no lugar de emoji, painel do mês e remanejar só no mês, botão de voz no meio da barra.
-- **1.6** (aprovada em 09/11/2026): voz no aparelho com o Whisper e a animação de eco.
-- **1.5** (pronta em 07/11/2026, aguardando o teste do Hanry): ícone novo G4 (C dourado com volume), profundidade em todo o app,
-  motor financeiro no aparelho, backup com senha e proteção dos dados, 500 testes de garantia.
+- **1.5** (pronta em 12/11/2026, aguardando o teste do Hanry; junta as cinco etapas feitas depois da 1.4): ícone novo G4 e
+  profundidade; motor financeiro e previsor conferido no passado; backup com senha e proteção dos dados; voz no aparelho com o
+  Whisper; avisos inteligentes, sons, momentos e ilustrações próprias; painel do mês; auditoria e biblioteca de erros como lei;
+  contas fixas que se acertam com o extrato; perfil; guia "Aprender o Cryo"; no cartão, estorno, escolha da fatura e ajustar total.
 
 Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 
@@ -609,9 +608,10 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 - **Sem Rust por enquanto** (o Hanry pediu para avaliar): o Kotlin já protege a memória e o motor é rápido (50 mil movimentações
   em ~85 ms na JVM); Rust não impede vazamento de dados, e código nativo aumentaria o APK (uma cópia por processador) e
   complicaria a compilação reproduzível. Faz sentido se um dia houver Cryo para computador ou iPhone: um motor só para todos.
-- **1.5 unida**: o Hanry gostou da 1.5 (ícone e profundidade) e pediu o motor; como ela não tinha sido publicada, saiu tudo junto
-  como 1.5 (versionCode 6). Widgets, notificações especiais e sons ficaram para a 1.6.
-- **Voz com o Whisper e regras, sem modelo de linguagem** (1.6): o ouvido (voz → texto) é IA local; o cérebro (texto →
+- **Uma 1.5 só** (decisão do Hanry, 12/11/2026): nada do que veio depois da 1.4 tinha sido publicado, então tudo sai junto como
+  1.5, para a numeração pública seguir sem buracos (1.4 → 1.5). O `versionCode` é 10 e não 6: o celular do Hanry já tinha APKs de
+  teste com os números 6 a 9, e o Android não instala um número menor por cima. Quem usa só vê "1.5".
+- **Voz com o Whisper e regras, sem modelo de linguagem** (1.5): o ouvido (voz → texto) é IA local; o cérebro (texto →
   lançamento) continua com regras exatas e testáveis. Modelos de conversa locais pesam de 300 MB a 1 GB, demoram e podem
   inventar números. Modelo "base" q5_1 (57 MB): o "tiny" erra mais em português e o "small" pesa 190 MB.
 - **Um app só, não um Cryo por língua** (análise pedida pelo Hanry, 09/11/2026): o modelo multilíngue tem o mesmo tamanho para
@@ -621,36 +621,36 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
   `/proc/cpuinfo` **antes** de carregar a biblioteca (carregar num processador sem elas derrubaria o app).
 - **Bibliotecas vazias** para armeabi-v7a, x86 e x86_64: um APK com biblioteca nativa só instala nos processadores que têm
   versão dela.
-- **Avisos só em dois horários** (1.7): de manhã e no horário do lembrete do dia, no máximo um aviso comum por dia. Por isso
+- **Avisos só em dois horários** (1.5): de manhã e no horário do lembrete do dia, no máximo um aviso comum por dia. Por isso
   não existe "horário silencioso" separado: a madrugada já fica livre e há menos ajuste para a pessoa entender.
-- **Notificação animada pelo estilo de conversa** (1.7): estudo do código do SystemUI (AOSP): só o `MessagingStyle` dá "play"
+- **Notificação animada pelo estilo de conversa** (1.5): estudo do código do SystemUI (AOSP): só o `MessagingStyle` dá "play"
   sozinho numa imagem animada (com a cortina aberta ou o aviso por cima); `BigPictureStyle` carrega mas não anima;
   `RemoteViews` com `ViewFlipper` é desaconselhado e cada fabricante desenha diferente.
-- **"Ao vivo" só para o modo compras** (1.7): o Google só deixa promover o que a pessoa começou, está acontecendo e tem fim;
+- **"Ao vivo" só para o modo compras** (1.5): o Google só deixa promover o que a pessoa começou, está acontecendo e tem fim;
   avisos e lembretes não podem.
-- **Voz: o resultado final continua com a janela inteira do Whisper** (1.7): a janela do tamanho da fala era ~4 vezes mais
+- **Voz: o resultado final continua com a janela inteira do Whisper** (1.5): a janela do tamanho da fala era ~4 vezes mais
   rápida, mas no teste com o modelo de verdade ouviu "32,40" no lugar de "32,50", com qualquer folga até 10 s. Valor errado
   não compensa. A "atenção rápida" (flash attention) foi ~20% mais rápida no computador com o mesmo texto, mas estava desligada
-  na 1.6 aprovada e não dá para testar no celular daqui: fica como chave do modo desenvolvedor até o Hanry medir no A55.
+  na 1.5 aprovada e não dá para testar no celular daqui: fica como chave do modo desenvolvedor até o Hanry medir no A55.
 - **Rótulos curtos com a fonte limitada a 1,3x** (abas e atalhos, `CappedFontScale`): com a fonte em 200% eles quebravam no meio
   da palavra; o resto do app cresce sem limite (RF-ALC-04).
-- **Previsor por conjunto de modelos simples, pesados pelo passado da própria pessoa** (1.8): sem rede neural (pouco dado por
-  pessoa, sem internet, tudo explicável). O que decide é o laboratório (`ForecastLabTest`): o motor da 1.5 fica no código como
+- **Previsor por conjunto de modelos simples, pesados pelo passado da própria pessoa** (1.5): sem rede neural (pouco dado por
+  pessoa, sem internet, tudo explicável). O que decide é o laboratório (`ForecastLabTest`): o primeiro motor fica no código como
   régua e o novo só entra onde erra menos. Faixa conferida contra o passado (calibração conforme): prometer 80% e cumprir.
-- **Época do ano só com dois anos de confirmação** (1.8): com um ano, os alarmes falsos custavam mais do que ela rendia.
-- **Encolher o erro, não o peso** (1.8): com pouco passado, o conjunto antes misturava os pesos com "todos iguais", e cada modelo
+- **Época do ano só com dois anos de confirmação** (1.5): com um ano, os alarmes falsos custavam mais do que ela rendia.
+- **Encolher o erro, não o peso** (1.5): com pouco passado, o conjunto antes misturava os pesos com "todos iguais", e cada modelo
   ganhava uma fatia fixa mesmo errando feio (mercado gasto no começo do mês virava alarme, ERR-037). Agora o erro medido de cada
   modelo encolhe para o erro médio, tanto mais quanto menos dias o mediram: a cautela continua, sem dar voz a quem errou.
-- **Duas rentabilidades na tela do investimento** (1.8): a TIR ("Rendimento real", o que a pessoa ganhou, conta quando ela aportou)
+- **Duas rentabilidades na tela do investimento** (1.5): a TIR ("Rendimento real", o que a pessoa ganhou, conta quando ela aportou)
   e a do investimento em si (Dietz modificado, usada na projeção). Elas podem diferir bastante (aportes grandes em meses ruins);
   por isso o texto da segunda diz "o investimento em si ... (sem contar quando você aportou)".
-- **Casamento de conta fixa em dois níveis** (1.9): só o CERTO (nome + valor igual, ou apelido confirmado) age sozinho; o PROVÁVEL
+- **Casamento de conta fixa em dois níveis** (1.5): só o CERTO (nome + valor igual, ou apelido confirmado) age sozinho; o PROVÁVEL
   sempre pergunta. Ligar errado sozinho custaria mais confiança do que perguntar.
 - **"Não é conta fixa" guardado no próprio lançamento** (`billYm = 0`): não pede migração do banco, vai junto no backup e some
   quando o lançamento some.
-- **Guia por regras, sem IA** (1.9): cada lição tem uma condição que dá para ler e testar; mesmo estado, mesma dica. O guia só
+- **Guia por regras, sem IA** (1.5): cada lição tem uma condição que dá para ler e testar; mesmo estado, mesma dica. O guia só
   guarda contagens e dias, num arquivo à parte, e só conta o que nenhuma lição conseguiria deduzir dos dados.
-- **A fatura guardada manda** (1.9, issue #3): o banco fecha em dias que variam, então a regra da data é só uma sugestão. Editar não
+- **A fatura guardada manda** (1.5, issue #3): o banco fecha em dias que variam, então a regra da data é só uma sugestão. Editar não
   recalcula; a pessoa escolhe a fatura quando precisa.
 - **"Ajustar total" é um lançamento à vista**, não um número escondido: quem olha a fatura vê o ajuste e pode apagá-lo; os totais
   continuam sendo sempre a soma do que está lançado.
@@ -675,13 +675,10 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
-2. **1.5** (ícone G4 + profundidade + motor financeiro + proteção dos dados): pronta e guardada; lançamento por volta de 07/12/2026.
+2. **1.5** (tudo o que veio depois da 1.4, numa versão só): pronta, aguardando o teste e o "pode publicar" do Hanry.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. **1.6**: **voz melhor e no aparelho** (feita e aprovada). **1.7**: avisos inteligentes, sons, momentos animados, alertas de
-   orçamento, voz ao alcance do polegar (pronta, aguardando o teste). **1.8**: auditoria, biblioteca de erros e previsor novo
-   (pronta, aguardando o teste). **1.9** (pronta, aguardando o teste, PRD 6.19d): contas fixas que se acertam com o extrato,
-   perfil, guia "Aprender o Cryo", cartão (estorno, fatura, ajustar total). Depois: widgets na tela inicial; dívida quitada e última
-   parcela como momentos (RF-MOM-04).
+4. Depois da 1.5 (a próxima será a 1.5): widgets na tela inicial; dívida quitada e última parcela como momentos (RF-MOM-04);
+   as lições que ficaram fora do guia (esconder valores, transferir, calendário, backup com senha).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 
 ## 15. Arquivos de referência
