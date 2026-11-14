@@ -215,13 +215,33 @@ private val GROUPS = listOf(
  * RF-AVI-08 (TELA-AVISOS): o tom, o lembrete do dia, cada tipo de aviso com "Ver exemplo" e os sons. Vale sempre para os
  * dados de verdade (os avisos nunca usam o modo de teste).
  */
+/**
+ * ERR-048: o que a tela de avisos mostra, tirado uma vez por mudança. Antes a tela lia os ajustes direto do arquivo
+ * dentro de cada `item { }` da lista e só **declarava** o contador de mudanças sem usá-lo: o Compose não registrava
+ * leitura nenhuma, então trocar o tom ou um interruptor só aparecia depois de sair e voltar.
+ */
+private class AlertUi(
+    val tone: AlertTone,
+    val sounds: Boolean,
+    val reminderMinutes: Int?,
+    val enabled: Map<AlertGroup, Boolean>,
+)
+
+@Composable
+private fun rememberAlertUi(state: AlertState): AlertUi {
+    val version by state.version.collectAsState()
+    return remember(version) {
+        AlertUi(state.tone, state.sounds, state.reminderMinutes, AlertGroup.entries.associateWith { state.enabled(it) })
+    }
+}
+
 @Composable
 fun AlertSettingsScreen() {
     val ctx = LocalContext.current
     val nav = LocalNav.current
     val c = LocalContainer.current
     val state = remember { AlertState(ctx) }
-    @Suppress("UNUSED_VARIABLE") val version by state.version.collectAsState()
+    val ui = rememberAlertUi(state)
     // Os avisos são sempre dos dados de verdade (no modo de teste, o interruptor das contas também é o de verdade).
     val real = remember { (ctx.applicationContext as? CryoApp)?.real ?: c }
     val askNotifications = rememberNotificationAsk()
@@ -250,10 +270,10 @@ fun AlertSettingsScreen() {
                 SettingsGroup {
                     Segmented(
                         listOf(AlertTone.FRIEND to Res.s(R.string.alerts_tone_friend), AlertTone.DISCREET to Res.s(R.string.alerts_tone_discreet)),
-                        state.tone, { state.tone = it }, Modifier.padding(6.dp),
+                        ui.tone, { state.tone = it }, Modifier.padding(6.dp),
                     )
                     Text(
-                        Res.s(if (state.tone == AlertTone.FRIEND) R.string.alerts_tone_friend_desc else R.string.alerts_tone_discreet_desc),
+                        Res.s(if (ui.tone == AlertTone.FRIEND) R.string.alerts_tone_friend_desc else R.string.alerts_tone_discreet_desc),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
                     )
@@ -263,12 +283,12 @@ fun AlertSettingsScreen() {
             item { Header(Res.s(R.string.alerts_daily)) }
             item {
                 SettingsGroup {
-                    val minutes = state.reminderMinutes
+                    val minutes = ui.reminderMinutes
                     SettingLink(
                         Icons.Rounded.Schedule, Res.s(R.string.alerts_daily_time),
                         if (minutes == null) Res.s(R.string.alerts_off) else Res.s(R.string.alerts_daily_time_sub, reminderTime(minutes)),
                     ) { choosingTime = true }
-                    ExampleButton { Alerts.post(ctx, AlertExamples.of(AlertGroup.DAILY, state.tone), state, record = false); askNotifications() }
+                    ExampleButton { Alerts.post(ctx, AlertExamples.of(AlertGroup.DAILY, ui.tone), state, record = false); askNotifications() }
                 }
             }
 
@@ -276,7 +296,7 @@ fun AlertSettingsScreen() {
             item {
                 SettingsGroup {
                     GROUPS.forEach { (g, title, desc) ->
-                        val on = state.enabled(g)
+                        val on = ui.enabled[g] == true
                         SwitchRow(Res.s(title), on, { v ->
                             state.setEnabled(g, v)
                             // Contas e dívidas = o mesmo interruptor da 1.0 (os lembretes de sempre).
@@ -284,7 +304,7 @@ fun AlertSettingsScreen() {
                             if (g == AlertGroup.SUMMARIES) runCatching { Alerts.scheduleEvening(ctx, state) }
                             if (v) askNotifications()
                         }, Res.s(desc), Modifier.padding(horizontal = 6.dp))
-                        if (on) ExampleButton { if (!Alerts.post(ctx, AlertExamples.of(g, state.tone), state, record = false)) askNotifications() }
+                        if (on) ExampleButton { if (!Alerts.post(ctx, AlertExamples.of(g, ui.tone), state, record = false)) askNotifications() }
                     }
                 }
             }
@@ -292,7 +312,7 @@ fun AlertSettingsScreen() {
             item { Header(Res.s(R.string.alerts_sounds)) }
             item {
                 SettingsGroup {
-                    SwitchRow(Res.s(R.string.alerts_sounds_on), state.sounds, { state.sounds = it }, Res.s(R.string.alerts_sounds_desc), Modifier.padding(horizontal = 6.dp))
+                    SwitchRow(Res.s(R.string.alerts_sounds_on), ui.sounds, { state.sounds = it }, Res.s(R.string.alerts_sounds_desc), Modifier.padding(horizontal = 6.dp))
                 }
             }
             item {
@@ -303,7 +323,7 @@ fun AlertSettingsScreen() {
             }
         }
     }
-    if (choosingTime) ReminderTimeSheet(state.reminderMinutes, onDismiss = { choosingTime = false }) { m ->
+    if (choosingTime) ReminderTimeSheet(ui.reminderMinutes, onDismiss = { choosingTime = false }) { m ->
         choosingTime = false
         saveReminder(ctx, m)
         if (m != null) askNotifications()

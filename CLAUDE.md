@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **13/11/2026**.
+Situação descrita aqui: **14/11/2026**.
 
 ---
 
@@ -222,7 +222,17 @@ código anterior. Todos os testes passam.
   - **Apoiar o Cryo** (RF-AJU-12): Ajustes › Sobre, READMEs e o campo `Donate:` da receita do F-Droid apontam para o Buy
     Me a Coffee. O app continua sem permissão de internet: quem abre a página é o navegador.
   - **ERR-046** (a barra de desfazer cobria o botão "+") e **ERR-047** (botão flutuante sem nome para o leitor de tela).
-- 150 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
+- **Teste do Hanry (14/11/2026)**, tudo corrigido na mesma 1.5:
+  - **Leitor de PDF, três defeitos achados com um extrato de verdade** (ERR-049/050/051, `importer/PdfStatement.kt`): o fim
+    de um CNPJ colava no valor ("…/0001-49 512,30" virava R$ 49.512,30); o cabeçalho repetido de cada página
+    ("01 de novembro de 2026 a 13 de novembro de 2026") virava a data de tudo o que vinha depois; e um traço do próprio
+    texto ("LTDA - 119,99") invertia o sinal. Com os três consertos, o extrato do Hanry fecha **no centavo** com o banco.
+    O extrato de verdade **não entra no repositório** (PRC-06): o teste-guarda usa um inventado no mesmo formato.
+  - **Apagar uma importação inteira** (RF-IMP-23): `domain/ImportBatches.kt` agrupa por destino + hora da importação;
+    tela `imports` (`ui/screens/ImportsScreen.kt`), com confirmação e desfazer.
+  - **Estornar uma movimentação** (RF-LAN-09): botão na tela do lançamento, cria o contrário com desfazer.
+  - **ERR-048**: Ajustes › Avisos só mudava depois de sair e voltar (a tela lia o contador de mudanças sem usar o valor).
+- 161 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
   fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
@@ -447,6 +457,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Painel do mês (orçamento) | `ui/screens/BudgetMonthScreen.kt` |
 | Motor financeiro (previsão com faixa, recorrências, próximos meses, saúde, dívidas, rendimento) | `domain/engine/`, `ui/screens/EngineScreens.kt`, cartões em `InsightsScreen.kt` |
 | Contas fixas: ritmo, parcelas, juros, prazo e modelos (1.5) | `domain/Ledger.kt` (`BillCycle`), `data/BillTemplates.kt`, `ui/screens/PlanScreens.kt` (`BillCycleFields`) |
+| Importações feitas, apagar uma inteira (1.5) | `domain/ImportBatches.kt`, `ui/screens/ImportsScreen.kt` |
 | Contas fixas × extrato (1.5) | `domain/BillMatch.kt`, `importer/ImportPlan.kt` (`withBills`), `ui/screens/PlanScreens.kt` (`BillSuggestionsSheet`) |
 | Perfil (1.5) | `ui/components/Avatar.kt`, `ui/screens/ProfileScreens.kt` |
 | Guia "Aprender o Cryo" (1.5) | `domain/Guide.kt`, `data/GuideStore.kt`, `ui/components/Guide.kt`, `ui/screens/LearnScreen.kt` |
@@ -454,7 +465,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 950 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 957 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -488,7 +499,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -500,6 +511,9 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   `Long`) somou 8 MB e derrubou o `EngineResourcesTest`; a correção foi uma passada só, sem ordenar (`BillMatcher.certain`).
 - **Suíte inteira em lotes**: aqui o comando tem limite de 10 minutos; rode por letra inicial da classe
   (`--tests 'io.github.h3yk0.cryo.E*'` etc.). O Gradle apaga os resultados a cada rodada: some os lotes à mão.
+- **Extrato de verdade nunca entra no repositório** (PRC-06): para diagnosticar um PDF do Hanry, extraia o texto numa
+  pasta fora do projeto (`pdftotext -layout`), chame `PdfStatement.parse` por um teste temporário e **apague o teste**
+  depois; o teste-guarda que fica no repositório usa um extrato inventado no mesmo formato.
 - **Botão estendido (`ExtendedFloatingActionButton`)**: o Material esconde o texto dele da árvore mesclada; nos testes,
   procure pelo `contentDescription` (ERR-047), não pelo texto.
 - **`performScrollToNode` quer exatamente um rolável**: na tela de lançamento há vários; use `performScrollTo()` no

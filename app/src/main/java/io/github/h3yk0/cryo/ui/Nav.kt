@@ -157,6 +157,7 @@ object Routes {
     const val ALERT_SETTINGS = "settings/alerts"
     const val PROFILE = "profile"
     const val LEARN = "learn"
+    const val IMPORTS = "imports"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
@@ -447,6 +448,7 @@ fun CryoRoot(openOnStart: String?) {
                     )
                 }
                 composable(Routes.IMPORT_REPORT) { ImportReportScreen() }
+                composable(Routes.IMPORTS) { io.github.h3yk0.cryo.ui.screens.ImportsScreen() }
                 composable(Routes.DEV) { DevScreen() }
                 composable(Routes.CATEGORIES) { CategoriesScreen() }
                 composable(Routes.TOUR) { TourScreen() }

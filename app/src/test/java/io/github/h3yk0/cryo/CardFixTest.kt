@@ -15,6 +15,7 @@ import io.github.h3yk0.cryo.ui.tx.saveDraft
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.robolectric.RobolectricTestRunner
@@ -151,6 +152,32 @@ class CardFixTest {
         assertEquals(1L, paid.accountId)
         assertEquals(9000L, l.invoice(card, dec).paid)
         assertEquals(0L, l.invoice(card, nov).paid)
+    }
+
+    /** RF-IMP-23: as importações viram grupos (destino + hora), para dar para apagar uma inteira. */
+    @Test fun importacoesViramGruposParaApagar() = runBlocking {
+        val c = container(
+            Tx(1, TxType.EXPENSE, 1000, day(2), "A", accountId = 1, importKey = "a1|ofx.id:1", createdAt = 1000),
+            Tx(2, TxType.INCOME, 5000, day(3), "B", accountId = 1, importKey = "a1|ofx.id:2", createdAt = 1000),
+            Tx(3, TxType.EXPENSE, 2000, day(4), "C", cardId = 1, invoiceYm = 202611, importKey = "c1|csv.h:ab", createdAt = 2000),
+            Tx(4, TxType.EXPENSE, 700, day(5), "À mão", accountId = 1),
+        )
+        val batches = io.github.h3yk0.cryo.domain.ImportBatches.of(c.repo.loadOnce().txs)
+        assertEquals(2, batches.size)
+        val cartao = batches.first { it.cardId == 1L }
+        val conta = batches.first { it.accountId == 1L }
+        assertEquals(2, conta.count)
+        assertEquals(4000L, conta.net)
+        assertEquals(1, cartao.count)
+        // Apagar a importação da conta tira as duas linhas dela e deixa o que foi lançado à mão.
+        c.repo.undoImport(conta.txs.map { it.id })
+        val after = c.repo.loadOnce().txs
+        assertEquals(2, after.size)
+        assertTrue(after.any { it.description == "À mão" })
+        assertTrue(after.any { it.importKey == "c1|csv.h:ab" })
+        // E desfazer devolve tudo, com os mesmos ids.
+        c.repo.importTxs(conta.txs)
+        assertEquals(setOf(1L, 2L, 3L, 4L), c.repo.loadOnce().txs.map { it.id }.toSet())
     }
 
     /** RF-CAR-11: "ajustar total" lança a diferença como um ajuste na fatura (para mais ou para menos) e apagar o ajuste desfaz. */

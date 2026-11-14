@@ -43,6 +43,7 @@ import androidx.compose.material.icons.rounded.Description
 import androidx.compose.material.icons.rounded.ErrorOutline
 import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Lock
 import androidx.compose.material.icons.rounded.Science
 import androidx.compose.material.icons.rounded.MoreVert
@@ -177,9 +178,11 @@ fun ImportScreen(presetAccountId: Long? = null, presetCardId: Long? = null, mode
             devMode = devMode,
             testMode = c.sandbox,
             hasReport = c.lastImport.collectAsState().value != null,
+            hasImports = l.s.txs.any { it.importKey != null },
             onPick = { picker.launch(arrayOf("*/*")) },
             onBack = { nav.back() },
             onReport = { nav.go(Routes.IMPORT_REPORT) },
+            onImports = { nav.go(Routes.IMPORTS) },
         )
         is ImportModel.Step.Password -> PasswordStep(vm.fileName, retry = step.retry, onSubmit = vm::submitPassword, onBack = { vm.reset() })
         is ImportModel.Step.Columns -> ColumnsStep(step, vm.error, onBack = { vm.reset() }, onDone = vm::useColumns)
@@ -205,9 +208,11 @@ private fun ImportStart(
     devMode: Boolean,
     testMode: Boolean,
     hasReport: Boolean,
+    hasImports: Boolean,
     onPick: () -> Unit,
     onBack: () -> Unit,
     onReport: () -> Unit,
+    onImports: () -> Unit,
 ) {
     Scaffold(
         topBar = { CryoTopBar(Res.s(R.string.import_importar_extrato), onBack = onBack) },
@@ -237,6 +242,15 @@ private fun ImportStart(
                 )
                 if (devMode && hasReport) {
                     TextButton(onClick = onReport) { Text(Res.s(R.string.import_ver_relatorio_leitura)) }
+                }
+            }
+            // RF-IMP-23: quem já importou alguma vez pode rever e apagar uma importação inteira.
+            if (hasImports) {
+                Spacer(Modifier.height(12.dp))
+                OutlinedButton(onClick = onImports, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Rounded.History, null, Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text(Res.s(R.string.imports_link))
                 }
             }
             FieldLabel(Res.s(R.string.import_formatos_que_cryo_le))

@@ -1977,4 +1977,19 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">%1$s 것은 이미 냈어요</string>
     <string name="bill_already_paid_hint">이미 있는 기록에서 그 결제를 찾고, 없을 때만 새로 등록해요.</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">가져온 내역</string>
+    <string name="imports_link">가져온 내역 보기</string>
+    <string name="imports_empty">아직 가져온 명세서가 없어요.</string>
+    <string name="imports_hint">삭제하면 그 파일에서 들어온 것만 지워져요. 직접 적은 기록은 남아요.</string>
+    <string name="imports_when">%1$s에 가져옴</string>
+    <string name="imports_period">%1$s ~ %2$s</string>
+    <string name="imports_delete_q">이 가져오기를 지울까요?</string>
+    <string name="imports_deleted">가져오기를 지웠어요</string>
+    <string name="tx_refund">환불로 기록</string>
+    <string name="tx_refund_done">환불을 기록했어요</string>
+    <string name="tx_refund_of">환불 · %1$s</string>
+    <plurals name="imports_count">
+        <item quantity="other">%1$d건</item>
+    </plurals>
 </resources>

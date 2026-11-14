@@ -329,6 +329,47 @@ class StatementImportTest {
         assertEquals("Transferência recebida pelo Pix FULANO DE TAL", st.lines[0].description)
     }
 
+    /**
+     * ERR-049/050/051: extrato de conta no formato que agrupa o dia em "Total de entradas" e "Total de saídas", com
+     * CNPJ na mesma linha do valor e o cabeçalho do período repetido a cada página. Inventado, no molde dos PDFs
+     * brasileiros (o extrato de verdade que mostrou os três defeitos nunca entra no repositório, PRC-06).
+     */
+    @Test fun pdfComSecoesPorDiaCnpjEQuebraDePagina() {
+        val text = """
+            01 DE NOVEMBRO DE 2026 a 13 DE NOVEMBRO DE 2026
+            Saldo inicial 3,88
+            Total de entradas +1.300,00
+            Total de saídas -165,95
+            Movimentações
+            03 NOV 2026 Total de entradas
+            Transferência recebida pelo Pix FULANO DE TAL - 123.456.789-00 90,00
+            Total de saídas
+            Compra no débito PADARIA EXEMPLO 23,45
+            04 NOV 2026 Total de entradas
+            Transferência Recebida EMPRESA EXEMPLO LTDA - 11.222.333/0001-44 1.200,00
+            Total de saídas
+            Transferência enviada pelo Pix LOJA EXEMPLO LTDA - 12.345.678/0001-49 - 87,50
+            01 DE NOVEMBRO DE 2026 a 13 DE NOVEMBRO DE 2026
+            Pagamento de boleto efetuado EMPRESA EXEMPLO 45,00
+            05 NOV 2026 Total de entradas
+            Crédito em conta 10,00
+            Total de saídas
+            Débito em conta 10,00
+        """.trimIndent()
+        val st = PdfStatement.parse(listOf(text), today)
+        assertFalse(st.isCard)
+        // ERR-049: o fim do CNPJ ("/0001-49") não vira parte do valor (lia 49.087,50 no lugar de 87,50).
+        // ERR-051: a seção do dia manda; o traço solto do texto ("LTDA - 87,50") não inverte o sinal.
+        assertEquals(listOf(9000L, -2345L, 120000L, -8750L, -4500L, 1000L, -1000L), st.lines.map { it.amount })
+        // ERR-050: o cabeçalho do período que se repete a cada página não é o dia das movimentações seguintes.
+        assertEquals(
+            listOf(d(3, 11), d(3, 11), d(4, 11), d(4, 11), d(4, 11), d(5, 11), d(5, 11)),
+            st.lines.map { it.date },
+        )
+        // E a soma bate com o que o banco diz (entradas - saídas).
+        assertEquals(130000L - 16595L, st.lines.sumOf { it.amount })
+    }
+
     @Test fun pdfDeFaturaSemSinais() {
         val text = """
             Fatura do cartão - vencimento 10/10/2026

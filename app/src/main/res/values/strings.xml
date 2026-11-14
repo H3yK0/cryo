@@ -2139,4 +2139,20 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">Já paguei o de %1$s</string>
     <string name="bill_already_paid_hint">O Cryo procura esse pagamento no que você já tem; só lança um novo se não achar.</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">Importações feitas</string>
+    <string name="imports_link">Ver as importações feitas</string>
+    <string name="imports_empty">Você ainda não importou nenhum extrato.</string>
+    <string name="imports_hint">Apagar tira do Cryo só o que veio daquele arquivo. O que você lançou à mão continua.</string>
+    <string name="imports_when">Importado em %1$s</string>
+    <string name="imports_period">De %1$s a %2$s</string>
+    <string name="imports_delete_q">Apagar esta importação?</string>
+    <string name="imports_deleted">Importação apagada</string>
+    <string name="tx_refund">Estornar</string>
+    <string name="tx_refund_done">Estorno lançado</string>
+    <string name="tx_refund_of">Estorno · %1$s</string>
+    <plurals name="imports_count">
+        <item quantity="one">%1$d lançamento</item>
+        <item quantity="other">%1$d lançamentos</item>
+    </plurals>
 </resources>

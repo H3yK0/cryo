@@ -1977,4 +1977,19 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">%1$s分はもう払いました</string>
     <string name="bill_already_paid_hint">すでにある記録からその支払いを探し、見つからないときだけ新しく登録します。</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">取り込んだ履歴</string>
+    <string name="imports_link">取り込んだ履歴を見る</string>
+    <string name="imports_empty">まだ明細を取り込んでいません。</string>
+    <string name="imports_hint">削除してもそのファイルから入ったものだけが消えます。手で入力した記録は残ります。</string>
+    <string name="imports_when">%1$sに取り込み</string>
+    <string name="imports_period">%1$s〜%2$s</string>
+    <string name="imports_delete_q">この取り込みを削除しますか？</string>
+    <string name="imports_deleted">取り込みを削除しました</string>
+    <string name="tx_refund">返金として登録</string>
+    <string name="tx_refund_done">返金を登録しました</string>
+    <string name="tx_refund_of">返金・%1$s</string>
+    <plurals name="imports_count">
+        <item quantity="other">%1$d件</item>
+    </plurals>
 </resources>

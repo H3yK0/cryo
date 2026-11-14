@@ -2014,4 +2014,20 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">Ho già pagato quella di %1$s</string>
     <string name="bill_already_paid_hint">Cryo cerca quel pagamento tra i tuoi movimenti e ne crea uno solo se non lo trova.</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">Importazioni fatte</string>
+    <string name="imports_link">Vedi le importazioni fatte</string>
+    <string name="imports_empty">Non hai ancora importato nessun estratto.</string>
+    <string name="imports_hint">Eliminare toglie solo ciò che veniva da quel file. Quello che hai inserito a mano resta.</string>
+    <string name="imports_when">Importato il %1$s</string>
+    <string name="imports_period">Dal %1$s al %2$s</string>
+    <string name="imports_delete_q">Eliminare questa importazione?</string>
+    <string name="imports_deleted">Importazione eliminata</string>
+    <string name="tx_refund">Rimborsa</string>
+    <string name="tx_refund_done">Rimborso registrato</string>
+    <string name="tx_refund_of">Rimborso · %1$s</string>
+    <plurals name="imports_count">
+        <item quantity="one">%1$d movimento</item>
+        <item quantity="other">%1$d movimenti</item>
+    </plurals>
 </resources>

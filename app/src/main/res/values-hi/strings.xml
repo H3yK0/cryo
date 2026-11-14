@@ -2014,4 +2014,20 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">%1$s वाला मैंने चुका दिया है</string>
     <string name="bill_already_paid_hint">Cryo आपके मौजूदा रिकॉर्ड में वह भुगतान ढूँढता है; न मिले तभी नया दर्ज करता है।</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">किए गए इम्पोर्ट</string>
+    <string name="imports_link">किए गए इम्पोर्ट देखें</string>
+    <string name="imports_empty">आपने अभी तक कोई स्टेटमेंट इम्पोर्ट नहीं किया।</string>
+    <string name="imports_hint">हटाने से सिर्फ़ उसी फ़ाइल से आया हिस्सा जाता है। आपने हाथ से जो दर्ज किया वह रहता है।</string>
+    <string name="imports_when">%1$s को इम्पोर्ट</string>
+    <string name="imports_period">%1$s से %2$s तक</string>
+    <string name="imports_delete_q">यह इम्पोर्ट हटाएँ?</string>
+    <string name="imports_deleted">इम्पोर्ट हटा दिया</string>
+    <string name="tx_refund">रिफ़ंड दर्ज करें</string>
+    <string name="tx_refund_done">रिफ़ंड दर्ज हो गया</string>
+    <string name="tx_refund_of">रिफ़ंड · %1$s</string>
+    <plurals name="imports_count">
+        <item quantity="one">%1$d लेन-देन</item>
+        <item quantity="other">%1$d लेन-देन</item>
+    </plurals>
 </resources>

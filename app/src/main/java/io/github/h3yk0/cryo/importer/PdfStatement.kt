@@ -34,10 +34,22 @@ object PdfStatement {
         }
         val symbol = """R\$|US\$|\$|€|£|¥|￥|₩|₹|Rs\.?"""
         return Regex(
-            """(?<![\d,.])([-−+]\s*)?((?:$symbol)\s*)?([-−]\s*)?($number)(?:\s*(?:€|円|원|元|EUR\b))?""" +
+            // ERR-049: `(?<!\d[-−/])` impede que o fim de um CNPJ/CPF/conta ("…/0001-49") vire o começo do valor.
+            """(?<![\d,.])(?<!\d[-−/])([-−+]\s*)?((?:$symbol)\s*)?([-−]\s*)?($number)(?:\s*(?:€|円|원|元|EUR\b))?""" +
                 """([-−](?!\d)|\s+[-−](?!\s*(?:(?:$symbol)\s*)?\d))?(\s*(?:CR|DR|Cr|Dr|[DC])(?![A-Za-z]))?""",
         )
     }
+
+    /**
+     * ERR-049: CNPJ, CPF e contas com dígito. Eles são apagados (trocados por espaços do mesmo tamanho) só na hora de
+     * **procurar o valor**: "LOJA EXEMPLO - 12.345.678/0001-49   512,30" lia 49 512,30 (bancos põem o CNPJ na
+     * mesma linha, e "49 512,30" é um valor válido em países que separam milhar com espaço). Vira "#" e não espaço
+     * para o traço que vem antes dele ("LTDA - 12.345.678/0001-49 - 87,50") não colar no valor do outro lado.
+     */
+    private val DOCUMENTS = Regex("""\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}|\d{3}\.\d{3}\.\d{3}-\d{2}|\d{1,3}(?:\.\d{3})+/\d{4}""")
+
+    private fun maskDocuments(line: String): String =
+        if (!line.contains('/')) line else DOCUMENTS.replace(line) { "#".repeat(it.value.length) }
 
     private const val MONTHS = "jan|fev|feb|mar|abr|apr|avr|mai|may|mag|jun|jui|giu|jul|lug|ago|aug|aou|set|sep|out|oct|okt|ott|nov|dez|dec|dic|ene|gen"
 
@@ -50,6 +62,9 @@ object PdfStatement {
             """)(?=\s|$)""",
         RegexOption.IGNORE_CASE,
     )
+
+    /** O que liga as duas datas de um período: "de X **a** Y", "X **to** Y", "X **-** Y". */
+    private val PERIOD = Regex("""^(a|à|ate|até|to|au|bis|al|hasta|fino al|-|–|—)\s""", RegexOption.IGNORE_CASE)
 
     /** Datas completas no texto (com o ano), para descobrir o ano das datas que vêm sem ele. */
     private val FULL_DATE = Regex(
@@ -157,7 +172,11 @@ object PdfStatement {
         for (line in rawLines) {
             var rest = line
             leadRx.find(line)?.let { m ->
-                val d = Values.date(m.value, reference, monthFirst)
+                val after = line.substring(m.range.last + 1).trim()
+                // ERR-050: o cabeçalho que se repete em toda página ("01 de novembro de 2026 a 13 de novembro de 2026")
+                // não é o dia de nada: sem isto, tudo o que vinha depois da quebra de página ia para o dia 1.
+                val period = PERIOD.containsMatchIn(after) && leadRx.containsMatchIn(after.substringAfter(' ').trim())
+                val d = if (period) null else Values.date(m.value, reference, monthFirst)
                 if (d != null) {
                     currentDate = d
                     rest = line.substring(m.range.last + 1).trim()
@@ -171,7 +190,7 @@ object PdfStatement {
                 norm.contains("total de saidas") || norm == "saidas" || norm.startsWith("debitos") ||
                     OUT_SECTIONS.any { norm == it || norm.startsWith("total $it") } -> section = -1
             }
-            val money = moneyRx.findAll(rest).toList()
+            val money = moneyRx.findAll(maskDocuments(rest)).toList()
             if (money.isEmpty()) {
                 if (rest.isNotEmpty() && rest.any { it.isLetter() }) {
                     pending += rest
@@ -205,10 +224,14 @@ object PdfStatement {
 
         // 2ª passada: o sinal de quem não tem.
         val lines = found.map { f ->
-            val cents = if (marksOut(f.value) || marksIn(f.value)) f.cents else {
-                val d = f.description.normalized()
+            val d0 = f.description.normalized()
+            val cents = if (f.section != 0) {
+                // ERR-051: quando o extrato agrupa o dia em "Total de entradas" e "Total de saídas", quem manda é a
+                // seção. Antes, um traço do próprio texto ("LTDA - 119,99") virava sinal e invertia a movimentação.
+                f.section * abs(f.cents)
+            } else if (marksOut(f.value) || marksIn(f.value)) f.cents else {
+                val d = d0
                 when {
-                    f.section != 0 -> f.section * abs(f.cents)
                     docMarksOut -> abs(f.cents)
                     docMarksIn -> -abs(f.cents)
                     longest(IN_WORDS, d) > longest(OUT_WORDS, d) -> abs(f.cents)

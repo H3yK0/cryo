@@ -52,6 +52,11 @@ Tudo o que foi feito depois da 1.4, numa versão só. Continua tudo rodando no s
 - A barra de desfazer não cobre mais o botão "+", e os botões flutuantes passaram a ter nome para o leitor de tela
 - Banco de dados versão 5: as contas fixas ganharam ritmo, parcelas, preço à vista e prazo. As que já existem continuam mensais, do mesmo jeito
 
+- **Apagar uma importação inteira**: "Importações feitas" lista cada importação com o que ela trouxe e apaga tudo de uma vez, com desfazer. Apagar tira só o que veio daquele arquivo
+- **Estornar uma movimentação**: um toque cria o lançamento contrário e o original fica no histórico
+- **Leitura de extrato corrigida em três pontos** (achados com um extrato de verdade): o CNPJ ao lado do valor não entra mais no valor, o cabeçalho da página não joga mais o que vem depois para o dia 1, e um traço no meio da descrição não transforma mais uma saída em entrada. Com isso, um extrato de verdade passa a bater com o banco no centavo
+- Ajustes › Avisos agora muda na hora, e não só depois de sair da tela
+
 **Bom saber**
 - Permissões novas: **microfone** (pedido só no primeiro toque no botão de voz) e **notificações promovidas** (as atualizações ao vivo do Android 16; não pergunta nada). Continua sem permissão de internet
 - O app passa de uns 6 MB para uns 65 MB, porque o modelo de fala vai dentro dele

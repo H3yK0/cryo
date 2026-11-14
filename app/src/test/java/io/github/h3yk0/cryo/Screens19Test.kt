@@ -40,7 +40,9 @@ import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.ui.screens.BillEditorScreen
 import io.github.h3yk0.cryo.ui.screens.PlanScreen
+import io.github.h3yk0.cryo.ui.screens.AlertSettingsScreen
 import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
+import io.github.h3yk0.cryo.ui.screens.ImportsScreen
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.TxEditorScreen
 import kotlinx.coroutines.runBlocking
@@ -195,6 +197,39 @@ class Screens19Test {
         waitText("Uma vez por ano")
         waitText("Parcela 1 de 3")
         captureScreenRoboImage("screenshots/99_contas_fixas_anual.png")
+    }
+
+    /**
+     * ERR-048: trocar o tom (ou qualquer chave) em Ajustes › Avisos aparecia só depois de sair e voltar da tela.
+     * A tela lia o contador de mudanças mas nunca o usava, então o Compose não registrava leitura nenhuma.
+     */
+    @Test fun trocarOTomDoAvisoApareceNaHora() {
+        io.github.h3yk0.cryo.notify.AlertState(ApplicationProvider.getApplicationContext<android.app.Application>()).tone =
+            io.github.h3yk0.cryo.notify.AlertTone.FRIEND
+        show { AlertSettingsScreen() }
+        waitText("Frases curtas e animadas")
+        rule.onNodeWithText("Discreto").performClick()
+        waitText("Só o essencial")
+        assertTrue(rule.onAllNodesWithText("Frases curtas e animadas", substring = true).fetchSemanticsNodes().isEmpty())
+    }
+
+    /** RF-IMP-23: a lista das importações feitas, com o botão de apagar a importação inteira (imagem 100). */
+    @Test fun listaDeImportacoesFeitas() {
+        val acc = c.repo.snapshot.value!!.accounts.first().id
+        runBlocking {
+            val now = System.currentTimeMillis()
+            c.repo.importTxs(
+                listOf(
+                    io.github.h3yk0.cryo.data.db.Tx(type = TxType.EXPENSE, amount = 2345, date = day.minusDays(3), description = "Padaria", accountId = acc, importKey = "a$acc|ofx.id:1", createdAt = now),
+                    io.github.h3yk0.cryo.data.db.Tx(type = TxType.INCOME, amount = 120000, date = day.minusDays(2), description = "Transferência recebida", accountId = acc, importKey = "a$acc|ofx.id:2", createdAt = now),
+                ),
+            )
+        }
+        rule.waitUntil(10_000) { c.repo.snapshot.value?.txs?.any { it.importKey != null } == true }
+        show { ImportsScreen() }
+        waitText("Importações feitas")
+        waitText("2 lançamentos")
+        captureScreenRoboImage("screenshots/100_importacoes_feitas.png")
     }
 
     /** RF-MOT-04: em Análises, numa frase: a conta fica negativa? quando? qual o menor saldo? */

@@ -2014,4 +2014,20 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">I already paid the one for %1$s</string>
     <string name="bill_already_paid_hint">Cryo looks for that payment among your entries and only adds one if it finds none.</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">Imports you made</string>
+    <string name="imports_link">See the imports you made</string>
+    <string name="imports_empty">You have not imported a statement yet.</string>
+    <string name="imports_hint">Deleting removes only what came from that file. What you logged by hand stays.</string>
+    <string name="imports_when">Imported on %1$s</string>
+    <string name="imports_period">From %1$s to %2$s</string>
+    <string name="imports_delete_q">Delete this import?</string>
+    <string name="imports_deleted">Import deleted</string>
+    <string name="tx_refund">Refund</string>
+    <string name="tx_refund_done">Refund recorded</string>
+    <string name="tx_refund_of">Refund · %1$s</string>
+    <plurals name="imports_count">
+        <item quantity="one">%1$d entry</item>
+        <item quantity="other">%1$d entries</item>
+    </plurals>
 </resources>

@@ -1977,4 +1977,19 @@
     <!-- 1.5: 'já paguei' ao criar a conta fixa -->
     <string name="bill_already_paid">%1$s 的已经付过了</string>
     <string name="bill_already_paid_hint">Cryo 会先在已有记录里找这笔付款，找不到才新建一笔。</string>
+    <!-- 1.5: apagar uma importação inteira e estornar uma movimentação -->
+    <string name="imports_title">导入记录</string>
+    <string name="imports_link">查看导入记录</string>
+    <string name="imports_empty">你还没有导入过对账单。</string>
+    <string name="imports_hint">删除只会移除来自那个文件的记录，你手动记的会保留。</string>
+    <string name="imports_when">导入于 %1$s</string>
+    <string name="imports_period">%1$s 至 %2$s</string>
+    <string name="imports_delete_q">删除这次导入？</string>
+    <string name="imports_deleted">已删除这次导入</string>
+    <string name="tx_refund">记一笔退款</string>
+    <string name="tx_refund_done">已记下退款</string>
+    <string name="tx_refund_of">退款 · %1$s</string>
+    <plurals name="imports_count">
+        <item quantity="other">%1$d 笔</item>
+    </plurals>
 </resources>
