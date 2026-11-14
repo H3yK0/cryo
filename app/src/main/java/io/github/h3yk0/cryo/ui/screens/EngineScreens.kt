@@ -25,6 +25,7 @@ import androidx.compose.material.icons.automirrored.rounded.TrendingUp
 import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Event
+import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.FavoriteBorder
 import androidx.compose.material.icons.rounded.Insights
 import androidx.compose.material.icons.rounded.PriorityHigh
@@ -37,6 +38,7 @@ import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Surface
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -51,6 +53,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.data.db.Bill
@@ -230,7 +233,33 @@ fun ProjectionCard(p: Projection) {
         Spacer(Modifier.height(8.dp))
         ProjectionChart(p, days)
         Spacer(Modifier.height(8.dp))
-        StatLine(Icons.Rounded.Event, Res.s(R.string.engine_tightest_day, Dates.dayMonth(tightDate), money(tightValue, hide)), if (tightValue < 0) CryoTheme.colors.expense else null)
+        // RF-MOT-04: a pergunta que importa, logo abaixo do gráfico e em uma frase: a conta fica negativa? quando?
+        // Quanto é o menor saldo? (Pedido de quem usa, issue #3: "com isso podemos nos programar melhor".)
+        val firstNeg = p.firstNegativeWithin(days)
+        val tint = if (firstNeg != null) CryoTheme.colors.expense else CryoTheme.colors.income
+        Surface(color = tint.copy(alpha = 0.10f), shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(if (firstNeg != null) Icons.Rounded.PriorityHigh else Icons.Rounded.CheckCircle, null, Modifier.size(20.dp), tint = tint)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (firstNeg != null) Res.s(R.string.proj_negative_from, Dates.dayMonth(firstNeg)) else Res.s(R.string.proj_safe),
+                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                Text(
+                    Res.s(R.string.proj_min_balance, money(tightValue, hide), Dates.dayMonth(tightDate)),
+                    style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp),
+                )
+                if (firstNeg != null) {
+                    Text(
+                        Res.s(R.string.proj_min_hint),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+            }
+        }
         if (p.chanceNegative >= 0.01) {
             StatLine(Icons.Rounded.PriorityHigh, Res.s(R.string.engine_chance_negative, Num.percent((p.chanceNegative * 100).roundToInt())), CryoTheme.colors.warning)
         }

@@ -1927,4 +1927,16 @@
     <string name="card_adjust_done">청구서를 %1$s(으)로 조정했어요</string>
     <string name="card_adjust_same">청구서가 이미 그 합계예요.</string>
     <string name="card_refund_hint">카드 환불 또는 크레딧: 청구 금액이 줄어요.</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">다른 청구서…</string>
+    <string name="tx_invoice_pick">어느 청구서에 넣을까요</string>
+    <string name="tx_invoice_pick_hint">지난 청구서, 이미 낸 청구서에도 넣을 수 있어요. 과거 기록을 채울 때 좋아요.</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">이 기간에는 잔액이 마이너스가 되지 않아요</string>
+    <string name="proj_negative_from">%1$s부터 잔액이 마이너스가 돼요</string>
+    <string name="proj_min_balance">예상 최저 잔액: %2$s에 %1$s</string>
+    <string name="proj_min_hint">미리 준비할 수 있어요: 투자를 해지하거나, 큰 지출을 미루거나, 수입을 앞당기세요.</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Cryo 후원하기</string>
+    <string name="settings_support_sub">개발자에게 커피 한 잔 (브라우저가 열려요)</string>
 </resources>

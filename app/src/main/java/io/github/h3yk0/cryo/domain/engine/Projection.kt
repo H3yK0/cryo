@@ -42,6 +42,12 @@ data class Projection(
     /** Os primeiros [months] meses (para mostrar 3, 6 ou 12 meses sem calcular de novo). */
     fun monthsAhead(months: Int): Int = ChronoUnit.DAYS.between(start, start.plusMonths(months.toLong())).toInt().coerceAtMost(horizonDays)
 
+    /** O primeiro dia, dentro dos primeiros [days], em que o saldo mais provável fica abaixo de zero (ou null). */
+    fun firstNegativeWithin(days: Int): LocalDate? {
+        for (i in 1..days.coerceAtMost(horizonDays)) if (mid[i] < 0) return dateAt(i)
+        return null
+    }
+
     /** O dia mais apertado dentro dos primeiros [days] dias. */
     fun tightestWithin(days: Int): Pair<LocalDate, Long> {
         var bi = 0

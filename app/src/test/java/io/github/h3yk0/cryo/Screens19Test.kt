@@ -13,14 +13,25 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.assertHasClickAction
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.onAllNodesWithContentDescription
+import androidx.compose.ui.test.onNodeWithContentDescription
 import androidx.compose.ui.test.onNodeWithText
 import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onRoot
+import androidx.compose.ui.test.printToString
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureScreenRoboImage
 import io.github.h3yk0.cryo.data.AppSettings
 import io.github.h3yk0.cryo.data.ThemeMode
 import io.github.h3yk0.cryo.data.db.TxType
+import androidx.compose.ui.test.hasScrollToNodeAction
+import androidx.compose.ui.test.hasText
+import androidx.compose.ui.test.onLast
+import androidx.compose.ui.test.performScrollTo
+import androidx.compose.ui.test.performScrollToNode
+import io.github.h3yk0.cryo.ui.CryoRoot
+import io.github.h3yk0.cryo.ui.screens.InsightsScreen
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Navigator
 import io.github.h3yk0.cryo.ui.components.LocalContainer
@@ -71,6 +82,18 @@ class Screens19Test {
         rule.waitForIdle()
     }
 
+    /** O app inteiro, para o que depende da barra de mensagem e das abas. */
+    private fun showApp() {
+        rule.setContent {
+            CryoTheme(mode = ThemeMode.LIGHT, dynamicColor = false) {
+                CompositionLocalProvider(LocalContainer provides c, LocalSettings provides settings, LocalFixedToday provides day) {
+                    Surface(color = MaterialTheme.colorScheme.background, modifier = Modifier.fillMaxSize()) { CryoRoot(null) }
+                }
+            }
+        }
+        rule.waitForIdle()
+    }
+
     private fun waitText(t: String) = rule.waitUntil(10_000) { rule.onAllNodesWithText(t, substring = true).fetchSemanticsNodes().isNotEmpty() }
     private val cardId get() = c.repo.snapshot.value!!.cards.first().id
 
@@ -93,5 +116,60 @@ class Screens19Test {
         waitText("Estorno ou crédito no cartão")
         assertTrue(rule.onAllNodesWithText("Entra na fatura de", substring = true).fetchSemanticsNodes().isNotEmpty())
         captureScreenRoboImage("screenshots/94_estorno_no_cartao.png")
+    }
+
+    /**
+     * RF-CAR-10: "Outra…" abre **todas** as faturas do cartão, inclusive as antigas, para quem está pondo o histórico
+     * no app (pedido de quem usa, issue #3: a compra de setembro caía em dezembro e não dava para mudar).
+     */
+    @Test fun escolherUmaFaturaAntigaPelaLista() {
+        show { TxEditorScreen(txId = null, initialType = TxType.EXPENSE, presetAccountId = null, presetCardId = cardId, onDone = {}) }
+        waitText("Fatura em que entra")
+        rule.onNodeWithText("Outra…").performScrollTo().performClick()
+        waitText("Em qual fatura entra")
+        captureScreenRoboImage("screenshots/95_escolher_a_fatura.png")
+        // Uma fatura de três meses atrás: fora dos chips vizinhos, mas na lista.
+        val old = io.github.h3yk0.cryo.domain.CardMath.invoiceFor(c.repo.snapshot.value!!.cards.first(), day).minusMonths(3)
+        val label = io.github.h3yk0.cryo.domain.Dates.monthYearInSentence(old, day).replaceFirstChar { it.uppercase() }
+        rule.onAllNodes(hasScrollToNodeAction()).onLast().performScrollToNode(hasText(label, substring = true))
+        rule.onNodeWithText(label, substring = true).performClick()
+        rule.waitUntil(10_000) { rule.onAllNodesWithText("Em qual fatura entra").fetchSemanticsNodes().isEmpty() }
+        // O formulário passa a dizer que a compra entra nessa fatura.
+        waitText(io.github.h3yk0.cryo.domain.Dates.monthInSentence(old))
+    }
+
+    /**
+     * ERR-046: a barra de desfazer cobria o botão "Lançar" do Extrato, e a pessoa tinha de esperar a barra sumir para
+     * lançar de novo. Agora o botão sobe a altura da barra enquanto ela está à vista.
+     */
+    @Test fun aBarraDeDesfazerNaoCobreOBotaoDeLancar() {
+        showApp()
+        waitText("Saldo em contas")
+        rule.onNodeWithText("Extrato").performClick()
+        // ERR-047: o botão estendido só tem nome para o leitor de tela porque nós demos um.
+        rule.waitUntil(10_000) { rule.onAllNodesWithContentDescription("Lançar").fetchSemanticsNodes().isNotEmpty() }
+        fun fabBounds() = rule.onNodeWithContentDescription("Lançar").fetchSemanticsNode().boundsInRoot
+        val before = fabBounds().bottom
+        c.message("Lançamento salvo", "Desfazer") { }
+        waitText("Desfazer")
+        rule.waitUntil(10_000) { fabBounds().bottom < before - 10f }
+        val fab = fabBounds()
+        val bar = rule.onNodeWithText("Desfazer").fetchSemanticsNode().boundsInRoot
+        assertTrue("o botão continua por baixo da barra", fab.bottom <= bar.top + 1f)
+        captureScreenRoboImage("screenshots/96_desfazer_sem_cobrir_o_botao.png")
+    }
+
+    /** RF-MOT-04: em Análises, numa frase: a conta fica negativa? quando? qual o menor saldo? */
+    @Test fun previsaoDizSeAContaFicaNegativa() {
+        show { InsightsScreen() }
+        rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Próximos meses", substring = true))
+        rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Menor saldo previsto", substring = true))
+        waitText("Menor saldo previsto")
+        assertTrue(
+            "tem de dizer se fica negativa ou não",
+            rule.onAllNodesWithText("A conta não fica negativa", substring = true).fetchSemanticsNodes().isNotEmpty() ||
+                rule.onAllNodesWithText("A conta fica negativa a partir", substring = true).fetchSemanticsNodes().isNotEmpty(),
+        )
+        captureScreenRoboImage("screenshots/97_previsao_saldo_minimo.png")
     }
 }

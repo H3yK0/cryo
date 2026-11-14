@@ -1927,4 +1927,16 @@
     <string name="card_adjust_done">請求額を%1$sに調整しました</string>
     <string name="card_adjust_same">請求額はすでにその合計です。</string>
     <string name="card_refund_hint">カードへの返金・クレジット：請求額が減ります。</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">ほかの月…</string>
+    <string name="tx_invoice_pick">どの請求月に入れますか</string>
+    <string name="tx_invoice_pick_hint">過去の請求月、支払い済みの月にも入れられます。履歴を埋めるのに便利です。</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">この期間、残高はマイナスになりません</string>
+    <string name="proj_negative_from">%1$sから残高がマイナスになります</string>
+    <string name="proj_min_balance">最低残高の見込み：%2$sに%1$s</string>
+    <string name="proj_min_hint">前もって備えられます：投資を解約する、大きな支出を先送りする、入金を前倒しする。</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Cryoを応援する</string>
+    <string name="settings_support_sub">開発者にコーヒーを1杯（ブラウザが開きます）</string>
 </resources>

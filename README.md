@@ -96,6 +96,12 @@ Suggestions and bug reports are welcome in [Issues](https://github.com/H3yK0/cry
 - **Translations:** the 9 translations were made with the help of AI. If you speak one of these languages and find something odd, please open an issue: native review is very welcome.
 - **Statements from your bank:** the app has a **developer mode** (tap the version 7 times in Settings › About) with a test mode that uses a separate database and sample data, sample statements in every format and a reading report that can be shared in an anonymous version. If your bank's statement is not read correctly, you can help without sending your data: see [docs/IMPORTACAO.md](docs/IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (in Portuguese).
 
+## Support
+
+Cryo is free and has no ads, no tracking and no internet access. If it helps you and you feel like buying me a coffee, it is very welcome — and entirely optional.
+
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+
 ## License
 
 Copyright © 2026 Hanry Franco

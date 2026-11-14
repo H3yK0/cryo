@@ -36,6 +36,7 @@ import androidx.annotation.StringRes
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.layout.onGloballyPositioned
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.GuideCount
 import io.github.h3yk0.cryo.domain.GuidePlace
@@ -303,9 +304,23 @@ fun CryoRoot(openOnStart: String?) {
         else -> null
     }
 
-    androidx.compose.runtime.CompositionLocalProvider(LocalNav provides navigator, io.github.h3yk0.cryo.ui.components.LocalGuideSpots provides guideSpots) {
+    // ERR-046: a altura de verdade da barra de mensagem, para o botão "+" das telas subir só o necessário.
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    var snackHeight by remember { mutableStateOf(0.dp) }
+    val fabLift by androidx.compose.animation.core.animateDpAsState(snackHeight, tween(Motion.SHORT), label = "fabLift")
+
+    androidx.compose.runtime.CompositionLocalProvider(
+        LocalNav provides navigator,
+        io.github.h3yk0.cryo.ui.components.LocalGuideSpots provides guideSpots,
+        io.github.h3yk0.cryo.ui.components.LocalFabLift provides fabLift,
+    ) {
         Scaffold(
-            snackbarHost = { SnackbarHost(snackbar) },
+            snackbarHost = {
+                SnackbarHost(
+                    snackbar,
+                    Modifier.onGloballyPositioned { c -> snackHeight = with(density) { c.size.height.toDp() } },
+                )
+            },
             bottomBar = {
                 // DS-MOV-04: a barra some e volta deslizando, junto com a troca de tela.
                 AnimatedVisibility(

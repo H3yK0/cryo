@@ -5,25 +5,33 @@ package io.github.h3yk0.cryo.ui.tx
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.CreditCard
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilterChip
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.Stable
@@ -36,6 +44,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardCapitalization
@@ -52,6 +61,7 @@ import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.domain.ParsedEntry
 import io.github.h3yk0.cryo.domain.key
+import io.github.h3yk0.cryo.domain.capFirst
 import io.github.h3yk0.cryo.domain.ym
 import io.github.h3yk0.cryo.domain.ymOf
 import io.github.h3yk0.cryo.domain.normalized
@@ -62,6 +72,8 @@ import io.github.h3yk0.cryo.ui.components.DateChooser
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.Segmented
+import io.github.h3yk0.cryo.ui.components.groupedRow
+import io.github.h3yk0.cryo.ui.components.MoneyText
 import io.github.h3yk0.cryo.ui.components.Source
 import io.github.h3yk0.cryo.ui.components.SourceChips
 import io.github.h3yk0.cryo.ui.components.Stepper
@@ -299,18 +311,93 @@ suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResul
     return SaveResult(alert, undo, summary, moment)
 }
 
-/** RF-CAR-10: as faturas vizinhas da sugerida ([center]), para escolher em qual o lançamento entra. */
+/**
+ * RF-CAR-10: em qual fatura o lançamento entra. Os chips mostram a sugerida e as vizinhas (o caso de todo dia) e
+ * "Outra…" abre a lista com **todas** as faturas do cartão, inclusive as já pagas: quem está pondo o histórico antigo
+ * no app precisa alcançar um mês lá atrás. Flexível, mas sempre dizendo em que mês a compra vai cair.
+ */
 @OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 @Composable
-private fun InvoiceChips(label: String, center: java.time.YearMonth, selected: java.time.YearMonth, today: LocalDate, onSelect: (Int) -> Unit) {
+private fun InvoiceChips(
+    label: String,
+    card: CreditCard,
+    l: Ledger,
+    center: java.time.YearMonth,
+    selected: java.time.YearMonth,
+    today: LocalDate,
+    onSelect: (Int) -> Unit,
+) {
+    var picking by remember { mutableStateOf(false) }
     val months = (listOf(center.minusMonths(1), center, center.plusMonths(1)) + selected).distinct().sorted()
+    fun label(ym: java.time.YearMonth) = if (ym.year == today.year) Dates.monthName(ym) else Dates.monthShortYear(ym)
     FieldLabel(label)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         months.forEach { ym ->
-            FilterChip(
-                selected = ym == selected, onClick = { onSelect(ym.key()) },
-                label = { Text(if (ym.year == today.year) Dates.monthName(ym) else Dates.monthShortYear(ym)) },
+            FilterChip(selected = ym == selected, onClick = { onSelect(ym.key()) }, label = { Text(label(ym)) })
+        }
+        FilterChip(selected = false, onClick = { picking = true }, label = { Text(Res.s(R.string.tx_invoice_other)) })
+    }
+    if (picking) {
+        InvoicePickerSheet(card, l, center, selected, onDismiss = { picking = false }) { picking = false; onSelect(it) }
+    }
+}
+
+/** A lista de faturas do cartão, da mais antiga que ele tem (ou um ano atrás) até três meses à frente. */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun InvoicePickerSheet(
+    card: CreditCard,
+    l: Ledger,
+    center: java.time.YearMonth,
+    selected: java.time.YearMonth,
+    onDismiss: () -> Unit,
+    onPick: (Int) -> Unit,
+) {
+    val months = remember(card.id, center, l) {
+        val known = l.invoiceMonths(card)
+        val from = minOf(known.minOrNull() ?: center, center.minusMonths(12), selected)
+        val to = maxOf(center.plusMonths(3), selected)
+        generateSequence(from) { it.plusMonths(1) }.takeWhile { !it.isAfter(to) }.toList()
+    }
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
+            Text(Res.s(R.string.tx_invoice_pick), style = MaterialTheme.typography.titleLarge)
+            Text(
+                Res.s(R.string.tx_invoice_pick_hint),
+                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 4.dp, bottom = 12.dp),
             )
+            // Abre já perto do mês escolhido: a lista começa um ano atrás e o que interessa costuma estar no fim.
+            val state = androidx.compose.foundation.lazy.rememberLazyListState(
+                initialFirstVisibleItemIndex = (months.indexOf(selected) - 2).coerceAtLeast(0),
+            )
+            LazyColumn(Modifier.heightIn(max = 380.dp), state = state) {
+                itemsIndexed(months, key = { _, ym -> ym.key() }) { i, ym ->
+                    val inv = l.invoice(card, ym)
+                    Row(
+                        Modifier.fillMaxWidth().groupedRow(i, months.size)
+                            .clickable(role = Role.Button) { onPick(ym.key()) }
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(Dates.monthYearInSentence(ym, l.today).capFirst(), style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                Res.s(R.string.wallet_fecha_vence, Dates.short(CardMath.closingDate(card, ym)), Dates.short(CardMath.dueDate(card, ym))),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        if (inv.total == 0L) {
+                            Text(Res.s(R.string.wallet_sem_gastos), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            MoneyText(inv.total, style = MaterialTheme.typography.bodyMedium)
+                        }
+                        if (ym == selected) {
+                            Icon(Icons.Rounded.Check, null, Modifier.padding(start = 8.dp).size(18.dp), tint = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+            }
         }
     }
 }
@@ -408,7 +495,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     }
                     // RF-CAR-10: o Cryo sugere a fatura pela data; a pessoa pode mudar (o banco fecha em dias que variam).
                     val inv = d.invoiceFor(card)
-                    InvoiceChips(Res.s(R.string.tx_invoice_label), CardMath.invoiceFor(card, d.date), inv, l.today) { d.invoiceYm = it }
+                    InvoiceChips(Res.s(R.string.tx_invoice_label), card, l, CardMath.invoiceFor(card, d.date), inv, l.today) { d.invoiceYm = it }
                     val per = if (d.type == TxType.EXPENSE && d.installments > 1) Res.s(R.string.tx_1x, d.installments, Money.format(CardMath.split(d.amount, d.installments).last())) else ""
                     Text(
                         Res.s(R.string.tx_entra_fatura_vence, Dates.monthInSentence(inv), Dates.short(CardMath.dueDate(card, inv)), per),
@@ -484,7 +571,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
                     }
                     // RF-CAR-10: qual fatura este pagamento quita (o Cryo sugere; dá para mudar quando o banco diz outra).
                     (d.invoiceYm ?: d.original.invoiceYm)?.let { paid ->
-                        InvoiceChips(Res.s(R.string.tx_invoice_paid_label), ymOf(d.original.invoiceYm ?: paid), ymOf(paid), l.today) { d.invoiceYm = it }
+                        l.card[cid]?.let { pc -> InvoiceChips(Res.s(R.string.tx_invoice_paid_label), pc, l, ymOf(d.original.invoiceYm ?: paid), ymOf(paid), l.today) { d.invoiceYm = it } }
                     }
                 }
             }

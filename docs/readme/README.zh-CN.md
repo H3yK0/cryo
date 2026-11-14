@@ -96,6 +96,12 @@
 - **翻译：** 这 9 种翻译是在 AI 的帮助下完成的。如果你会说其中某种语言并发现不自然的地方，请提交 issue：非常欢迎母语者帮忙审校。
 - **你银行的流水：** 应用有 **开发者模式**（在 设置 › 关于 中连续点 7 次版本号），包括使用独立数据库和示例数据的测试模式、各种格式的示例流水，以及可以分享匿名版本的读取报告。如果你银行的流水读得不对，可以在不发送个人数据的情况下帮忙：请看 [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura)（葡萄牙语）。
 
+## 支持
+
+Cryo 完全免费，没有广告、没有追踪，也不联网。如果它帮到了你，愿意请我喝杯咖啡，我会非常感谢——当然完全是自愿的。
+
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+
 ## 许可证
 
 Copyright © 2026 Hanry Franco

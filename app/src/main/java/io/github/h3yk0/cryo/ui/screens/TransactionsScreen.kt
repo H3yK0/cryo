@@ -45,6 +45,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
@@ -58,6 +59,7 @@ import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
 import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
+import io.github.h3yk0.cryo.ui.components.fabLift
 import io.github.h3yk0.cryo.ui.components.EmptyState
 import io.github.h3yk0.cryo.ui.components.HeatmapCalendar
 import io.github.h3yk0.cryo.ui.components.MoneyText
@@ -121,7 +123,11 @@ fun TransactionsScreen(categoryFilter: Long?) {
             )
         },
         floatingActionButton = {
+            val fabLabel = Res.s(R.string.home_shortcut_new)
             ExtendedFloatingActionButton(
+                // ERR-046 sobe o botão quando a barra de desfazer aparece; ERR-047 dá nome a ele para o leitor de tela
+                // (o Material esconde o texto de dentro do botão estendido).
+                modifier = Modifier.fabLift().semantics { contentDescription = fabLabel },
                 onClick = { nav.go(Routes.txNew()) },
                 icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.home_shortcut_new)) },
             )

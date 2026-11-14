@@ -96,6 +96,12 @@ Les suggestions et les signalements de bugs sont les bienvenus dans [Issues](htt
 - **Traductions :** les 9 traductions ont été faites avec l'aide de l'IA. Si vous parlez l'une de ces langues et que quelque chose sonne faux, ouvrez une issue : la relecture par des locuteurs natifs est très appréciée.
 - **Le relevé de votre banque :** l'app a un **mode développeur** (touchez 7 fois la version dans Réglages › À propos) avec un mode test qui utilise une base de données séparée et des données d'exemple, des relevés d'exemple dans tous les formats et un rapport de lecture partageable en version anonyme. Si le relevé de votre banque n'est pas bien lu, vous pouvez aider sans envoyer vos données : voir [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (en portugais).
 
+## Soutenir
+
+Cryo est gratuit, sans publicité, sans pistage et sans accès à internet. S'il vous aide et que vous voulez offrir un café, c'est avec grand plaisir — et tout à fait facultatif.
+
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+
 ## Licence
 
 Copyright © 2026 Hanry Franco

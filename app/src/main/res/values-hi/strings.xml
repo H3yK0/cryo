@@ -1964,4 +1964,16 @@
     <string name="card_adjust_done">बिल %1$s पर ठीक किया गया</string>
     <string name="card_adjust_same">बिल का कुल पहले से यही है।</string>
     <string name="card_refund_hint">कार्ड पर रिफ़ंड या क्रेडिट: बिल की रकम घटती है।</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">अन्य…</string>
+    <string name="tx_invoice_pick">किस बिल में डालें</string>
+    <string name="tx_invoice_pick_hint">आप इसे पुराने बिल में, यहाँ तक कि चुकाए जा चुके बिल में भी डाल सकते हैं: पुराना रिकॉर्ड भरने के लिए उपयोगी।</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">इस अवधि में खाता नेगेटिव नहीं होता</string>
+    <string name="proj_negative_from">%1$s से खाता नेगेटिव हो जाता है</string>
+    <string name="proj_min_balance">सबसे कम अनुमानित बैलेंस: %2$s को %1$s</string>
+    <string name="proj_min_hint">आप पहले से तैयारी कर सकते हैं: कोई निवेश भुनाएँ, बड़ा खर्च टालें या आमदनी पहले लाएँ।</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Cryo का साथ दें</string>
+    <string name="settings_support_sub">डेवलपर को एक कॉफ़ी पिलाएँ (ब्राउज़र खुलेगा)</string>
 </resources>

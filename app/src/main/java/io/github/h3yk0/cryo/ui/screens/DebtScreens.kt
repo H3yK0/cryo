@@ -74,6 +74,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.db.Debt
@@ -109,6 +111,7 @@ import io.github.h3yk0.cryo.ui.components.EmptyState
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.LocalContainer
+import io.github.h3yk0.cryo.ui.components.fabLift
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.components.MoneyText
 import io.github.h3yk0.cryo.ui.components.MonthSelector
@@ -202,7 +205,9 @@ fun DebtsScreen() {
     Scaffold(
         topBar = { CryoTopBar(Res.s(R.string.home_shortcut_debts), onBack = nav::back) },
         floatingActionButton = {
+            val fabLabel = Res.s(R.string.debt_nova_divida)
             ExtendedFloatingActionButton(
+                modifier = Modifier.fabLift().semantics { contentDescription = fabLabel },
                 onClick = { nav.go(Routes.debtEdit()) },
                 icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.debt_nova_divida)) },
             )

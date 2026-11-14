@@ -96,6 +96,12 @@ F-Droid のページとこれらの README の画面画像（`fastlane/` フォ�
 - **翻訳:** 9つの翻訳は AI の助けを借りて作りました。これらの言語を話す方で、不自然なところに気づいたら issue を立ててください。ネイティブの方の確認は大歓迎です。
 - **あなたの銀行の明細:** アプリには **開発者モード**（設定 › このアプリについて で、バージョンを7回タップ）があり、別のデータベースとサンプルデータを使うテストモード、すべての形式のサンプル明細、匿名版を共有できる読み取りレポートがあります。お使いの銀行の明細がうまく読めない場合は、データを送らずに協力できます: [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura)（ポルトガル語）をご覧ください。
 
+## 応援する
+
+Cryoは無料で、広告もトラッキングもインターネット接続もありません。役に立っていて、コーヒーを1杯おごってもいいと思っていただけたら、とてもうれしいです（もちろん任意です）。
+
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+
 ## ライセンス
 
 Copyright © 2026 Hanry Franco

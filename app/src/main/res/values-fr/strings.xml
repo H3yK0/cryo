@@ -1964,4 +1964,16 @@
     <string name="card_adjust_done">Relevé ajusté à %1$s</string>
     <string name="card_adjust_same">Le relevé a déjà ce total.</string>
     <string name="card_refund_hint">Remboursement ou avoir sur la carte : il réduit le relevé.</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">Autre…</string>
+    <string name="tx_invoice_pick">Sur quel relevé l\'inscrire</string>
+    <string name="tx_invoice_pick_hint">Vous pouvez l\'inscrire sur un ancien relevé, même déjà payé : utile pour compléter l\'historique.</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">Le solde ne passe pas sous zéro sur cette période</string>
+    <string name="proj_negative_from">Le solde passe sous zéro à partir du %1$s</string>
+    <string name="proj_min_balance">Solde le plus bas prévu : %1$s, le %2$s</string>
+    <string name="proj_min_hint">Vous pouvez anticiper : retirer un placement, reporter une grosse dépense ou avancer une rentrée.</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Soutenir Cryo</string>
+    <string name="settings_support_sub">Offrir un café au développeur (ouvre le navigateur)</string>
 </resources>

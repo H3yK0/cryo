@@ -2089,4 +2089,16 @@
     <string name="card_adjust_done">Fatura ajustada para %1$s</string>
     <string name="card_adjust_same">A fatura já está com esse total.</string>
     <string name="card_refund_hint">Estorno ou crédito no cartão: diminui o valor da fatura.</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">Outra…</string>
+    <string name="tx_invoice_pick">Em qual fatura entra</string>
+    <string name="tx_invoice_pick_hint">Dá para lançar numa fatura antiga, até numa que você já pagou: serve para completar o histórico.</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">A conta não fica negativa neste período</string>
+    <string name="proj_negative_from">A conta fica negativa a partir de %1$s</string>
+    <string name="proj_min_balance">Menor saldo previsto: %1$s, em %2$s</string>
+    <string name="proj_min_hint">Dá para se programar: resgatar um investimento, adiar um gasto grande ou antecipar uma entrada.</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Apoiar o Cryo</string>
+    <string name="settings_support_sub">Pagar um café para quem faz o app (abre o navegador)</string>
 </resources>

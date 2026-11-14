@@ -1964,4 +1964,16 @@
     <string name="card_adjust_done">Statement adjusted to %1$s</string>
     <string name="card_adjust_same">The statement already has that total.</string>
     <string name="card_refund_hint">Refund or credit on the card: it lowers the statement.</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">Other…</string>
+    <string name="tx_invoice_pick">Which statement it goes on</string>
+    <string name="tx_invoice_pick_hint">You can file it on an older statement, even one you already paid: handy for filling in history.</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">Your balance stays above zero in this period</string>
+    <string name="proj_negative_from">Your balance goes below zero from %1$s</string>
+    <string name="proj_min_balance">Lowest expected balance: %1$s, on %2$s</string>
+    <string name="proj_min_hint">You can plan ahead: cash in an investment, put off a big expense or bring an income forward.</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Support Cryo</string>
+    <string name="settings_support_sub">Buy the developer a coffee (opens your browser)</string>
 </resources>

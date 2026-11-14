@@ -1964,4 +1964,16 @@
     <string name="card_adjust_done">Abrechnung auf %1$s angepasst</string>
     <string name="card_adjust_same">Die Abrechnung hat bereits diese Summe.</string>
     <string name="card_refund_hint">Erstattung oder Gutschrift auf der Karte: verringert die Abrechnung.</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">Andere…</string>
+    <string name="tx_invoice_pick">Auf welche Abrechnung</string>
+    <string name="tx_invoice_pick_hint">Du kannst sie auf eine ältere, auch schon bezahlte Abrechnung setzen: gut, um Historie nachzutragen.</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">Das Konto bleibt in diesem Zeitraum im Plus</string>
+    <string name="proj_negative_from">Das Konto rutscht ab %1$s ins Minus</string>
+    <string name="proj_min_balance">Niedrigster erwarteter Stand: %1$s, am %2$s</string>
+    <string name="proj_min_hint">Du kannst vorsorgen: eine Anlage auflösen, eine große Ausgabe verschieben oder eine Einnahme vorziehen.</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Cryo unterstützen</string>
+    <string name="settings_support_sub">Dem Entwickler einen Kaffee spendieren (öffnet den Browser)</string>
 </resources>

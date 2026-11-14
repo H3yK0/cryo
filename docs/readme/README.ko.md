@@ -96,6 +96,12 @@ F-Droid 페이지와 이 README들의 화면 이미지(`fastlane/` 폴더)를 10
 - **번역:** 9개 번역은 AI의 도움을 받아 만들었습니다. 이 언어를 쓰시는 분이 어색한 부분을 발견하면 issue를 열어 주세요. 원어민의 검토를 크게 환영합니다.
 - **내 은행 내역:** 앱에는 **개발자 모드**(설정 › 정보 에서 버전을 7번 탭)가 있어요. 별도의 데이터베이스와 예시 데이터를 쓰는 테스트 모드, 모든 형식의 예시 내역, 익명 버전으로 공유할 수 있는 읽기 보고서가 있습니다. 내 은행 내역이 제대로 읽히지 않으면 데이터를 보내지 않고도 도울 수 있어요: [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura)(포르투갈어)를 보세요.
 
+## 후원하기
+
+Cryo는 무료이고 광고도, 추적도, 인터넷 접속도 없습니다. 도움이 되었고 커피 한 잔 사 주고 싶다면 정말 감사합니다. 물론 선택 사항입니다.
+
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+
 ## 라이선스
 
 Copyright © 2026 Hanry Franco

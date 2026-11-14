@@ -96,6 +96,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.StrokeCap
@@ -132,6 +133,16 @@ import java.time.LocalDate
 
 val LocalContainer = staticCompositionLocalOf<AppContainer> { error("AppContainer ausente") }
 val LocalSettings = staticCompositionLocalOf { AppSettings() }
+
+/**
+ * ERR-046: quanto o botão flutuante da tela precisa subir agora. A barra de mensagem ("Desfazer") é do app inteiro e
+ * mora no Scaffold de fora; o botão "+" é de cada tela. Sem isto, a barra cobre o botão e a pessoa não consegue lançar
+ * outra coisa enquanto o desfazer está na tela. O valor é a altura medida da barra (0 quando não há nenhuma).
+ */
+val LocalFabLift = staticCompositionLocalOf { 0.dp }
+
+/** Levanta o botão flutuante enquanto a barra de mensagem estiver à vista. */
+fun Modifier.fabLift(): Modifier = composed { padding(bottom = LocalFabLift.current) }
 
 /** Permite fixar a data "de hoje". Usado só para gerar as imagens da loja com dados de exemplo. */
 val LocalFixedToday = staticCompositionLocalOf<LocalDate?> { null }

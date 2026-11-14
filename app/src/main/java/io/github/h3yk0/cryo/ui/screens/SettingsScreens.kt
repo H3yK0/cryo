@@ -43,6 +43,7 @@ import androidx.compose.material.icons.rounded.AutoStories
 import androidx.compose.material.icons.rounded.Backup
 import androidx.compose.material.icons.rounded.Category
 import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Coffee
 import androidx.compose.material.icons.rounded.Explore
 import androidx.compose.material.icons.rounded.Gavel
 import androidx.compose.material.icons.rounded.Language
@@ -82,6 +83,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.BuildConfig
 import io.github.h3yk0.cryo.data.Backup
@@ -102,6 +104,7 @@ import io.github.h3yk0.cryo.ui.components.CryoBadge
 import io.github.h3yk0.cryo.ui.components.CryoCard
 import io.github.h3yk0.cryo.ui.components.depthCard
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
+import io.github.h3yk0.cryo.ui.components.fabLift
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.IconChooser
@@ -351,6 +354,10 @@ fun SettingsScreen() {
                 SettingLink(Icons.Rounded.Gavel, Res.s(R.string.settings_licenca), Res.s(R.string.settings_gnu_agpl_v3_ou)) {
                     openLink(ctx, "$SOURCE_URL/blob/main/LICENSE")
                 }
+                // Apoio voluntário: abre o navegador (o app continua sem permissão de internet, RNF-PRIV-01).
+                SettingLink(Icons.Rounded.Coffee, Res.s(R.string.settings_support), Res.s(R.string.settings_support_sub)) {
+                    openLink(ctx, DONATE_URL)
+                }
                 }
                 // 7 toques na versão ligam o modo desenvolvedor (como no Android).
                 CryoCard(
@@ -459,6 +466,7 @@ fun SettingsScreen() {
 }
 
 const val SOURCE_URL = "https://github.com/H3yK0/cryo"
+const val DONATE_URL = "https://www.buymeacoffee.com/H3YK0"
 
 /** RF-VOZ-01: qual ouvido o registro por voz usa (Whisper dentro do Cryo ou o reconhecedor do celular). */
 @Composable
@@ -553,7 +561,11 @@ fun CategoriesScreen() {
     Scaffold(
         topBar = { CryoTopBar(Res.s(R.string.settings_categorias), onBack = nav::back) },
         floatingActionButton = {
-            ExtendedFloatingActionButton(onClick = { nav.go(Routes.categoryEdit(kind = kind)) }, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.wallet_nova)) })
+            val fabLabel = Res.s(R.string.wallet_nova)
+            ExtendedFloatingActionButton(
+                modifier = Modifier.fabLift().semantics { contentDescription = fabLabel },
+                onClick = { nav.go(Routes.categoryEdit(kind = kind)) }, icon = { Icon(Icons.Rounded.Add, null) }, text = { Text(Res.s(R.string.wallet_nova)) },
+            )
         },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
     ) { pad ->

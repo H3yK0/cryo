@@ -96,6 +96,12 @@ Vorschläge und Fehlermeldungen sind unter [Issues](https://github.com/H3yK0/cry
 - **Übersetzungen:** Die 9 Übersetzungen entstanden mit Hilfe von KI. Wenn du eine dieser Sprachen sprichst und dir etwas seltsam vorkommt, eröffne bitte ein Issue: Durchsicht durch Muttersprachler ist sehr willkommen.
 - **Der Kontoauszug deiner Bank:** Die App hat einen **Entwicklermodus** (7-mal auf die Version tippen, unter Einstellungen › Über) mit einem Testmodus, der eine eigene Datenbank und Beispieldaten nutzt, Beispielauszüge in allen Formaten und einen Lesebericht, der in anonymer Fassung geteilt werden kann. Wird der Auszug deiner Bank nicht richtig gelesen, kannst du helfen, ohne deine Daten zu schicken: siehe [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (auf Portugiesisch).
 
+## Unterstützen
+
+Cryo ist kostenlos, ohne Werbung, ohne Tracking und ohne Internetzugriff. Wenn es dir hilft und du einen Kaffee spendieren möchtest, freue ich mich sehr — ganz freiwillig.
+
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+
 ## Lizenz
 
 Copyright © 2026 Hanry Franco

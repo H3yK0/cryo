@@ -1964,4 +1964,16 @@
     <string name="card_adjust_done">Estratto corretto a %1$s</string>
     <string name="card_adjust_same">L\'estratto ha già quel totale.</string>
     <string name="card_refund_hint">Rimborso o accredito sulla carta: riduce l\'estratto.</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">Altro…</string>
+    <string name="tx_invoice_pick">In quale estratto entra</string>
+    <string name="tx_invoice_pick_hint">Puoi metterlo in un estratto vecchio, anche già pagato: serve a completare lo storico.</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">Il conto non va in rosso in questo periodo</string>
+    <string name="proj_negative_from">Il conto va in rosso dal %1$s</string>
+    <string name="proj_min_balance">Saldo minimo previsto: %1$s, il %2$s</string>
+    <string name="proj_min_hint">Puoi organizzarti: liquidare un investimento, rimandare una spesa grossa o anticipare un\'entrata.</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">Sostieni Cryo</string>
+    <string name="settings_support_sub">Offri un caffè a chi fa l\'app (apre il browser)</string>
 </resources>

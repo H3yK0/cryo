@@ -1927,4 +1927,16 @@
     <string name="card_adjust_done">账单已调整为 %1$s</string>
     <string name="card_adjust_same">账单已经是这个总额。</string>
     <string name="card_refund_hint">退款或信用卡入账：会减少账单金额。</string>
+    <!-- 1.5: escolher qualquer fatura do cartão (RF-CAR-10) -->
+    <string name="tx_invoice_other">其他账单…</string>
+    <string name="tx_invoice_pick">计入哪一期账单</string>
+    <string name="tx_invoice_pick_hint">也可以记到更早的账单，甚至已经还清的账单，用来补全历史记录。</string>
+    <!-- 1.5: saldo mínimo e conta negativa em destaque (RF-MOT-04) -->
+    <string name="proj_safe">这段时间账户不会变成负数</string>
+    <string name="proj_negative_from">从 %1$s 起账户会变成负数</string>
+    <string name="proj_min_balance">预计最低余额：%2$s 为 %1$s</string>
+    <string name="proj_min_hint">可以提前安排：赎回一笔投资、推迟一笔大开销，或把收入提前。</string>
+    <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
+    <string name="settings_support">支持 Cryo</string>
+    <string name="settings_support_sub">请开发者喝杯咖啡（会打开浏览器）</string>
 </resources>
