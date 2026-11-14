@@ -2011,4 +2011,7 @@
     <string name="bill_amount_each">Importo ogni volta</string>
     <string name="bill_due_on">Scade il giorno</string>
     <string name="bill_in_on">Arriva il giorno</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">Ho già pagato quella di %1$s</string>
+    <string name="bill_already_paid_hint">Cryo cerca quel pagamento tra i tuoi movimenti e ne crea uno solo se non lo trova.</string>
 </resources>

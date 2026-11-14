@@ -95,13 +95,15 @@ class AlertActionReceiver : BroadcastReceiver() {
                 val bill = l.s.bills.firstOrNull { it.id == billId }
                 // RF-CFX-06 (ERR-045): se o pagamento já está no extrato (mesmo nome e valor), o botão liga a conta fixa
                 // a ele em vez de gravar outro. Sem tela para perguntar, só quando o casamento é certo.
-                val found = if (bill != null) l.inferredBillPayments[billId to ym] else null
-                if (bill != null && found != null) {
-                    c.repo.linkBillPayment(found.id, bill, YearMonth.of(ym / 100, ym % 100))
-                    Sounds.play(ctx, Sound.SAVE)
-                } else if (bill != null && AlertPlanner.billOpen(l, billId, ym)) {
+                // Vale tanto para a conta que ainda está em aberto quanto para a que o Cryo já reconheceu no extrato e
+                // a pessoa agora confirma pelo aviso: nos dois casos `markBillPaidLinking` resolve sem duplicar.
+                val semLigacao = l.s.txs.none { it.billId == billId && it.billYm == ym }
+                val venceNesseMes = bill != null && l.billStatuses(YearMonth.of(ym / 100, ym % 100)).any { it.bill.id == billId }
+                if (bill != null && venceNesseMes && semLigacao && bill.kind == io.github.h3yk0.cryo.data.db.CategoryKind.EXPENSE) {
                     val card = bill.cardId?.let { cid -> l.s.cards.firstOrNull { it.id == cid } }
-                    c.repo.markBillPaid(bill, YearMonth.of(ym / 100, ym % 100), bill.amount, today, bill.accountId ?: defaultAccount(c, l), card)
+                    c.repo.markBillPaidLinking(
+                        bill, YearMonth.of(ym / 100, ym % 100), bill.amount, today, bill.accountId ?: defaultAccount(c, l), card,
+                    )
                     Sounds.play(ctx, Sound.SAVE)
                 }
             }

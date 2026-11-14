@@ -216,11 +216,13 @@ código anterior. Todos os testes passam.
     parcelas de cada ciclo com o preço à vista para mostrar os juros, prazo ("até quando") e **modelos por língua**
     (`data/BillTemplates.kt`: aluguel, luz, água, internet, celular, assinatura, plano de saúde, seguro do carro, e os
     impostos de cada país — IPVA/IPTU no Brasil, *Vehicle registration* em inglês, 自動車税 em japonês). As regras ficam em
-    `BillCycle` (`domain/Ledger.kt`); o `Ledger`, a previsão, os avisos e o casador já seguem o ciclo.
+    `BillCycle` (`domain/Ledger.kt`); o `Ledger`, a previsão, os avisos e o casador já seguem o ciclo. Ao criar, a chave
+    "Já paguei o de ..." fecha o vencimento que já passou por `FinanceRepository.markBillPaidLinking` (liga ao pagamento
+    que existe; só lança um novo se não houver) — o mesmo caminho do botão da tela e do botão do aviso.
   - **Apoiar o Cryo** (RF-AJU-12): Ajustes › Sobre, READMEs e o campo `Donate:` da receita do F-Droid apontam para o Buy
     Me a Coffee. O app continua sem permissão de internet: quem abre a página é o navegador.
   - **ERR-046** (a barra de desfazer cobria o botão "+") e **ERR-047** (botão flutuante sem nome para o leitor de tela).
-- 148 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
+- 150 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
   fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um

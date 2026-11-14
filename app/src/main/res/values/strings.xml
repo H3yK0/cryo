@@ -2136,4 +2136,7 @@
     <string name="bill_amount_each">Valor de cada vez</string>
     <string name="bill_due_on">Vence no dia</string>
     <string name="bill_in_on">Cai no dia</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">Já paguei o de %1$s</string>
+    <string name="bill_already_paid_hint">O Cryo procura esse pagamento no que você já tem; só lança um novo se não achar.</string>
 </resources>

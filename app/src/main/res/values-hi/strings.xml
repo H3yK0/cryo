@@ -2011,4 +2011,7 @@
     <string name="bill_amount_each">हर बार की रकम</string>
     <string name="bill_due_on">देय दिन</string>
     <string name="bill_in_on">आने का दिन</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">%1$s वाला मैंने चुका दिया है</string>
+    <string name="bill_already_paid_hint">Cryo आपके मौजूदा रिकॉर्ड में वह भुगतान ढूँढता है; न मिले तभी नया दर्ज करता है।</string>
 </resources>

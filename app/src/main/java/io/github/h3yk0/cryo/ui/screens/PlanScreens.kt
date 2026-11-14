@@ -809,6 +809,7 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
     var cash by rememberSaveable { mutableLongStateOf(existing?.cashAmount ?: 0L) }
     var startKey by rememberSaveable { mutableIntStateOf(existing?.startYm ?: l.today.ym().key()) }
     var endKey by rememberSaveable { mutableIntStateOf(existing?.endYm ?: 0) }
+    var alreadyPaid by rememberSaveable { mutableStateOf(false) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
@@ -824,7 +825,18 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
                 startYm = startKey, endYm = endKey,
             )
             if (remind && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
-            c.launch { val saved = c.repo.saveBill(b); c.billReview.value = if (b.id != 0L) b.id else saved; c.message(Res.s(R.string.plan_salvo)) }
+            val payNow = alreadyPaid
+            val payYm = ymOf(startKey)
+            val payCard = b.cardId?.let { l.card[it] }
+            c.launch {
+                val saved = c.repo.saveBill(b)
+                // RF-FIX-10: "já paguei o deste ciclo" liga ao pagamento que já existe; só lança um novo se não houver.
+                if (payNow) {
+                    c.repo.markBillPaidLinking(b.copy(id = saved), payYm, amount, payYm.dayClamped(day), (source as? Source.Acc)?.id, payCard)
+                }
+                c.billReview.value = if (b.id != 0L) b.id else saved
+                c.message(Res.s(R.string.plan_salvo))
+            }
             nav.back()
         },
         onDelete = existing?.let { { confirmDelete = true } },
@@ -878,6 +890,14 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
             every, { every = it; if (parts > it) parts = it }, parts, { parts = it }, cash, { cash = it },
             startKey, { startKey = it }, endKey, { endKey = it }, day, amount, l.today,
         )
+        // RF-FIX-10: só faz sentido ao criar uma conta cujo primeiro vencimento já passou (ou é deste mês).
+        if (existing == null && ymOf(startKey) <= l.today.ym()) {
+            Spacer(Modifier.height(8.dp))
+            SwitchRow(
+                Res.s(R.string.bill_already_paid, Dates.monthYearInSentence(ymOf(startKey), l.today)),
+                alreadyPaid, { alreadyPaid = it }, Res.s(R.string.bill_already_paid_hint),
+            )
+        }
         FieldLabel(Res.s(R.string.plan_categoria))
         CategoryGrid(l.categories(kind), cat, { cat = it.id })
         FieldLabel(if (kind == CategoryKind.EXPENSE) Res.s(R.string.debt_paga_com) else Res.s(R.string.wallet_entra_conta))

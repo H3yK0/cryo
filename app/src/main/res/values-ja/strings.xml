@@ -1974,4 +1974,7 @@
     <string name="bill_amount_each">1回ごとの金額</string>
     <string name="bill_due_on">支払日</string>
     <string name="bill_in_on">入金日</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">%1$s分はもう払いました</string>
+    <string name="bill_already_paid_hint">すでにある記録からその支払いを探し、見つからないときだけ新しく登録します。</string>
 </resources>

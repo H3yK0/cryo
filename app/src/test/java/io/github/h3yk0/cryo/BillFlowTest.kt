@@ -78,6 +78,34 @@ class BillFlowTest {
         assertNull(again[0].bill)
     }
 
+    /**
+     * RF-FIX-10 (ERR-045): "já paguei o deste ciclo" liga ao pagamento que já está no app; só lança um novo quando não
+     * existe nenhum. Vale para a conta anual criada depois (o IPVA pago em janeiro, cadastrado em novembro).
+     */
+    @Test fun jaPagueiAoCriarLigaAoQueExisteEMaisNadaDepois() = runBlocking {
+        val c = container()
+        val ipva = Bill(1, "IPVA", 42_000, dueDay = 10, accountId = 1, startYm = 202601, every = 12, installments = 3)
+        val pago = Tx(1, TxType.EXPENSE, 42_000, LocalDate.of(2026, 1, 10), "IPVA 1/3", accountId = 1, importKey = "a1|ofx.id:5")
+        c.repo.replaceAll(Snapshot(accounts = listOf(account), bills = listOf(ipva), txs = listOf(pago)))
+        // Liga ao que já existe: nenhuma movimentação nova.
+        c.repo.markBillPaidLinking(ipva, YearMonth.of(2026, 1), ipva.amount, LocalDate.of(2026, 1, 10), 1, null)
+        var after = c.repo.loadOnce()
+        assertEquals(1, after.txs.size)
+        assertEquals(1L, after.txs.single().billId)
+        assertEquals(202601, after.txs.single().billYm)
+        assertEquals("a1|ofx.id:5", after.txs.single().importKey)
+        // A segunda parcela não tem nada parecido: aí sim nasce um lançamento.
+        c.repo.markBillPaidLinking(ipva, YearMonth.of(2026, 2), ipva.amount, LocalDate.of(2026, 2, 10), 1, null)
+        after = c.repo.loadOnce()
+        assertEquals(2, after.txs.size)
+        val nova = after.txs.first { it.billYm == 202602 }
+        assertEquals(42_000L, nova.amount)
+        assertNull(nova.importKey)
+        // Tocar de novo não duplica.
+        c.repo.markBillPaidLinking(ipva, YearMonth.of(2026, 2), ipva.amount, LocalDate.of(2026, 2, 10), 1, null)
+        assertEquals(2, c.repo.loadOnce().txs.size)
+    }
+
     /** RF-CFX-04: depois de a pessoa dizer uma vez que "DEB AUT CIA ENERG" é a Luz, o apelido basta (só o código fica guardado). */
     @Test fun apelidoAprendidoCasaSozinhoNaProximaVez() = runBlocking {
         val c = container()

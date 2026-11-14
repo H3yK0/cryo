@@ -2011,4 +2011,7 @@
     <string name="bill_amount_each">Amount each time</string>
     <string name="bill_due_on">Due on day</string>
     <string name="bill_in_on">Arrives on day</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">I already paid the one for %1$s</string>
+    <string name="bill_already_paid_hint">Cryo looks for that payment among your entries and only adds one if it finds none.</string>
 </resources>

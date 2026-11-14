@@ -1974,4 +1974,7 @@
     <string name="bill_amount_each">한 번에 내는 금액</string>
     <string name="bill_due_on">납부일</string>
     <string name="bill_in_on">들어오는 날</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">%1$s 것은 이미 냈어요</string>
+    <string name="bill_already_paid_hint">이미 있는 기록에서 그 결제를 찾고, 없을 때만 새로 등록해요.</string>
 </resources>

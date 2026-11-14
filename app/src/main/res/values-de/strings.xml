@@ -2011,4 +2011,7 @@
     <string name="bill_amount_each">Betrag jedes Mal</string>
     <string name="bill_due_on">Fällig am</string>
     <string name="bill_in_on">Kommt am</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">Die für %1$s habe ich schon bezahlt</string>
+    <string name="bill_already_paid_hint">Cryo sucht die Zahlung in deinen Buchungen und legt nur eine an, wenn keine da ist.</string>
 </resources>

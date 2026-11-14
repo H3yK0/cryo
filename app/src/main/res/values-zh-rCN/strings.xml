@@ -1974,4 +1974,7 @@
     <string name="bill_amount_each">每次的金额</string>
     <string name="bill_due_on">到期日</string>
     <string name="bill_in_on">入账日</string>
+    <!-- 1.5: 'já paguei' ao criar a conta fixa -->
+    <string name="bill_already_paid">%1$s 的已经付过了</string>
+    <string name="bill_already_paid_hint">Cryo 会先在已有记录里找这笔付款，找不到才新建一笔。</string>
 </resources>

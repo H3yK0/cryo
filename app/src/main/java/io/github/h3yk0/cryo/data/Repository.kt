@@ -336,6 +336,19 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         return db.withTransaction { dao.billPaymentId(bill.id, ym.key()) ?: dao.putTx(tx) }
     }
 
+    /**
+     * RF-CFX-06 (ERR-045): marcar uma conta fixa como paga **olhando antes** o que já existe. Se houver uma movimentação
+     * que o casador reconhece com certeza (mesmo nome e valor, perto do vencimento), ela é ligada à conta fixa; só
+     * quando não há nenhuma é que nasce um lançamento novo. Todo caminho do app passa por aqui.
+     */
+    suspend fun markBillPaidLinking(bill: Bill, ym: YearMonth, amount: Long, date: LocalDate, accountId: Long?, card: CreditCard?): Long {
+        val snap = loadOnce()
+        val paid = snap.txs.filter { it.billId != null && it.billYm != null }.mapTo(HashSet()) { it.billId!! to it.billYm!! }
+        val found = io.github.h3yk0.cryo.domain.BillMatcher.certain(listOf(bill), snap.txs, paid)[bill.id to ym.key()]
+        if (found != null && linkBillPayment(found.id, bill, ym)) return found.id
+        return markBillPaid(bill, ym, amount, date, accountId, card)
+    }
+
     suspend fun unmarkBillPaid(bill: Bill, ym: YearMonth) = dao.deleteBillPayment(bill.id, ym.key())
 
     /**
