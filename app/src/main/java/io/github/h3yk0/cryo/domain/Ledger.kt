@@ -91,6 +91,32 @@ data class Invoice(
 
 enum class BillState { PAID, OVERDUE, DUE_SOON, UPCOMING }
 
+/**
+ * RF-CFX-09..11: o ritmo de uma conta fixa. Mensal é o caso de todo dia ([Bill.every] = 1); anual é `every = 12`, e um
+ * IPVA em 3 vezes é `every = 12, installments = 3` (três cobranças seguidas e depois nove meses sem nada).
+ */
+object BillCycle {
+    private fun monthsOf(ymKey: Int) = (ymKey / 100) * 12 + (ymKey % 100) - 1
+
+    /** Quantas parcelas tem cada ciclo (nunca mais do que o próprio ciclo). */
+    fun parts(b: Bill): Int = b.installments.coerceIn(1, b.every.coerceAtLeast(1))
+
+    /** Qual parcela do ciclo vence em [ym] (1, 2, 3...), ou null quando a conta não vence nesse mês. */
+    fun partOf(b: Bill, ym: YearMonth): Int? {
+        val k = monthsOf(ym.key()) - monthsOf(b.startYm)
+        if (k < 0) return null
+        if (b.endYm != 0 && ym.key() > b.endYm) return null
+        val pos = k % b.every.coerceAtLeast(1)
+        return if (pos < parts(b)) pos + 1 else null
+    }
+
+    /** Quanto custa um ciclo inteiro: todas as parcelas somadas. */
+    fun cycleTotal(b: Bill): Long = b.amount * parts(b)
+
+    /** Os juros embutidos no parcelamento (0 quando não há preço à vista informado ou quando não sai mais caro). */
+    fun interest(b: Bill): Long = if (b.cashAmount > 0) (cycleTotal(b) - b.cashAmount).coerceAtLeast(0) else 0
+}
+
 data class BillStatus(
     val bill: Bill,
     val ym: YearMonth,
@@ -100,6 +126,9 @@ data class BillStatus(
     val daysUntil: Long,
     /** RF-CFX-07: o pagamento foi reconhecido pelo Cryo (mesmo nome e valor) e a pessoa ainda não confirmou a ligação. */
     val inferred: Boolean = false,
+    /** RF-CFX-10: qual parcela do ciclo é esta, de quantas (1 de 1 na conta mensal comum). */
+    val part: Int = 1,
+    val parts: Int = 1,
 )
 
 data class BudgetUsage(val category: Category, val limit: Long, val spent: Long) {
@@ -376,8 +405,10 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
     val inferredBillPayments: Map<Pair<Long, Int>, Tx> by lazy { BillMatcher.certain(s.bills, s.txs, billPayments.keys) }
 
     fun billStatuses(ym: YearMonth): List<BillStatus> = s.bills
-        .filter { it.active && it.startYm <= ym.key() }
-        .map { b ->
+        .filter { it.active }
+        // RF-CFX-09: só as que vencem neste mês (a anual aparece no mês dela; a parcelada, em cada parcela).
+        .mapNotNull { b ->
+            val part = BillCycle.partOf(b, ym) ?: return@mapNotNull null
             val due = ym.dayClamped(b.dueDay)
             val linked = billPayments[b.id to ym.key()]
             val pay = linked ?: inferredBillPayments[b.id to ym.key()]
@@ -388,7 +419,7 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
                 days <= 3 -> BillState.DUE_SOON
                 else -> BillState.UPCOMING
             }
-            BillStatus(b, ym, due, pay, state, days, inferred = linked == null && pay != null)
+            BillStatus(b, ym, due, pay, state, days, inferred = linked == null && pay != null, part = part, parts = BillCycle.parts(b))
         }
         .sortedBy { it.due }
 

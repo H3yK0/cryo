@@ -45,6 +45,13 @@ Tudo o que foi feito depois da 1.4, numa versão só. Continua tudo rodando no s
 - **Correções de uma revisão do código inteiro**: backup protegido nunca é gravado sem proteção, arquivo de backup estragado ou grande demais é recusado com uma mensagem clara, e a planilha exportada não roda fórmulas escritas em descrições
 - Todo erro já corrigido agora tem um teste que falha se ele voltar (cerca de 940 testes automáticos)
 
+- **Nem toda conta fixa é mensal** (pedido de quem usa): escolha o ritmo — todo mês, a cada 2, 3 ou 6 meses, ou uma vez por ano (IPVA, seguro, assinatura anual) —, o primeiro vencimento, em quantas parcelas paga cada ciclo, o preço à vista para ver quanto o parcelamento cobra de juros, e até quando a conta vale. Modelos na sua língua preenchem nome, ritmo e dia
+- **Escolher qualquer fatura do cartão**: os chips mostram as vizinhas e "Outra…" abre a lista inteira do cartão, com o total de cada uma, para a compra antiga cair no mês em que o banco pôs
+- **A previsão responde em uma frase** se a conta fica negativa, a partir de quando, e qual o menor saldo previsto
+- **Apoiar o Cryo**: Ajustes › Sobre leva ao Buy Me a Coffee. O app continua sem permissão de internet — quem abre a página é o navegador
+- A barra de desfazer não cobre mais o botão "+", e os botões flutuantes passaram a ter nome para o leitor de tela
+- Banco de dados versão 5: as contas fixas ganharam ritmo, parcelas, preço à vista e prazo. As que já existem continuam mensais, do mesmo jeito
+
 **Bom saber**
 - Permissões novas: **microfone** (pedido só no primeiro toque no botão de voz) e **notificações promovidas** (as atualizações ao vivo do Android 16; não pergunta nada). Continua sem permissão de internet
 - O app passa de uns 6 MB para uns 65 MB, porque o modelo de fala vai dentro dele

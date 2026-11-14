@@ -45,6 +45,13 @@ Everything built since 1.4, in one release. All of it still runs on your phone, 
 - **Fixes from a full code review**: a protected backup is never saved without protection, damaged or oversized backup files are refused with a clear message, and the spreadsheet export no longer runs formulas typed into descriptions
 - Every bug fixed so far now has a test that fails if it comes back (about 940 automated tests)
 
+- **Bills are not all monthly** (requested by a user): choose the rhythm — every month, every 2, 3 or 6 months, or once a year (vehicle tax, insurance, yearly subscriptions) — set the first due date, split each cycle into instalments, type the one-off price to see how much the instalments add in interest, and give the bill an end date. Templates in your language fill in the name, rhythm and day
+- **Pick any card statement**: the chips show the nearby ones and "Other…" opens the whole list of the card's statements, with each total, so old purchases land where your bank put them
+- **The forecast answers in one line** whether your balance goes below zero, from when, and what the lowest expected balance is
+- **Support**: Settings › About links to Buy Me a Coffee. The app still has no internet permission — your browser opens the page
+- The undo bar no longer covers the "+" button, and floating buttons now have a name for screen readers
+- Database version 5: bills gained rhythm, instalments, one-off price and end date. Existing bills stay monthly, exactly as they were
+
 **Good to know**
 - New permissions: **microphone** (asked only on your first tap on the voice button) and **promoted notifications** (Android 16 live updates; it asks you nothing). Still no internet permission
 - The app grows from about 6 MB to about 65 MB, because the speech model ships inside it

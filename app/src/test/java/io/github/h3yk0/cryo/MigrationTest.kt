@@ -86,6 +86,42 @@ class MigrationTest {
         room.close()
     }
 
+    /**
+     * DAD-15 (1.5): a conta fixa ganha ritmo, parcelas, preço à vista e prazo. Quem vinha da 1.4 (banco 4) continua com
+     * a conta mensal de sempre, e as colunas novas já funcionam.
+     */
+    @Test fun atualizaDa4Para5MantendoAsContasFixasMensais() = runBlocking {
+        val file = ctx.getDatabasePath("cryo.db")
+        file.delete()
+        val db = createSchema(file, 4)
+        db.insert(
+            "bills", null,
+            ContentValues().apply {
+                put("name", "Internet"); put("amount", 9_990); put("dueDay", 15); put("kind", "EXPENSE")
+                put("remind", 1); put("remindDaysBefore", 1); put("active", 1); put("startYm", 202601); put("createdAt", 0)
+            },
+        )
+        db.version = 4
+        db.close()
+
+        val room = CryoDatabase.build(ctx)
+        val bills = room.dao().billsOnce()
+        assertEquals(1, bills.size)
+        val b = bills.single()
+        assertEquals("Internet", b.name)
+        assertEquals(1, b.every)
+        assertEquals(1, b.installments)
+        assertEquals(0L, b.cashAmount)
+        assertEquals(0, b.endYm)
+        // E dá para guardar uma conta anual em 3 parcelas.
+        val id = room.dao().putBill(b.copy(id = 0, name = "IPVA", amount = 42_000, every = 12, installments = 3, cashAmount = 120_000, startYm = 202701))
+        val ipva = room.dao().billsOnce().single { it.id == id }
+        assertEquals(12, ipva.every)
+        assertEquals(3, ipva.installments)
+        assertEquals(120_000L, ipva.cashAmount)
+        room.close()
+    }
+
     private fun createVersion1(file: File) {
         val schema = JSONObject(File("schemas/io.github.h3yk0.cryo.data.db.CryoDatabase/1.json").readText()).getJSONObject("database")
         assertEquals(1, schema.getInt("version"))

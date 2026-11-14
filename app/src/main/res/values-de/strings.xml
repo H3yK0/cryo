@@ -1976,4 +1976,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Cryo unterstützen</string>
     <string name="settings_support_sub">Dem Entwickler einen Kaffee spendieren (öffnet den Browser)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">Wie oft</string>
+    <string name="bill_every_1">Jeden Monat</string>
+    <string name="bill_every_2">Alle 2 Monate</string>
+    <string name="bill_every_3">Alle 3 Monate</string>
+    <string name="bill_every_6">Alle 6 Monate</string>
+    <string name="bill_every_12">Einmal im Jahr</string>
+    <string name="bill_first">Erste Fälligkeit</string>
+    <string name="bill_installments">In Raten bezahlt</string>
+    <string name="bill_installments_n">%1$d×</string>
+    <string name="bill_in_cash">Auf einmal</string>
+    <string name="bill_cycle_total">%1$d Raten à %2$s: %3$s pro Zyklus</string>
+    <string name="bill_cash_price">Preis auf einmal (optional)</string>
+    <string name="bill_interest">In Raten zahlst du %1$s mehr</string>
+    <string name="bill_interest_none">Ohne Aufschlag: Raten kosten gleich viel.</string>
+    <string name="bill_end">Bis wann</string>
+    <string name="bill_end_never">Ohne Enddatum</string>
+    <string name="bill_part_of">Rate %1$d von %2$d</string>
+    <string name="bill_next_due">Nächste Fälligkeit: %1$s</string>
+    <string name="bill_templates">Mit einer Vorlage beginnen</string>
+    <string name="bill_tpl_rent">Miete</string>
+    <string name="bill_tpl_power">Strom</string>
+    <string name="bill_tpl_water">Wasser</string>
+    <string name="bill_tpl_internet">Internet</string>
+    <string name="bill_tpl_phone">Handy</string>
+    <string name="bill_tpl_streaming">Abo</string>
+    <string name="bill_tpl_health">Krankenversicherung</string>
+    <string name="bill_tpl_car_insurance">Kfz-Versicherung</string>
+    <string name="bill_tpl_vehicle_tax">Kfz-Steuer</string>
+    <string name="bill_tpl_property_tax">Grundsteuer</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">Betrag je Rate</string>
+    <string name="bill_amount_each">Betrag jedes Mal</string>
+    <string name="bill_due_on">Fällig am</string>
+    <string name="bill_in_on">Kommt am</string>
 </resources>

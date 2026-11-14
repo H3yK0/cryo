@@ -1976,4 +1976,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Support Cryo</string>
     <string name="settings_support_sub">Buy the developer a coffee (opens your browser)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">How often</string>
+    <string name="bill_every_1">Every month</string>
+    <string name="bill_every_2">Every 2 months</string>
+    <string name="bill_every_3">Every 3 months</string>
+    <string name="bill_every_6">Every 6 months</string>
+    <string name="bill_every_12">Once a year</string>
+    <string name="bill_first">First due date</string>
+    <string name="bill_installments">Paid in instalments</string>
+    <string name="bill_installments_n">%1$d×</string>
+    <string name="bill_in_cash">In one go</string>
+    <string name="bill_cycle_total">%1$d instalments of %2$s: %3$s per cycle</string>
+    <string name="bill_cash_price">Price in one go (optional)</string>
+    <string name="bill_interest">Paying in instalments costs %1$s more</string>
+    <string name="bill_interest_none">No interest: instalments cost the same.</string>
+    <string name="bill_end">Until when</string>
+    <string name="bill_end_never">No end date</string>
+    <string name="bill_part_of">Instalment %1$d of %2$d</string>
+    <string name="bill_next_due">Next due: %1$s</string>
+    <string name="bill_templates">Start from a template</string>
+    <string name="bill_tpl_rent">Rent</string>
+    <string name="bill_tpl_power">Electricity</string>
+    <string name="bill_tpl_water">Water</string>
+    <string name="bill_tpl_internet">Internet</string>
+    <string name="bill_tpl_phone">Mobile phone</string>
+    <string name="bill_tpl_streaming">Subscription</string>
+    <string name="bill_tpl_health">Health insurance</string>
+    <string name="bill_tpl_car_insurance">Car insurance</string>
+    <string name="bill_tpl_vehicle_tax">Vehicle registration</string>
+    <string name="bill_tpl_property_tax">Property tax</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">Amount of each instalment</string>
+    <string name="bill_amount_each">Amount each time</string>
+    <string name="bill_due_on">Due on day</string>
+    <string name="bill_in_on">Arrives on day</string>
 </resources>

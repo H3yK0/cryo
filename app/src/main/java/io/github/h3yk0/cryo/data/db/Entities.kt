@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
@@ -161,6 +162,14 @@ data class Bill(
     val active: Boolean = true,
     val startYm: Int,
     val createdAt: Long = System.currentTimeMillis(),
+    /** RF-CFX-09: de quantos em quantos meses ela vence (1 mensal, 2 bimestral, 3 trimestral, 6 semestral, 12 anual). */
+    @ColumnInfo(defaultValue = "1") val every: Int = 1,
+    /** RF-CFX-10: em quantas parcelas mensais seguidas se paga cada ciclo (1 = à vista). [amount] é o valor de cada uma. */
+    @ColumnInfo(defaultValue = "1") val installments: Int = 1,
+    /** RF-CFX-10: o preço à vista, quando parcelado (0 = não informado). A diferença são os juros. */
+    @ColumnInfo(defaultValue = "0") val cashAmount: Long = 0,
+    /** RF-CFX-11: último mês em que ela vence (0 = sem prazo para acabar). */
+    @ColumnInfo(defaultValue = "0") val endYm: Int = 0,
 )
 
 /**

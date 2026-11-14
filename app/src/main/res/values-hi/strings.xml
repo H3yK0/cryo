@@ -1976,4 +1976,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Cryo का साथ दें</string>
     <string name="settings_support_sub">डेवलपर को एक कॉफ़ी पिलाएँ (ब्राउज़र खुलेगा)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">कितनी बार</string>
+    <string name="bill_every_1">हर महीने</string>
+    <string name="bill_every_2">हर 2 महीने</string>
+    <string name="bill_every_3">हर 3 महीने</string>
+    <string name="bill_every_6">हर 6 महीने</string>
+    <string name="bill_every_12">साल में एक बार</string>
+    <string name="bill_first">पहली देय तिथि</string>
+    <string name="bill_installments">किस्तों में भुगतान</string>
+    <string name="bill_installments_n">%1$d किस्त</string>
+    <string name="bill_in_cash">एक बार में</string>
+    <string name="bill_cycle_total">%2$s की %1$d किस्तें: हर चक्र %3$s</string>
+    <string name="bill_cash_price">एकमुश्त कीमत (वैकल्पिक)</string>
+    <string name="bill_interest">किस्तों में %1$s ज़्यादा लगेगा</string>
+    <string name="bill_interest_none">कोई ब्याज नहीं: किस्तों में भी उतना ही।</string>
+    <string name="bill_end">कब तक</string>
+    <string name="bill_end_never">कोई अंतिम तिथि नहीं</string>
+    <string name="bill_part_of">%2$d में से %1$d किस्त</string>
+    <string name="bill_next_due">अगली देय तिथि: %1$s</string>
+    <string name="bill_templates">टेम्पलेट से शुरू करें</string>
+    <string name="bill_tpl_rent">किराया</string>
+    <string name="bill_tpl_power">बिजली का बिल</string>
+    <string name="bill_tpl_water">पानी का बिल</string>
+    <string name="bill_tpl_internet">इंटरनेट</string>
+    <string name="bill_tpl_phone">मोबाइल बिल</string>
+    <string name="bill_tpl_streaming">सब्सक्रिप्शन</string>
+    <string name="bill_tpl_health">स्वास्थ्य बीमा</string>
+    <string name="bill_tpl_car_insurance">कार बीमा</string>
+    <string name="bill_tpl_vehicle_tax">वाहन कर</string>
+    <string name="bill_tpl_property_tax">संपत्ति कर</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">हर किस्त की रकम</string>
+    <string name="bill_amount_each">हर बार की रकम</string>
+    <string name="bill_due_on">देय दिन</string>
+    <string name="bill_in_on">आने का दिन</string>
 </resources>

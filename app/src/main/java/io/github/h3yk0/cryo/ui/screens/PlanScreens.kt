@@ -20,6 +20,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -37,6 +38,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Archive
 import androidx.compose.material.icons.rounded.AutoAwesome
@@ -49,6 +52,8 @@ import androidx.compose.material.icons.rounded.Unarchive
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -80,6 +85,7 @@ import androidx.compose.ui.unit.dp
 import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.db.Bill
+import io.github.h3yk0.cryo.data.BillTemplates
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.Goal
 import io.github.h3yk0.cryo.data.db.Tx
@@ -88,6 +94,10 @@ import io.github.h3yk0.cryo.domain.BillState
 import io.github.h3yk0.cryo.domain.BillStatus
 import io.github.h3yk0.cryo.domain.BudgetUsage
 import io.github.h3yk0.cryo.domain.Dates
+import io.github.h3yk0.cryo.domain.dayClamped
+import io.github.h3yk0.cryo.domain.ymOf
+import io.github.h3yk0.cryo.domain.capFirst
+import io.github.h3yk0.cryo.domain.BillCycle
 import io.github.h3yk0.cryo.domain.DebtInfo
 import io.github.h3yk0.cryo.domain.DebtMath
 import io.github.h3yk0.cryo.domain.Ledger
@@ -109,6 +119,7 @@ import io.github.h3yk0.cryo.ui.components.EmptyState
 import io.github.h3yk0.cryo.ui.components.FieldLabel
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.LocalContainer
+import io.github.h3yk0.cryo.ui.components.MonthSelector
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.components.MoneyText
 import io.github.h3yk0.cryo.ui.components.Pill
@@ -121,6 +132,7 @@ import io.github.h3yk0.cryo.ui.components.UsageBar
 import io.github.h3yk0.cryo.ui.components.categoryIcon
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
+import java.time.LocalDate
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.temporal.ChronoUnit
 import kotlin.math.max
@@ -637,6 +649,18 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
                     color = if (income) CryoTheme.colors.income else MaterialTheme.colorScheme.onSurface,
                 )
                 Text(status, style = MaterialTheme.typography.bodySmall, color = statusColor)
+                // RF-CFX-09/10: só quando não é a conta mensal de sempre, para não poluir a lista.
+                if (b.every > 1 || s.parts > 1) {
+                    val freq = Res.s(
+                        when (b.every) {
+                            2 -> R.string.bill_every_2; 3 -> R.string.bill_every_3
+                            6 -> R.string.bill_every_6; 12 -> R.string.bill_every_12
+                            else -> R.string.bill_every_1
+                        },
+                    )
+                    val part = if (s.parts > 1) " · " + Res.s(R.string.bill_part_of, s.part, s.parts) else ""
+                    Text(freq + part, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
             }
             Spacer(Modifier.width(8.dp))
             if (s.payment == null) {
@@ -660,6 +684,107 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
     }
 }
 
+/**
+ * RF-CFX-09..11: o ritmo da conta fixa (todo mês, a cada 2, 3, 6 meses ou uma vez por ano), em quantas parcelas cada
+ * ciclo é pago, o preço à vista (para mostrar os juros) e até quando ela vale.
+ */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun BillCycleFields(
+    every: Int,
+    onEvery: (Int) -> Unit,
+    parts: Int,
+    onParts: (Int) -> Unit,
+    cash: Long,
+    onCash: (Long) -> Unit,
+    startKey: Int,
+    onStart: (Int) -> Unit,
+    endKey: Int,
+    onEnd: (Int) -> Unit,
+    dueDay: Int,
+    amount: Long,
+    today: LocalDate,
+) {
+    val options = listOf(
+        1 to R.string.bill_every_1, 2 to R.string.bill_every_2, 3 to R.string.bill_every_3,
+        6 to R.string.bill_every_6, 12 to R.string.bill_every_12,
+    )
+    FieldLabel(Res.s(R.string.bill_every))
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEach { (n, label) ->
+            FilterChip(selected = every == n, onClick = { onEvery(n) }, label = { Text(Res.s(label)) })
+        }
+    }
+    if (every > 1) {
+        // O primeiro vencimento importa quando a conta não é mensal: o IPVA é em janeiro, não "daqui a um mês".
+        FieldLabel(Res.s(R.string.bill_first))
+        val start = ymOf(startKey)
+        MonthSelector(
+            Dates.monthYearInSentence(start, today).capFirst(),
+            onPrev = { onStart(start.minusMonths(1).key()) },
+            onNext = { onStart(start.plusMonths(1).key()) },
+        )
+        FieldLabel(Res.s(R.string.bill_installments))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            (1..minOf(every, 12)).forEach { n ->
+                FilterChip(
+                    selected = parts == n, onClick = { onParts(n) },
+                    label = { Text(if (n == 1) Res.s(R.string.bill_in_cash) else Res.s(R.string.bill_installments_n, n)) },
+                )
+            }
+        }
+    }
+    if (every > 1 && parts > 1) {
+        FieldLabel(Res.s(R.string.bill_cash_price))
+        AmountField(cash, onCash)
+    }
+    FieldLabel(Res.s(R.string.bill_end))
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        FilterChip(selected = endKey == 0, onClick = { onEnd(0) }, label = { Text(Res.s(R.string.bill_end_never)) })
+        Spacer(Modifier.width(8.dp))
+        val end = if (endKey == 0) ymOf(startKey).plusMonths(11) else ymOf(endKey)
+        FilterChip(
+            selected = endKey != 0, onClick = { onEnd(end.key()) },
+            label = { Text(Dates.monthYearInSentence(end, today).capFirst()) },
+        )
+        if (endKey != 0) {
+            IconButton(onClick = { onEnd(maxOf(end.minusMonths(1), ymOf(startKey)).key()) }) {
+                Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, Res.s(R.string.common_mes_anterior))
+            }
+            IconButton(onClick = { onEnd(end.plusMonths(1).key()) }) {
+                Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, Res.s(R.string.common_proximo_mes))
+            }
+        }
+    }
+    // O resumo em uma frase: o que se paga por ciclo e, se houver, os juros do parcelamento.
+    val bill = Bill(name = "", amount = amount, dueDay = dueDay, startYm = startKey, every = every, installments = parts, cashAmount = cash, endYm = endKey)
+    if (parts > 1 && amount > 0) {
+        Text(
+            Res.s(R.string.bill_cycle_total, parts, Money.format(amount), Money.format(BillCycle.cycleTotal(bill))),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(top = 6.dp),
+        )
+        if (cash > 0) {
+            val extra = BillCycle.interest(bill)
+            Text(
+                if (extra > 0) Res.s(R.string.bill_interest, Money.format(extra)) else Res.s(R.string.bill_interest_none),
+                style = MaterialTheme.typography.bodySmall,
+                color = if (extra > 0) CryoTheme.colors.warning else CryoTheme.colors.income,
+            )
+        }
+    }
+    if (every > 1) {
+        val next = generateSequence(maxOf(ymOf(startKey), today.ym())) { it.plusMonths(1) }
+            .take(24).firstOrNull { BillCycle.partOf(bill, it) != null }
+        if (next != null) {
+            Text(
+                Res.s(R.string.bill_next_due, Dates.dayMonthYear(next.dayClamped(dueDay))),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
 @Composable
 fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
     val l = rememberLedger() ?: return LoadingBox()
@@ -678,6 +803,12 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
     var remind by rememberSaveable { mutableStateOf(existing?.remind ?: (kindArg == CategoryKind.EXPENSE)) }
     var before by rememberSaveable { mutableIntStateOf(existing?.remindDaysBefore ?: 1) }
     var active by rememberSaveable { mutableStateOf(existing?.active ?: true) }
+    // RF-CFX-09..11: ritmo, parcelas, preço à vista e prazo.
+    var every by rememberSaveable { mutableIntStateOf(existing?.every ?: 1) }
+    var parts by rememberSaveable { mutableIntStateOf(existing?.installments ?: 1) }
+    var cash by rememberSaveable { mutableLongStateOf(existing?.cashAmount ?: 0L) }
+    var startKey by rememberSaveable { mutableIntStateOf(existing?.startYm ?: l.today.ym().key()) }
+    var endKey by rememberSaveable { mutableIntStateOf(existing?.endYm ?: 0) }
     var confirmDelete by rememberSaveable { mutableStateOf(false) }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
@@ -685,10 +816,12 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
         title = if (existing == null) (if (kind == CategoryKind.EXPENSE) Res.s(R.string.plan_nova_conta_fixa) else Res.s(R.string.plan_novo_recebimento_fixo)) else Res.s(R.string.plan_editar),
         canSave = name.isNotBlank() && amount > 0,
         onSave = {
-            val b = (existing ?: Bill(name = name, amount = amount, dueDay = day, startYm = l.today.ym().key())).copy(
+            val b = (existing ?: Bill(name = name, amount = amount, dueDay = day, startYm = startKey)).copy(
                 name = name.trim(), amount = amount, dueDay = day, kind = kind, categoryId = cat,
                 accountId = (source as? Source.Acc)?.id, cardId = if (kind == CategoryKind.EXPENSE) (source as? Source.Card)?.id else null,
                 remind = remind, remindDaysBefore = before, active = active,
+                every = every, installments = parts.coerceIn(1, every), cashAmount = if (parts > 1) cash else 0,
+                startYm = startKey, endYm = endKey,
             )
             if (remind && Build.VERSION.SDK_INT >= 33 && !Reminders.canNotify(ctx)) permission.launch(Manifest.permission.POST_NOTIFICATIONS)
             c.launch { val saved = c.repo.saveBill(b); c.billReview.value = if (b.id != 0L) b.id else saved; c.message(Res.s(R.string.plan_salvo)) }
@@ -701,15 +834,50 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
             { kind = it; cat = null; if (it == CategoryKind.INCOME && source is Source.Card) source = l.activeAccounts.firstOrNull()?.let { a -> Source.Acc(a.id) } },
         )
         Spacer(Modifier.height(12.dp))
+        // RF-CFX-12: modelos, só ao criar uma conta a pagar. Preenchem o nome, o ritmo e o dia; o valor é de cada um.
+        if (existing == null && kind == CategoryKind.EXPENSE) {
+            FieldLabel(Res.s(R.string.bill_templates))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                BillTemplates.all.forEach { t ->
+                    val label = BillTemplates.label(t)
+                    AssistChip(
+                        onClick = {
+                            name = label; every = t.every; day = t.dueDay; parts = 1
+                            startKey = BillTemplates.firstDue(t, l.today).key()
+                        },
+                        label = { Text(label) },
+                    )
+                }
+            }
+            Spacer(Modifier.height(12.dp))
+        }
         OutlinedTextField(
             name, { name = it }, label = { Text(Res.s(R.string.wallet_nome)) }, singleLine = true,
             placeholder = { Text(if (kind == CategoryKind.EXPENSE) Res.s(R.string.plan_ex_aluguel_internet_netflix) else Res.s(R.string.plan_ex_salario)) },
             keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences), modifier = Modifier.fillMaxWidth(),
         )
-        FieldLabel(Res.s(R.string.plan_valor_todo_mes_aproximado))
+        // O rótulo muda com o ritmo: "todo mês" só vale para a conta mensal; na anual em 3x é "o valor de cada parcela".
+        FieldLabel(
+            when {
+                every == 1 -> Res.s(R.string.plan_valor_todo_mes_aproximado)
+                parts > 1 -> Res.s(R.string.bill_amount_part)
+                else -> Res.s(R.string.bill_amount_each)
+            },
+        )
         AmountField(amount, { amount = it }, color = if (kind == CategoryKind.INCOME) CryoTheme.colors.income else MaterialTheme.colorScheme.onSurface)
         Spacer(Modifier.height(8.dp))
-        Stepper(day, { day = it }, 1..31, if (kind == CategoryKind.EXPENSE) Res.s(R.string.debt_vence_todo_dia) else Res.s(R.string.plan_cai_todo_dia))
+        Stepper(
+            day, { day = it }, 1..31,
+            when {
+                every > 1 -> Res.s(if (kind == CategoryKind.EXPENSE) R.string.bill_due_on else R.string.bill_in_on)
+                kind == CategoryKind.EXPENSE -> Res.s(R.string.debt_vence_todo_dia)
+                else -> Res.s(R.string.plan_cai_todo_dia)
+            },
+        )
+        BillCycleFields(
+            every, { every = it; if (parts > it) parts = it }, parts, { parts = it }, cash, { cash = it },
+            startKey, { startKey = it }, endKey, { endKey = it }, day, amount, l.today,
+        )
         FieldLabel(Res.s(R.string.plan_categoria))
         CategoryGrid(l.categories(kind), cat, { cat = it.id })
         FieldLabel(if (kind == CategoryKind.EXPENSE) Res.s(R.string.debt_paga_com) else Res.s(R.string.wallet_entra_conta))

@@ -86,14 +86,15 @@ object BillMatcher {
     /** Os meses em que uma movimentação desta data pode ser o pagamento de [bill]. */
     fun months(bill: Bill, date: LocalDate): List<YearMonth> =
         listOf(date.ym().minusMonths(1), date.ym(), date.ym().plusMonths(1)).filter { ym ->
-            if (ym.key() < bill.startYm) return@filter false
+            if (BillCycle.partOf(bill, ym) == null) return@filter false
             val delta = ChronoUnit.DAYS.between(ym.dayClamped(bill.dueDay), date)
             delta in -EARLY_DAYS..LATE_DAYS
         }
 
     /** A nota de [line] como pagamento de [bill] em [ym], ou null se não casa. [alias]: a pessoa já confirmou esta descrição. */
     fun rate(bill: Bill, ym: YearMonth, line: PayLine, alias: Boolean = false): BillMatch? {
-        if ((bill.kind == CategoryKind.EXPENSE) != line.expense || ym.key() < bill.startYm || bill.amount <= 0) return null
+        if ((bill.kind == CategoryKind.EXPENSE) != line.expense || bill.amount <= 0) return null
+        if (BillCycle.partOf(bill, ym) == null) return null
         val delta = ChronoUnit.DAYS.between(ym.dayClamped(bill.dueDay), line.date)
         if (delta < -EARLY_DAYS || delta > LATE_DAYS) return null
         val diff = abs(line.amount - bill.amount).toDouble() / bill.amount
@@ -193,7 +194,9 @@ object BillReconciler {
     fun suggestions(s: Snapshot, today: LocalDate, only: Bill? = null, alias: (String) -> Long? = { null }): List<BillSuggestion> {
         val bills = (if (only != null) listOf(only) else s.bills).filter { it.active }
         if (bills.isEmpty()) return emptyList()
-        val first = today.ym().minusMonths(MONTHS_BACK)
+        // Conta que não é mensal (IPVA, seguro): olhar um ciclo inteiro para trás, senão o pagamento do ano fica de fora.
+        val back = maxOf(MONTHS_BACK, bills.maxOf { (it.every - 1).toLong() })
+        val first = today.ym().minusMonths(back)
         val last = today.ym()
         val from = first.atDay(1).minusDays(20)
         val byId = bills.associateBy { it.id }

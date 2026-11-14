@@ -1976,4 +1976,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Soutenir Cryo</string>
     <string name="settings_support_sub">Offrir un café au développeur (ouvre le navigateur)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">À quelle fréquence</string>
+    <string name="bill_every_1">Chaque mois</string>
+    <string name="bill_every_2">Tous les 2 mois</string>
+    <string name="bill_every_3">Tous les 3 mois</string>
+    <string name="bill_every_6">Tous les 6 mois</string>
+    <string name="bill_every_12">Une fois par an</string>
+    <string name="bill_first">Première échéance</string>
+    <string name="bill_installments">Payé en plusieurs fois</string>
+    <string name="bill_installments_n">%1$d×</string>
+    <string name="bill_in_cash">En une fois</string>
+    <string name="bill_cycle_total">%1$d fois %2$s : %3$s par cycle</string>
+    <string name="bill_cash_price">Prix en une fois (facultatif)</string>
+    <string name="bill_interest">En plusieurs fois, vous payez %1$s de plus</string>
+    <string name="bill_interest_none">Sans frais : le total est le même.</string>
+    <string name="bill_end">Jusqu\'à quand</string>
+    <string name="bill_end_never">Sans fin prévue</string>
+    <string name="bill_part_of">Échéance %1$d sur %2$d</string>
+    <string name="bill_next_due">Prochaine échéance : %1$s</string>
+    <string name="bill_templates">Partir d\'un modèle</string>
+    <string name="bill_tpl_rent">Loyer</string>
+    <string name="bill_tpl_power">Électricité</string>
+    <string name="bill_tpl_water">Eau</string>
+    <string name="bill_tpl_internet">Internet</string>
+    <string name="bill_tpl_phone">Téléphone mobile</string>
+    <string name="bill_tpl_streaming">Abonnement</string>
+    <string name="bill_tpl_health">Mutuelle santé</string>
+    <string name="bill_tpl_car_insurance">Assurance auto</string>
+    <string name="bill_tpl_vehicle_tax">Taxe sur les véhicules</string>
+    <string name="bill_tpl_property_tax">Taxe foncière</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">Montant de chaque échéance</string>
+    <string name="bill_amount_each">Montant à chaque fois</string>
+    <string name="bill_due_on">Échéance le</string>
+    <string name="bill_in_on">Arrive le</string>
 </resources>

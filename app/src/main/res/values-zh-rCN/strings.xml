@@ -1939,4 +1939,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">支持 Cryo</string>
     <string name="settings_support_sub">请开发者喝杯咖啡（会打开浏览器）</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">多久一次</string>
+    <string name="bill_every_1">每月</string>
+    <string name="bill_every_2">每 2 个月</string>
+    <string name="bill_every_3">每 3 个月</string>
+    <string name="bill_every_6">每 6 个月</string>
+    <string name="bill_every_12">每年一次</string>
+    <string name="bill_first">首次到期</string>
+    <string name="bill_installments">分期付款</string>
+    <string name="bill_installments_n">%1$d 期</string>
+    <string name="bill_in_cash">一次付清</string>
+    <string name="bill_cycle_total">%1$d 期 × %2$s：每轮共 %3$s</string>
+    <string name="bill_cash_price">一次付清的金额（选填）</string>
+    <string name="bill_interest">分期要多付 %1$s</string>
+    <string name="bill_interest_none">没有利息：分期和一次付清一样。</string>
+    <string name="bill_end">到什么时候</string>
+    <string name="bill_end_never">没有结束日期</string>
+    <string name="bill_part_of">第 %1$d 期（共 %2$d 期）</string>
+    <string name="bill_next_due">下次到期：%1$s</string>
+    <string name="bill_templates">从模板开始</string>
+    <string name="bill_tpl_rent">房租</string>
+    <string name="bill_tpl_power">电费</string>
+    <string name="bill_tpl_water">水费</string>
+    <string name="bill_tpl_internet">宽带</string>
+    <string name="bill_tpl_phone">手机费</string>
+    <string name="bill_tpl_streaming">订阅</string>
+    <string name="bill_tpl_health">医疗保险</string>
+    <string name="bill_tpl_car_insurance">车险</string>
+    <string name="bill_tpl_vehicle_tax">车船税</string>
+    <string name="bill_tpl_property_tax">房产税</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">每期金额</string>
+    <string name="bill_amount_each">每次的金额</string>
+    <string name="bill_due_on">到期日</string>
+    <string name="bill_in_on">入账日</string>
 </resources>

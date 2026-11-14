@@ -2101,4 +2101,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Apoiar o Cryo</string>
     <string name="settings_support_sub">Pagar um café para quem faz o app (abre o navegador)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">Com que frequência</string>
+    <string name="bill_every_1">Todo mês</string>
+    <string name="bill_every_2">A cada 2 meses</string>
+    <string name="bill_every_3">A cada 3 meses</string>
+    <string name="bill_every_6">A cada 6 meses</string>
+    <string name="bill_every_12">Uma vez por ano</string>
+    <string name="bill_first">Primeiro vencimento</string>
+    <string name="bill_installments">Pago em parcelas</string>
+    <string name="bill_installments_n">%1$dx</string>
+    <string name="bill_in_cash">À vista</string>
+    <string name="bill_cycle_total">%1$d parcelas de %2$s: %3$s por ciclo</string>
+    <string name="bill_cash_price">Preço à vista (opcional)</string>
+    <string name="bill_interest">Parcelando, você paga %1$s a mais</string>
+    <string name="bill_interest_none">Sem juros: parcelado sai pelo mesmo preço.</string>
+    <string name="bill_end">Até quando</string>
+    <string name="bill_end_never">Sem prazo</string>
+    <string name="bill_part_of">Parcela %1$d de %2$d</string>
+    <string name="bill_next_due">Próximo vencimento: %1$s</string>
+    <string name="bill_templates">Começar por um modelo</string>
+    <string name="bill_tpl_rent">Aluguel</string>
+    <string name="bill_tpl_power">Luz</string>
+    <string name="bill_tpl_water">Água</string>
+    <string name="bill_tpl_internet">Internet</string>
+    <string name="bill_tpl_phone">Celular</string>
+    <string name="bill_tpl_streaming">Assinatura</string>
+    <string name="bill_tpl_health">Plano de saúde</string>
+    <string name="bill_tpl_car_insurance">Seguro do carro</string>
+    <string name="bill_tpl_vehicle_tax">IPVA</string>
+    <string name="bill_tpl_property_tax">IPTU</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">Valor de cada parcela</string>
+    <string name="bill_amount_each">Valor de cada vez</string>
+    <string name="bill_due_on">Vence no dia</string>
+    <string name="bill_in_on">Cai no dia</string>
 </resources>

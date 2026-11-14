@@ -37,6 +37,9 @@ import io.github.h3yk0.cryo.ui.Navigator
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalFixedToday
 import io.github.h3yk0.cryo.ui.components.LocalSettings
+import io.github.h3yk0.cryo.data.db.CategoryKind
+import io.github.h3yk0.cryo.ui.screens.BillEditorScreen
+import io.github.h3yk0.cryo.ui.screens.PlanScreen
 import io.github.h3yk0.cryo.ui.screens.CardDetailScreen
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.TxEditorScreen
@@ -157,6 +160,41 @@ class Screens19Test {
         val bar = rule.onNodeWithText("Desfazer").fetchSemanticsNode().boundsInRoot
         assertTrue("o botão continua por baixo da barra", fab.bottom <= bar.top + 1f)
         captureScreenRoboImage("screenshots/96_desfazer_sem_cobrir_o_botao.png")
+    }
+
+    /**
+     * RF-CFX-09..12: a conta fixa que não é mensal. O modelo "IPVA" já vem anual e em janeiro; a pessoa escolhe em
+     * quantas parcelas paga e informa o preço à vista para ver os juros.
+     */
+    @Test fun contaFixaAnualAPartirDeUmModelo() {
+        show { BillEditorScreen(null, CategoryKind.EXPENSE) }
+        waitText("Começar por um modelo")
+        rule.onNodeWithText("IPVA").performScrollTo().performClick()
+        waitText("Uma vez por ano")
+        waitText("Primeiro vencimento")
+        waitText("Pago em parcelas")
+        rule.onNodeWithText("3x").performScrollTo().performClick()
+        waitText("Preço à vista")
+        captureScreenRoboImage("screenshots/98_conta_fixa_anual.png")
+    }
+
+    /** RF-CFX-09/10: na lista, a conta que não é mensal diz o ritmo e a parcela do ciclo. */
+    @Test fun aListaMostraORitmoEAParcela() {
+        val ym = day.year * 100 + day.monthValue
+        runBlocking {
+            c.repo.saveBill(
+                io.github.h3yk0.cryo.data.db.Bill(
+                    name = "IPVA", amount = 42_000, dueDay = 10, startYm = ym, every = 12, installments = 3,
+                    cashAmount = 120_000, accountId = c.repo.snapshot.value!!.accounts.first().id,
+                ),
+            )
+        }
+        rule.waitUntil(10_000) { c.repo.snapshot.value?.bills?.any { it.every == 12 } == true }
+        show { PlanScreen(1) }
+        waitText("IPVA")
+        waitText("Uma vez por ano")
+        waitText("Parcela 1 de 3")
+        captureScreenRoboImage("screenshots/99_contas_fixas_anual.png")
     }
 
     /** RF-MOT-04: em Análises, numa frase: a conta fica negativa? quando? qual o menor saldo? */

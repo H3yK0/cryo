@@ -371,6 +371,15 @@ Investimento: "Se continuar como foi", sempre com a frase de que é o passado pr
 |---|---|---|
 | <img src="visual/previsao-conferida.png" width="220"><br>Previsão conferida | <img src="visual/orcamentos-fechamento.png" width="220"><br>Orçamentos: como fecha o mês | <img src="visual/investimento-projecao.png" width="220"><br>Se continuar como foi |
 
+**Pedidos de quem usa (1.5)**: a escolha da fatura mostra o total de cada mês e as já pagas, para quem está pondo o
+histórico antigo; a previsão responde em uma frase (verde quando a conta não fica negativa, vermelho quando fica); a conta
+fixa que não é mensal muda os próprios rótulos ("Valor de cada parcela", "Vence no dia") e só pede o preço à vista quando
+há parcelas.
+
+| | | |
+|---|---|---|
+| <img src="visual/escolher-a-fatura.png" width="220"><br>Escolher a fatura | <img src="visual/previsao-saldo-minimo.png" width="220"><br>Saldo mínimo previsto | <img src="visual/conta-fixa-anual.png" width="220"><br>Conta fixa anual em parcelas |
+
 **Perfil, guia e cartão (1.5)**: a bolinha do Início é um botão (48 dp) e abre o painel do perfil; "Todos os ajustes" fica à vista
 sem rolar. O guia fala pouco: um cartão acima da barra de abas, com o ícone do assunto, uma ou duas frases e dois botões
 ("Me mostra" é o principal, `CryoButton`; "Agora não" é texto). O destaque escurece o resto e contorna o ponto com um anel na cor

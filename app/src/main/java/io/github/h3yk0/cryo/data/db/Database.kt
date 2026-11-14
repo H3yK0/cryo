@@ -194,7 +194,7 @@ class Migration3To4 : AutoMigrationSpec {
         InvestmentYield::class, Goal::class, Bill::class, Budget::class, Debt::class, DebtAdjustment::class,
         BudgetAdjustment::class, NoSpendDay::class,
     ],
-    version = 4,
+    version = 5,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = Migration1To2::class),
@@ -202,6 +202,9 @@ class Migration3To4 : AutoMigrationSpec {
         AutoMigration(from = 2, to = 3),
         // Versão 3 → 4 (Cryo 1.7): remanejar o orçamento só no mês, dias sem gastos e a ilustração das metas (DAD-12..14).
         AutoMigration(from = 3, to = 4, spec = Migration3To4::class),
+        // Versão 4 → 5 (Cryo 1.5): a conta fixa ganha ritmo, parcelas, preço à vista e prazo (DAD-15). As colunas nascem
+        // com o valor de sempre (mensal, uma parcela, sem prazo): quem já usa não vê diferença nenhuma.
+        AutoMigration(from = 4, to = 5),
     ],
 )
 @TypeConverters(Converters::class)

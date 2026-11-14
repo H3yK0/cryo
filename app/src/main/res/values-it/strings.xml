@@ -1976,4 +1976,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Sostieni Cryo</string>
     <string name="settings_support_sub">Offri un caffè a chi fa l\'app (apre il browser)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">Ogni quanto</string>
+    <string name="bill_every_1">Ogni mese</string>
+    <string name="bill_every_2">Ogni 2 mesi</string>
+    <string name="bill_every_3">Ogni 3 mesi</string>
+    <string name="bill_every_6">Ogni 6 mesi</string>
+    <string name="bill_every_12">Una volta all\'anno</string>
+    <string name="bill_first">Prima scadenza</string>
+    <string name="bill_installments">Pagato a rate</string>
+    <string name="bill_installments_n">%1$d×</string>
+    <string name="bill_in_cash">In un\'unica volta</string>
+    <string name="bill_cycle_total">%1$d rate da %2$s: %3$s per ciclo</string>
+    <string name="bill_cash_price">Prezzo in un\'unica volta (facoltativo)</string>
+    <string name="bill_interest">A rate paghi %1$s in più</string>
+    <string name="bill_interest_none">Senza interessi: a rate costa uguale.</string>
+    <string name="bill_end">Fino a quando</string>
+    <string name="bill_end_never">Senza scadenza</string>
+    <string name="bill_part_of">Rata %1$d di %2$d</string>
+    <string name="bill_next_due">Prossima scadenza: %1$s</string>
+    <string name="bill_templates">Parti da un modello</string>
+    <string name="bill_tpl_rent">Affitto</string>
+    <string name="bill_tpl_power">Luce</string>
+    <string name="bill_tpl_water">Acqua</string>
+    <string name="bill_tpl_internet">Internet</string>
+    <string name="bill_tpl_phone">Cellulare</string>
+    <string name="bill_tpl_streaming">Abbonamento</string>
+    <string name="bill_tpl_health">Assicurazione sanitaria</string>
+    <string name="bill_tpl_car_insurance">Assicurazione auto</string>
+    <string name="bill_tpl_vehicle_tax">Bollo auto</string>
+    <string name="bill_tpl_property_tax">IMU</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">Importo di ogni rata</string>
+    <string name="bill_amount_each">Importo ogni volta</string>
+    <string name="bill_due_on">Scade il giorno</string>
+    <string name="bill_in_on">Arriva il giorno</string>
 </resources>

@@ -1939,4 +1939,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Cryoを応援する</string>
     <string name="settings_support_sub">開発者にコーヒーを1杯（ブラウザが開きます）</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">どのくらいの頻度で</string>
+    <string name="bill_every_1">毎月</string>
+    <string name="bill_every_2">2か月ごと</string>
+    <string name="bill_every_3">3か月ごと</string>
+    <string name="bill_every_6">6か月ごと</string>
+    <string name="bill_every_12">年1回</string>
+    <string name="bill_first">最初の支払い月</string>
+    <string name="bill_installments">分割で払う</string>
+    <string name="bill_installments_n">%1$d回</string>
+    <string name="bill_in_cash">一括</string>
+    <string name="bill_cycle_total">%2$s×%1$d回＝1回あたり%3$s</string>
+    <string name="bill_cash_price">一括払いの金額（任意）</string>
+    <string name="bill_interest">分割にすると%1$s多く払います</string>
+    <string name="bill_interest_none">手数料なし：分割でも同じ金額です。</string>
+    <string name="bill_end">いつまで</string>
+    <string name="bill_end_never">期限なし</string>
+    <string name="bill_part_of">%2$d回中%1$d回目</string>
+    <string name="bill_next_due">次回：%1$s</string>
+    <string name="bill_templates">テンプレートから始める</string>
+    <string name="bill_tpl_rent">家賃</string>
+    <string name="bill_tpl_power">電気代</string>
+    <string name="bill_tpl_water">水道代</string>
+    <string name="bill_tpl_internet">インターネット</string>
+    <string name="bill_tpl_phone">携帯電話</string>
+    <string name="bill_tpl_streaming">サブスク</string>
+    <string name="bill_tpl_health">健康保険</string>
+    <string name="bill_tpl_car_insurance">自動車保険</string>
+    <string name="bill_tpl_vehicle_tax">自動車税</string>
+    <string name="bill_tpl_property_tax">固定資産税</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">1回あたりの金額</string>
+    <string name="bill_amount_each">1回ごとの金額</string>
+    <string name="bill_due_on">支払日</string>
+    <string name="bill_in_on">入金日</string>
 </resources>

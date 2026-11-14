@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **12/11/2026**.
+Situação descrita aqui: **13/11/2026**.
 
 ---
 
@@ -207,7 +207,21 @@ código anterior. Todos os testes passam.
 - **Sons** (RF-SOM-01 revisto): kit refeito, abafado e grave (`tools/sons/make_sounds.py`, com `--medir` e `--ogg`).
 - **Auditoria**: ERR-040 a ERR-045 em `docs/ERROS.md` (previsão em dobro, conta paga à mão × extrato do cartão, desfazer que apagava
   o importado, estorno que saía do cartão, compra que mudava de fatura ao editar, "Já paguei" da notificação sem olhar o extrato).
-- 106 textos novos nas 10 línguas. Nenhuma permissão nova; banco de dados continua na versão 4.
+- **Pedidos de quem usa** (issue #3 do GitHub, 12 e 13/11/2026, aprovados pelo Hanry):
+  - **Escolher qualquer fatura** do cartão (RF-CAR-10): os chips mostram as vizinhas e "Outra…" abre a lista inteira
+    (`InvoicePickerSheet` em `ui/tx/TxForm.kt`), com o total de cada fatura, para pôr compras antigas no mês certo.
+  - **A previsão responde em uma frase** se a conta fica negativa, a partir de quando, e qual o menor saldo
+    (`Projection.firstNegativeWithin`, cartão em `ui/screens/EngineScreens.kt`).
+  - **Contas fixas que não são mensais** (RF-FIX-06..10): ritmo (todo mês, 2, 3, 6 meses ou anual), primeiro vencimento,
+    parcelas de cada ciclo com o preço à vista para mostrar os juros, prazo ("até quando") e **modelos por língua**
+    (`data/BillTemplates.kt`: aluguel, luz, água, internet, celular, assinatura, plano de saúde, seguro do carro, e os
+    impostos de cada país — IPVA/IPTU no Brasil, *Vehicle registration* em inglês, 自動車税 em japonês). As regras ficam em
+    `BillCycle` (`domain/Ledger.kt`); o `Ledger`, a previsão, os avisos e o casador já seguem o ciclo.
+  - **Apoiar o Cryo** (RF-AJU-12): Ajustes › Sobre, READMEs e o campo `Donate:` da receita do F-Droid apontam para o Buy
+    Me a Coffee. O app continua sem permissão de internet: quem abre a página é o navegador.
+  - **ERR-046** (a barra de desfazer cobria o botão "+") e **ERR-047** (botão flutuante sem nome para o leitor de tela).
+- 148 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
+  fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
   rascunho de resposta na entrega da 1.5; só o Hanry posta).
@@ -370,11 +384,12 @@ do Cryo, não do git). O modelo fica em `app/src/main/assets/whisper/ggml-base-q
 
 ## 8. Banco de dados e formatos
 
-**Room** (`cryo.db`, versão 4; teste: `cryo-teste.db`). Tabelas: `accounts`, `cards`, `categories`, `transactions`,
+**Room** (`cryo.db`, versão 5; teste: `cryo-teste.db`). Tabelas: `accounts`, `cards`, `categories`, `transactions`,
 `investments`, `investment_yields`, `goals`, `bills`, `budgets`, `debts`, `debt_adjustments` e (1.5) `budget_adjustments`
 (remanejar só no mês; `moveGroup` liga as duas pontas) e `no_spend_days`.
-Migrações automáticas: 1→2 (dívidas, com `Migration1To2`), 2→3 (`transactions.importKey` + índice) e 3→4 (tabelas novas e
-`goals.art`, preenchido a partir do emoji por `Migration3To4`). Schemas em `app/schemas/`.
+Migrações automáticas: 1→2 (dívidas, com `Migration1To2`), 2→3 (`transactions.importKey` + índice), 3→4 (tabelas novas e
+`goals.art`, preenchido a partir do emoji por `Migration3To4`) e 4→5 (`bills.every`, `installments`, `cashAmount`, `endYm`,
+todas com valor padrão: quem vem da 1.4 continua com a conta mensal de sempre). Schemas em `app/schemas/`.
 
 **Tipos de movimentação** (`TxType`): `EXPENSE`, `INCOME` (no cartão = estorno), `TRANSFER` (conta → conta),
 `CARD_PAYMENT` (conta → cartão, com `invoiceYm`), `INVEST_IN`/`INVEST_OUT`, `GOAL_IN`/`GOAL_OUT` (caixinhas),
@@ -424,6 +439,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Momentos, ilustrações | `ui/components/Moments.kt`, `ui/components/Art.kt` |
 | Painel do mês (orçamento) | `ui/screens/BudgetMonthScreen.kt` |
 | Motor financeiro (previsão com faixa, recorrências, próximos meses, saúde, dívidas, rendimento) | `domain/engine/`, `ui/screens/EngineScreens.kt`, cartões em `InsightsScreen.kt` |
+| Contas fixas: ritmo, parcelas, juros, prazo e modelos (1.5) | `domain/Ledger.kt` (`BillCycle`), `data/BillTemplates.kt`, `ui/screens/PlanScreens.kt` (`BillCycleFields`) |
 | Contas fixas × extrato (1.5) | `domain/BillMatch.kt`, `importer/ImportPlan.kt` (`withBills`), `ui/screens/PlanScreens.kt` (`BillSuggestionsSheet`) |
 | Perfil (1.5) | `ui/components/Avatar.kt`, `ui/screens/ProfileScreens.kt` |
 | Guia "Aprender o Cryo" (1.5) | `domain/Guide.kt`, `data/GuideStore.kt`, `ui/components/Guide.kt`, `ui/screens/LearnScreen.kt` |
@@ -431,7 +447,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 940 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 950 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -453,6 +469,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `AlertPlannerTest`, `AlertActionsTest` | Avisos (1.5): cada regra com dados inventados (um por dia, dois horários, pessoa nova, tipo desligado, dispensado 3 vezes, ritmo, lembrete e sequência, resumo de domingo), exemplos, botões da notificação, desbloqueio, tela de bloqueio, figurinha no `MessagingStyle`, sons no silencioso |
 | `MomentsTest`, `BudgetMonthTest`, `Screens17Test` | Momentos depois de salvar e o modo compras; remanejar só no mês e backup; imagens 71–81 (painel, avisos, momentos, compras, botão de voz, fonte em 200%) |
 | `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest`, `Screens18Test` | Etapa 4: o previsor contra o primeiro motor em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas; imagens 82–85 (previsão conferida, orçamentos, investimento, carteira) |
+| `BillCycleTest` | Contas fixas não mensais: ritmo, parcelas, juros, prazo, os modelos de cada língua e o `Ledger` seguindo o ciclo (JVM puro) |
 | `BillMatchTest`, `BillFlowTest`, `ProfileTest`, `GuidePlannerTest`, `GuideFlowTest`, `CardFixTest`, `Screens19Test` | Etapa 5: o casador de contas fixas e a previsão sem dobro; importar, ligar, desligar, juntar e criar a conta fixa depois; o perfil (imagens 86–88); as regras do guia com datas inventadas e as telas dele (89–91); estorno, fatura mantida ao editar, escolha da fatura e ajustar total (92–94) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
@@ -464,7 +481,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão.
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -476,6 +493,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   `Long`) somou 8 MB e derrubou o `EngineResourcesTest`; a correção foi uma passada só, sem ordenar (`BillMatcher.certain`).
 - **Suíte inteira em lotes**: aqui o comando tem limite de 10 minutos; rode por letra inicial da classe
   (`--tests 'io.github.h3yk0.cryo.E*'` etc.). O Gradle apaga os resultados a cada rodada: some os lotes à mão.
+- **Botão estendido (`ExtendedFloatingActionButton`)**: o Material esconde o texto dele da árvore mesclada; nos testes,
+  procure pelo `contentDescription` (ERR-047), não pelo texto.
+- **`performScrollToNode` quer exatamente um rolável**: na tela de lançamento há vários; use `performScrollTo()` no
+  próprio nó, ou `onAllNodes(hasScrollToNodeAction()).onLast()` quando a lista está numa folha por cima.
 - **Recebedor do manifesto** (`AlertActionReceiver`) não recebe `sendBroadcast` no Robolectric: os testes chamam `handle()` direto.
 - `FileProvider` funciona no Robolectric (a figurinha da notificação dá para conferir); `renderArt` precisa de `@GraphicsMode(NATIVE)`.
 - **Chaves de `LazyColumn`** com ids de tabelas diferentes colidem (categoria 1 e remanejamento 1): use prefixo (`"b$id"`, `"a$id"`).
@@ -644,6 +665,14 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 - **Duas rentabilidades na tela do investimento** (1.5): a TIR ("Rendimento real", o que a pessoa ganhou, conta quando ela aportou)
   e a do investimento em si (Dietz modificado, usada na projeção). Elas podem diferir bastante (aportes grandes em meses ruins);
   por isso o texto da segunda diz "o investimento em si ... (sem contar quando você aportou)".
+- **Ritmo da conta fixa por "a cada N meses" + parcelas** (1.5, issue #3): em vez de inventar um calendário completo, a
+  conta fixa tem um ciclo (`every`) e um número de parcelas mensais seguidas (`installments`). Isso cobre mensal, bimestral,
+  trimestral, semestral, anual e o IPVA em 3x com quatro números simples, sem tabela nova e com uma regra que cabe numa
+  linha (`BillCycle.partOf`). O valor guardado é o **de cada parcela** (é o que a pessoa paga e o que aparece no extrato).
+- **Juros da conta fixa pelo preço à vista** (1.5): o app não calcula taxa nenhuma; a pessoa informa quanto custaria à
+  vista e o Cryo mostra a diferença. É um número que ela conhece e dá para conferir.
+- **Modelos de conta fixa por língua** (1.5): a lista é a mesma, o nome vem dos textos. Assim o Brasil vê "IPVA", o Japão
+  自動車税 e os Estados Unidos "Vehicle registration" sem código diferente por país.
 - **Casamento de conta fixa em dois níveis** (1.5): só o CERTO (nome + valor igual, ou apelido confirmado) age sozinho; o PROVÁVEL
   sempre pergunta. Ligar errado sozinho custaria mais confiança do que perguntar.
 - **"Não é conta fixa" guardado no próprio lançamento** (`billYm = 0`): não pede migração do banco, vai junto no backup e some

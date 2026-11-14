@@ -98,6 +98,7 @@ object Backup {
                 .put("kind", it.kind.name).put("categoryId", it.categoryId.orNull()).put("accountId", it.accountId.orNull())
                 .put("cardId", it.cardId.orNull()).put("remind", it.remind).put("remindDaysBefore", it.remindDaysBefore)
                 .put("active", it.active).put("startYm", it.startYm).put("createdAt", it.createdAt)
+                .put("every", it.every).put("installments", it.installments).put("cashAmount", it.cashAmount).put("endYm", it.endYm)
         })
         root.put("budgets", s.budgets.toJson {
             JSONObject().put("categoryId", it.categoryId).put("limitAmount", it.limitAmount)
@@ -187,7 +188,12 @@ object Backup {
         yields = s.yields.map { it.copy(amount = money(it.amount, signed = true), date = day(it.date)) },
         goals = s.goals.map { it.copy(target = money(it.target), deadline = it.deadline?.let(::day)) },
         bills = s.bills.map {
-            it.copy(amount = money(it.amount), dueDay = it.dueDay.coerceIn(1, 31), startYm = ym(it.startYm), remindDaysBefore = it.remindDaysBefore.coerceIn(0, 31))
+            it.copy(
+                amount = money(it.amount), dueDay = it.dueDay.coerceIn(1, 31), startYm = ym(it.startYm),
+                remindDaysBefore = it.remindDaysBefore.coerceIn(0, 31), every = it.every.coerceIn(1, 12),
+                installments = it.installments.coerceIn(1, 12), cashAmount = money(it.cashAmount),
+                endYm = if (it.endYm == 0) 0 else ym(it.endYm),
+            )
         },
         budgets = s.budgets.map { it.copy(limitAmount = money(it.limitAmount)) },
         debts = s.debts.map {
@@ -270,6 +276,9 @@ object Backup {
                     cardId = it.optLongOrNull("cardId"), remind = it.optBoolean("remind", true),
                     remindDaysBefore = it.optInt("remindDaysBefore", 1), active = it.optBoolean("active", true),
                     startYm = it.getInt("startYm"), createdAt = it.optLong("createdAt"),
+                    // 1.5: ritmo, parcelas e prazo. Backup antigo não tem: vira a conta mensal de sempre.
+                    every = it.optInt("every", 1), installments = it.optInt("installments", 1),
+                    cashAmount = it.optLong("cashAmount", 0), endYm = it.optInt("endYm", 0),
                 )
             },
             budgets = root.getJSONArray("budgets").mapObj {

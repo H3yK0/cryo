@@ -1939,4 +1939,39 @@
     <!-- 1.5: apoiar o projeto (Buy Me a Coffee) -->
     <string name="settings_support">Cryo 후원하기</string>
     <string name="settings_support_sub">개발자에게 커피 한 잔 (브라우저가 열려요)</string>
+    <!-- 1.5: contas fixas com ritmo, parcelas, juros e prazo (RF-CFX-09..12) -->
+    <string name="bill_every">얼마나 자주</string>
+    <string name="bill_every_1">매달</string>
+    <string name="bill_every_2">2개월마다</string>
+    <string name="bill_every_3">3개월마다</string>
+    <string name="bill_every_6">6개월마다</string>
+    <string name="bill_every_12">1년에 한 번</string>
+    <string name="bill_first">첫 납부 시기</string>
+    <string name="bill_installments">나눠서 내기</string>
+    <string name="bill_installments_n">%1$d회</string>
+    <string name="bill_in_cash">한 번에</string>
+    <string name="bill_cycle_total">%2$s씩 %1$d회: 한 주기에 %3$s</string>
+    <string name="bill_cash_price">한 번에 낼 때 금액 (선택)</string>
+    <string name="bill_interest">나눠서 내면 %1$s 더 내요</string>
+    <string name="bill_interest_none">이자 없음: 나눠 내도 금액이 같아요.</string>
+    <string name="bill_end">언제까지</string>
+    <string name="bill_end_never">기한 없음</string>
+    <string name="bill_part_of">%2$d회 중 %1$d회</string>
+    <string name="bill_next_due">다음 납부: %1$s</string>
+    <string name="bill_templates">서식으로 시작하기</string>
+    <string name="bill_tpl_rent">월세</string>
+    <string name="bill_tpl_power">전기 요금</string>
+    <string name="bill_tpl_water">수도 요금</string>
+    <string name="bill_tpl_internet">인터넷</string>
+    <string name="bill_tpl_phone">휴대폰 요금</string>
+    <string name="bill_tpl_streaming">구독 서비스</string>
+    <string name="bill_tpl_health">건강보험</string>
+    <string name="bill_tpl_car_insurance">자동차 보험</string>
+    <string name="bill_tpl_vehicle_tax">자동차세</string>
+    <string name="bill_tpl_property_tax">재산세</string>
+    <!-- 1.5: rótulos da conta fixa que não é mensal -->
+    <string name="bill_amount_part">각 회차 금액</string>
+    <string name="bill_amount_each">한 번에 내는 금액</string>
+    <string name="bill_due_on">납부일</string>
+    <string name="bill_in_on">들어오는 날</string>
 </resources>
