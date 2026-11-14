@@ -284,6 +284,11 @@ código anterior. Todos os testes passam.
 - Mudança no banco de dados = nova versão do Room com migração e teste em `MigrationTest` (os schemas ficam em `app/schemas/`).
   Backups antigos precisam continuar abrindo (`Backup.import` lê todas as versões).
 
+**Produto**
+- **Flexibilidade é lei** (pedido do Hanry, 13/11/2026, PRI-09): toda regra automática do app (a fatura pela data, o ritmo
+  da conta fixa, a categoria sugerida) precisa ter um jeito à vista de a pessoa mudar o resultado — respeitando a lógica:
+  a escolha dela é guardada e os cálculos a seguem.
+
 **Código**
 - Botão principal é sempre `CryoButton` (nunca `Button(` direto nas telas: `PrdConformanceTest` confere). Cartões e listas usam
   as peças de `ui/components/Depth.kt` (`depthCard`, `groupedRow`) e as cores de `CryoTheme.depth`, nunca cores soltas.

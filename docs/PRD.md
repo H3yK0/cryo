@@ -99,6 +99,7 @@ Toda decisão é conferida contra estes princípios, nesta ordem de prioridade.
 | PRI-05 | **Explicar em vez de esconder** | Todo aviso diz o que aconteceu e o que fazer. |
 | PRI-06 | **Calmo e organizado** | Visual limpo, cor com propósito, nada piscando; seções em vez de blocos empilhados (DS 2.0). |
 | PRI-07 | **Para todo mundo** | Acessível (leitor de tela, fonte grande, contraste), Android 8 em diante. |
+| PRI-09 | **Flexível, sem perder a lógica** (decisão do Hanry, 13/11/2026) | O Cryo sugere, a pessoa decide: toda regra automática (a fatura pela data, o ritmo da conta fixa, a categoria sugerida) tem um jeito de a pessoa mudar o resultado, à vista e sem gambiarra. A sugestão continua certa e explicada; a escolha dela manda. Nenhuma "flexibilidade" pode quebrar uma conta: o que ela escolhe é guardado e respeitado nos cálculos. | Toda tela com uma regra automática oferece a escolha (RF-CAR-10, RF-FIX-06, RF-CFX-02). |
 | PRI-08 | **Livre e verificável** | Código aberto (AGPL), compilação reproduzível, F-Droid. |
 
 ## 3. Pessoas e jornadas
