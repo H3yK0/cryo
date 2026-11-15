@@ -168,7 +168,11 @@ class EngineSecurityTest(private val case: Int) {
         expect<BackupCrypto.WrongPassword> { BackupCrypto.decrypt(sealed, "errada-$case".toCharArray()) }
         val env = JSONObject(sealed)
         val data = Base64.getDecoder().decode(env.getString("data"))
-        data[rng.nextInt(data.size)] = (data[rng.nextInt(data.size)].toInt() xor (1 + rng.nextInt(255))).toByte()
+        // O byte mexido é sempre diferente do original: xor de 1 a 255 no MESMO byte. Antes o teste lia um byte e
+        // gravava em outro; 1 vez em 256 o valor "novo" era igual ao que já estava lá, o arquivo não mudava e o teste
+        // falhava sem defeito nenhum no app (o texto cifrado muda a cada rodada; visto em 15/11/2026).
+        val at = rng.nextInt(data.size)
+        data[at] = (data[at].toInt() xor (1 + rng.nextInt(255))).toByte()
         val tampered = JSONObject(sealed).put("data", Base64.getEncoder().encodeToString(data)).toString()
         expect<IllegalArgumentException> { BackupCrypto.decrypt(tampered, "certa-$case".toCharArray()) }
         val headerTampered = JSONObject(sealed).put("exportedAt", 43).toString()

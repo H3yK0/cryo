@@ -370,6 +370,36 @@ class StatementImportTest {
         assertEquals(130000L - 16595L, st.lines.sumOf { it.amount })
     }
 
+    /**
+     * ERR-052: a seção ("Créditos", "Débitos", "Total de saídas") só decide o sinal de quem **não tem marca forte**.
+     * O resumo no topo de muitos extratos ("Débitos 250,00") parece um título de seção e ficava valendo até o fim:
+     * com a regra do ERR-051 ("a seção manda sempre"), um salário marcado com "C" ou "+" virava saída. Inventado.
+     */
+    @Test fun pdfMarcaForteDoBancoVenceASecao() {
+        val comLetras = """
+            EXTRATO DE CONTA CORRENTE
+            Período: 01/11/2026 a 30/11/2026
+            Créditos 3.500,00
+            Débitos 250,00
+            Data Histórico Valor
+            05/11/2026 SALARIO EMPRESA EXEMPLO 3.500,00 C
+            06/11/2026 COMPRA MERCADO EXEMPLO 150,00 D
+            07/11/2026 PIX ENVIADO FULANO DE TAL 100,00 D
+        """.trimIndent()
+        assertEquals(listOf(350000L, -15000L, -10000L), PdfStatement.parse(listOf(comLetras), today).lines.map { it.amount })
+
+        val comSinais = """
+            EXTRATO DE CONTA CORRENTE
+            Período: 01/11/2026 a 30/11/2026
+            Débitos 250,00
+            Data Histórico Valor
+            05/11/2026 SALARIO EMPRESA EXEMPLO +3.500,00
+            06/11/2026 COMPRA MERCADO EXEMPLO -150,00
+            07/11/2026 PIX ENVIADO FULANO DE TAL 100,00-
+        """.trimIndent()
+        assertEquals(listOf(350000L, -15000L, -10000L), PdfStatement.parse(listOf(comSinais), today).lines.map { it.amount })
+    }
+
     @Test fun pdfDeFaturaSemSinais() {
         val text = """
             Fatura do cartão - vencimento 10/10/2026

@@ -302,7 +302,7 @@ código-fonte, MIT) compilado pelo NDK, uma ponte JNI, a tela de "ouvindo" e as 
 | RF-LAN-06 | Data | Hoje, Ontem, Outra data. | ✅ 1.0 |
 | RF-LAN-07 | Apagar com desfazer | Snackbar "Desfazer". | ✅ 1.0 |
 | RF-LAN-08 | Ligação com dívida | Pagamento de parcela de dívida, dinheiro emprestado que entrou. | ✅ 1.1 |
-| RF-LAN-09 | **Estornar** (pedido do Hanry, 14/11/2026) | Na tela de um gasto ou de uma receita, o botão "Estornar" cria o lançamento contrário com um toque (mesmo valor, mesma conta ou cartão, data de hoje, "Estorno · <descrição>") e deixa o original no histórico; no cartão, o estorno entra na fatura de hoje (RF-CAR-07/10). Com desfazer. | Teste: estornar um gasto no cartão gera um crédito na fatura certa e o saldo volta ao lugar. | ✅ 1.5 |
+| RF-LAN-09 | **Estornar** (pedido do Hanry, 14/11/2026) | Na tela de um gasto ou de uma receita, o botão "Estornar" cria o lançamento contrário com um toque (mesmo valor, mesma conta ou cartão, data de hoje, "Estorno · <descrição>", sem categoria: a do original é do outro tipo, ERR-053) e deixa o original no histórico; no cartão, o estorno entra na fatura de hoje (RF-CAR-07/10). Com desfazer. | Teste: estornar um gasto no cartão gera um crédito na fatura certa e o saldo volta ao lugar (`CardFixTest`). | ✅ 1.5 |
 
 ### 6.4 Extrato — RF-EXT (TELA-EXTRATO)
 

@@ -11,6 +11,7 @@ import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Snapshot
 import io.github.h3yk0.cryo.ui.components.Source
 import io.github.h3yk0.cryo.ui.tx.TxDraft
+import io.github.h3yk0.cryo.ui.tx.refundOf
 import io.github.h3yk0.cryo.ui.tx.saveDraft
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.assertEquals
@@ -48,6 +49,37 @@ class CardFixTest {
         }
     }
     private suspend fun AppContainer.ledger() = Ledger(repo.loadOnce(), today)
+
+    /**
+     * RF-LAN-09 e ERR-053: "Estornar" cria o contrário (hoje, mesma conta ou cartão, na fatura de hoje) e não leva o que
+     * é só do original: categoria (a de gasto não serve para receita), importação, conta fixa e parcelas.
+     */
+    @Test fun estornarCriaOContrarioSemLevarACategoria() = runBlocking {
+        val c = container(
+            Tx(1, TxType.EXPENSE, 20000, day(4), "MERCADO", categoryId = 7, accountId = 1, billId = 3, billYm = 202611, importKey = "a1|ofx.id:1"),
+            Tx(2, TxType.EXPENSE, 9000, day(5), "LOJA", categoryId = 7, cardId = 1, invoiceYm = 202612, installmentGroup = "g", installmentNumber = 1, installmentTotal = 3),
+            Tx(3, TxType.INCOME, 5000, day(6), "Venda", categoryId = 9, accountId = 1),
+        )
+        var l = c.ledger()
+        val antes = l.balance(1)
+        for (id in 1L..3L) c.repo.saveTx(refundOf(l.s.txs.single { it.id == id }, l))
+        l = c.ledger()
+        val novos = l.s.txs.filter { it.id > 3 }.sortedBy { it.id }
+        assertEquals(listOf(TxType.INCOME, TxType.INCOME, TxType.EXPENSE), novos.map { it.type })
+        assertEquals("Estorno · MERCADO", novos[0].description)
+        for (t in novos) {
+            assertEquals(today, t.date)
+            assertNull("a categoria do outro tipo não vai junto", t.categoryId)
+            assertNull(t.importKey); assertNull(t.billId); assertNull(t.billYm); assertNull(t.installmentGroup)
+        }
+        // Conta: o gasto voltou (+200) e a venda saiu (-50).
+        assertEquals(antes + 20000 - 5000, l.balance(1))
+        // Cartão: o estorno fica no cartão, na fatura de hoje (20/11 fecha em dezembro), e zera a compra.
+        assertEquals(1L, novos[1].cardId)
+        assertNull(novos[1].accountId)
+        assertEquals(202612, novos[1].invoiceYm)
+        assertEquals(0L, l.invoice(card, dec).total)
+    }
 
     /** RF-CAR-07: o estorno lançado à mão entra no cartão, diminui a fatura e não mexe no saldo de conta nenhuma. */
     @Test fun estornoNoCartaoAMao() = runBlocking {

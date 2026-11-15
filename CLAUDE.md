@@ -226,12 +226,16 @@ código anterior. Todos os testes passam.
   - **Leitor de PDF, três defeitos achados com um extrato de verdade** (ERR-049/050/051, `importer/PdfStatement.kt`): o fim
     de um CNPJ colava no valor ("…/0001-49 512,30" virava R$ 49.512,30); o cabeçalho repetido de cada página
     ("01 de novembro de 2026 a 13 de novembro de 2026") virava a data de tudo o que vinha depois; e um traço do próprio
-    texto ("LTDA - 119,99") invertia o sinal. Com os três consertos, o extrato do Hanry fecha **no centavo** com o banco.
+    texto ("LTDA - 87,50") invertia o sinal. Com os três consertos, o extrato do Hanry fecha **no centavo** com o banco.
     O extrato de verdade **não entra no repositório** (PRC-06): o teste-guarda usa um inventado no mesmo formato.
   - **Apagar uma importação inteira** (RF-IMP-23): `domain/ImportBatches.kt` agrupa por destino + hora da importação;
     tela `imports` (`ui/screens/ImportsScreen.kt`), com confirmação e desfazer.
   - **Estornar uma movimentação** (RF-LAN-09): botão na tela do lançamento, cria o contrário com desfazer.
   - **ERR-048**: Ajustes › Avisos só mudava depois de sair e voltar (a tela lia o contador de mudanças sem usar o valor).
+  - **Revisão antes de publicar (15/11/2026)**: **ERR-052** (o conserto do ERR-051 deixava a seção mandar sempre: o
+    resumo do topo, "Débitos 250,00", virava seção do arquivo inteiro e um salário marcado com "C" virava saída; agora a
+    marca forte do banco vence e só o traço solto segue a seção) e **ERR-053** (o estorno levava a categoria de gasto
+    para a receita; a regra virou a função pura `refundOf`, em `ui/tx/TxForm.kt`, com teste).
 - 161 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
   fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
@@ -465,7 +469,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 957 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 959 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -518,6 +522,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   procure pelo `contentDescription` (ERR-047), não pelo texto.
 - **`performScrollToNode` quer exatamente um rolável**: na tela de lançamento há vários; use `performScrollTo()` no
   próprio nó, ou `onAllNodes(hasScrollToNodeAction()).onLast()` quando a lista está numa folha por cima.
+- **Teste que adultera dados precisa mudar de verdade**: o `EngineSecurityTest` trocava um byte do backup trancado pelo
+  valor de *outro* byte; 1 vez em 256 dava o mesmo valor e o teste falhava sem defeito (o texto cifrado muda a cada
+  rodada, então a falha ia e vinha). Adulterar = xor com valor diferente de zero no mesmo byte. Uma falha que some ao
+  rodar de novo não é "instabilidade": é para achar a causa.
 - **Recebedor do manifesto** (`AlertActionReceiver`) não recebe `sendBroadcast` no Robolectric: os testes chamam `handle()` direto.
 - `FileProvider` funciona no Robolectric (a figurinha da notificação dá para conferir); `renderArt` precisa de `@GraphicsMode(NATIVE)`.
 - **Chaves de `LazyColumn`** com ids de tabelas diferentes colidem (categoria 1 e remanejamento 1): use prefixo (`"b$id"`, `"a$id"`).

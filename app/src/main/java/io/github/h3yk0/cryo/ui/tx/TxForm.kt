@@ -236,6 +236,27 @@ internal fun momentAfterSave(d: TxDraft, l: Ledger, monthPart: Long, isNew: Bool
     return null
 }
 
+/**
+ * RF-LAN-09: o contrário de um gasto ou de uma receita, para o botão "Estornar": mesmo valor, mesma conta ou cartão,
+ * data de hoje (no cartão, a fatura de hoje). Não leva o que é só do original: chave de importação, conta fixa, dívida
+ * e parcelas. ERR-053: nem a categoria — a de um gasto não serve para uma receita (e vice-versa); com ela, "Mercado"
+ * aparecia entre as receitas e a categoria aprendida passava a sugerir categoria de gasto para dinheiro que entra.
+ */
+fun refundOf(original: Tx, l: Ledger, now: Long = System.currentTimeMillis()): Tx {
+    val card = original.cardId?.let { l.card[it] }
+    return original.copy(
+        id = 0,
+        type = if (original.type == TxType.EXPENSE) TxType.INCOME else TxType.EXPENSE,
+        date = l.today,
+        description = Res.s(R.string.tx_refund_of, original.description).take(120),
+        categoryId = null,
+        invoiceYm = card?.let { CardMath.invoiceFor(it, l.today).key() },
+        importKey = null, billId = null, billYm = null, debtId = null,
+        installmentGroup = null, installmentNumber = 0, installmentTotal = 0,
+        createdAt = now,
+    )
+}
+
 /** Grava o rascunho no banco. Devolve um aviso de orçamento (se houver) e como desfazer. */
 suspend fun saveDraft(d: TxDraft, repo: FinanceRepository, l: Ledger): SaveResult {
     val o = d.original

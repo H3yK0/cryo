@@ -5,7 +5,6 @@ package io.github.h3yk0.cryo.ui.tx
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.key
-import io.github.h3yk0.cryo.domain.CardMath
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
@@ -94,17 +93,7 @@ fun TxEditorScreen(
                     if (original != null && (original.type == TxType.EXPENSE || original.type == TxType.INCOME)) {
                         IconButton(onClick = {
                             c.launch {
-                                val card = original.cardId?.let { l.card[it] }
-                                val back = original.copy(
-                                    id = 0,
-                                    type = if (original.type == TxType.EXPENSE) TxType.INCOME else TxType.EXPENSE,
-                                    date = l.today,
-                                    description = Res.s(R.string.tx_refund_of, original.description).take(120),
-                                    invoiceYm = card?.let { CardMath.invoiceFor(it, l.today).key() },
-                                    importKey = null, billId = null, billYm = null, debtId = null,
-                                    installmentGroup = null, installmentNumber = 0, installmentTotal = 0,
-                                    createdAt = System.currentTimeMillis(),
-                                )
+                                val back = refundOf(original, l)
                                 val id = c.repo.saveTx(back)
                                 c.message(Res.s(R.string.tx_refund_done), Res.s(R.string.wallet_desfazer)) {
                                     c.repo.deleteTx(back.copy(id = id))

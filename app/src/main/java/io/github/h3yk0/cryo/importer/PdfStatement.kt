@@ -225,11 +225,15 @@ object PdfStatement {
         // 2ª passada: o sinal de quem não tem.
         val lines = found.map { f ->
             val d0 = f.description.normalized()
-            val cents = if (f.section != 0) {
-                // ERR-051: quando o extrato agrupa o dia em "Total de entradas" e "Total de saídas", quem manda é a
-                // seção. Antes, um traço do próprio texto ("LTDA - 119,99") virava sinal e invertia a movimentação.
+            val marked = marksOut(f.value) || marksIn(f.value)
+            val cents = if (f.section != 0 && (!marked || looseDash(f.value))) {
+                // ERR-051: quando o extrato agrupa o dia em "Total de entradas" e "Total de saídas", a seção decide
+                // o sinal de quem não tem marca. Um traço solto do próprio texto ("LTDA - 87,50") não é marca: é
+                // separador. ERR-052: já a marca forte do banco ("C", "D", "+3.500,00", "-150,00", "100,00-")
+                // continua valendo, porque o resumo do topo ("Débitos 250,00") parece título de seção e ficaria
+                // mandando no extrato inteiro.
                 f.section * abs(f.cents)
-            } else if (marksOut(f.value) || marksIn(f.value)) f.cents else {
+            } else if (marked) f.cents else {
                 val d = d0
                 when {
                     docMarksOut -> abs(f.cents)
@@ -260,6 +264,16 @@ object PdfStatement {
         val g = m.groupValues
         return g[1].trim().let { it.startsWith("-") || it.startsWith("−") } || g[3].isNotBlank() || g[5].isNotBlank() ||
             g[6].trim().uppercase() in setOf("D", "DR")
+    }
+
+    /**
+     * ERR-052: a única "marca" é um traço separado do valor por espaço ("LTDA - 87,50", "- R$ 87,50"). Dentro de uma
+     * seção ele é tratado como separador do texto; colado ("-87,50") ou com outra marca junto, é sinal de verdade.
+     */
+    private fun looseDash(m: MatchResult): Boolean {
+        val g = m.groupValues
+        return g[1].isNotEmpty() && g[1] != g[1].trim() && !g[1].startsWith("+") &&
+            g[3].isBlank() && g[5].isBlank() && g[6].isBlank()
     }
 
     /** Valor marcado como entrada: "+12,50", "12,50 C", "12.50 CR". */
