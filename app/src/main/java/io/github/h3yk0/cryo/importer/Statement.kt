@@ -55,7 +55,21 @@ data class Statement(
     val balance: Long? = null,
     /** Como o arquivo foi lido (separador, codificação, colunas...). Aparece no relatório do modo desenvolvedor. */
     val notes: List<String> = emptyList(),
-)
+    /** RF-IMP-24: saldo no começo do extrato (antes da primeira movimentação), quando o arquivo traz. */
+    val opening: Long? = null,
+    /** O que o extrato soma por fora das movimentações (o rendimento da conta, por exemplo), quando ele diz. */
+    val extra: Long = 0,
+) {
+    /**
+     * RF-IMP-24: a leitura fecha com o próprio extrato? Saldo do começo + tudo o que foi lido = saldo do fim.
+     * 0 quando fecha; a diferença quando não fecha (alguma linha lida errada ou deixada de fora); null quando o
+     * arquivo não traz os dois saldos e não dá para conferir.
+     */
+    val readGap: Long? get() {
+        val gap = (balance ?: return null) - ((opening ?: return null) + lines.sumOf { it.amount })
+        return if (gap == extra) 0L else gap
+    }
+}
 
 /** Erro com mensagem pronta para mostrar à pessoa. */
 class StatementException(message: String) : Exception(message)

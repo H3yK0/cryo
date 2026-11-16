@@ -993,8 +993,6 @@
     <string name="import_importacao_desfeita">已撤销导入</string>
     <string name="import_nada_deste_arquivo_ficou">这个文件的内容没有留在 Cryo 中。</string>
     <string name="import_saldo_fim_extrato">流水末尾余额</string>
-    <string name="import_saldo_cryo_agora">Cryo 当前余额</string>
-    <string name="import_estao_diferentes_pode_ser">两者不一致：可能核对时有内容没勾选，或有发生在文件时间段之前的账单，也可能账户初始余额需要调整（在“钱包”中编辑账户）。</string>
     <string name="import_ver_conta">查看账户</string>
     <string name="import_ver_cartao">查看信用卡</string>
     <string name="import_desfazer_importacao">撤销导入</string>
@@ -1992,4 +1990,15 @@
     <plurals name="imports_count">
         <item quantity="other">%1$d 笔</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">同一天 Cryo 中的余额</string>
+    <string name="import_saldo_confere">与银行一致。</string>
+    <string name="import_saldo_diferenca">相差 %1$s。可能是账单中未导入的一行、银行没有而 Cryo 有的记录，或账户里原本就有的钱。需要的话，点按即可让 Cryo 与银行一致：只调整账户的初始余额，不会新增记录。</string>
+    <string name="import_saldo_leitura_nao_fecha">注意：读取的内容与账单自身的期初和期末余额对不上（相差 %1$s）。调整余额前请先检查导入的记录。</string>
+    <string name="import_acertar_saldo">调整余额</string>
+    <string name="import_saldo_sem_no_arquivo">这个文件没有账户余额。请与银行 App 对比：如果不同，填入现在的余额即可。</string>
+    <string name="import_informar_saldo">填入现在的余额</string>
+    <string name="import_saldo_acertado_auto">Cryo 已将此账户的初始余额调整 %1$s，使其与银行的起点一致。没有新增任何记录。</string>
+    <string name="import_desfazer_acerto">撤销调整</string>
+    <string name="import_saldo_antes_extrato">账单之前的余额</string>
 </resources>

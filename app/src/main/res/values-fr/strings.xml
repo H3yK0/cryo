@@ -1017,8 +1017,6 @@
     <string name="import_importacao_desfeita">Importation annulée</string>
     <string name="import_nada_deste_arquivo_ficou">Rien de ce fichier n\'est resté dans Cryo.</string>
     <string name="import_saldo_fim_extrato">Solde à la fin du relevé</string>
-    <string name="import_saldo_cryo_agora">Solde dans Cryo maintenant</string>
-    <string name="import_estao_diferentes_pode_ser">Ils sont différents : quelque chose est peut-être resté décoché ou s\'est passé avant la période du fichier, ou le solde initial du compte doit être ajusté (modifiez le compte dans Portefeuille).</string>
     <string name="import_ver_conta">Voir le compte</string>
     <string name="import_ver_cartao">Voir la carte</string>
     <string name="import_desfazer_importacao">Annuler l\'importation</string>
@@ -2030,4 +2028,15 @@
         <item quantity="one">%1$d opération</item>
         <item quantity="other">%1$d opérations</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">Solde dans Cryo le même jour</string>
+    <string name="import_saldo_confere">Identique à la banque.</string>
+    <string name="import_saldo_diferenca">Écart de %1$s. Il peut s\'agir d\'une ligne du relevé laissée de côté, d\'une opération de Cryo que la banque n\'a pas ou d\'argent déjà présent sur le compte. Si vous voulez, touchez pour que Cryo corresponde à la banque : il ajuste le solde initial du compte, sans créer d\'opération.</string>
+    <string name="import_saldo_leitura_nao_fecha">Attention : ce qui a été lu ne correspond pas aux soldes initial et final du relevé (écart de %1$s). Vérifiez les opérations importées avant d\'ajuster le solde.</string>
+    <string name="import_acertar_saldo">Ajuster le solde</string>
+    <string name="import_saldo_sem_no_arquivo">Ce fichier n\'indique pas le solde du compte. Comparez avec l\'appli de la banque : s\'il est différent, indiquez simplement le solde actuel.</string>
+    <string name="import_informar_saldo">Indiquer le solde actuel</string>
+    <string name="import_saldo_acertado_auto">Cryo a ajusté le solde initial de ce compte de %1$s, pour partir du même point que la banque. Aucune opération n\'a été créée.</string>
+    <string name="import_desfazer_acerto">Annuler l\'ajustement</string>
+    <string name="import_saldo_antes_extrato">Solde avant le relevé</string>
 </resources>

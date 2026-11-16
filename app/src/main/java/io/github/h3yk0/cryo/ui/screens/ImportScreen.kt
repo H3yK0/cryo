@@ -112,6 +112,7 @@ import io.github.h3yk0.cryo.importer.ImportRow
 import io.github.h3yk0.cryo.importer.ImportTarget
 import io.github.h3yk0.cryo.importer.PdfText
 import io.github.h3yk0.cryo.importer.RowFlag
+import io.github.h3yk0.cryo.importer.BalanceCheck
 import io.github.h3yk0.cryo.importer.Statement
 import io.github.h3yk0.cryo.importer.StatementLine
 import io.github.h3yk0.cryo.importer.Values
@@ -975,12 +976,72 @@ private fun explanation(r: ImportRow, t: ImportTarget, l: Ledger): String? = whe
 
 /* ===================================== pronto ===================================== */
 
+/**
+ * RF-IMP-24: as etapas do saldo, como o banco mostra (o que havia antes, o que entrou, o que saiu, o que ficou), ao lado
+ * do saldo do Cryo no mesmo dia. Quando o extrato diz quanto havia antes, o acerto já foi feito sozinho na importação: o
+ * cartão conta o que foi feito e deixa desfazer. Sobrou diferença? Um toque acerta — e se o que foi lido nem fecha com
+ * os saldos do próprio extrato, o aviso é outro: confira antes, para o acerto não esconder uma linha lida errada.
+ * Sem saldo no arquivo (CSV, planilha), o caminho é informar o saldo de agora na conta.
+ */
+@Composable
+private fun BalanceCard(st: Statement, accountId: Long, l: Ledger, step: ImportModel.Step.Done, vm: ImportModel) {
+    val nav = LocalNav.current
+    val bank = st.balance
+    val opening = st.opening
+    @Composable fun line(label: String, value: Long, top: Int = 4) = Row(Modifier.fillMaxWidth().padding(top = top.dp)) {
+        Text(label, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+        MoneyText(value, style = MaterialTheme.typography.titleSmall)
+    }
+    @Composable fun note(text: String, strong: Boolean = false) = Text(
+        text, style = MaterialTheme.typography.bodySmall,
+        color = if (strong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 8.dp),
+    )
+    CryoCard {
+        if (bank == null && opening == null) {
+            Text(Res.s(R.string.import_saldo_sem_no_arquivo), style = MaterialTheme.typography.bodyMedium)
+            TextButton(onClick = { nav.go(Routes.accountEdit(accountId)) }) { Text(Res.s(R.string.import_informar_saldo)) }
+        } else {
+            if (opening != null) {
+                line(Res.s(R.string.import_saldo_antes_extrato), opening, top = 0)
+                line(Res.s(R.string.txs_entradas), st.lines.filter { it.amount > 0 }.sumOf { it.amount })
+                line(Res.s(R.string.txs_saidas), st.lines.filter { it.amount < 0 }.sumOf { it.amount })
+            }
+            val day = BalanceCheck.endDate(st) ?: l.today
+            val mine = remember(l, day) { BalanceCheck.cryoBalance(l.s, accountId, day) }
+            if (bank != null) {
+                line(Res.s(R.string.import_saldo_fim_extrato), bank, top = if (opening != null) 4 else 0)
+                line(Res.s(R.string.import_saldo_cryo_mesmo_dia), mine)
+            }
+            if (step.shift != 0L) {
+                note(Res.s(R.string.import_saldo_acertado_auto, Money.format(step.shift)))
+                TextButton(onClick = vm::undoShift) { Text(Res.s(R.string.import_desfazer_acerto)) }
+            }
+            if (bank != null) {
+                val gap = bank - mine
+                val readGap = st.readGap
+                when {
+                    gap == 0L -> note(Res.s(R.string.import_saldo_confere), strong = true)
+                    else -> {
+                        note(
+                            if (readGap != null && readGap != 0L) Res.s(R.string.import_saldo_leitura_nao_fecha, Money.format(kotlin.math.abs(readGap)))
+                            else Res.s(R.string.import_saldo_diferenca, Money.format(kotlin.math.abs(gap))),
+                        )
+                        OutlinedButton(onClick = { vm.fixBalance(gap) }, modifier = Modifier.padding(top = 8.dp)) {
+                            Text(Res.s(R.string.import_acertar_saldo))
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
 @Composable
 private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, devMode: Boolean, onReport: () -> Unit) {
     val nav = LocalNav.current
     val t = step.target
     val where = t.cardId?.let { Res.s(R.string.import_cartao, l.cardName(it)) } ?: Res.s(R.string.import_conta, l.accountName(t.accountId))
-    val balance = vm.statement?.balance
     Scaffold(
         topBar = { CryoTopBar(Res.s(R.string.import_importar_extrato), onBack = nav::back) },
         contentWindowInsets = WindowInsets(0, 0, 0, 0),
@@ -1016,25 +1077,10 @@ private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, de
                 },
                 style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center,
             )
-            if (!step.undone && balance != null && t.accountId != null) {
+            val st = vm.statement
+            if (!step.undone && st != null && !st.isCard && t.accountId != null) {
                 Spacer(Modifier.height(20.dp))
-                CryoCard {
-                    Row(Modifier.fillMaxWidth()) {
-                        Text(Res.s(R.string.import_saldo_fim_extrato), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        MoneyText(balance, style = MaterialTheme.typography.titleSmall)
-                    }
-                    Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
-                        Text(Res.s(R.string.import_saldo_cryo_agora), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        MoneyText(l.balance(t.accountId), style = MaterialTheme.typography.titleSmall)
-                    }
-                    if (balance != l.balance(t.accountId)) {
-                        Text(
-                            Res.s(R.string.import_estao_diferentes_pode_ser),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.padding(top = 8.dp),
-                        )
-                    }
-                }
+                BalanceCard(st, t.accountId, l, step, vm)
             }
             Spacer(Modifier.height(28.dp))
             if (!step.undone) {

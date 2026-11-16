@@ -993,8 +993,6 @@
     <string name="import_importacao_desfeita">가져오기를 취소했어요</string>
     <string name="import_nada_deste_arquivo_ficou">이 파일에서 Cryo에 남은 것이 없어요.</string>
     <string name="import_saldo_fim_extrato">거래내역 마지막 잔액</string>
-    <string name="import_saldo_cryo_agora">지금 Cryo의 잔액</string>
-    <string name="import_estao_diferentes_pode_ser">서로 달라요. 확인할 때 선택하지 않은 항목이 있거나 파일 기간 이전의 일이 있을 수 있어요. 또는 계좌의 시작 잔액을 조정해야 해요(지갑에서 계좌 편집).</string>
     <string name="import_ver_conta">계좌 보기</string>
     <string name="import_ver_cartao">카드 보기</string>
     <string name="import_desfazer_importacao">가져오기 취소</string>
@@ -1992,4 +1990,15 @@
     <plurals name="imports_count">
         <item quantity="other">%1$d건</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">같은 날 Cryo 잔액</string>
+    <string name="import_saldo_confere">은행과 일치합니다.</string>
+    <string name="import_saldo_diferenca">차이는 %1$s입니다. 가져오지 않은 명세서 줄, 은행에 없는 Cryo 거래, 또는 이전부터 계좌에 있던 돈일 수 있습니다. 원하면 탭해서 Cryo를 은행과 맞추세요. 거래를 만들지 않고 계좌의 시작 잔액을 조정합니다.</string>
+    <string name="import_saldo_leitura_nao_fecha">주의: 읽은 내용이 명세서의 시작 잔액과 최종 잔액에 맞지 않습니다(차이 %1$s). 잔액을 맞추기 전에 가져온 거래를 확인하세요.</string>
+    <string name="import_acertar_saldo">잔액 맞추기</string>
+    <string name="import_saldo_sem_no_arquivo">이 파일에는 계좌 잔액이 없습니다. 은행 앱과 비교해 다르면 지금 잔액을 입력하세요.</string>
+    <string name="import_informar_saldo">지금 잔액 입력</string>
+    <string name="import_saldo_acertado_auto">Cryo가 이 계좌의 시작 잔액을 %1$s 조정해 은행과 같은 지점에서 시작하도록 했습니다. 거래는 만들어지지 않았습니다.</string>
+    <string name="import_desfazer_acerto">조정 되돌리기</string>
+    <string name="import_saldo_antes_extrato">명세서 이전 잔액</string>
 </resources>

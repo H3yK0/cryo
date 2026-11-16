@@ -1017,8 +1017,6 @@
     <string name="import_importacao_desfeita">इंपोर्ट वापस लिया गया</string>
     <string name="import_nada_deste_arquivo_ficou">इस फ़ाइल का कुछ भी Cryo में नहीं रहा।</string>
     <string name="import_saldo_fim_extrato">स्टेटमेंट के अंत का बैलेंस</string>
-    <string name="import_saldo_cryo_agora">Cryo में अभी का बैलेंस</string>
-    <string name="import_estao_diferentes_pode_ser">ये अलग हैं: शायद जाँच में कुछ बिना चुने रह गया, या फ़ाइल की अवधि से पहले कुछ हुआ था, या खाते का शुरुआती बैलेंस सुधारना होगा (बटुआ में खाता बदलें)।</string>
     <string name="import_ver_conta">खाता देखें</string>
     <string name="import_ver_cartao">कार्ड देखें</string>
     <string name="import_desfazer_importacao">इंपोर्ट वापस लें</string>
@@ -2030,4 +2028,15 @@
         <item quantity="one">%1$d लेन-देन</item>
         <item quantity="other">%1$d लेन-देन</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">उसी दिन Cryo में शेष</string>
+    <string name="import_saldo_confere">बैंक से मेल खाता है।</string>
+    <string name="import_saldo_diferenca">%1$s का अंतर है। यह स्टेटमेंट की कोई छूटी हुई पंक्ति, Cryo की कोई एंट्री जो बैंक में नहीं है, या पहले से खाते में मौजूद पैसा हो सकता है। चाहें तो टैप करें ताकि Cryo बैंक के बराबर हो जाए: यह कोई एंट्री बनाए बिना खाते का शुरुआती शेष ठीक करता है।</string>
+    <string name="import_saldo_leitura_nao_fecha">ध्यान दें: जो पढ़ा गया वह स्टेटमेंट के अपने शुरुआती और अंतिम शेष से मेल नहीं खाता (%1$s का अंतर)। शेष ठीक करने से पहले आयात की गई एंट्रियाँ जाँच लें।</string>
+    <string name="import_acertar_saldo">शेष ठीक करें</string>
+    <string name="import_saldo_sem_no_arquivo">इस फ़ाइल में खाते का शेष नहीं है। बैंक ऐप से मिलाएँ: अगर अलग हो तो बस अभी का शेष भर दें।</string>
+    <string name="import_informar_saldo">अभी का शेष भरें</string>
+    <string name="import_saldo_acertado_auto">Cryo ने इस खाते का शुरुआती शेष %1$s से ठीक किया, ताकि वह बैंक के समान बिंदु से शुरू हो। कोई एंट्री नहीं बनाई गई।</string>
+    <string name="import_desfazer_acerto">समायोजन वापस लें</string>
+    <string name="import_saldo_antes_extrato">स्टेटमेंट से पहले का शेष</string>
 </resources>

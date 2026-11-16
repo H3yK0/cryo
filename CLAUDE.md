@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **14/11/2026**.
+Situação descrita aqui: **16/11/2026**.
 
 ---
 
@@ -236,7 +236,15 @@ código anterior. Todos os testes passam.
     resumo do topo, "Débitos 250,00", virava seção do arquivo inteiro e um salário marcado com "C" virava saída; agora a
     marca forte do banco vence e só o traço solto segue a seção) e **ERR-053** (o estorno levava a categoria de gasto
     para a receita; a regra virou a função pura `refundOf`, em `ui/tx/TxForm.kt`, com teste).
-- 161 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
+- **Saldo igual ao do banco, sozinho** (RF-IMP-24, ERR-054, teste do Hanry de 15 e 16/11/2026): o Cryo mostrava menos
+  que o banco — era o que **já estava na conta antes do extrato** (o saldo inicial), não outro jeito de fazer a
+  conta (só há soma e subtração: a ordem não muda o resultado). `importer/PdfStatement.kt` lê "Saldo inicial" e "Saldo
+  final do período" (`Statement.opening`, `balance`, `extra`, `readGap`); `importer/BalanceCheck.kt` é a regra pura
+  (`autoShift` = saldo do banco na véspera menos o do Cryo na véspera; `gap` = banco × Cryo no último dia do extrato);
+  `ImportModel.import()` aplica o acerto no **saldo inicial da conta** (`FinanceRepository.shiftBalance`, nunca um
+  lançamento) e guarda em `Step.Done.shift`; a tela final (`BalanceCard` em `ImportScreen.kt`) mostra as etapas e o
+  "Desfazer o acerto". OFX não diz o saldo do começo: só o botão "Acertar o saldo".
+- 171 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
   fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
@@ -469,7 +477,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 959 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 961 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -503,7 +511,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–102 saldo depois de importar, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -526,6 +534,9 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   valor de *outro* byte; 1 vez em 256 dava o mesmo valor e o teste falhava sem defeito (o texto cifrado muda a cada
   rodada, então a falha ia e vinha). Adulterar = xor com valor diferente de zero no mesmo byte. Uma falha que some ao
   rodar de novo não é "instabilidade": é para achar a causa.
+- **Conferir um extrato é conferir três coisas**: entradas, saídas **e o saldo de partida**. Em 14/11 as movimentações
+  do extrato do Hanry fechavam no centavo e o saldo continuava errado: faltava o saldo inicial (ERR-054). E o
+  `ImportModel` ignora toques enquanto está ocupado (`busy`): nos testes, espere o `step` mudar antes do próximo passo.
 - **Recebedor do manifesto** (`AlertActionReceiver`) não recebe `sendBroadcast` no Robolectric: os testes chamam `handle()` direto.
 - `FileProvider` funciona no Robolectric (a figurinha da notificação dá para conferir); `renderArt` precisa de `@GraphicsMode(NATIVE)`.
 - **Chaves de `LazyColumn`** com ids de tabelas diferentes colidem (categoria 1 e remanejamento 1): use prefixo (`"b$id"`, `"a$id"`).

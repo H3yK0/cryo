@@ -234,6 +234,17 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
 
     suspend fun saveAccount(a: Account): Long = dao.putAccount(a)
 
+    /**
+     * RF-IMP-24: acerta o saldo de uma conta somando [delta] ao **saldo inicial** dela (o que já havia antes do primeiro
+     * lançamento). Não cria movimentação: o acerto não vira receita nem gasto de mês nenhum, e a previsão não o vê.
+     * Devolve a conta como estava, para o desfazer; null se a conta não existe mais.
+     */
+    suspend fun shiftBalance(accountId: Long, delta: Long): Account? = db.withTransaction {
+        val before = dao.accountsOnce().firstOrNull { it.id == accountId } ?: return@withTransaction null
+        dao.putAccount(before.copy(initialBalance = before.initialBalance + delta))
+        before
+    }
+
     /** Só apaga se a conta não tiver movimentações (senão o histórico ficaria quebrado). */
     suspend fun deleteAccount(a: Account): Boolean {
         if (dao.countTxForAccount(a.id) > 0) return false

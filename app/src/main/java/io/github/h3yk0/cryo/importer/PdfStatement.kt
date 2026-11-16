@@ -105,6 +105,17 @@ object PdfStatement {
         "retiros", "lastschriften", "addebiti", "uscite",
     )
 
+    /** RF-IMP-24: como os extratos chamam o saldo do começo e o do fim (o texto já vem sem acentos e em minúsculas). */
+    private val OPENING_BALANCE = listOf(
+        "saldo inicial", "saldo anterior", "opening balance", "beginning balance", "starting balance", "solde initial",
+        "ancien solde", "solde precedent", "anfangssaldo", "alter saldo", "saldo iniziale", "saldo precedente",
+    )
+    private val CLOSING_BALANCE = listOf(
+        "saldo final", "closing balance", "ending balance", "solde final", "nouveau solde", "endsaldo", "neuer saldo",
+        "saldo finale",
+    )
+    private val YIELD = listOf("rendimento liquido", "rendimentos liquidos")
+
     private fun longest(words: List<String>, text: String): Int = words.filter { text.contains(it) }.maxOfOrNull { it.length } ?: 0
 
     /** Fatura de cartão ou extrato de conta, pelo que o texto traz (um extrato de conta também fala em "fatura" e "cartão"). */
@@ -167,6 +178,9 @@ object PdfStatement {
         val skipped = ArrayList<SkippedLine>()
         var currentDate: LocalDate? = null
         var section = 0 // 1 = entradas, -1 = saídas (extratos que agrupam assim)
+        var opening: Long? = null
+        var closing: Long? = null
+        var extra = 0L
         val pending = ArrayList<String>()
 
         for (line in rawLines) {
@@ -201,6 +215,21 @@ object PdfStatement {
             val first = money.first()
             var description = rest.substring(0, first.range.first).trim().trimEnd('-', '–', ':').trim()
             if (description.isEmpty()) description = pending.joinToString(" ").trim()
+            // RF-IMP-24: o saldo do começo e o do fim do extrato (e o rendimento, que alguns bancos somam por fora),
+            // para conferir a importação com o banco. São linhas de um valor só; nunca viram movimentação.
+            if (money.size == 1) {
+                val label = description.normalized()
+                val value = Values.amount(first.value.replace("−", "-"), decimalComma = style == Style.COMMA)
+                if (value != null) {
+                    val signed = if (marksOut(first)) -abs(value) else abs(value)
+                    fun isOne(of: List<String>) = of.any { label == it || label.startsWith("$it ") }
+                    when {
+                        isOne(OPENING_BALANCE) -> if (opening == null) opening = signed
+                        isOne(CLOSING_BALANCE) -> closing = signed
+                        isOne(YIELD) -> extra = signed
+                    }
+                }
+            }
             val date = currentDate
             when {
                 date == null -> { skipped += SkippedLine(line, Res.s(R.string.importer_sem_data_antes)); continue }
@@ -256,7 +285,11 @@ object PdfStatement {
                 else -> Res.s(R.string.importer_sem_sinais_pdf_entradas)
             },
         )
-        return Statement(StatementFormat.PDF, lines, skipped, isCard = isCard, notes = notes)
+        // Na fatura do cartão "saldo anterior" é a fatura passada, não o saldo de uma conta: fica de fora.
+        return Statement(
+            StatementFormat.PDF, lines, skipped, isCard = isCard, notes = notes,
+            balance = closing.takeIf { !isCard }, opening = opening.takeIf { !isCard }, extra = if (isCard) 0 else extra,
+        )
     }
 
     /** Valor marcado como saída: "-12,50", "R$ -12,50", "12,50-", "12,50 D". */

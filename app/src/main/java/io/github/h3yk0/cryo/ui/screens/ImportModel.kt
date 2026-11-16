@@ -18,6 +18,7 @@ import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Snapshot
+import io.github.h3yk0.cryo.importer.BalanceCheck
 import io.github.h3yk0.cryo.importer.ColumnMap
 import io.github.h3yk0.cryo.importer.ImportPlanner
 import io.github.h3yk0.cryo.importer.ImportReport
@@ -55,7 +56,11 @@ class ImportModel(
         data class Password(val retry: Boolean) : Step
         data class Columns(val table: Table, val format: StatementFormat, val guess: ColumnMap?) : Step
         data object Review : Step
-        data class Done(val count: Int, val ids: List<Long>, val target: ImportTarget, val undone: Boolean = false) : Step
+        data class Done(
+            val count: Int, val ids: List<Long>, val target: ImportTarget, val undone: Boolean = false,
+            /** RF-IMP-24: quanto o saldo inicial da conta foi acertado por causa desta importação (0 = nada). */
+            val shift: Long = 0,
+        ) : Step
     }
 
     /**
@@ -412,11 +417,39 @@ class ImportModel(
                     if (r.payBill && !BillMatcher.sameName(b.name, r.line.description)) c.engineStore.learnBill(r.line.description, b.id)
                 }
                 c.lastImport.value = c.lastImport.value?.copy(imported = ids.size)
-                step = Step.Done(ids.size, ids, t)
+                // RF-IMP-24: o extrato diz quanto havia na conta antes dele? O Cryo passa a partir do mesmo ponto,
+                // sozinho. A tela final mostra o que foi feito e deixa desfazer (PRI-09).
+                val shift = statement?.let { st -> t.accountId?.let { BalanceCheck.autoShift(st, snap, it) } } ?: 0L
+                if (shift != 0L) c.repo.shiftBalance(t.accountId!!, shift)
+                step = Step.Done(ids.size, ids, t, shift = shift)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 c.message(Res.s(R.string.import_nao_consegui_importar_nada))
+            } finally {
+                busy = false
+            }
+        }
+    }
+
+    /** RF-IMP-24: o botão "Acertar o saldo" — soma [delta] ao saldo inicial da conta para ficar igual ao banco. */
+    fun fixBalance(delta: Long) = shiftBalance(delta)
+
+    /** RF-IMP-24: desfaz o acerto de saldo desta importação (o automático e o do botão). */
+    fun undoShift() = shiftBalance(-((step as? Step.Done)?.shift ?: 0L))
+
+    private fun shiftBalance(delta: Long) {
+        val d = step as? Step.Done ?: return
+        val account = d.target.accountId ?: return
+        if (delta == 0L || d.undone || busy) return
+        busy = true
+        viewModelScope.launch {
+            try {
+                if (c.repo.shiftBalance(account, delta) != null) step = d.copy(shift = d.shift + delta)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                // Nada mudou: a tela continua mostrando a diferença e o botão.
             } finally {
                 busy = false
             }
@@ -430,8 +463,10 @@ class ImportModel(
         viewModelScope.launch {
             try {
                 c.repo.undoImport(d.ids)
+                // O acerto de saldo veio com esta importação: sai junto com ela.
+                if (d.shift != 0L) d.target.accountId?.let { c.repo.shiftBalance(it, -d.shift) }
                 c.lastImport.value = c.lastImport.value?.copy(imported = 0)
-                step = d.copy(undone = true)
+                step = d.copy(undone = true, shift = 0)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

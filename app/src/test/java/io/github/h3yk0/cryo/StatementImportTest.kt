@@ -8,6 +8,7 @@ import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.Snapshot
+import io.github.h3yk0.cryo.importer.BalanceCheck
 import io.github.h3yk0.cryo.importer.Columns
 import io.github.h3yk0.cryo.importer.ImportPlanner
 import io.github.h3yk0.cryo.importer.ImportReport
@@ -337,9 +338,13 @@ class StatementImportTest {
     @Test fun pdfComSecoesPorDiaCnpjEQuebraDePagina() {
         val text = """
             01 DE NOVEMBRO DE 2026 a 13 DE NOVEMBRO DE 2026
-            Saldo inicial 3,88
+            Saldo inicial 10,00
+            Rendimento líquido +0,00
+            Saldo final do período
             Total de entradas +1.300,00
+            R$ 1.144,05
             Total de saídas -165,95
+            Saldo final do período 1.144,05
             Movimentações
             03 NOV 2026 Total de entradas
             Transferência recebida pelo Pix FULANO DE TAL - 123.456.789-00 90,00
@@ -368,6 +373,55 @@ class StatementImportTest {
         )
         // E a soma bate com o que o banco diz (entradas - saídas).
         assertEquals(130000L - 16595L, st.lines.sumOf { it.amount })
+        // RF-IMP-24 / ERR-054: o saldo do começo e o do fim do extrato são lidos, e a leitura fecha com eles.
+        assertEquals(1000L, st.opening)
+        assertEquals(114405L, st.balance)
+        assertEquals(0L, st.readGap)
+        // Uma linha a menos no arquivo: a leitura deixa de fechar, pelo valor exato que faltou.
+        val semUma = PdfStatement.parse(listOf(text.replace("Compra no débito PADARIA EXEMPLO 23,45", "")), today)
+        assertEquals(-2345L, semUma.readGap)
+    }
+
+    /**
+     * RF-IMP-24 / ERR-054: o extrato só traz o que se mexeu no período; o que já estava na conta antes é o saldo
+     * inicial. O Cryo compara o saldo do banco com o seu **no mesmo dia** e a diferença é o que falta acertar.
+     */
+    @Test fun saldoDoBancoContraOCryoNoMesmoDia() {
+        val st = Statement(
+            StatementFormat.PDF,
+            listOf(StatementLine(d(3), "Pix recebido", 9000), StatementLine(d(15), "Mercado", -2500)),
+            balance = 7500, opening = 1000,
+        )
+        assertEquals(0L, st.readGap)
+        val conta = Account(1, "Conta", color = 0) // criada zerada: o que havia antes do extrato não está no Cryo
+        val s = Snapshot(
+            accounts = listOf(conta),
+            txs = listOf(
+                Tx(1, TxType.INCOME, 9000, d(3), "Pix recebido", accountId = 1),
+                Tx(2, TxType.EXPENSE, 2500, d(15), "Mercado", accountId = 1),
+                Tx(3, TxType.EXPENSE, 4000, d(16), "Lançado à mão depois do extrato", accountId = 1),
+            ),
+        )
+        assertEquals(d(15), BalanceCheck.endDate(st))
+        assertEquals(6500L, BalanceCheck.cryoBalance(s, 1, d(15)))
+        assertEquals("faltam os R$ 10,00 que já estavam na conta", 1000L, BalanceCheck.gap(st, s, 1, d(20)))
+        // O acerto automático é exatamente o que o banco tinha na véspera menos o que o Cryo tinha; só existe quando o
+        // arquivo diz o saldo do começo, e não depende de quais linhas a pessoa importou.
+        assertEquals(1000L, BalanceCheck.autoShift(st, s, 1))
+        assertEquals(1000L, BalanceCheck.autoShift(st, s.copy(txs = emptyList()), 1))
+        assertNull(BalanceCheck.autoShift(st.copy(opening = null), s, 1))
+        assertNull(BalanceCheck.autoShift(st.copy(isCard = true), s, 1))
+        // Depois do acerto (saldo inicial + diferença), o Cryo mostra o saldo do banco; o gasto de depois continua valendo.
+        val acertado = s.copy(accounts = listOf(conta.copy(initialBalance = 1000)))
+        assertEquals(0L, BalanceCheck.gap(st, acertado, 1, d(20)))
+        assertEquals("já acertado: importar de novo não mexe em nada", 0L, BalanceCheck.autoShift(st, acertado, 1))
+        assertEquals(7500L - 4000L, io.github.h3yk0.cryo.domain.Ledger(acertado, d(20)).balance(1))
+        // Sem saldo no arquivo, ou numa fatura de cartão, não há o que comparar.
+        assertNull(BalanceCheck.gap(st.copy(balance = null), s, 1, d(20)))
+        assertNull(BalanceCheck.gap(st.copy(isCard = true), s, 1, d(20)))
+        assertNull("sem os dois saldos não dá para conferir a leitura", st.copy(opening = null).readGap)
+        // O rendimento que o banco soma por fora das movimentações não é erro de leitura.
+        assertEquals(0L, st.copy(balance = 7512, extra = 12).readGap)
     }
 
     /**

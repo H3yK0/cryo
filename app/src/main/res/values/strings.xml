@@ -1088,8 +1088,6 @@
     <string name="import_importacao_desfeita">Importação desfeita</string>
     <string name="import_nada_deste_arquivo_ficou">Nada deste arquivo ficou no Cryo.</string>
     <string name="import_saldo_fim_extrato">Saldo no fim do extrato</string>
-    <string name="import_saldo_cryo_agora">Saldo no Cryo agora</string>
-    <string name="import_estao_diferentes_pode_ser">Estão diferentes: pode ser algo que ficou desmarcado na conferência ou que aconteceu antes do período do arquivo, ou o saldo inicial da conta precisa de ajuste (edite a conta na Carteira).</string>
     <string name="import_ver_conta">Ver a conta</string>
     <string name="import_ver_cartao">Ver o cartão</string>
     <string name="import_desfazer_importacao">Desfazer importação</string>
@@ -2155,4 +2153,15 @@
         <item quantity="one">%1$d lançamento</item>
         <item quantity="other">%1$d lançamentos</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">Saldo no Cryo no mesmo dia</string>
+    <string name="import_saldo_confere">Confere com o banco.</string>
+    <string name="import_saldo_diferenca">Diferença de %1$s. Pode ser uma linha do extrato que ficou de fora, um lançamento do Cryo que o banco não tem ou dinheiro que já estava na conta antes. Se quiser, toque para o Cryo ficar igual ao banco: ele acerta o saldo inicial da conta, sem criar lançamento.</string>
+    <string name="import_saldo_leitura_nao_fecha">Atenção: o que foi lido não fecha com o saldo inicial e o final do próprio extrato (diferença de %1$s). Confira os lançamentos importados antes de acertar o saldo.</string>
+    <string name="import_acertar_saldo">Acertar o saldo</string>
+    <string name="import_saldo_sem_no_arquivo">Este arquivo não traz o saldo da conta. Compare com o app do banco: se estiver diferente, é só informar o saldo de agora.</string>
+    <string name="import_informar_saldo">Informar o saldo de agora</string>
+    <string name="import_saldo_acertado_auto">O Cryo acertou o saldo inicial desta conta em %1$s, para partir do mesmo ponto que o banco. Nenhum lançamento foi criado.</string>
+    <string name="import_desfazer_acerto">Desfazer o acerto</string>
+    <string name="import_saldo_antes_extrato">Saldo antes do extrato</string>
 </resources>

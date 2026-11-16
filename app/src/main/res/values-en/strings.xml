@@ -1017,8 +1017,6 @@
     <string name="import_importacao_desfeita">Import undone</string>
     <string name="import_nada_deste_arquivo_ficou">Nothing from this file stayed in Cryo.</string>
     <string name="import_saldo_fim_extrato">Balance at the end of the statement</string>
-    <string name="import_saldo_cryo_agora">Balance in Cryo now</string>
-    <string name="import_estao_diferentes_pode_ser">They\'re different: something may have been left unchecked in the review or happened before the file\'s period, or the account\'s starting balance needs adjusting (edit the account in Wallet).</string>
     <string name="import_ver_conta">See the account</string>
     <string name="import_ver_cartao">See the card</string>
     <string name="import_desfazer_importacao">Undo import</string>
@@ -2030,4 +2028,15 @@
         <item quantity="one">%1$d entry</item>
         <item quantity="other">%1$d entries</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">Balance in Cryo on the same day</string>
+    <string name="import_saldo_confere">Matches the bank.</string>
+    <string name="import_saldo_diferenca">Difference of %1$s. It may be a statement line that was left out, an entry in Cryo that the bank does not have, or money that was already in the account. If you want, tap to make Cryo match the bank: it adjusts the account\'s opening balance, without creating an entry.</string>
+    <string name="import_saldo_leitura_nao_fecha">Careful: what was read does not add up to the statement\'s own opening and closing balances (difference of %1$s). Check the imported entries before adjusting the balance.</string>
+    <string name="import_acertar_saldo">Match the bank balance</string>
+    <string name="import_saldo_sem_no_arquivo">This file does not include the account balance. Compare with your bank app: if it is different, just enter the current balance.</string>
+    <string name="import_informar_saldo">Enter the current balance</string>
+    <string name="import_saldo_acertado_auto">Cryo adjusted this account\'s opening balance by %1$s, to start from the same point as the bank. No entry was created.</string>
+    <string name="import_desfazer_acerto">Undo the adjustment</string>
+    <string name="import_saldo_antes_extrato">Balance before the statement</string>
 </resources>

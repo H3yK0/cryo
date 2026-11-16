@@ -52,6 +52,7 @@ Everything built since 1.4, in one release. All of it still runs on your phone, 
 - The undo bar no longer covers the "+" button, and floating buttons now have a name for screen readers
 - Database version 5: bills gained rhythm, instalments, one-off price and end date. Existing bills stay monthly, exactly as they were
 
+- **Balance that matches the bank, by itself**: a statement only lists what moved in the period; what was already in the account is its opening balance. The PDF reader now reads the opening and closing balances, the import sets the account's opening balance on its own (no entry is created) and the final screen shows the steps the way the bank does — balance before, money in, money out, balance at the end — next to Cryo's balance on the same day, with undo. Files that only carry the closing balance (OFX) get a one-tap "Match the bank balance".
 - **Delete a whole import**: "Imports you made" lists each import with what it brought, and removes it in one go, with undo. Deleting removes only what came from that file
 - **Refund a transaction**: one tap creates the opposite entry, with the original kept in your history
 - **Statement reading fixed in three places** (found with a real bank statement): a company tax number next to the amount no longer becomes part of it, the page header no longer moves every later entry to the first day of the period, and a dash inside a description no longer flips an expense into income. With these, a real statement now matches the bank to the cent

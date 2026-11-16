@@ -1017,8 +1017,6 @@
     <string name="import_importacao_desfeita">Import rückgängig gemacht</string>
     <string name="import_nada_deste_arquivo_ficou">Von dieser Datei ist nichts in Cryo geblieben.</string>
     <string name="import_saldo_fim_extrato">Kontostand am Ende des Auszugs</string>
-    <string name="import_saldo_cryo_agora">Kontostand jetzt in Cryo</string>
-    <string name="import_estao_diferentes_pode_ser">Sie weichen ab: Vielleicht wurde bei der Prüfung etwas abgewählt oder es geschah vor dem Zeitraum der Datei, oder der Anfangsstand des Kontos muss angepasst werden (bearbeite das Konto unter Geldbörse).</string>
     <string name="import_ver_conta">Konto ansehen</string>
     <string name="import_ver_cartao">Karte ansehen</string>
     <string name="import_desfazer_importacao">Import rückgängig machen</string>
@@ -2030,4 +2028,15 @@
         <item quantity="one">%1$d Buchung</item>
         <item quantity="other">%1$d Buchungen</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">Saldo in Cryo am selben Tag</string>
+    <string name="import_saldo_confere">Stimmt mit der Bank überein.</string>
+    <string name="import_saldo_diferenca">Differenz von %1$s. Das kann eine ausgelassene Zeile des Auszugs sein, eine Buchung in Cryo, die die Bank nicht hat, oder Geld, das schon auf dem Konto war. Wenn du möchtest, tippe, damit Cryo mit der Bank übereinstimmt: Der Anfangssaldo des Kontos wird angepasst, ohne eine Buchung anzulegen.</string>
+    <string name="import_saldo_leitura_nao_fecha">Achtung: Das Gelesene passt nicht zum Anfangs- und Endsaldo des Auszugs (Differenz von %1$s). Prüfe die importierten Buchungen, bevor du den Saldo anpasst.</string>
+    <string name="import_acertar_saldo">Saldo anpassen</string>
+    <string name="import_saldo_sem_no_arquivo">Diese Datei enthält den Kontostand nicht. Vergleiche mit der Bank-App: Wenn er abweicht, gib einfach den aktuellen Saldo ein.</string>
+    <string name="import_informar_saldo">Aktuellen Saldo eingeben</string>
+    <string name="import_saldo_acertado_auto">Cryo hat den Anfangssaldo dieses Kontos um %1$s angepasst, um vom selben Stand wie die Bank auszugehen. Es wurde keine Buchung angelegt.</string>
+    <string name="import_desfazer_acerto">Anpassung rückgängig machen</string>
+    <string name="import_saldo_antes_extrato">Saldo vor dem Auszug</string>
 </resources>

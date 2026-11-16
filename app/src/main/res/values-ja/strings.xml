@@ -993,8 +993,6 @@
     <string name="import_importacao_desfeita">取り込みを取り消しました</string>
     <string name="import_nada_deste_arquivo_ficou">このファイルからはCryoに何も残っていません。</string>
     <string name="import_saldo_fim_extrato">明細の最後の残高</string>
-    <string name="import_saldo_cryo_agora">今のCryoの残高</string>
-    <string name="import_estao_diferentes_pode_ser">一致していません。確認でチェックを外したものや、ファイルの期間より前のことがあるか、口座の最初の残高の調整が必要かもしれません（「お財布」で口座を編集）。</string>
     <string name="import_ver_conta">口座を見る</string>
     <string name="import_ver_cartao">カードを見る</string>
     <string name="import_desfazer_importacao">取り込みを取り消す</string>
@@ -1992,4 +1990,15 @@
     <plurals name="imports_count">
         <item quantity="other">%1$d件</item>
     </plurals>
+    <!-- RF-IMP-24: conferir e acertar o saldo depois de importar -->
+    <string name="import_saldo_cryo_mesmo_dia">同じ日のCryoの残高</string>
+    <string name="import_saldo_confere">銀行と一致しています。</string>
+    <string name="import_saldo_diferenca">差額は%1$sです。取り込まなかった明細の行、銀行にないCryoの取引、または以前から口座にあったお金かもしれません。必要ならタップしてCryoを銀行に合わせます。取引は作らず、口座の開始残高を調整します。</string>
+    <string name="import_saldo_leitura_nao_fecha">注意：読み取った内容が明細の開始残高と最終残高に合いません（差額%1$s）。残高を合わせる前に、取り込んだ取引を確認してください。</string>
+    <string name="import_acertar_saldo">残高を合わせる</string>
+    <string name="import_saldo_sem_no_arquivo">このファイルには口座残高がありません。銀行アプリと比べて、違っていれば今の残高を入力してください。</string>
+    <string name="import_informar_saldo">今の残高を入力</string>
+    <string name="import_saldo_acertado_auto">Cryoがこの口座の開始残高を%1$s調整し、銀行と同じ地点から始まるようにしました。取引は作成されていません。</string>
+    <string name="import_desfazer_acerto">調整を元に戻す</string>
+    <string name="import_saldo_antes_extrato">明細の前の残高</string>
 </resources>

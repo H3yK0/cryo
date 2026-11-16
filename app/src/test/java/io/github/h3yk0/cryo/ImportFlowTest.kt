@@ -44,6 +44,8 @@ import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.CreditCard
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
+import io.github.h3yk0.cryo.domain.Ledger
+import io.github.h3yk0.cryo.importer.BalanceCheck
 import io.github.h3yk0.cryo.importer.ImportPlanner
 import io.github.h3yk0.cryo.importer.PdfText
 import io.github.h3yk0.cryo.importer.RowFlag
@@ -110,6 +112,7 @@ class ImportFlowTest {
         dir = File(ApplicationProvider.getApplicationContext<android.content.Context>().cacheDir, "import-${System.nanoTime()}")
         TestDocsProvider.install(dir)
         vm = ImportModel(c, today = { today }, pdfPages = { _, pw ->
+            pdfText?.let { return@ImportModel listOf(it) }
             if (pw != "1234") throw PdfText.PasswordNeeded()
             listOf("Extrato da conta\n01/10/2026 PADARIA CENTRAL -12,50\n02/10/2026 PIX RECEBIDO ANA 50,00")
         })
@@ -151,6 +154,9 @@ class ImportFlowTest {
         condition()
     }
 
+    /** O texto que o "PDF" do teste devolve (sem ele, vale o PDF com senha de sempre). */
+    private var pdfText: String? = null
+
     private fun imported() = runBlocking { c.repo.loadOnce().txs.filter { it.importKey != null } }
 
     private fun exists(text: String) = rule.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
@@ -180,12 +186,86 @@ class ImportFlowTest {
         assertTrue(exists("Saldo no fim do extrato"))
         captureScreenRoboImage("screenshots/43_importar_pronto.png")
 
+        // RF-IMP-24 / ERR-054: o saldo do banco ao lado do do Cryo no mesmo dia; diferentes, um toque acerta o saldo
+        // inicial da conta, sem criar lançamento, e com desfazer.
+        val st = vm.statement!!
+        fun gap() = runBlocking { BalanceCheck.gap(st, c.repo.loadOnce(), nubank, today) }
+        val falta = gap()!!
+        assertTrue("o exemplo precisa ter diferença para o teste valer", falta != 0L)
+        assertTrue(exists("Saldo no Cryo no mesmo dia"))
+        val antes = runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }
+        rule.onNodeWithText("Acertar o saldo").performScrollTo().performClick()
+        waitFor(10_000) { gap() == 0L }
+        assertEquals("o acerto não cria movimentação", 11, imported().size)
+        assertEquals(antes.initialBalance + falta, runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }.initialBalance)
+        waitFor(10_000) { exists("Confere com o banco") }
+        captureScreenRoboImage("screenshots/101_importar_saldo_confere.png")
+        // "Desfazer o acerto" devolve a conta como estava (o OFX não diz quanto havia antes: aqui nada é automático).
+        assertEquals(falta, (vm.step as ImportModel.Step.Done).shift)
+        rule.onNodeWithText("Desfazer o acerto").performScrollTo().performClick()
+        waitFor(10_000) { gap() == falta }
+        assertEquals(antes.initialBalance, runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }.initialBalance)
+
         // O mesmo arquivo de novo: nada entra em dobro.
         rule.onNodeWithText("Importar outro arquivo").performClick()
         pick(SampleFiles.ofx(today))
         assertEquals(11, vm.rows.count { it.flag == RowFlag.IMPORTED_BEFORE })
         assertEquals(0, vm.selectedCount)
         assertTrue(exists("Marque o que quer importar"))
+    }
+
+    /**
+     * RF-IMP-24 / ERR-054: o extrato diz quanto havia na conta antes dele; o Cryo passa a partir do mesmo ponto sozinho
+     * e o saldo fecha com o banco, sem a pessoa fazer conta. A tela mostra as etapas e o que foi acertado; dá para
+     * desfazer só o acerto, e desfazer a importação leva o acerto junto.
+     */
+    @Test fun pdfComSaldoInicialAcertaOSaldoSozinho() {
+        pdfText = """
+            01 DE OUTUBRO DE 2026 a 03 DE OUTUBRO DE 2026
+            Saldo inicial 500,00
+            Total de entradas +90,00
+            Total de saídas -23,45
+            Saldo final do período 566,55
+            Movimentações
+            01 OUT 2026 Total de entradas
+            Transferência recebida pelo Pix FULANO DE TAL 90,00
+            Total de saídas
+            Compra no débito MERCEARIA EXEMPLO 23,45
+        """.trimIndent()
+        fun conta() = runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }
+        fun saldo() = runBlocking { Ledger(c.repo.loadOnce(), today).balance(nubank) }
+        val inicialAntes = conta().initialBalance
+        val saldoAntes = saldo() // o Cryo achava que havia isto na conta; o banco diz R$ 500,00 antes do extrato
+        show()
+        answer = file(SampleFiles.Sample("extrato.pdf", "application/pdf", "PDF", "%PDF-1.7 de teste".toByteArray()))
+        rule.onNodeWithText("Escolher arquivo").performClick()
+        waitFor(10_000) { vm.step == ImportModel.Step.Review }
+        assertEquals(listOf(9000L, -2345L), vm.rows.map { it.signed })
+        rule.onNodeWithText("Importar 2 movimentações").performClick()
+        waitFor(10_000) { vm.step is ImportModel.Step.Done }
+
+        val done = vm.step as ImportModel.Step.Done
+        assertEquals("o acerto é o que o banco tinha antes menos o que o Cryo tinha", 50000L - saldoAntes, done.shift)
+        assertEquals("o saldo do Cryo é o saldo final do extrato", 56655L, saldo())
+        assertEquals("nenhum lançamento a mais", 2, imported().size)
+        rule.waitForIdle()
+        assertTrue(exists("Saldo antes do extrato"))
+        assertTrue(exists("Confere com o banco"))
+        assertTrue(exists("O Cryo acertou o saldo inicial desta conta"))
+        captureScreenRoboImage("screenshots/102_importar_saldo_automatico.png")
+
+        // Desfazer só o acerto: a conta volta ao que era e a diferença aparece com o botão.
+        rule.onNodeWithText("Desfazer o acerto").performScrollTo().performClick()
+        waitFor(10_000) { conta().initialBalance == inicialAntes }
+        waitFor(10_000) { exists("Acertar o saldo") }
+        rule.onNodeWithText("Acertar o saldo").performScrollTo().performClick()
+        waitFor(10_000) { saldo() == 56655L && (vm.step as ImportModel.Step.Done).shift == 50000L - saldoAntes }
+
+        // Desfazer a importação leva o acerto junto.
+        vm.undo()
+        waitFor(10_000) { (vm.step as? ImportModel.Step.Done)?.undone == true }
+        assertEquals(inicialAntes, conta().initialBalance)
+        assertEquals(saldoAntes, saldo())
     }
 
     @Test fun desfazerTiraTudoQueEntrou() {

@@ -41,7 +41,14 @@ Estornos, reembolsos e créditos na fatura entram marcados e diminuem o valor da
 
 ### Saldo
 
-Quando o arquivo informa o saldo (o OFX costuma informar), a tela final mostra o saldo do extrato e o do Cryo. Se forem diferentes, pode ter ficado algo desmarcado, ter faltado alguma movimentação antes do período do arquivo, ou o saldo inicial da conta precisa de ajuste (Carteira › conta › editar).
+O extrato só traz o que se mexeu no período. O que já estava na conta antes é o **saldo inicial** dela: se ele não estiver certo no Cryo, o saldo fica diferente do banco por esse valor, mesmo com todas as movimentações importadas.
+
+- **PDF que diz o saldo do começo** ("Saldo inicial", "Saldo anterior"): a importação acerta o saldo inicial da conta **sozinha**, para o Cryo partir do mesmo ponto que o banco. Não cria lançamento (o acerto não vira receita nem gasto). A tela final mostra as etapas — saldo antes do extrato, entradas, saídas, saldo no fim — ao lado do saldo do Cryo no mesmo dia, diz quanto foi acertado e tem **Desfazer o acerto**. Desfazer a importação leva o acerto junto.
+- **Arquivo que só diz o saldo do fim** (o OFX: é o saldo do dia em que o arquivo foi baixado): a tela mostra os dois saldos e, se forem diferentes, o botão **Acertar o saldo** resolve com um toque.
+- **Arquivo sem saldo** (CSV, planilha): a tela leva para **Informar o saldo de agora**, na edição da conta.
+- Se o que foi lido **não fecha** com o saldo do começo e o do fim do próprio extrato, o aviso é outro: confira os lançamentos antes de acertar, porque alguma linha pode ter sido lida errada ou ficado de fora.
+
+O saldo do Cryo usado na comparação é o do **último dia do extrato**: o que você lançou depois não entra na conta.
 
 ## Modo desenvolvedor
 
