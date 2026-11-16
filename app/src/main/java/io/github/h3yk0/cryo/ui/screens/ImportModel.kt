@@ -121,6 +121,7 @@ class ImportModel(
     /* ------------------------------------- leitura ------------------------------------- */
 
     fun open(uri: Uri) {
+        reviewShift = 0
         error = null
         fileName = ""
         step = Step.Reading
@@ -249,6 +250,10 @@ class ImportModel(
     /** Recalculando a conferência (outra conta, outra fatura, sinais virados): o botão de importar espera. */
     var planning: Boolean by mutableStateOf(false)
         private set
+
+    /** RF-IMP-24: o acerto de saldo feito ao reabrir um extrato que já está inteiro no Cryo (0 = nada). */
+    var reviewShift: Long by mutableStateOf(0L)
+        private set
     private var planJob: Job? = null
 
     private suspend fun startReview(st: Statement) {
@@ -279,6 +284,7 @@ class ImportModel(
         val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, nt, snap, lg.learnedCategories, inv, lg.categoryModel, alias = { d -> c.engineStore.billAlias(d) }) } }
         planned = result
         rows = result.map(::applyEdit)
+        syncBalance(st, nt, snap)
         planning = false
         step = Step.Review
     }
@@ -306,6 +312,7 @@ class ImportModel(
             val result = withContext(Dispatchers.Default) { Ledger(snap, today()).let { lg -> ImportPlanner.plan(st, t, snap, lg.learnedCategories, inv, lg.categoryModel, alias = { d -> c.engineStore.billAlias(d) }) } }
             planned = result
             rows = result.map(::applyEdit)
+            syncBalance(st, t, snap)
             planning = false
         }
     }
@@ -432,20 +439,34 @@ class ImportModel(
         }
     }
 
+    /**
+     * RF-IMP-24: o extrato aberto já está **inteiro** no Cryo, importado deste mesmo arquivo para esta mesma conta
+     * (toda linha "já importada")? Então não há nada a importar, mas o saldo de partida que ele diz continua valendo:
+     * o Cryo acerta sozinho. É o caso de quem importou numa versão que ainda não lia o saldo.
+     */
+    private suspend fun syncBalance(st: Statement, t: ImportTarget, snap: Snapshot) {
+        val account = t.accountId ?: return
+        if (reviewShift != 0L || rows.isEmpty() || rows.any { it.flag != RowFlag.IMPORTED_BEFORE }) return
+        val shift = BalanceCheck.autoShift(st, snap, account) ?: return
+        if (shift != 0L && c.repo.shiftBalance(account, shift) != null) reviewShift = shift
+    }
+
     /** RF-IMP-24: o botão "Acertar o saldo" — soma [delta] ao saldo inicial da conta para ficar igual ao banco. */
     fun fixBalance(delta: Long) = shiftBalance(delta)
 
-    /** RF-IMP-24: desfaz o acerto de saldo desta importação (o automático e o do botão). */
-    fun undoShift() = shiftBalance(-((step as? Step.Done)?.shift ?: 0L))
+    /** RF-IMP-24: desfaz o acerto de saldo (o automático e o do botão), na tela final ou na conferência. */
+    fun undoShift() = shiftBalance(-((step as? Step.Done)?.shift ?: reviewShift))
 
     private fun shiftBalance(delta: Long) {
-        val d = step as? Step.Done ?: return
-        val account = d.target.accountId ?: return
-        if (delta == 0L || d.undone || busy) return
+        val d = step as? Step.Done
+        val account = (d?.target ?: target)?.accountId ?: return
+        if (delta == 0L || d?.undone == true || busy) return
         busy = true
         viewModelScope.launch {
             try {
-                if (c.repo.shiftBalance(account, delta) != null) step = d.copy(shift = d.shift + delta)
+                if (c.repo.shiftBalance(account, delta) != null) {
+                    if (d != null) step = d.copy(shift = d.shift + delta) else reviewShift += delta
+                }
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {

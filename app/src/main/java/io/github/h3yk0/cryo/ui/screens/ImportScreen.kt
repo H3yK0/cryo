@@ -629,6 +629,12 @@ private fun ReviewStep(vm: ImportModel, l: Ledger, devMode: Boolean, onBack: () 
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 16.dp)) {
             if (testMode) item { Box(Modifier.padding(horizontal = 16.dp)) { TestModeImportNote() } }
             item { ReviewHeader(vm.fileName, st) }
+            // RF-IMP-24: nada deste arquivo falta entrar, mas o saldo do banco que ele diz continua valendo.
+            if (!vm.planning && !st.isCard && t.accountId != null && rows.isNotEmpty() && count == 0 &&
+                rows.all { it.flag == RowFlag.IMPORTED_BEFORE || it.flag == RowFlag.LOOKS_DUPLICATE }
+            ) {
+                item(key = "saldo") { Box(Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) { BalanceCard(st, t.accountId, l, vm) } }
+            }
             item {
                 Column(Modifier.padding(horizontal = 16.dp)) {
                     FieldLabel(Res.s(R.string.import_para_onde_vao))
@@ -984,7 +990,8 @@ private fun explanation(r: ImportRow, t: ImportTarget, l: Ledger): String? = whe
  * Sem saldo no arquivo (CSV, planilha), o caminho é informar o saldo de agora na conta.
  */
 @Composable
-private fun BalanceCard(st: Statement, accountId: Long, l: Ledger, step: ImportModel.Step.Done, vm: ImportModel) {
+private fun BalanceCard(st: Statement, accountId: Long, l: Ledger, vm: ImportModel) {
+    val shift = (vm.step as? ImportModel.Step.Done)?.shift ?: vm.reviewShift
     val nav = LocalNav.current
     val bank = st.balance
     val opening = st.opening
@@ -1013,8 +1020,8 @@ private fun BalanceCard(st: Statement, accountId: Long, l: Ledger, step: ImportM
                 line(Res.s(R.string.import_saldo_fim_extrato), bank, top = if (opening != null) 4 else 0)
                 line(Res.s(R.string.import_saldo_cryo_mesmo_dia), mine)
             }
-            if (step.shift != 0L) {
-                note(Res.s(R.string.import_saldo_acertado_auto, Money.format(step.shift)))
+            if (shift != 0L) {
+                note(Res.s(R.string.import_saldo_acertado_auto, Money.format(shift)))
                 TextButton(onClick = vm::undoShift) { Text(Res.s(R.string.import_desfazer_acerto)) }
             }
             if (bank != null) {
@@ -1080,7 +1087,7 @@ private fun DoneStep(step: ImportModel.Step.Done, vm: ImportModel, l: Ledger, de
             val st = vm.statement
             if (!step.undone && st != null && !st.isCard && t.accountId != null) {
                 Spacer(Modifier.height(20.dp))
-                BalanceCard(st, t.accountId, l, step, vm)
+                BalanceCard(st, t.accountId, l, vm)
             }
             Spacer(Modifier.height(28.dp))
             if (!step.undone) {

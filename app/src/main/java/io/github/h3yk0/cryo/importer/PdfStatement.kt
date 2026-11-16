@@ -105,6 +105,61 @@ object PdfStatement {
         "retiros", "lastschriften", "addebiti", "uscite",
     )
 
+    /**
+     * RF-IMP-24: o saldo do começo, o do fim e o rendimento que alguns bancos somam por fora. O mesmo cabeçalho chega
+     * de três jeitos, conforme quem extrai o texto do PDF (ERR-055: o leitor do Android não entrega como o do computador):
+     *  1. rótulo e valor na mesma linha ("Saldo inicial 500,00");
+     *  2. um embaixo do outro ("Saldo inicial" / "500,00");
+     *  3. todos os rótulos e depois todos os valores, na mesma ordem.
+     * Por isso os rótulos conhecidos esperam numa fila e cada valor sozinho numa linha vai para o mais antigo. Os
+     * "Total de..." entram na fila só para manter a ordem. Qualquer outro texto no meio esvazia a fila: melhor não ler
+     * o saldo do que ler o valor errado.
+     */
+    private fun readBalances(rawLines: List<String>, moneyRx: Regex, decimalComma: Boolean): Triple<Long?, Long?, Long> {
+        var opening: Long? = null
+        var closing: Long? = null
+        var extra = 0L
+        val waiting = ArrayDeque<Int>() // 1 = começo, 2 = fim, 3 = rendimento, 0 = um total qualquer
+        fun kind(text: String): Int? {
+            val label = text.normalized().trim().trimEnd(':').trim()
+            fun isOne(of: List<String>) = of.any { label == it || label.startsWith("$it ") }
+            return when {
+                isOne(OPENING_BALANCE) -> 1
+                isOne(CLOSING_BALANCE) -> 2
+                isOne(YIELD) -> 3
+                label.startsWith("total ") -> 0
+                else -> null
+            }
+        }
+        fun put(kind: Int, m: MatchResult) {
+            val value = Values.amount(m.value.replace("−", "-"), decimalComma) ?: return
+            val signed = if (marksOut(m)) -abs(value) else abs(value)
+            when (kind) {
+                1 -> if (opening == null) opening = signed
+                2 -> closing = signed
+                3 -> extra = signed
+            }
+        }
+        for (line in rawLines) {
+            val money = moneyRx.findAll(maskDocuments(line)).toList()
+            if (money.isEmpty()) {
+                val k = kind(line)
+                if (k != null) waiting.addLast(k) else if (line.any { it.isLetter() }) waiting.clear()
+                continue
+            }
+            if (money.size != 1) { waiting.clear(); continue }
+            val before = line.substring(0, money[0].range.first).trim().trimEnd('-', '–', ':').trim()
+            val after = line.substring(money[0].range.last + 1).trim()
+            if (before.isEmpty() && after.isEmpty()) {
+                waiting.removeFirstOrNull()?.let { put(it, money[0]) }
+            } else {
+                kind(before)?.let { put(it, money[0]) }
+                waiting.clear()
+            }
+        }
+        return Triple(opening, closing, extra)
+    }
+
     /** RF-IMP-24: como os extratos chamam o saldo do começo e o do fim (o texto já vem sem acentos e em minúsculas). */
     private val OPENING_BALANCE = listOf(
         "saldo inicial", "saldo anterior", "opening balance", "beginning balance", "starting balance", "solde initial",
@@ -178,9 +233,7 @@ object PdfStatement {
         val skipped = ArrayList<SkippedLine>()
         var currentDate: LocalDate? = null
         var section = 0 // 1 = entradas, -1 = saídas (extratos que agrupam assim)
-        var opening: Long? = null
-        var closing: Long? = null
-        var extra = 0L
+        val (opening, closing, extra) = readBalances(rawLines, moneyRx, style == Style.COMMA)
         val pending = ArrayList<String>()
 
         for (line in rawLines) {
@@ -215,21 +268,6 @@ object PdfStatement {
             val first = money.first()
             var description = rest.substring(0, first.range.first).trim().trimEnd('-', '–', ':').trim()
             if (description.isEmpty()) description = pending.joinToString(" ").trim()
-            // RF-IMP-24: o saldo do começo e o do fim do extrato (e o rendimento, que alguns bancos somam por fora),
-            // para conferir a importação com o banco. São linhas de um valor só; nunca viram movimentação.
-            if (money.size == 1) {
-                val label = description.normalized()
-                val value = Values.amount(first.value.replace("−", "-"), decimalComma = style == Style.COMMA)
-                if (value != null) {
-                    val signed = if (marksOut(first)) -abs(value) else abs(value)
-                    fun isOne(of: List<String>) = of.any { label == it || label.startsWith("$it ") }
-                    when {
-                        isOne(OPENING_BALANCE) -> if (opening == null) opening = signed
-                        isOne(CLOSING_BALANCE) -> closing = signed
-                        isOne(YIELD) -> extra = signed
-                    }
-                }
-            }
             val date = currentDate
             when {
                 date == null -> { skipped += SkippedLine(line, Res.s(R.string.importer_sem_data_antes)); continue }

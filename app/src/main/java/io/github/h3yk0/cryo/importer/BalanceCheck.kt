@@ -13,7 +13,7 @@ import java.time.LocalDate
  */
 object BalanceCheck {
     /** O último dia com movimentação no extrato: o saldo final do banco vale para o fim desse dia. */
-    fun endDate(st: Statement): LocalDate? = st.lines.maxOfOrNull { it.date }
+    fun endDate(st: Statement): LocalDate? = st.balanceDate ?: st.lines.maxOfOrNull { it.date }
 
     /** O saldo do Cryo no fim de [day] (o que foi lançado depois não entra na comparação). */
     fun cryoBalance(s: Snapshot, accountId: Long, day: LocalDate): Long = Ledger(s, day).balance(accountId)
@@ -22,8 +22,9 @@ object BalanceCheck {
      * O acerto automático (pedido do Hanry, 16/11/2026: "todo o cálculo seja feito automaticamente"). Quando o extrato
      * **diz** quanto havia na conta antes da primeira movimentação, o Cryo parte do mesmo ponto: devolve quanto somar
      * ao saldo inicial da conta para a véspera do extrato ficar igual à do banco. Não depende de quais linhas a pessoa
-     * escolheu importar. Null quando o arquivo não diz: o OFX só traz o saldo do dia em que foi baixado, que pode ser
-     * bem depois da última linha — aí o Cryo mostra a diferença e a pessoa decide com um toque.
+     * escolheu importar, por isso nunca conta nada em dobro. O PDF diz esse saldo; no OFX o leitor o deduz (o saldo do
+     * dia menos tudo o que o arquivo lista) quando o dia do saldo está dentro do período listado. Null quando não dá
+     * para saber: aí o Cryo mostra a diferença e a pessoa decide com um toque.
      */
     fun autoShift(st: Statement, s: Snapshot, accountId: Long): Long? {
         if (st.isCard) return null

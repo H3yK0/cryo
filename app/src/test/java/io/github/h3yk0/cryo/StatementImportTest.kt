@@ -383,6 +383,84 @@ class StatementImportTest {
     }
 
     /**
+     * ERR-055: no celular o texto do PDF não chega como no computador. O rótulo vem numa linha e o valor em outra, ou
+     * todos os rótulos primeiro e todos os valores depois. Os saldos são lidos nos três formatos (o terceiro está em
+     * [pdfComSecoesPorDiaCnpjEQuebraDePagina]), e as movimentações também. Inventado.
+     */
+    @Test fun pdfComRotuloEValorEmLinhasSeparadas() {
+        val movs = """
+            Movimentações
+            03 NOV 2026 Total de entradas + 90,00
+            Transferência recebida pelo Pix FULANO DE TAL - •••.456.789-•• - BANCO EXEMPLO (0001) Agência: 1 Conta:
+            1234567-8
+            90,00
+            Total de saídas - 23,45
+            Compra no débito PADARIA EXEMPLO
+            23,45
+        """.trimIndent()
+        val umEmbaixoDoOutro = """
+            VALORES EM R$
+            01 DE NOVEMBRO DE 2026 a 15 DE NOVEMBRO DE 2026
+            Saldo final do período
+            R$ 566,55
+            Saldo inicial
+            500,00
+            Rendimento líquido
+            +0,00
+            Total de entradas
+            +90,00
+            Total de saídas
+            -23,45
+            Saldo final do período
+            566,55
+        """.trimIndent() + "\n" + movs
+        val rotulosDepoisValores = """
+            a
+            01 DE NOVEMBRO DE 2026 15 DE NOVEMBRO DE 2026 VALORES EM R$
+            Saldo final do período
+            R$ 566,55
+            Saldo inicial
+            Rendimento líquido
+            Total de entradas
+            Total de saídas
+            Saldo final do período
+            500,00
+            +0,00
+            +90,00
+            -23,45
+            566,55
+        """.trimIndent() + "\n" + movs
+        val dia = LocalDate.of(2026, 11, 16)
+        for ((nome, text) in listOf("um embaixo do outro" to umEmbaixoDoOutro, "rótulos e depois valores" to rotulosDepoisValores)) {
+            val st = PdfStatement.parse(listOf(text), dia)
+            assertEquals(nome, listOf(9000L, -2345L), st.lines.map { it.amount })
+            assertEquals(nome, 50000L, st.opening)
+            assertEquals(nome, 56655L, st.balance)
+            assertEquals(nome, 0L, st.readGap)
+        }
+        // Um texto qualquer entre os rótulos e os valores: melhor não ler o saldo do que ler o valor errado.
+        val baguncado = rotulosDepoisValores.replace("Saldo final do período\n500,00", "Saldo final do período\nCentral de atendimento\n500,00")
+        assertNull(PdfStatement.parse(listOf(baguncado), dia).opening)
+    }
+
+    /**
+     * RF-IMP-24: o OFX só diz o saldo de um dia. Quando esse dia está dentro do período listado, o Cryo deduz quanto
+     * havia antes (saldo menos tudo o que o arquivo lista) e o acerto fica automático também no OFX.
+     */
+    @Test fun ofxDeduzOSaldoDeAntesQuandoOSaldoEDoPeriodo() {
+        val sample = String(SampleFiles.ofx(today).bytes, Charsets.ISO_8859_1)
+        val st = ok(read(sample, charset = Charsets.ISO_8859_1))
+        assertEquals(today, st.balanceDate)
+        assertEquals(st.balance!! - st.lines.sumOf { it.amount }, st.opening)
+        assertEquals(0L, st.readGap)
+        // Saldo de um dia depois do fim da lista: pode ter havido movimento no meio. Não deduz (fica o botão).
+        val depois = ok(read(sample.replace(Regex("<DTASOF>\\d{8}"), "<DTASOF>20261120"), charset = Charsets.ISO_8859_1))
+        assertEquals(st.balance, depois.balance)
+        assertNull(depois.opening)
+        assertEquals(LocalDate.of(2026, 11, 20), depois.balanceDate)
+    }
+
+    /**
      * RF-IMP-24 / ERR-054: o extrato só traz o que se mexeu no período; o que já estava na conta antes é o saldo
      * inicial. O Cryo compara o saldo do banco com o seu **no mesmo dia** e a diferença é o que falta acertar.
      */

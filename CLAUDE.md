@@ -243,7 +243,10 @@ código anterior. Todos os testes passam.
   (`autoShift` = saldo do banco na véspera menos o do Cryo na véspera; `gap` = banco × Cryo no último dia do extrato);
   `ImportModel.import()` aplica o acerto no **saldo inicial da conta** (`FinanceRepository.shiftBalance`, nunca um
   lançamento) e guarda em `Step.Done.shift`; a tela final (`BalanceCard` em `ImportScreen.kt`) mostra as etapas e o
-  "Desfazer o acerto". OFX não diz o saldo do começo: só o botão "Acertar o saldo".
+  "Desfazer o acerto". **ERR-055**: no celular o cabeçalho do PDF chega com rótulo e valor em linhas separadas, ou
+  todos os rótulos e depois os valores (`readBalances` lê os três formatos com uma fila de rótulos). O OFX deduz o saldo
+  de antes quando o `DTASOF` está dentro do período (`Statement.balanceDate`). Reabrir um extrato que já está inteiro no
+  Cryo (toda linha `IMPORTED_BEFORE`) acerta o saldo na conferência (`ImportModel.syncBalance`, `reviewShift`).
 - 171 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
   fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
@@ -477,7 +480,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 961 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 964 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -511,7 +514,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–102 saldo depois de importar, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -524,8 +527,11 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - **Suíte inteira em lotes**: aqui o comando tem limite de 10 minutos; rode por letra inicial da classe
   (`--tests 'io.github.h3yk0.cryo.E*'` etc.). O Gradle apaga os resultados a cada rodada: some os lotes à mão.
 - **Extrato de verdade nunca entra no repositório** (PRC-06): para diagnosticar um PDF do Hanry, extraia o texto numa
-  pasta fora do projeto (`pdftotext -layout`), chame `PdfStatement.parse` por um teste temporário e **apague o teste**
-  depois; o teste-guarda que fica no repositório usa um extrato inventado no mesmo formato.
+  pasta fora do projeto, chame `PdfStatement.parse` por um teste temporário e **apague o teste**
+  depois; o teste-guarda que fica no repositório usa um extrato inventado no mesmo formato. **Extraia com
+  `pdftotext -raw`**, que é o mais parecido com o leitor do Android (`PdfRenderer.textContents`: a ordem em que o texto
+  está no arquivo, rótulo e valor em linhas separadas); `-layout` junta tudo na mesma linha e esconde defeitos (ERR-055).
+  Em dúvida sobre o que o celular entrega, peça o **relatório anônimo** do modo desenvolvedor.
 - **Botão estendido (`ExtendedFloatingActionButton`)**: o Material esconde o texto dele da árvore mesclada; nos testes,
   procure pelo `contentDescription` (ERR-047), não pelo texto.
 - **`performScrollToNode` quer exatamente um rolável**: na tela de lançamento há vários; use `performScrollTo()` no

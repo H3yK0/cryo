@@ -51,6 +51,7 @@ data class ImportReport(
             appendLine(Res.s(R.string.report_formato, st.format.label))
             appendLine(Res.s(R.string.report_tipo) + if (st.isCard) Res.s(R.string.report_fatura_cartao) else Res.s(R.string.report_extrato_conta))
             st.accountHint?.let { appendLine(Res.s(R.string.report_conta_escrita_arquivo, a(it))) }
+            st.opening?.let { appendLine("${Res.s(R.string.import_saldo_antes_extrato)}: ${money(it)}") }
             st.balance?.let { appendLine(Res.s(R.string.report_saldo_fim_extrato, money(it))) }
             if (st.notes.isNotEmpty()) {
                 appendLine(Res.s(R.string.report_como_foi_lido))

@@ -28,6 +28,8 @@ object Ofx {
         var org: String? = null
         var balance: Long? = null
         var inLedgerBal = false
+        var asOf: java.time.LocalDate? = null
+        var listEnd: java.time.LocalDate? = null
 
         fun emit(m: Map<String, String>) {
             val source = m.entries.joinToString(" ") { "<${it.key}>${it.value}" }
@@ -77,6 +79,8 @@ object Ofx {
                 tag == "BANKID" -> bankId = value
                 tag == "ACCTID" -> acctId = value
                 tag == "ORG" -> org = unescape(value)
+                tag == "DTASOF" && inLedgerBal -> asOf = Values.ofxDate(value)
+                tag == "DTEND" -> listEnd = Values.ofxDate(value)
                 tag == "BALAMT" && inLedgerBal -> balance = Values.amount(value, decimalComma = value.contains(',') && !value.contains('.'))
             }
         }
@@ -91,7 +95,15 @@ object Ofx {
             encodingNote?.let { Res.s(R.string.importer_codificacao, it) },
             if (isCard) Res.s(R.string.importer_extrato_cartao_credito) else Res.s(R.string.importer_extrato_conta),
         )
-        return Statement(StatementFormat.OFX, lines, skipped, isCard, hint, balance, notes)
+        // RF-IMP-24: o OFX só diz o saldo de um dia. Quando esse dia está dentro do período que o arquivo lista (depois
+        // da última linha e sem passar do fim da lista), dá para saber quanto havia antes: o saldo menos tudo o que
+        // foi listado. Se o saldo é de um dia depois do período, pode ter havido movimento no meio: não deduz.
+        val day = asOf
+        val last = lines.maxOfOrNull { it.date }
+        val end = listEnd
+        val covered = day != null && (last == null || !day.isBefore(last)) && (end == null || !day.isAfter(end))
+        val opening = balance?.takeIf { !isCard && covered }?.let { it - lines.sumOf { l -> l.amount } }
+        return Statement(StatementFormat.OFX, lines, skipped, isCard, hint, balance, notes, opening = opening, balanceDate = day)
     }
 
     private fun unescape(s: String) = s.replace("&lt;", "<").replace("&gt;", ">").replace("&quot;", "\"")

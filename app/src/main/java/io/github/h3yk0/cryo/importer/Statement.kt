@@ -57,6 +57,8 @@ data class Statement(
     val notes: List<String> = emptyList(),
     /** RF-IMP-24: saldo no começo do extrato (antes da primeira movimentação), quando o arquivo traz. */
     val opening: Long? = null,
+    /** O dia a que o saldo do fim se refere, quando o arquivo diz (o DTASOF do OFX); senão, vale o da última linha. */
+    val balanceDate: LocalDate? = null,
     /** O que o extrato soma por fora das movimentações (o rendimento da conta, por exemplo), quando ele diz. */
     val extra: Long = 0,
 ) {

@@ -157,6 +157,26 @@ class ImportFlowTest {
     /** O texto que o "PDF" do teste devolve (sem ele, vale o PDF com senha de sempre). */
     private var pdfText: String? = null
 
+    /** Um extrato inventado que diz o saldo de antes (R$ 500,00) e o do fim (R$ 566,55). */
+    private val pdfComSaldo = """
+        01 DE OUTUBRO DE 2026 a 03 DE OUTUBRO DE 2026
+        Saldo inicial 500,00
+        Total de entradas +90,00
+        Total de saídas -23,45
+        Saldo final do período 566,55
+        Movimentações
+        01 OUT 2026 Total de entradas
+        Transferência recebida pelo Pix FULANO DE TAL 90,00
+        Total de saídas
+        Compra no débito MERCEARIA EXEMPLO 23,45
+    """.trimIndent()
+
+    private fun pickPdf() {
+        answer = file(SampleFiles.Sample("extrato.pdf", "application/pdf", "PDF", "%PDF-1.7 de teste".toByteArray()))
+        rule.onNodeWithText("Escolher arquivo").performClick()
+        waitFor(10_000) { vm.step == ImportModel.Step.Review }
+    }
+
     private fun imported() = runBlocking { c.repo.loadOnce().txs.filter { it.importKey != null } }
 
     private fun exists(text: String) = rule.onAllNodesWithText(text, substring = true).fetchSemanticsNodes().isNotEmpty()
@@ -186,25 +206,30 @@ class ImportFlowTest {
         assertTrue(exists("Saldo no fim do extrato"))
         captureScreenRoboImage("screenshots/43_importar_pronto.png")
 
-        // RF-IMP-24 / ERR-054: o saldo do banco ao lado do do Cryo no mesmo dia; diferentes, um toque acerta o saldo
-        // inicial da conta, sem criar lançamento, e com desfazer.
+        // RF-IMP-24 / ERR-054: o OFX traz o saldo do próprio período; o Cryo deduz quanto havia antes e acerta sozinho
+        // o saldo inicial da conta (sem criar lançamento).
         val st = vm.statement!!
+        fun conta() = runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }
         fun gap() = runBlocking { BalanceCheck.gap(st, c.repo.loadOnce(), nubank, today) }
+        val auto = (vm.step as ImportModel.Step.Done).shift
+        // O exemplo foi feito para esta conta: o saldo de antes que o OFX deixa deduzir é o mesmo do Cryo, então não
+        // há nada a acertar sozinho (o acerto automático com diferença está nos testes do PDF, logo abaixo).
+        assertEquals(st.opening!! - 123456L, auto)
+        assertEquals(0L, auto)
+        assertEquals(123456L, conta().initialBalance)
+        assertTrue(exists("Saldo antes do extrato"))
+        // Sobra só o que ficou desmarcado e não está no Cryo (o pagamento de fatura): aí é com o botão, um toque.
         val falta = gap()!!
         assertTrue("o exemplo precisa ter diferença para o teste valer", falta != 0L)
         assertTrue(exists("Saldo no Cryo no mesmo dia"))
-        val antes = runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }
         rule.onNodeWithText("Acertar o saldo").performScrollTo().performClick()
-        waitFor(10_000) { gap() == 0L }
+        waitFor(10_000) { gap() == 0L && (vm.step as ImportModel.Step.Done).shift == auto + falta }
         assertEquals("o acerto não cria movimentação", 11, imported().size)
-        assertEquals(antes.initialBalance + falta, runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }.initialBalance)
         waitFor(10_000) { exists("Confere com o banco") }
         captureScreenRoboImage("screenshots/101_importar_saldo_confere.png")
-        // "Desfazer o acerto" devolve a conta como estava (o OFX não diz quanto havia antes: aqui nada é automático).
-        assertEquals(falta, (vm.step as ImportModel.Step.Done).shift)
+        // "Desfazer o acerto" devolve a conta como estava (o automático e o do botão).
         rule.onNodeWithText("Desfazer o acerto").performScrollTo().performClick()
-        waitFor(10_000) { gap() == falta }
-        assertEquals(antes.initialBalance, runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }.initialBalance)
+        waitFor(10_000) { conta().initialBalance == 123456L && (vm.step as ImportModel.Step.Done).shift == 0L }
 
         // O mesmo arquivo de novo: nada entra em dobro.
         rule.onNodeWithText("Importar outro arquivo").performClick()
@@ -220,26 +245,13 @@ class ImportFlowTest {
      * desfazer só o acerto, e desfazer a importação leva o acerto junto.
      */
     @Test fun pdfComSaldoInicialAcertaOSaldoSozinho() {
-        pdfText = """
-            01 DE OUTUBRO DE 2026 a 03 DE OUTUBRO DE 2026
-            Saldo inicial 500,00
-            Total de entradas +90,00
-            Total de saídas -23,45
-            Saldo final do período 566,55
-            Movimentações
-            01 OUT 2026 Total de entradas
-            Transferência recebida pelo Pix FULANO DE TAL 90,00
-            Total de saídas
-            Compra no débito MERCEARIA EXEMPLO 23,45
-        """.trimIndent()
+        pdfText = pdfComSaldo
         fun conta() = runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }
         fun saldo() = runBlocking { Ledger(c.repo.loadOnce(), today).balance(nubank) }
         val inicialAntes = conta().initialBalance
         val saldoAntes = saldo() // o Cryo achava que havia isto na conta; o banco diz R$ 500,00 antes do extrato
         show()
-        answer = file(SampleFiles.Sample("extrato.pdf", "application/pdf", "PDF", "%PDF-1.7 de teste".toByteArray()))
-        rule.onNodeWithText("Escolher arquivo").performClick()
-        waitFor(10_000) { vm.step == ImportModel.Step.Review }
+        pickPdf()
         assertEquals(listOf(9000L, -2345L), vm.rows.map { it.signed })
         rule.onNodeWithText("Importar 2 movimentações").performClick()
         waitFor(10_000) { vm.step is ImportModel.Step.Done }
@@ -266,6 +278,41 @@ class ImportFlowTest {
         waitFor(10_000) { (vm.step as? ImportModel.Step.Done)?.undone == true }
         assertEquals(inicialAntes, conta().initialBalance)
         assertEquals(saldoAntes, saldo())
+    }
+
+    /**
+     * RF-IMP-24: quem importou numa versão que ainda não lia o saldo não precisa apagar nada: basta abrir o mesmo
+     * extrato de novo. Tudo aparece como "já importado" e o Cryo acerta o saldo de partida sozinho, ali mesmo.
+     */
+    @Test fun reabrirExtratoJaImportadoAcertaOSaldo() {
+        pdfText = pdfComSaldo
+        fun conta() = runBlocking { c.repo.loadOnce().accounts.single { it.id == nubank } }
+        fun saldo() = runBlocking { Ledger(c.repo.loadOnce(), today).balance(nubank) }
+        show()
+        pickPdf()
+        rule.onNodeWithText("Importar 2 movimentações").performClick()
+        waitFor(10_000) { vm.step is ImportModel.Step.Done }
+        val shift = (vm.step as ImportModel.Step.Done).shift
+        assertTrue(shift != 0L)
+        // Como numa versão antiga: as movimentações entraram, mas o saldo inicial ficou como estava.
+        runBlocking { c.repo.shiftBalance(nubank, -shift) }
+        assertEquals(123456L, conta().initialBalance)
+
+        rule.onNodeWithText("Importar outro arquivo").performScrollTo().performClick()
+        rule.waitForIdle()
+        pickPdf()
+        assertTrue(vm.rows.all { it.flag == RowFlag.IMPORTED_BEFORE })
+        waitFor(10_000) { vm.reviewShift == shift }
+        assertEquals(123456L + shift, conta().initialBalance)
+        assertEquals(56655L, saldo())
+        assertEquals("nada entrou em dobro", 2, imported().size)
+        rule.waitForIdle()
+        assertTrue(exists("O Cryo acertou o saldo inicial desta conta"))
+        assertTrue(exists("Confere com o banco"))
+        captureScreenRoboImage("screenshots/103_reabrir_extrato_acerta_saldo.png")
+        // E dá para desfazer ali mesmo.
+        rule.onNodeWithText("Desfazer o acerto").performScrollTo().performClick()
+        waitFor(10_000) { conta().initialBalance == 123456L && vm.reviewShift == 0L }
     }
 
     @Test fun desfazerTiraTudoQueEntrou() {
