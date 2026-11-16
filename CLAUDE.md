@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **16/11/2026**.
+Situação descrita aqui: **17/11/2026**.
 
 ---
 
@@ -247,11 +247,30 @@ código anterior. Todos os testes passam.
   todos os rótulos e depois os valores (`readBalances` lê os três formatos com uma fila de rótulos). O OFX deduz o saldo
   de antes quando o `DTASOF` está dentro do período (`Statement.balanceDate`). Reabrir um extrato que já está inteiro no
   Cryo (toda linha `IMPORTED_BEFORE`) acerta o saldo na conferência (`ImportModel.syncBalance`, `reviewShift`).
-- 171 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
+- **Pedidos de 17/11/2026 feitos**: **RF-FIX-11**, conta fixa paga por fora (`MoneyActionSheet` ganhou `offLabel`/`onConfirmOff`;
+  o pagamento nasce sem conta e sem cartão: conta no mês, não mexe em saldo) e **RF-EXT-07**, busca do Extrato com período
+  (Tudo, Mês, Ano) e por valor (`domain/TxSearch.kt`, regra pura; `MonthSelector` aceita os rótulos das setas).
+- 178 textos novos nas 10 línguas. Nenhuma permissão nova; **banco de dados versão 5** (migração 4→5 automática: a conta
   fixa de quem já usa continua mensal, sem parcelas e sem prazo).
 - **Avisar o Hanry**: quem já usa pode ter compras importadas que mudaram de fatura ao serem editadas antes da 1.5: agora dá para
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
   rascunho de resposta na entrega da 1.5; só o Hanry posta).
+
+### Para a próxima sessão (pedidos do Hanry de 17/11/2026 que ficaram de fora por custo)
+
+1. **Orçamento a partir da renda** (requisito novo em RF-ORC, PRD primeiro): perguntar a renda fixa e a média das variáveis
+   (o motor já acha o salário em `Recurrences` e tem a mediana das entradas avulsas), uma chave "contar a renda variável"
+   com o aviso de que ela oscila, e sugerir limites por categoria (já existe "limites sugeridos" no ritmo das categorias)
+   e a separação da renda (necessidades, desejos, guardar e investir). Sugestão de investimento só por **tipo** (reserva
+   com liquidez diária, renda fixa, renda variável), nunca produto. Tudo editável (PRI-09) e explicável (PRI-05).
+2. **Quatro línguas novas: russo, ucraniano, árabe e hebraico**, com as moedas (RUB, UAH, ILS e as árabes mais usadas:
+   SAR, AED, EGP). É grande: ~1.920 textos por língua; plurais próprios (ru/uk: one/few/many/other; ar: as seis formas;
+   he: one/two/many/other — o `addstrings.py` do rascunho só conhece one/other); `PhraseLang` e as colunas da importação;
+   loja (fastlane), READMEs, `PrdConformanceTest` e `StoreScreenshotsTest` (a lista de línguas passa de 10 para 14).
+   Árabe e hebraico são **da direita para a esquerda**: conferir os desenhos próprios (`Charts.kt`, `Art.kt`, `Depth.kt`,
+   `Tour.kt`), os ícones que precisam espelhar e os valores em dinheiro dentro de frases.
+3. **Conta fixa**: uma chave na própria conta fixa para "nunca mexer no saldo" (hoje a escolha é a cada pagamento) e a
+   mesma escolha ao criar com "Já paguei o de ...".
 
 ### Próximos passos imediatos
 
@@ -480,7 +499,7 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 964 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 970 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -514,7 +533,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 104 conta fixa paga por fora, 105 busca com período, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para

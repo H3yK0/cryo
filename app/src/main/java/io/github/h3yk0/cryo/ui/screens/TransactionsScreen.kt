@@ -4,6 +4,8 @@ package io.github.h3yk0.cryo.ui.screens
 
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
+import io.github.h3yk0.cryo.domain.SearchScope
+import io.github.h3yk0.cryo.domain.TxSearch
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -93,9 +95,10 @@ fun TransactionsScreen(categoryFilter: Long?) {
     var category by rememberSaveable(categoryFilter) { mutableStateOf(categoryFilter) }
     var selectedDay by rememberSaveable(ymKey) { mutableStateOf(if (ym == l.today.ym()) l.today.dayOfMonth else null as Int?) }
 
-    val txs = remember(l, ymKey, filter, query, category) {
-        val q = query.trim().normalized()
-        val base = if (q.isNotEmpty()) l.s.txs else l.monthTxs(ym)
+    // RF-EXT-07: com a busca aberta, o período é o que a pessoa escolheu (tudo, o mês ou o ano do seletor).
+    var scope by rememberSaveable { mutableStateOf(SearchScope.ALL) }
+    val txs = remember(l, ymKey, filter, query, category, searching, scope) {
+        val base = if (searching) TxSearch.inScope(l.s.txs, scope, ym) else l.monthTxs(ym)
         base.filter { t ->
             val okType = when (filter) {
                 TxFilter.ALL -> true
@@ -104,8 +107,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                 TxFilter.OTHER -> t.type != TxType.EXPENSE && t.type != TxType.INCOME
             }
             val okCat = category == null || t.categoryId == category
-            val okQ = q.isEmpty() || t.description.normalized().contains(q) ||
-                (t.categoryId?.let { l.category[it]?.name?.normalized()?.contains(q) } == true)
+            val okQ = TxSearch.matches(t, query, t.categoryId?.let { l.category[it]?.name })
             okType && okCat && okQ
         }
     }
@@ -139,13 +141,53 @@ fun TransactionsScreen(categoryFilter: Long?) {
                 item {
                     OutlinedTextField(
                         value = query, onValueChange = { query = it }, singleLine = true,
-                        label = { Text(Res.s(R.string.txs_buscar_todos_meses)) },
+                        label = { Text(Res.s(R.string.txs_buscar_nome_valor)) },
                         leadingIcon = { Icon(Icons.Rounded.Search, null) },
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
                     )
                 }
+                // RF-EXT-07: onde procurar. No mês e no ano, as setas andam de um em um.
+                item {
+                    Segmented(
+                        listOf(
+                            SearchScope.ALL to Res.s(R.string.txs_tudo), SearchScope.MONTH to Res.s(R.string.txs_escopo_mes),
+                            SearchScope.YEAR to Res.s(R.string.txs_escopo_ano),
+                        ),
+                        scope, { scope = it }, modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                    )
+                }
+                if (scope != SearchScope.ALL) {
+                    item {
+                        if (scope == SearchScope.YEAR) {
+                            MonthSelector(
+                                ym.year.toString(),
+                                onPrev = { ymKey = ym.minusYears(1).key() }, onNext = { ymKey = ym.plusYears(1).key() },
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                                prevLabel = Res.s(R.string.txs_ano_anterior), nextLabel = Res.s(R.string.txs_proximo_ano),
+                            )
+                        } else {
+                            MonthSelector(
+                                Dates.monthYear(ym, l.today),
+                                onPrev = { ymKey = ym.minusMonths(1).key() }, onNext = { ymKey = ym.plusMonths(1).key() },
+                                modifier = Modifier.padding(horizontal = 8.dp),
+                            )
+                        }
+                    }
+                }
+                item {
+                    val found = remember(txs) {
+                        Triple(txs.size, txs.filter { it.type == TxType.INCOME }.sumOf { it.amount }, txs.filter { it.type == TxType.EXPENSE }.sumOf { it.amount })
+                    }
+                    FlatItem(Modifier.padding(horizontal = 16.dp)) {
+                        Text(Res.p(R.plurals.imports_count, found.first, found.first), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(Modifier.fillMaxWidth().padding(top = 4.dp)) {
+                            SummaryCell(Res.s(R.string.month_in), found.second, CryoTheme.colors.income, Modifier.weight(1f))
+                            SummaryCell(Res.s(R.string.month_out), found.third, CryoTheme.colors.expense, Modifier.weight(1f))
+                        }
+                    }
+                }
             }
-            if (query.isBlank()) {
+            if (!searching) {
                 item {
                     MonthSelector(
                         Dates.monthYear(ym, l.today),
@@ -174,7 +216,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
                 }
             }
 
-            if (mode == 1 && query.isBlank()) {
+            if (mode == 1 && !searching) {
                 item {
                     FlatItem(Modifier.padding(horizontal = 16.dp)) {
                         Text(Res.s(R.string.txs_calendario_gastos), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })

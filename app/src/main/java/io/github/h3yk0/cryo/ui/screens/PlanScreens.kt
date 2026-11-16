@@ -451,6 +451,17 @@ private fun BillsTab(l: Ledger) {
             initialAccount = b.accountId ?: LocalSettings.current.defaultAccountId,
             confirmLabel = Res.s(R.string.plan_confirmar),
             onDismiss = { paying = null },
+            // RF-FIX-11: pago por fora (em dinheiro que o Cryo não acompanha): a conta fixa fica paga e o lançamento
+            // nasce sem conta e sem cartão — conta no mês e na categoria, mas não mexe no saldo de conta nenhuma.
+            offLabel = Res.s(R.string.plan_fora_do_saldo),
+            offHint = Res.s(R.string.plan_fora_do_saldo_hint),
+            onConfirmOff = { amount, date ->
+                paying = null
+                c.launch {
+                    c.repo.markBillPaid(b, s.ym, amount, date, null, null)
+                    c.message(if (b.kind == CategoryKind.EXPENSE) Res.s(R.string.plan_paga, b.name) else Res.s(R.string.plan_recebido_3, b.name))
+                }
+            },
             onConfirm = { amount, acc, date ->
                 paying = null
                 c.launch {

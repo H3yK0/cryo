@@ -500,14 +500,18 @@ fun UsageBar(
 }
 
 @Composable
-fun MonthSelector(label: String, onPrev: () -> Unit, onNext: () -> Unit, modifier: Modifier = Modifier, nextEnabled: Boolean = true) {
+fun MonthSelector(
+    label: String, onPrev: () -> Unit, onNext: () -> Unit, modifier: Modifier = Modifier, nextEnabled: Boolean = true,
+    /** O que as setas dizem ao leitor de tela (RF-EXT-07: na busca por ano elas andam de ano em ano). */
+    prevLabel: String = Res.s(R.string.common_mes_anterior), nextLabel: String = Res.s(R.string.common_proximo_mes),
+) {
     Row(modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-        IconButton(onClick = onPrev) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, Res.s(R.string.common_mes_anterior)) }
+        IconButton(onClick = onPrev) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowLeft, prevLabel) }
         Text(
             label, style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center,
             modifier = Modifier.weight(1f, fill = false).padding(horizontal = 8.dp),
         )
-        IconButton(onClick = onNext, enabled = nextEnabled) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, Res.s(R.string.common_proximo_mes)) }
+        IconButton(onClick = onNext, enabled = nextEnabled) { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, nextLabel) }
     }
 }
 

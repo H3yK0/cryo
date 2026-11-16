@@ -528,7 +528,6 @@
     <string name="txs_tudo">全部</string>
     <string name="txs_buscar">搜索</string>
     <string name="txs_fechar_busca">关闭搜索</string>
-    <string name="txs_buscar_todos_meses">搜索所有月份</string>
     <string name="txs_resultado">结余</string>
     <string name="txs_calendario">日历</string>
     <string name="txs_lista">列表</string>
@@ -2001,4 +2000,13 @@
     <string name="import_saldo_acertado_auto">Cryo 已将此账户的初始余额调整 %1$s，使其与银行的起点一致。没有新增任何记录。</string>
     <string name="import_desfazer_acerto">撤销调整</string>
     <string name="import_saldo_antes_extrato">账单之前的余额</string>
+    <!-- RF-EXT-07 (busca com período e valor) e RF-FIX-11 (conta fixa paga por fora) -->
+    <string name="txs_buscar_nome_valor">按名称、类别或金额搜索</string>
+    <string name="txs_escopo_mes">月</string>
+    <string name="txs_escopo_ano">年</string>
+    <string name="plan_fora_do_saldo">不改动任何账户的余额</string>
+    <string name="plan_fora_do_saldo_hint">标记为已完成而不改动余额。适用于用 Cryo 未记录的现金支付或收到的款项。仍会计入当月汇总。</string>
+    <!-- RF-EXT-07: setas da busca por ano -->
+    <string name="txs_ano_anterior">上一年</string>
+    <string name="txs_proximo_ano">下一年</string>
 </resources>

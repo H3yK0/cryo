@@ -448,10 +448,15 @@ fun MoneyActionSheet(
     amountLabel: String = Res.s(R.string.amount_label),
     showDate: Boolean = true,
     allowZero: Boolean = false,
+    /** RF-FIX-11: com os três, a folha ganha a chave "não mexer no saldo de nenhuma conta" (pago por fora). */
+    offLabel: String? = null,
+    offHint: String? = null,
+    onConfirmOff: ((amount: Long, date: LocalDate) -> Unit)? = null,
 ) {
     var amount by remember { mutableLongStateOf(initialAmount) }
     var acc by remember { mutableStateOf(initialAccount ?: l.activeAccounts.firstOrNull()?.id) }
     var date by remember { mutableStateOf(l.today) }
+    var off by remember { mutableStateOf(false) }
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp),
@@ -462,9 +467,13 @@ fun MoneyActionSheet(
             }
             Spacer(Modifier.height(16.dp))
             AmountField(amount, { amount = it }, label = amountLabel)
-            if (accountLabel != null) {
+            if (accountLabel != null && !off) {
                 FieldLabel(accountLabel)
                 AccountChips(l.activeAccounts, acc, { acc = it })
+            }
+            if (offLabel != null && onConfirmOff != null) {
+                Spacer(Modifier.height(8.dp))
+                SwitchRow(offLabel, off, { off = it }, offHint)
             }
             if (showDate) {
                 FieldLabel(Res.s(R.string.wallet_data))
@@ -472,8 +481,8 @@ fun MoneyActionSheet(
             }
             Spacer(Modifier.height(20.dp))
             CryoButton(
-                onClick = { onConfirm(amount, acc, date) },
-                enabled = (amount > 0 || allowZero && amount == 0L) && (accountLabel == null || acc != null),
+                onClick = { if (off && onConfirmOff != null) onConfirmOff(amount, date) else onConfirm(amount, acc, date) },
+                enabled = (amount > 0 || allowZero && amount == 0L) && (off || accountLabel == null || acc != null),
                 modifier = Modifier.fillMaxWidth().height(56.dp),
             ) { Icon(Icons.Rounded.Check, null); Spacer(Modifier.width(8.dp)); Text(confirmLabel) }
             Spacer(Modifier.height(8.dp))

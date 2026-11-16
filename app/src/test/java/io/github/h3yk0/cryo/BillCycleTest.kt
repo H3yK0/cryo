@@ -100,6 +100,21 @@ class BillCycleTest {
     }
 
     /** RF-CFX-12: os modelos existem em todas as línguas e trazem um ritmo que faz sentido. */
+    /**
+     * RF-FIX-11: paga por fora (em dinheiro que o Cryo não acompanha): o lançamento nasce sem conta e sem cartão. A conta
+     * fixa fica paga e o gasto conta no mês, mas o saldo de conta nenhuma muda.
+     */
+    @Test fun pagaPorForaNaoMexeEmSaldoNenhum() {
+        val dizimo = Bill(id = 1, name = "Dízimo", amount = 20_000, dueDay = 10, startYm = 202611, accountId = 1)
+        val conta = Account(1, "Conta", initialBalance = 100_000, color = 0)
+        val porFora = Tx(1, TxType.EXPENSE, 20_000, LocalDate.of(2026, 11, 10), "Dízimo", billId = 1, billYm = 202611)
+        val l = Ledger(Snapshot(accounts = listOf(conta), bills = listOf(dizimo), txs = listOf(porFora)), LocalDate.of(2026, 11, 20))
+        assertEquals(BillState.PAID, l.billStatuses(ym(2026, 11)).single().state)
+        assertEquals(100_000L, l.balance(1))
+        assertEquals(100_000L, l.totalBalance)
+        assertEquals(20_000L, l.monthSummary(ym(2026, 11)).expense)
+    }
+
     @Test fun osModelosTemNomeERitmo() {
         assertTrue(BillTemplates.all.size >= 8)
         for (t in BillTemplates.all) {

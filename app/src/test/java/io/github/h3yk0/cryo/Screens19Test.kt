@@ -46,6 +46,11 @@ import io.github.h3yk0.cryo.ui.screens.ImportsScreen
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.TxEditorScreen
 import kotlinx.coroutines.runBlocking
+import io.github.h3yk0.cryo.ui.screens.MoneyActionSheet
+import io.github.h3yk0.cryo.ui.components.rememberLedger
+import io.github.h3yk0.cryo.domain.Res
+import org.junit.Assert.assertEquals
+import io.github.h3yk0.cryo.ui.screens.TransactionsScreen
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Rule
@@ -214,6 +219,43 @@ class Screens19Test {
     }
 
     /** RF-IMP-23: a lista das importações feitas, com o botão de apagar a importação inteira (imagem 100). */
+    /** RF-EXT-07: a busca do Extrato abre com o período (tudo, mês, ano) e as setas andam no ano escolhido. */
+    @Test fun buscaDoExtratoComPeriodo() {
+        show { TransactionsScreen(null) }
+        rule.onNodeWithContentDescription("Buscar").performClick()
+        waitText("Buscar por nome, categoria ou valor")
+        waitText("Mês")
+        rule.onNodeWithText("Ano").performClick()
+        waitText(day.year.toString())
+        rule.onNodeWithContentDescription("Ano anterior").assertExists()
+        captureScreenRoboImage("screenshots/105_busca_com_periodo.png")
+    }
+
+    /** RF-FIX-11: a chave "não mexer no saldo" tira a escolha da conta e confirma por fora, sem conta nenhuma. */
+    @Test fun pagarContaFixaPorFora() {
+        var normal = 0
+        var fora = 0L
+        show {
+            val l = rememberLedger()
+            if (l != null) {
+                MoneyActionSheet(
+                    title = "Dízimo", subtitle = null, initialAmount = 20_000, l = l, accountLabel = "Pago com", initialAccount = null,
+                    confirmLabel = "Confirmar", onDismiss = {}, onConfirm = { _, _, _ -> normal++ },
+                    offLabel = Res.s(R.string.plan_fora_do_saldo), offHint = Res.s(R.string.plan_fora_do_saldo_hint),
+                    onConfirmOff = { amount, _ -> fora = amount },
+                )
+            }
+        }
+        waitText("Não mexer no saldo de nenhuma conta")
+        waitText("Pago com")
+        rule.onNodeWithText("Não mexer no saldo de nenhuma conta").performClick()
+        rule.waitUntil(5_000) { rule.onAllNodesWithText("Pago com").fetchSemanticsNodes().isEmpty() }
+        captureScreenRoboImage("screenshots/104_conta_fixa_paga_por_fora.png")
+        rule.onNodeWithText("Confirmar").performClick()
+        rule.waitUntil(5_000) { fora == 20_000L }
+        assertEquals(0, normal)
+    }
+
     @Test fun listaDeImportacoesFeitas() {
         val acc = c.repo.snapshot.value!!.accounts.first().id
         runBlocking {

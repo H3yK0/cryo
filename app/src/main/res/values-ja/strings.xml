@@ -528,7 +528,6 @@
     <string name="txs_tudo">すべて</string>
     <string name="txs_buscar">検索</string>
     <string name="txs_fechar_busca">検索を閉じる</string>
-    <string name="txs_buscar_todos_meses">すべての月から検索</string>
     <string name="txs_resultado">収支</string>
     <string name="txs_calendario">カレンダー</string>
     <string name="txs_lista">リスト</string>
@@ -2001,4 +2000,13 @@
     <string name="import_saldo_acertado_auto">Cryoがこの口座の開始残高を%1$s調整し、銀行と同じ地点から始まるようにしました。取引は作成されていません。</string>
     <string name="import_desfazer_acerto">調整を元に戻す</string>
     <string name="import_saldo_antes_extrato">明細の前の残高</string>
+    <!-- RF-EXT-07 (busca com período e valor) e RF-FIX-11 (conta fixa paga por fora) -->
+    <string name="txs_buscar_nome_valor">名前・カテゴリ・金額で検索</string>
+    <string name="txs_escopo_mes">月</string>
+    <string name="txs_escopo_ano">年</string>
+    <string name="plan_fora_do_saldo">どの口座の残高も変えない</string>
+    <string name="plan_fora_do_saldo_hint">残高を変えずに完了にします。Cryoが追っていない現金で払った・受け取ったもの向けです。月のまとめには引き続き含まれます。</string>
+    <!-- RF-EXT-07: setas da busca por ano -->
+    <string name="txs_ano_anterior">前の年</string>
+    <string name="txs_proximo_ano">次の年</string>
 </resources>

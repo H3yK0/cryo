@@ -539,7 +539,6 @@
     <string name="txs_tudo">Todo</string>
     <string name="txs_buscar">Buscar</string>
     <string name="txs_fechar_busca">Cerrar búsqueda</string>
-    <string name="txs_buscar_todos_meses">Buscar en todos los meses</string>
     <string name="txs_resultado">Resultado</string>
     <string name="txs_calendario">Calendario</string>
     <string name="txs_lista">Lista</string>
@@ -2039,4 +2038,13 @@
     <string name="import_saldo_acertado_auto">Cryo ajustó el saldo inicial de esta cuenta en %1$s, para partir del mismo punto que el banco. No se creó ningún movimiento.</string>
     <string name="import_desfazer_acerto">Deshacer el ajuste</string>
     <string name="import_saldo_antes_extrato">Saldo antes del extracto</string>
+    <!-- RF-EXT-07 (busca com período e valor) e RF-FIX-11 (conta fixa paga por fora) -->
+    <string name="txs_buscar_nome_valor">Buscar por nombre, categoría o importe</string>
+    <string name="txs_escopo_mes">Mes</string>
+    <string name="txs_escopo_ano">Año</string>
+    <string name="plan_fora_do_saldo">No cambiar el saldo de ninguna cuenta</string>
+    <string name="plan_fora_do_saldo_hint">Lo marca como hecho sin cambiar el saldo. Para lo que se pagó o recibió por fuera, con dinero que Cryo no sigue. Sigue contando en el resumen del mes.</string>
+    <!-- RF-EXT-07: setas da busca por ano -->
+    <string name="txs_ano_anterior">Año anterior</string>
+    <string name="txs_proximo_ano">Año siguiente</string>
 </resources>

@@ -539,7 +539,6 @@
     <string name="txs_tudo">सब</string>
     <string name="txs_buscar">खोजें</string>
     <string name="txs_fechar_busca">खोज बंद करें</string>
-    <string name="txs_buscar_todos_meses">सभी महीनों में खोजें</string>
     <string name="txs_resultado">नतीजा</string>
     <string name="txs_calendario">कैलेंडर</string>
     <string name="txs_lista">सूची</string>
@@ -2039,4 +2038,13 @@
     <string name="import_saldo_acertado_auto">Cryo ने इस खाते का शुरुआती शेष %1$s से ठीक किया, ताकि वह बैंक के समान बिंदु से शुरू हो। कोई एंट्री नहीं बनाई गई।</string>
     <string name="import_desfazer_acerto">समायोजन वापस लें</string>
     <string name="import_saldo_antes_extrato">स्टेटमेंट से पहले का शेष</string>
+    <!-- RF-EXT-07 (busca com período e valor) e RF-FIX-11 (conta fixa paga por fora) -->
+    <string name="txs_buscar_nome_valor">नाम, श्रेणी या राशि से खोजें</string>
+    <string name="txs_escopo_mes">महीना</string>
+    <string name="txs_escopo_ano">वर्ष</string>
+    <string name="plan_fora_do_saldo">किसी भी खाते का शेष न बदलें</string>
+    <string name="plan_fora_do_saldo_hint">शेष बदले बिना इसे पूरा दिखाता है। उसके लिए जो बाहर से चुकाया या पाया गया, ऐसे नकद से जिसे Cryo नहीं देखता। यह महीने के सार में गिना जाता रहेगा।</string>
+    <!-- RF-EXT-07: setas da busca por ano -->
+    <string name="txs_ano_anterior">पिछला वर्ष</string>
+    <string name="txs_proximo_ano">अगला वर्ष</string>
 </resources>

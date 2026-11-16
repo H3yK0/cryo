@@ -539,7 +539,6 @@
     <string name="txs_tudo">All</string>
     <string name="txs_buscar">Search</string>
     <string name="txs_fechar_busca">Close search</string>
-    <string name="txs_buscar_todos_meses">Search all months</string>
     <string name="txs_resultado">Result</string>
     <string name="txs_calendario">Calendar</string>
     <string name="txs_lista">List</string>
@@ -2039,4 +2038,13 @@
     <string name="import_saldo_acertado_auto">Cryo adjusted this account\'s opening balance by %1$s, to start from the same point as the bank. No entry was created.</string>
     <string name="import_desfazer_acerto">Undo the adjustment</string>
     <string name="import_saldo_antes_extrato">Balance before the statement</string>
+    <!-- RF-EXT-07 (busca com período e valor) e RF-FIX-11 (conta fixa paga por fora) -->
+    <string name="txs_buscar_nome_valor">Search by name, category or amount</string>
+    <string name="txs_escopo_mes">Month</string>
+    <string name="txs_escopo_ano">Year</string>
+    <string name="plan_fora_do_saldo">Do not change any account balance</string>
+    <string name="plan_fora_do_saldo_hint">Marks it as done without changing any balance. For what was paid or received outside, in cash Cryo does not track. It still counts in the month summary.</string>
+    <!-- RF-EXT-07: setas da busca por ano -->
+    <string name="txs_ano_anterior">Previous year</string>
+    <string name="txs_proximo_ano">Next year</string>
 </resources>

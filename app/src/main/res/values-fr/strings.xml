@@ -539,7 +539,6 @@
     <string name="txs_tudo">Tout</string>
     <string name="txs_buscar">Rechercher</string>
     <string name="txs_fechar_busca">Fermer la recherche</string>
-    <string name="txs_buscar_todos_meses">Rechercher dans tous les mois</string>
     <string name="txs_resultado">Résultat</string>
     <string name="txs_calendario">Calendrier</string>
     <string name="txs_lista">Liste</string>
@@ -2039,4 +2038,13 @@
     <string name="import_saldo_acertado_auto">Cryo a ajusté le solde initial de ce compte de %1$s, pour partir du même point que la banque. Aucune opération n\'a été créée.</string>
     <string name="import_desfazer_acerto">Annuler l\'ajustement</string>
     <string name="import_saldo_antes_extrato">Solde avant le relevé</string>
+    <!-- RF-EXT-07 (busca com período e valor) e RF-FIX-11 (conta fixa paga por fora) -->
+    <string name="txs_buscar_nome_valor">Rechercher par nom, catégorie ou montant</string>
+    <string name="txs_escopo_mes">Mois</string>
+    <string name="txs_escopo_ano">Année</string>
+    <string name="plan_fora_do_saldo">Ne modifier le solde d\'aucun compte</string>
+    <string name="plan_fora_do_saldo_hint">Marque comme fait sans changer le solde. Pour ce qui a été payé ou reçu en dehors, avec de l\'argent que Cryo ne suit pas. Cela compte toujours dans le résumé du mois.</string>
+    <!-- RF-EXT-07: setas da busca por ano -->
+    <string name="txs_ano_anterior">Année précédente</string>
+    <string name="txs_proximo_ano">Année suivante</string>
 </resources>
