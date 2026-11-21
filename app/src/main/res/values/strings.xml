@@ -1,7 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
     Textos do Cryo em português do Brasil: a base de todas as línguas (PRD: RF-LNG-03, TXT-09).
-    Toda chave daqui existe nas outras 9 línguas (values-en, -es, -fr, -de, -it, -ja, -ko, -zh-rCN, -hi), com os mesmos marcadores.
+    Toda chave daqui existe nas outras 13 línguas (values-en, -es, -fr, -de, -it, -ja, -ko, -zh-rCN, -hi e, desde a 1.6, -ru, -uk,
+    -ar e -iw), com os mesmos marcadores.
 -->
 <resources>
     <string name="app_name" translatable="false">Cryo</string>
@@ -57,24 +58,16 @@
     </plurals>
     <string name="home_debts">Dívidas</string>
     <string name="home_investments">Investimentos</string>
-    <string name="home_invested_today">Investido hoje</string>
     <string name="home_yield">Rendeu</string>
-    <string name="home_budgets">Orçamentos do mês</string>
     <string name="budget_left">Restam %1$s</string>
     <string name="budget_over">Passou %1$s</string>
     <string name="home_goals">Metas e caixinhas</string>
     <string name="goal_progress">%1$s de %2$s</string>
     <string name="home_recent">Últimas movimentações</string>
     <string name="home_empty_hint">Comece pelo registro rápido: toque no microfone e fale, por exemplo, “almoço 25 no débito”. O Cryo entende o valor, a categoria e a conta. Você só confere e salva.</string>
-    <string name="home_insights">O Cryo percebeu</string>
     <string name="month_in">Entrou</string>
     <string name="month_out">Saiu</string>
     <string name="month_end">Fim do mês</string>
-    <string name="month_warn_bills">Atenção: só as contas já previstas passam do que vai entrar. Veja onde cortar em Análises.</string>
-    <string name="month_red_until_end">No ritmo atual o mês fecha no vermelho. Para fechar no azul, gaste no máximo %1$s por dia até o fim do mês.</string>
-    <string name="month_red_today">No ritmo atual o mês fecha no vermelho. Para fechar no azul, gaste no máximo %1$s hoje.</string>
-    <string name="month_green_until_end">No ritmo atual vai sobrar dinheiro. Você pode gastar até %1$s por dia e ainda fechar no azul.</string>
-    <string name="month_green_today">No ritmo atual vai sobrar dinheiro. Você pode gastar até %1$s hoje e ainda fechar no azul.</string>
 
     <!-- Faturas e avisos -->
     <string name="invoice_status_open">Fatura aberta · vence %1$s</string>
@@ -136,7 +129,6 @@
     <string name="wallet_importar_extrato_desta_conta">Importar extrato desta conta</string>
     <string name="wallet_despesa">Despesa</string>
     <string name="wallet_receita">Receita</string>
-    <string name="wallet_movimentacoes">Movimentações</string>
     <string name="wallet_nada_por_aqui_ainda">Nada por aqui ainda.</string>
     <string name="wallet_editar_conta">Editar conta</string>
     <string name="wallet_nova_conta">Nova conta</string>
@@ -462,7 +454,6 @@
     <string name="plan_sugestoes_pela_sua_media">Sugestões pela sua média de gastos</string>
     <string name="plan_orcamento_salvo">Orçamento salvo</string>
     <string name="plan_orcamento_removido">Orçamento removido</string>
-    <string name="plan_passou_limite">Passou %1$s do limite</string>
     <string name="plan_novo_orcamento">Novo orçamento</string>
     <string name="plan_editar_orcamento">Editar orçamento</string>
     <string name="plan_quanto_voce_quer_gastar">Quanto você quer gastar no máximo por mês nesta categoria?</string>
@@ -598,17 +589,7 @@
     <string name="insights_previsao_fim_mes">Previsão do fim do mês</string>
     <string name="insights_devem_faltar">\u0020 devem faltar</string>
     <string name="insights_devem_sobrar">\u0020 devem sobrar</string>
-    <string name="insights_linha_cheia_que_ja">Linha cheia: o que já aconteceu. Tracejada: a previsão até o dia %1$s.</string>
     <string name="insights_como_cheguei_nesse_numero">Como cheguei nesse número</string>
-    <string name="insights_ja_entrou">Já entrou</string>
-    <string name="insights_ainda_vai_entrar_fixos">Ainda vai entrar (fixos e agendados)</string>
-    <string name="insights_ja_saiu">Já saiu</string>
-    <string name="insights_contas_fixas_pagar">Contas fixas a pagar</string>
-    <string name="insights_parcelas_agendados">Parcelas e agendados</string>
-    <string name="insights_parcelas_dividas_pagar">Parcelas de dívidas a pagar</string>
-    <string name="insights_dia_dia_dia_dias">Dia a dia (%1$s/dia × %2$s dias)</string>
-    <string name="insights_resultado_previsto">Resultado previsto</string>
-    <string name="insights_como_mes_esta_comeco">Como o mês está no começo, também usei a sua média dos últimos meses para estimar o dia a dia.</string>
 
     <!-- InsightsScreen.kt -->
     <string name="insights_sem_gastos">sem gastos</string>
@@ -684,7 +665,6 @@
     <string name="settings_cadastre_digital_rosto_ou">Cadastre uma digital, rosto ou senha de tela no Android primeiro</string>
     <string name="settings_pede_desbloqueio_ao_abrir">Pede o desbloqueio ao abrir o app</string>
     <string name="settings_lembretes">Lembretes</string>
-    <string name="settings_registro_rapido">Registro rápido</string>
     <string name="settings_conta_principal_usada_quando">Conta principal (usada quando você não diz a conta)</string>
     <string name="settings_nomes_icones_cores_palavras">Nomes, ícones, cores e palavras-chave</string>
     <string name="settings_seus_dados">Seus dados</string>
@@ -930,7 +910,6 @@
     <string name="common_retirado_meta">Retirado de meta</string>
     <string name="common_emprestimo_recebido">Empréstimo recebido</string>
     <string name="common_parcela">parcela %1$s/%2$s</string>
-    <string name="common_cartao">%1$s → cartão %2$s</string>
     <string name="common_conta_fixa">conta fixa</string>
     <string name="common_agendado">\u0020· agendado</string>
     <string name="common_mes_anterior">Mês anterior</string>
@@ -943,7 +922,6 @@
     <string name="input_aumentar">Aumentar %1$s</string>
 
     <!-- Charts.kt -->
-    <string name="chart_grafico_previsao_mes_hoje">Gráfico da previsão do mês. Hoje o resultado é %1$s. Previsão para o fim do mês: %2$s.</string>
     <string name="chart_fim_mes">Fim do mês: %1$s</string>
     <string name="chart_entrou_saiu">%1$s: entrou %2$s, saiu %3$s</string>
     <string name="chart_dia_sem_gastos">Dia %1$s: sem gastos</string>
@@ -1557,18 +1535,11 @@
     <string name="engine_advice_reserve">O ideal é ter 6 meses de gastos guardados em algo que dá para usar logo.</string>
     <string name="engine_advice_savings">Tente guardar 20% do que entra: separe um valor logo que receber.</string>
     <string name="engine_advice_stability">Orçamentos por categoria ajudam a deixar um mês parecido com o outro.</string>
-    <string name="engine_anomalies_title">Fora do padrão</string>
-    <string name="engine_anomaly_category">Acima de todos os meses anteriores (o normal é %1$s)</string>
-    <string name="engine_anomaly_duplicate">Mesmo valor duas vezes em até 2 dias: confira</string>
-    <string name="engine_anomaly_outlier">Bem acima do normal nesta categoria (%1$s)</string>
-    <string name="engine_anomaly_price_up">Ficou mais cara (antes: %1$s)</string>
     <string name="engine_between">Entre %1$s e %2$s</string>
     <string name="engine_between_80">Entre %1$s e %2$s, em 8 de cada 10 cenários</string>
     <string name="engine_bill_created">Conta fixa criada</string>
     <string name="engine_chance_negative">Chance de o saldo ficar negativo em algum dia: %1$s</string>
     <string name="engine_dismissed">Escondida das recorrências</string>
-    <string name="engine_forecast_how">O motor do Cryo simulou %1$s jeitos de o mês terminar, a partir de %2$d dias do seu histórico.</string>
-    <string name="engine_forecast_low">Ainda há pouco histórico: a faixa fica mais larga até o Cryo conhecer você melhor.</string>
     <string name="engine_goal_chance">%1$s de chance no prazo</string>
     <string name="engine_goal_eta">No ritmo de %1$s por mês, chega lá em %2$s</string>
     <string name="engine_health_how">Como a nota é calculada: 6 partes com pesos fixos (sobra do mês 25, reserva 25, parcelas e dívidas 20, cartão 10, contas em dia 10, estabilidade 10), com os seus últimos %1$d meses completos.</string>
@@ -1587,16 +1558,11 @@
     <string name="engine_level_building">Em construção</string>
     <string name="engine_level_good">Bem</string>
     <string name="engine_level_great">Ótima</string>
-    <string name="engine_line_expected_expense">Ainda deve sair (assinaturas e o que se repete)</string>
-    <string name="engine_line_expected_income">Ainda deve entrar (salário e o que se repete)</string>
-    <string name="engine_line_most_likely">Resultado mais provável</string>
     <string name="engine_make_bill">Virar conta fixa</string>
-    <string name="engine_month_band">Fim do mês entre %1$s e %2$s</string>
     <string name="engine_months_12">12 meses</string>
     <string name="engine_months_3">3 meses</string>
     <string name="engine_months_6">6 meses</string>
     <string name="engine_not_recurring">Não é recorrente</string>
-    <string name="engine_pace_row">No ritmo atual, passa do limite por volta do dia %1$d</string>
     <string name="engine_part_card">Cartão de crédito</string>
     <string name="engine_part_commitments">Parcelas e dívidas</string>
     <string name="engine_part_on_time">Contas em dia</string>
@@ -1654,7 +1620,6 @@
     <string name="engine_return_wait">Com 30 dias de histórico, o Cryo calcula quanto rende ao ano.</string>
     <string name="engine_return_year">Rende %1$s ao ano</string>
     <string name="engine_save">Salvar</string>
-    <string name="engine_see_all">Ver tudo</string>
     <string name="engine_tightest_day">Dia mais apertado: %1$s, com %2$s</string>
     <string name="engine_value_card">%1$s do limite usado</string>
     <string name="engine_value_commitments">%1$s da renda vai para parcelas</string>
@@ -1943,8 +1908,6 @@
     <string name="dev_voice_flash_desc" formatted="false">No computador deixou o resultado ~20% mais rápido, com o mesmo texto. O tempo aparece na tela de voz. Desligue se a voz travar ou errar.</string>
     <string name="sec_protection_unavailable">A proteção com senha está ligada, mas o cofre deste celular não abriu a chave. Nada foi gravado sem senha. Em Ajustes, desligue e ligue de novo a proteção dos backups.</string>
     <!-- 1.8: o previsor nas telas (RF-PRV-08) -->
-    <string name="prv_checked">Conferida no seu passado: acertou em %1$d de %2$d meses (erro típico de %3$s)</string>
-    <string name="prv_models">O que mais pesou na conta: %1$s</string>
     <string name="prv_model_profile">o jeito de cada dia da semana</string>
     <string name="prv_model_pace91">a média dos últimos 3 meses</string>
     <string name="prv_model_pace182">a média dos últimos 6 meses</string>
@@ -1952,10 +1915,6 @@
     <string name="prv_model_phase_level">este trecho do mês, no ritmo de agora</string>
     <string name="prv_model_holt">a tendência das últimas semanas</string>
     <string name="prv_model_theta">as semanas, sem os altos e baixos</string>
-    <string name="prv_season_up">Nesta época do ano você costuma gastar %1$s a mais, e a previsão já conta com isso.</string>
-    <string name="prv_season_down">Nesta época do ano você costuma gastar %1$s a menos, e a previsão já conta com isso.</string>
-    <string name="prv_cat_close">Deve fechar o mês perto de %1$s · %2$s de chance de passar do limite</string>
-    <string name="prv_cat_close_ok">Deve fechar o mês perto de %1$s, dentro do limite</string>
     <string name="prv_inv_title">Se continuar como foi</string>
     <string name="prv_inv_wait">Depois de 6 atualizações do valor (uma por mês, em “Atualizar valor”), o Cryo mostra onde este investimento pode chegar.</string>
     <string name="prv_inv_month">O investimento em si rendeu %1$s ao mês, em média (sem contar quando você aportou)</string>
@@ -2057,7 +2016,7 @@
     <string name="lesson_debts_t">Dívidas com plano para quitar</string>
     <string name="lesson_debts_x">Empréstimos e financiamentos ficam separados do resto. O Cryo mostra os juros embutidos e a melhor ordem para quitar.</string>
     <string name="lesson_forecast_t">Como o mês deve terminar</string>
-    <string name="lesson_forecast_x">Em Análises, o Cryo mostra o resultado mais provável e a faixa em que ele deve cair, conferida nos seus meses passados.</string>
+    <string name="lesson_forecast_x">Em Análises, o Cryo mostra como o mês fecha: a renda menos as despesas, só com o que já aconteceu e o que é fixo, linha por linha.</string>
     <string name="lesson_health_t">Sua saúde financeira</string>
     <string name="lesson_health_x">Uma nota de 0 a 100 em seis partes, com o que mais pesa agora e o que fazer para melhorar.</string>
     <string name="lesson_recurring_t">O que se repete todo mês</string>
@@ -2172,4 +2131,219 @@
     <!-- RF-EXT-07: setas da busca por ano -->
     <string name="txs_ano_anterior">Ano anterior</string>
     <string name="txs_proximo_ano">Próximo ano</string>
+
+    <!-- 1.6: modelo de voz importado pela pessoa (RF-VOZ-15, ui/screens/VoiceModelUi.kt) -->
+    <string name="settings_voice_model">Modelo de voz</string>
+    <string name="voice_mb">%1$s MB</string>
+    <string name="voice_model_base">Base (5 bits)</string>
+    <string name="voice_model_base8">Base (8 bits)</string>
+    <string name="voice_model_base8_desc">Um pouco mais preciso que o Base de 5 bits, um pouco mais lento.</string>
+    <string name="voice_model_base_desc">O equilíbrio entre acerto e rapidez. O mesmo que vinha no Cryo até a 1.5.</string>
+    <string name="voice_model_checking">Conferindo o arquivo…</string>
+    <string name="voice_model_choose_title">Modelos que o Cryo aceita</string>
+    <string name="voice_model_damaged">O modelo de voz guardado deixou de bater com o original e foi tirado. Escolha o arquivo de novo.</string>
+    <string name="voice_model_download">Baixar o modelo (%1$s)</string>
+    <string name="voice_model_download_official">Baixar da origem oficial</string>
+    <string name="voice_model_from_cryo">GitHub do Cryo</string>
+    <string name="voice_model_from_hf">Hugging Face</string>
+    <string name="voice_model_incomplete">O arquivo está incompleto ou estragado. Baixe de novo e escolha outra vez.</string>
+    <string name="voice_model_installed">Instalado: %1$s · %2$s</string>
+    <string name="voice_model_license">Modelos Whisper (OpenAI) no formato do whisper.cpp, licença MIT. O Cryo só aceita o arquivo oficial: ele confere o SHA-256 de cada um.</string>
+    <string name="voice_model_needed_text">A voz do Cryo funciona sem internet, mas precisa de um arquivo de %1$s: o modelo Whisper. Baixe uma vez pelo navegador e escolha o arquivo aqui. O Cryo confere se é o arquivo certo e guarda.</string>
+    <string name="voice_model_needed_title">Baixe a voz do Cryo uma vez</string>
+    <string name="voice_model_new_16">Novidade da 1.6: o modelo de voz não vem mais dentro do app. Assim o Cryo pode entrar no F-Droid, e o app ficou bem menor.</string>
+    <string name="voice_model_no_space">Falta espaço no celular: libere %1$s e tente de novo.</string>
+    <string name="voice_model_none">Nenhum modelo instalado. Enquanto isso, a voz usa o reconhecedor do celular.</string>
+    <string name="voice_model_not_model">Este arquivo não é um dos modelos de voz que o Cryo conhece.</string>
+    <string name="voice_model_ok">Pronto: a voz do Cryo funciona sem internet.</string>
+    <string name="voice_model_pick">Já baixei: escolher o arquivo</string>
+    <string name="voice_model_recommended">Recomendado</string>
+    <string name="voice_model_remove">Remover o modelo (libera %1$s)</string>
+    <string name="voice_model_removed">Modelo de voz removido</string>
+    <string name="voice_model_small">Small (5 bits)</string>
+    <string name="voice_model_small8">Small (8 bits)</string>
+    <string name="voice_model_small8_desc">O mais preciso desta lista e o mais pesado. Para celulares muito fortes.</string>
+    <string name="voice_model_small_desc">Acerta mais, mas é bem mais lento. Para celulares fortes.</string>
+    <string name="voice_model_tiny">Tiny (5 bits)</string>
+    <string name="voice_model_tiny8">Tiny (8 bits)</string>
+    <string name="voice_model_tiny8_desc">Leve, um pouco mais preciso que o Tiny de 5 bits.</string>
+    <string name="voice_model_tiny_desc">O mais leve e o mais rápido. Erra mais nomes e valores.</string>
+    <string name="voice_model_unreadable">Não deu para ler o arquivo escolhido. Tente de novo.</string>
+    <string name="voice_model_use_phone">Agora não: usar o reconhecedor do celular</string>
+
+    <!-- 1.6: o fim do mês que fecha (RF-PRV-10, ui/screens/InsightsScreen.kt) -->
+
+    <!-- 1.6: orçamento pela renda (RF-ORC-07/08, ui/screens/BudgetIncomeScreen.kt) -->
+    <plurals name="inc_applied">
+        <item quantity="one">%1$d limite salvo</item>
+        <item quantity="other">%1$d limites salvos</item>
+    </plurals>
+    <string name="inc_apply">Usar estes limites</string>
+    <string name="inc_base">Base do orçamento</string>
+    <string name="inc_fixed">Renda fixa</string>
+    <string name="inc_fixed_costs_over">Suas contas fixas (%1$s por mês) já passam da parte do essencial (%2$s).</string>
+    <string name="inc_fixed_hint">Salário e o que entra todo mês. O Cryo achou %1$s nos seus lançamentos.</string>
+    <string name="inc_income">Sua renda por mês</string>
+    <string name="inc_intro">Conte quanto você ganha e o Cryo sugere quanto gastar em cada categoria e quanto guardar. Nada muda até você tocar em “Usar estes limites”.</string>
+    <string name="inc_limit_hint">A sugestão é só um ponto de partida: mude à vontade.</string>
+    <string name="inc_limits">Limites sugeridos por categoria</string>
+    <string name="inc_limits_none">Lance alguns gastos para o Cryo sugerir os limites de cada categoria.</string>
+    <string name="inc_need_income">Informe a sua renda para o Cryo sugerir o orçamento.</string>
+    <string name="inc_needs">Essencial</string>
+    <string name="inc_needs_short">Essencial</string>
+    <string name="inc_not_advice">São tipos de investimento, não produtos: o Cryo não indica bancos nem aplicações. Confira as condições com calma antes de investir.</string>
+    <string name="inc_reserve_done">A reserva de emergência já está completa (%1$s): agora a parte de guardar vai para objetivos e longo prazo.</string>
+    <plurals name="inc_reserve_progress">
+        <item quantity="one">Reserva: você tem %1$s de %2$s (6 meses do essencial). Guardando a parte dela, fica completa em %3$d mês.</item>
+        <item quantity="other">Reserva: você tem %1$s de %2$s (6 meses do essencial). Guardando a parte dela, fica completa em %3$d meses.</item>
+    </plurals>
+    <string name="inc_reset">Usar o que o Cryo achou</string>
+    <string name="inc_save_goals">Objetivos com prazo</string>
+    <string name="inc_save_goals_desc">Para o que você quer em 1 a 5 anos: renda fixa com vencimento perto da data.</string>
+    <string name="inc_save_long">Longo prazo</string>
+    <string name="inc_save_long_desc">Para mais de 5 anos: pode incluir renda variável, como fundos de índice e ações, que sobem e descem.</string>
+    <string name="inc_save_pct">Guardar e investir · %1$d%%</string>
+    <string name="inc_save_reserve">Reserva de emergência</string>
+    <string name="inc_save_reserve_desc">Dinheiro para imprevistos, numa aplicação de baixo risco que você pode resgatar no mesmo dia.</string>
+    <string name="inc_saving">Para guardar e investir: %1$s por mês</string>
+    <string name="inc_split">Como dividir</string>
+    <string name="inc_split_hint">O ponto de partida é a regra 50/30/20: metade para o essencial, 30% para o estilo de vida e 20% para guardar. Ajuste do seu jeito.</string>
+    <string name="inc_split_reset">Voltar para 50/30/20</string>
+    <string name="inc_title">Orçamento pela renda</string>
+    <string name="inc_today_you_spend">Hoje você costuma gastar %1$s</string>
+    <string name="inc_typical">Você costuma gastar %1$s por mês</string>
+    <string name="inc_use_variable">Contar a renda variável</string>
+    <string name="inc_variable">Renda variável que entra no orçamento</string>
+    <string name="inc_variable_none">O Cryo ainda não viu renda variável nos últimos meses.</string>
+    <string name="inc_variable_range">Nos últimos meses ela foi de %1$s a %2$s (média %3$s).</string>
+    <string name="inc_variable_warning">Ela muda de um mês para o outro: o Cryo sugere contar o mês mais fraco. Se num mês ela vier menor, o orçamento aperta.</string>
+    <string name="inc_wants">Estilo de vida</string>
+    <string name="inc_wants_short">Estilo de vida</string>
+    <string name="plan_by_income_title">Planejar pela renda</string>
+    <string name="date_last">Último: %1$s</string>
+    <string name="acc_balance_after">Saldo: %1$s</string>
+    <string name="txs_todas_contas">Todas as contas</string>
+    <string name="txs_ver_extrato_de">Ver o Extrato de</string>
+    <string name="txs_cartoes">Cartões</string>
+    <string name="txs_mostrar_todas_contas">Mostrar todas as contas</string>
+    <string name="acc_fim_do_dia">Fim do dia: %1$s</string>
+    <string name="acc_extrato">Extrato da conta</string>
+    <string name="bill_skip">Pular este mês</string>
+    <string name="bill_skipped_msg">%1$s fica de fora em %2$s</string>
+    <string name="bill_unskip">Voltar a contar</string>
+    <string name="bill_adjust">Ajustar</string>
+    <string name="txs_previstas">Previstas</string>
+    <string name="txs_previstas_titulo">Contas fixas ainda em aberto neste mês</string>
+    <string name="txs_previstas_pagar">A pagar: %1$s</string>
+    <string name="txs_previstas_receber">A receber: %1$s</string>
+    <string name="txs_previstas_nenhuma">Nenhuma conta fixa em aberto neste mês.</string>
+    <string name="txs_previstas_hint">São as mesmas que entram no fim do mês previsto.</string>
+    <string name="home_health_cd">Saúde financeira: %1$d de 100, %2$s. Toque para ver os detalhes.</string>
+    <string name="bb_raise">Suas contas fixas de %1$s somam %2$s por mês e o orçamento é %3$s.</string>
+    <string name="bb_create">Suas contas fixas de %1$s somam %2$s por mês, e a categoria ainda não tem orçamento.</string>
+    <string name="bb_month_only">Em %1$s vence %2$s: o limite daquele mês precisa de mais %3$s.</string>
+    <string name="bb_apply_raise">Ajustar para %1$s</string>
+    <string name="bb_apply_create">Criar orçamento de %1$s</string>
+    <string name="bb_apply_months">Ajustar só nesses meses</string>
+    <string name="bb_not_now">Agora não</string>
+    <string name="bb_see_bills">Ver as contas fixas</string>
+    <string name="bb_done">Orçamento de %1$s ajustado às contas fixas</string>
+    <string name="bb_sheet_title">Contas fixas de %1$s</string>
+    <string name="bb_sheet_text">Se alguma não é desta categoria, troque aqui. Você também pode criar uma categoria nova.</string>
+    <string name="bb_change_category">Trocar categoria</string>
+    <string name="bb_pick_category">Para qual categoria?</string>
+    <string name="bb_new_category">Criar uma categoria nova</string>
+    <string name="bb_moved">%1$s agora é de %2$s</string>
+    <string name="yr_title">Como vou fechar o ano?</string>
+    <string name="yr_see_all">Ver o período todo</string>
+    <string name="yr_signals">O que pede atenção</string>
+    <string name="yr_sig_negative">A conta pode ficar negativa</string>
+    <string name="yr_sig_tightest">O dia mais apertado</string>
+    <string name="yr_sig_bill">%1$s vence</string>
+    <string name="yr_chart_cd">Gráfico do saldo previsto até %1$s. No fim: %2$s. Menor saldo: %3$s em %4$s.</string>
+    <string name="yr_how">O saldo mais provável, com a faixa de 8 em cada 10 cenários: contas fixas, faturas, parcelas, dívidas, orçamentos e o ritmo do dia a dia. Arraste e aproxime com os dedos.</string>
+    <string name="gf_top">As metas pedem %1$s por mês; no ritmo de agora, devem sobrar %2$s por mês.</string>
+    <string name="gf_on_time">No prazo: chega lá em %1$s.</string>
+    <plurals name="gf_late">
+        <item quantity="one">No ritmo, chega em %1$s, %2$d mês depois do prazo.</item>
+        <item quantity="other">No ritmo, chega em %1$s, %2$d meses depois do prazo.</item>
+    </plurals>
+    <string name="gf_short">Faltariam %1$s por mês para chegar no prazo.</string>
+    <string name="gf_no_room">No ritmo de agora, não sobra para ela.</string>
+    <string name="gf_no_deadline">Sem prazo: chega lá em %1$s.</string>
+    <string name="gf_done">Meta completa.</string>
+    <string name="gf_how">A sobra vem da previsão do ano e vai primeiro para as metas de prazo mais perto.</string>
+    <string name="common_expanded">Aberto</string>
+    <string name="common_collapsed">Fechado</string>
+    <string name="inbox_dismiss">Dispensar</string>
+    <string name="inbox_title">Avisos</string>
+    <string name="inbox_open">Abrir os avisos</string>
+    <string name="inbox_open_count">Abrir os avisos: %1$s novos</string>
+    <string name="inbox_group_attention">Precisa de atenção</string>
+    <string name="inbox_group_soon">Nos próximos dias</string>
+    <string name="inbox_group_insights">O Cryo percebeu</string>
+    <string name="inbox_empty_title">Tudo em dia</string>
+    <string name="inbox_empty_text">Quando algo pedir sua atenção (uma conta vencendo, um orçamento no limite), aparece aqui.</string>
+    <string name="inbox_month_negative">Pelo que já é certo, o mês fecha negativo: %1$s</string>
+    <string name="inbox_recurring">O que se repete todo mês: veja e transforme em conta fixa com um toque</string>
+    <string name="home_month_left">Sobram %1$s até o fim do mês: %2$s por dia.</string>
+    <string name="home_month_short">Pelo que já é certo, faltam %1$s no fim do mês.</string>
+    <string name="home_month_even">O mês fecha no zero pelo que já é certo.</string>
+    <string name="home_tile_accounts_sub">%1$s · outras: %2$d</string>
+    <string name="home_tile_debt_next">Próxima: %1$s, %2$s</string>
+    <string name="home_tile_yield">Rendeu %1$s</string>
+    <string name="home_tile_budget_general">de %1$s no Geral</string>
+    <string name="home_tile_budget_used">Usado: %1$s</string>
+    <string name="home_tile_goals_sub">Metas ativas: %1$d</string>
+    <string name="home_budgets_short">Orçamentos</string>
+    <string name="home_goals_short">Metas</string>
+    <string name="insights_end_income">Renda</string>
+    <string name="insights_end_expenses">Despesas</string>
+    <string name="insights_end_note">Só o que já aconteceu e o que é fixo, nada estimado. Conforme as despesas entram, o número cai.</string>
+    <string name="end_in_fixed">Renda fixa</string>
+    <string name="end_in_other">Outras entradas</string>
+    <string name="end_out_bills">Contas fixas</string>
+    <string name="end_out_goals">Metas e investimentos</string>
+    <string name="end_out_debts">Dívidas e parcelas</string>
+    <string name="end_out_variable">Despesas variáveis</string>
+    <string name="end_out_scheduled">Saídas agendadas</string>
+    <string name="end_pending_in">Ainda vem: %1$s</string>
+    <string name="end_pending_out">Falta pagar: %1$s</string>
+    <string name="end_pending_save">Falta guardar: %1$s</string>
+    <string name="insights_flow_drawing">Ver o caminho do dinheiro</string>
+    <string name="insights_cats_all">Ver todas as categorias</string>
+    <string name="settings_group_entries">Lançamentos</string>
+    <string name="settings_main_account">Conta principal</string>
+    <string name="settings_main_account_none">Nenhuma: você escolhe ao lançar</string>
+    <string name="settings_group_voice">Voz</string>
+    <string name="settings_voice_sub_whisper">Whisper · %1$s</string>
+    <string name="settings_voice_sub_whisper_none">Whisper · falta o modelo de voz</string>
+    <string name="settings_voice_sub_unsupported">Este celular não roda o Whisper</string>
+    <string name="settings_data_where">Onde ficam seus dados</string>
+    <string name="budget_general">Geral</string>
+    <string name="budget_general_title">Orçamento Geral</string>
+    <string name="budget_general_hint">Quanto você pode gastar da sua renda no mês. Os orçamentos das categorias seguem ele.</string>
+    <string name="budget_general_suggest">Sugestão pela sua renda fixa: %1$s</string>
+    <string name="budget_general_set">Definir o Geral</string>
+    <string name="budget_general_per_day">Dá %1$s por dia até o fim do mês</string>
+    <string name="budget_general_divided">Dividido entre as categorias: %1$s de %2$s</string>
+    <string name="budget_general_over_divided">As categorias somam %1$s, mais que o Geral</string>
+    <string name="budget_general_use">Usar a sugestão: %1$s</string>
+    <string name="budget_general_how">A sugestão é a renda fixa do mês menos o que vai para as metas neste mês.</string>
+    <string name="budget_by_category">Por categoria</string>
+    <string name="plan_by_income_short">Limites e quanto guardar</string>
+    <string name="budget_panel_short">Remanejar só neste mês</string>
+    <string name="bb_group_title">Sugestões das contas fixas: %1$d</string>
+    <string name="budget_tile_close">Fecha o mês perto de %1$s</string>
+    <string name="budget_tile_risk">Chance de passar: %1$s</string>
+    <string name="budget_tile_pace">No ritmo, passa no dia %1$d</string>
+    <string name="bills_paid">Pagas</string>
+    <string name="bills_total">Total do mês</string>
+    <string name="bills_paid_group">Já pagas: %1$d</string>
+    <string name="bills_received_group">Já recebidas: %1$d</string>
+    <string name="bills_debts_paid_group">Parcelas pagas: %1$d</string>
+    <string name="bills_skipped_group">Puladas neste mês: %1$d</string>
+    <string name="bills_recurring_sub">Assinaturas e contas que o Cryo achou sozinho</string>
+    <string name="goal_tile_of">de %1$s</string>
+    <string name="goal_sheet_progress">%1$s de %2$s guardados</string>
 </resources>

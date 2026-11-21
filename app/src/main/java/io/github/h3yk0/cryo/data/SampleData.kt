@@ -36,6 +36,8 @@ object SampleData {
     private val SCALE = mapOf(
         "MXN" to 4, "UYU" to 8, "CNY" to 2, "HKD" to 2, "TWD" to 8, "INR" to 20, "JPY" to 50, "KRW" to 600,
         "ARS" to 300, "CLP" to 200, "COP" to 1000,
+        // 1.6 (RF-LNG-11): rublo, grívnia, shekel e as moedas árabes.
+        "RUB" to 20, "UAH" to 5, "ILS" to 3, "SAR" to 3, "AED" to 3, "EGP" to 3,
     )
 
     /** Um valor dos exemplos (pensado em reais) na moeda do app. Em moedas sem centavos, arredonda para a unidade. */
@@ -125,6 +127,8 @@ object SampleData {
         r.saveBudget(cat(Res.s(R.string.cat_cart_name)), m(80000))
         r.saveBudget(cat(Res.s(R.string.cat_car_name)), m(30000))
         r.saveBudget(cat(Res.s(R.string.cat_movie_name)), m(20000))
+        // RF-ORC-10 (1.6): o Geral, o quanto se pode gastar da renda no mês (as categorias somam menos que ele).
+        r.saveBudget(io.github.h3yk0.cryo.domain.GeneralBudget.ID, m(350000))
 
         // paga as faturas que já venceram
         val l = Ledger(r.loadOnce(), today)

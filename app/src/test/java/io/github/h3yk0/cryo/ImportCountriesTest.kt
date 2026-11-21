@@ -250,4 +250,87 @@ class ImportCountriesTest {
         assertEquals(1L, rows2[0].categoryId)
         assertEquals(RowFlag.INVOICE_PAYMENT, rows2[1].flag)
     }
+
+    /* ---------------- 1.6 (RF-LNG-11): Rússia, Ucrânia, países árabes e Israel ---------------- */
+
+    /** Rússia: arquivo em windows-1251, milhar com espaço e duas colunas de valor (vale a da moeda do cartão). */
+    @Test fun russiaEmWindows1251ComValorNaMoedaDoCartao() {
+        app(AppLanguage.RU, Locale.forLanguageTag("ru-RU"), "RUB")
+        val st = read(
+            "Дата операции;Описание;Сумма операции;Сумма в валюте карты\n" +
+                "30.09.2026;ПЯТЕРОЧКА 1234;-1 234,56;-1 234,56\n" +
+                "01.10.2026;AMAZON.COM (USD);-10,00;-950,00\n" +
+                "02.10.2026;Зарплата за сентябрь;80 000,00;80 000,00\n",
+            Charset.forName("windows-1251"),
+        )
+        assertEquals(listOf(LocalDate.of(2026, 9, 30), LocalDate.of(2026, 10, 1), LocalDate.of(2026, 10, 2)), st.lines.map { it.date })
+        assertEquals(listOf(-123_456L, -95_000L, 8_000_000L), st.lines.map { it.amount })
+    }
+
+    /** Ucrânia: colunas em ucraniano, gastos e entradas separados, vírgula decimal. */
+    @Test fun ucraniaComDebitoECreditoSeparados() {
+        app(AppLanguage.UK, Locale.forLanguageTag("uk-UA"), "UAH")
+        val st = read(
+            "Дата операції;Опис операції;Списання;Зарахування;Залишок\n" +
+                "30.09.2026;АТБ-маркет;245,50;;9 754,50\n" +
+                "01.10.2026;Зарплата;;30 000,00;39 754,50\n",
+            Charset.forName("windows-1251"),
+        )
+        assertEquals(listOf(-24_550L, 3_000_000L), st.lines.map { it.amount })
+        assertEquals(LocalDate.of(2026, 10, 1), st.lines[1].date)
+    }
+
+    /**
+     * Arábia Saudita: em UTF-8, algarismos arábico-índicos (٠–٩) e os separadores ٫ e ٬; em windows-1256 (que não tem
+     * esses algarismos), os 0–9 de sempre.
+     */
+    @Test fun arabiaSauditaComAlgarismosArabes() {
+        app(AppLanguage.AR, Locale.forLanguageTag("ar-SA-u-nu-latn"), "SAR")
+        val st = read(
+            "التاريخ,الوصف,مدين,دائن,الرصيد\n" +
+                "٣٠/٠٩/٢٠٢٦,سوبرماركت الدانوب,١٥٠٫٧٥,,٢٬٣٤٩٫٢٥\n" +
+                "٠١/١٠/٢٠٢٦,راتب شهر أكتوبر,,١٠٬٠٠٠٫٠٠,١٢٬٣٤٩٫٢٥\n",
+        )
+        assertEquals(listOf(LocalDate.of(2026, 9, 30), LocalDate.of(2026, 10, 1)), st.lines.map { it.date })
+        assertEquals(listOf(-15_075L, 1_000_000L), st.lines.map { it.amount })
+        val legacy = read(
+            "التاريخ,الوصف,المبلغ\n30/09/2026,سوبرماركت الدانوب,-150.75\n01/10/2026,راتب,10000.00\n",
+            Charset.forName("windows-1256"),
+        )
+        assertEquals(listOf(-15_075L, 1_000_000L), legacy.lines.map { it.amount })
+        assertEquals("سوبرماركت الدانوب", legacy.lines[0].description)
+    }
+
+    /**
+     * Israel: windows-1255, marcas invisíveis de direção (\u200F) em volta do valor, e a compra em dólar com o valor
+     * cobrado em shekels na coluna "סכום חיוב" (vale a cobrada).
+     */
+    @Test fun israelEmWindows1255ComMarcasDeDirecao() {
+        app(AppLanguage.HE, Locale.forLanguageTag("he-IL"), "ILS")
+        val st = read(
+            "תאריך עסקה,שם בית העסק,סכום העסקה,סכום חיוב\n" +
+                "30/09/2026,שופרסל דיל,\u200F-120.50 ₪,\u200F-120.50 ₪\n" +
+                "01/10/2026,NETFLIX.COM,-10.00 $,\u200F-37.20 ₪\n",
+            Charset.forName("windows-1255"),
+        )
+        assertEquals(listOf(-12_050L, -3_720L), st.lines.map { it.amount })
+        assertEquals(LocalDate.of(2026, 9, 30), st.lines[0].date)
+    }
+
+    @Test fun datasEValoresDasLinguasNovas() {
+        assertEquals(LocalDate.of(2026, 9, 15), Values.date("15 сентября 2026 г."))
+        assertEquals(LocalDate.of(2026, 9, 15), Values.date("15 сент. 2026"))
+        assertEquals(LocalDate.of(2026, 9, 15), Values.date("15 вересня 2026 р."))
+        assertEquals(LocalDate.of(2026, 9, 15), Values.date("15 سبتمبر 2026"))
+        assertEquals(LocalDate.of(2026, 9, 15), Values.date("15 בספטמבר 2026"))
+        app(AppLanguage.RU, Locale.forLanguageTag("ru-RU"), "RUB")
+        assertEquals(123_456L, Values.amount("1 234,56 ₽"))
+        assertEquals(123_456L, Values.amount("1 234,56 руб."))
+        app(AppLanguage.UK, Locale.forLanguageTag("uk-UA"), "UAH")
+        assertEquals(-24_550L, Values.amount("-245,50 грн"))
+        app(AppLanguage.AR, Locale.forLanguageTag("ar-SA-u-nu-latn"), "SAR")
+        assertEquals(234_925L, Values.amount("٢٬٣٤٩٫٢٥ ر.س"))
+        app(AppLanguage.HE, Locale.forLanguageTag("he-IL"), "ILS")
+        assertEquals(12_050L, Values.amount("\u200F₪ 120.50"))
+    }
 }

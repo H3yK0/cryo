@@ -192,7 +192,11 @@ fun Ledger.lastMonths(n: Int = 6, end: YearMonth = today.ym()): List<MonthBar> =
 
 /* ===================== Percepções automáticas ===================== */
 
-data class Insight(val text: String, val positive: Boolean?)
+/**
+ * [topic] marca as percepções que repetem um aviso (conta vencida, orçamento estourado): a central de avisos (RF-INI-19) já
+ * mostra esses avisos no grupo deles e deixa a percepção de fora para não dizer a mesma coisa duas vezes.
+ */
+data class Insight(val text: String, val positive: Boolean?, val topic: String? = null)
 
 /** Frases curtas que o app "percebe" sozinho, comparando com o mesmo período do mês anterior. */
 fun Ledger.insights(): List<Insight> {
@@ -230,16 +234,16 @@ fun Ledger.insights(): List<Insight> {
     }
 
     budgetUsages(ym).firstOrNull { it.ratio >= 1f }?.let {
-        out += Insight(Res.s(R.string.analytics_orcamento_ja_passou_limite, it.category.name, Money.format(-it.remaining)), false)
+        out += Insight(Res.s(R.string.analytics_orcamento_ja_passou_limite, it.category.name, Money.format(-it.remaining)), false, "alert:budget:${it.category.id}")
     }
     val overdue = billStatuses(ym).count { it.state == BillState.OVERDUE }
-    if (overdue > 0) out += Insight(Res.p(R.plurals.insight_bills_overdue, overdue, overdue), false)
+    if (overdue > 0) out += Insight(Res.p(R.plurals.insight_bills_overdue, overdue, overdue), false, "alert:bills")
 
     val debts = debtOverview
     if (debts.overdueCount > 0) {
         out += Insight(
             Res.p(R.plurals.insight_debts_overdue, debts.overdueCount, debts.overdueCount),
-            false,
+            false, "alert:debts",
         )
     }
     activeDebts.map { debtInfo(it) }

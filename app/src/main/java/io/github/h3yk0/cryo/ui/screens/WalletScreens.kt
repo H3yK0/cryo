@@ -2,6 +2,16 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.domain.AccountStatement
+import io.github.h3yk0.cryo.domain.TxSearch
+import io.github.h3yk0.cryo.domain.ymOf
+import io.github.h3yk0.cryo.domain.key
+import io.github.h3yk0.cryo.domain.ym
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material.icons.rounded.Search
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
 import io.github.h3yk0.cryo.ui.components.FlatItem
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.runtime.collectAsState
@@ -52,7 +62,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -127,6 +136,7 @@ import java.time.LocalDate
 import java.time.YearMonth
 import io.github.h3yk0.cryo.ui.components.BottomBarSurface
 import io.github.h3yk0.cryo.ui.components.CryoButton
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /* =============================== Carteira =============================== */
 
@@ -457,7 +467,7 @@ fun MoneyActionSheet(
     var acc by remember { mutableStateOf(initialAccount ?: l.activeAccounts.firstOrNull()?.id) }
     var date by remember { mutableStateOf(l.today) }
     var off by remember { mutableStateOf(false) }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(
             Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp),
         ) {
@@ -498,10 +508,34 @@ fun AccountDetailScreen(id: Long) {
     val l = rememberLedger() ?: return LoadingBox()
     val nav = LocalNav.current
     val a = l.account[id] ?: return LoadingBox()
-    val list = remember(l) { l.s.txs.filter { it.accountId == id || it.toAccountId == id }.take(200) }
+    // RF-CON-08 (1.6, LA2): o extrato da conta, como o do banco: por mês, agrupado por dia, com o saldo depois de cada
+    // lançamento e o saldo no fim de cada dia.
+    var ymKey by rememberSaveable { mutableStateOf(l.today.ym().key()) }
+    val ym = ymOf(ymKey)
+    var filter by rememberSaveable { mutableStateOf(0) }
+    var searching by rememberSaveable { mutableStateOf(false) }
+    var query by rememberSaveable { mutableStateOf("") }
+    val days = remember(l, ymKey) { AccountStatement.month(l, id, ym) }
+    val shown = remember(days, filter, query) {
+        days.map { d ->
+            d.copy(lines = d.lines.filter { line ->
+                val t = line.tx
+                val okType = when (filter) {
+                    1 -> t.type == TxType.EXPENSE
+                    2 -> t.type == TxType.INCOME
+                    3 -> t.type != TxType.EXPENSE && t.type != TxType.INCOME
+                    else -> true
+                }
+                okType && TxSearch.matches(t, query, t.categoryId?.let { l.category[it]?.name })
+            })
+        }.filter { it.lines.isNotEmpty() }
+    }
     Scaffold(
         topBar = {
             CryoTopBar(a.name, onBack = nav::back, actions = {
+                IconButton(onClick = { searching = !searching; if (!searching) query = "" }) {
+                    Icon(if (searching) Icons.Rounded.Close else Icons.Rounded.Search, if (searching) Res.s(R.string.txs_fechar_busca) else Res.s(R.string.txs_buscar))
+                }
                 IconButton(onClick = { nav.go(Routes.import(account = id)) }) { Icon(Icons.Rounded.UploadFile, Res.s(R.string.wallet_importar_extrato_desta_conta)) }
                 IconButton(onClick = { nav.go(Routes.accountEdit(id)) }) { Icon(Icons.Rounded.Edit, Res.s(R.string.wallet_editar_conta)) }
             })
@@ -527,10 +561,72 @@ fun AccountDetailScreen(id: Long) {
                     Modifier.padding(vertical = 12.dp),
                 )
             }
-            item { SectionTitle(Res.s(R.string.wallet_movimentacoes), Modifier.padding(horizontal = 16.dp)) }
-            if (list.isEmpty()) item { Text(Res.s(R.string.wallet_nada_por_aqui_ainda), Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-            itemsIndexed(list, key = { _, t -> t.id }) { i, t -> TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, showDate = true, modifier = Modifier.groupedRow(i, list.size)) }
+            item { SectionTitle(Res.s(R.string.acc_extrato), Modifier.padding(horizontal = 16.dp)) }
+            if (searching) {
+                item {
+                    OutlinedTextField(
+                        value = query, onValueChange = { query = it }, singleLine = true,
+                        label = { Text(Res.s(R.string.txs_buscar_nome_valor)) },
+                        leadingIcon = { Icon(Icons.Rounded.Search, null) },
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp),
+                    )
+                }
+            }
+            item {
+                MonthSelector(
+                    Dates.monthYear(ym, l.today),
+                    onPrev = { ymKey = ym.minusMonths(1).key() }, onNext = { ymKey = ym.plusMonths(1).key() },
+                    modifier = Modifier.padding(horizontal = 8.dp),
+                )
+            }
+            item {
+                Row(
+                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                ) {
+                    listOf(R.string.txs_tudo, R.string.txs_saidas, R.string.txs_entradas, R.string.txs_transferencias_outros).forEachIndexed { i, res ->
+                        FilterChip(selected = filter == i, onClick = { filter = i }, label = { Text(Res.s(res)) })
+                    }
+                }
+            }
+            if (shown.isEmpty()) {
+                item {
+                    Text(
+                        if (query.isNotBlank()) Res.s(R.string.txs_nada_encontrado) else Res.s(R.string.wallet_nada_por_aqui_ainda),
+                        Modifier.padding(horizontal = 20.dp, vertical = 12.dp), color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            shown.forEach { day ->
+                item(key = "d${day.date}") { AccountDayHeader(day, l) }
+                itemsIndexed(day.lines, key = { _, line -> line.tx.id }) { i, line ->
+                    TxRow(
+                        line.tx, l, onClick = { nav.go(Routes.txEdit(line.tx.id)) }, showSource = false,
+                        balanceAfter = line.balanceAfter, modifier = Modifier.groupedRow(i, day.lines.size),
+                    )
+                }
+            }
         }
+    }
+}
+
+/** RF-CON-08: o dia e o saldo da conta no fim dele (previsto, num dia que ainda não chegou). */
+@Composable
+private fun AccountDayHeader(day: AccountStatement.Day, l: Ledger) {
+    val hide = LocalSettings.current.hideValues
+    Row(
+        Modifier.fillMaxWidth().padding(start = 20.dp, end = 16.dp, top = 16.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            Dates.dayHeader(day.date, l.today), style = MaterialTheme.typography.labelLarge,
+            color = MaterialTheme.colorScheme.primary, modifier = Modifier.weight(1f).semantics { heading() },
+        )
+        Text(
+            Res.s(R.string.acc_fim_do_dia, if (hide) Money.HIDDEN else Money.format(day.endBalance)),
+            style = MaterialTheme.typography.labelLarge,
+            color = if (day.endBalance < 0) CryoTheme.colors.expense else MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 
@@ -727,10 +823,10 @@ fun CardDetailScreen(id: Long) {
             item {
                 // RF-CAR-07 e RF-CAR-11: além da compra, o estorno (crédito na fatura) e o acerto do total com o do banco.
                 FlowRow(Modifier.padding(horizontal = 16.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilledTonalButton(onClick = { nav.go(Routes.txNew(TxType.EXPENSE, card = id)) }) {
+                    FilledTonalButton(onClick = { nav.go(Routes.txNew(TxType.EXPENSE, card = id, invoice = ymKey)) }) {
                         Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.wallet_nova_compra))
                     }
-                    OutlinedButton(onClick = { nav.go(Routes.txNew(TxType.INCOME, card = id)) }) { Text(Res.s(R.string.card_refund)) }
+                    OutlinedButton(onClick = { nav.go(Routes.txNew(TxType.INCOME, card = id, invoice = ymKey)) }) { Text(Res.s(R.string.card_refund)) }
                     OutlinedButton(onClick = { adjusting = true }) { Text(Res.s(R.string.card_adjust)) }
                 }
             }
@@ -1131,7 +1227,7 @@ private fun ReturnCard(l: Ledger, id: Long) {
     }
     if (editing) {
         var text by remember { mutableStateOf(inflation?.let { Num.decimal(it * 100, 1) } ?: "") }
-        ModalBottomSheet(onDismissRequest = { editing = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        CryoSheet(onDismissRequest = { editing = false }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
             Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
                 Text(Res.s(R.string.engine_inflation_title), style = MaterialTheme.typography.titleLarge)
                 Text(Res.s(R.string.engine_inflation_help), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))

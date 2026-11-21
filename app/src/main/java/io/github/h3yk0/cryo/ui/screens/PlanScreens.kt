@@ -2,6 +2,23 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.domain.GeneralBudget
+import io.github.h3yk0.cryo.domain.predict.MonthEnds
+import io.github.h3yk0.cryo.ui.components.Expandable
+import io.github.h3yk0.cryo.ui.components.TileRow
+import io.github.h3yk0.cryo.ui.components.TileButton
+import io.github.h3yk0.cryo.ui.components.GroupTitle
+import io.github.h3yk0.cryo.ui.components.CryoTile
+import io.github.h3yk0.cryo.ui.components.ProgressRing
+import io.github.h3yk0.cryo.ui.components.Tiles
+import androidx.compose.material.icons.rounded.Dashboard
+import androidx.compose.material.icons.rounded.Autorenew
+import androidx.compose.material.icons.rounded.Edit
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.ui.semantics.heading
+import io.github.h3yk0.cryo.domain.BudgetBills
 import io.github.h3yk0.cryo.domain.Num
 import kotlin.math.roundToInt
 import io.github.h3yk0.cryo.domain.engine.GoalOutlook
@@ -38,11 +55,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AccountBalanceWallet
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowLeft
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Archive
-import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.CheckCircle
 import androidx.compose.material.icons.rounded.EventRepeat
 import androidx.compose.material.icons.rounded.Flag
@@ -55,7 +72,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.PrimaryTabRow
@@ -82,7 +98,6 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import io.github.h3yk0.cryo.data.DefaultData
 import io.github.h3yk0.cryo.data.Palette
 import io.github.h3yk0.cryo.data.db.Bill
 import io.github.h3yk0.cryo.data.BillTemplates
@@ -111,7 +126,6 @@ import io.github.h3yk0.cryo.ui.components.AmountField
 import io.github.h3yk0.cryo.ui.components.CategoryGrid
 import io.github.h3yk0.cryo.ui.components.ColorChooser
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
-import io.github.h3yk0.cryo.ui.components.CryoCard
 import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.DatePickerDialogField
@@ -122,7 +136,6 @@ import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.MonthSelector
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.components.MoneyText
-import io.github.h3yk0.cryo.ui.components.Pill
 import io.github.h3yk0.cryo.ui.components.Segmented
 import io.github.h3yk0.cryo.ui.components.Source
 import io.github.h3yk0.cryo.ui.components.SourceChips
@@ -138,6 +151,7 @@ import java.time.temporal.ChronoUnit
 import kotlin.math.max
 import io.github.h3yk0.cryo.ui.components.CryoButton
 import io.github.h3yk0.cryo.ui.components.depthCard
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 @Composable
 fun PlanScreen(initialTab: Int) {
@@ -175,33 +189,51 @@ private fun BudgetsTab(l: Ledger) {
     val pace = engine?.pace?.associateBy { it.categoryId }.orEmpty()
     // RF-PRV-06: como cada categoria deve fechar o mês (só enquanto o mês não acabou).
     val forecasts = if (l.today.dayOfMonth < ym.lengthOfMonth()) engine?.categories?.associateBy { it.categoryId }.orEmpty() else emptyMap()
+    // RF-ORC-09 (1.6): as contas fixas que não cabem no orçamento (o "Agora não" vale até elas mudarem).
+    val bbVersion by c.budgetBillsVersion.collectAsState()
+    val billSuggestions = remember(l, bbVersion) { BudgetBills.suggestions(l, ym, c.budgetBills.dismissed()) }
+    var seeingBills by remember { mutableStateOf<BudgetBills.Suggestion?>(null) }
+
+    // RF-ORC-10: o Geral (o quanto se pode gastar da renda no mês) e a sugestão pela renda fixa (RF-PRV-10).
+    val general = GeneralBudget.usage(l, ym)
+    val generalSuggestion = remember(l) { GeneralBudget.suggestion(MonthEnds.of(l)) }
+    var editingGeneral by remember { mutableStateOf(false) }
 
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        if (usages.isNotEmpty()) {
-            item {
-                val limit = usages.sumOf { it.limit }
-                val spent = usages.sumOf { it.spent }
-                val daysLeft = ym.lengthOfMonth() - l.today.dayOfMonth + 1
-                // DS-PROF-02: o total do mês é o destaque, num cartão.
-                Column(Modifier.fillMaxWidth().padding(bottom = 6.dp).depthCard().padding(18.dp)) {
-                    Text(Res.s(R.string.plan_total_planejado, Dates.monthInSentence(ym)), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                    Row(verticalAlignment = Alignment.Bottom) {
-                        MoneyText(spent, style = MaterialTheme.typography.headlineSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                        Text(Res.s(R.string.amount_of_total, if (hide) Money.HIDDEN else Money.format(limit)), style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        item(key = "geral") { GeneralBudgetCard(general, generalSuggestion, hide) { editingGeneral = true } }
+
+        // RF-ORC-11: as sugestões das contas fixas juntas num cartão só, fechadas com setinha (DS-EXP).
+        if (billSuggestions.isNotEmpty()) {
+            item(key = "bb") {
+                FlatItem {
+                    Expandable(
+                        Res.s(R.string.bb_group_title, billSuggestions.size),
+                        summary = budgetBillText(l, billSuggestions.first(), hide),
+                    ) {
+                        billSuggestions.forEachIndexed { i, sg ->
+                            if (i > 0) HorizontalDivider(Modifier.padding(vertical = 8.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                            BudgetBillItem(
+                                l, sg, hide,
+                                onApply = { c.launch { applyBudgetBills(c, sg); c.message(Res.s(R.string.bb_done, l.category[sg.categoryId]?.name.orEmpty())) } },
+                                onNotNow = { c.budgetBills.dismiss(sg.categoryId, sg.signature); c.budgetBillsVersion.value++ },
+                                onSee = { seeingBills = sg },
+                            )
+                        }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    UsageBar(spent.toFloat() / limit.coerceAtLeast(1))
-                    Spacer(Modifier.height(6.dp))
-                    Text(
-                        if (limit - spent >= 0) Res.s(R.string.plan_restam_cerca_por_dia, if (hide) Money.HIDDEN else Money.format(limit - spent), if (hide) Money.HIDDEN else Money.format((limit - spent) / daysLeft))
-                        else Res.s(R.string.plan_voce_passou_total_planejado, if (hide) Money.HIDDEN else Money.format(spent - limit)),
-                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
-                    // RF-ORC-06: o painel geral do mês (com remanejar só neste mês).
-                    TextButton(onClick = { nav.go(Routes.BUDGET_MONTH) }, modifier = Modifier.padding(top = 4.dp)) { Text(Res.s(R.string.moment_panel)) }
                 }
             }
         }
+
+        // DS-BLOCO-02: planejar pela renda (RF-ORC-07) e o painel do mês (RF-ORC-06) como botões-bloco.
+        item(key = "acoes") {
+            TileRow(
+                first = { m -> TileButton(Res.s(R.string.plan_by_income_title), Icons.Rounded.AccountBalanceWallet, m, subtitle = Res.s(R.string.plan_by_income_short), stacked = usages.isNotEmpty()) { nav.go(Routes.BUDGET_INCOME) } },
+                second = if (usages.isEmpty()) null else { m ->
+                    TileButton(Res.s(R.string.moment_panel), Icons.Rounded.Dashboard, m, subtitle = Res.s(R.string.budget_panel_short), stacked = true) { nav.go(Routes.BUDGET_MONTH) }
+                },
+            )
+        }
+
         if (usages.isEmpty()) {
             item {
                 EmptyState(
@@ -209,19 +241,27 @@ private fun BudgetsTab(l: Ledger) {
                     Res.s(R.string.plan_cryo_avisa_quando_voce),
                 )
             }
+        } else {
+            item(key = "cat") { GroupTitle(Res.s(R.string.budget_by_category)) }
+            // RF-ORC-11: cada categoria num bloco, em duas colunas.
+            usages.chunked(2).forEachIndexed { i, row ->
+                item(key = "linha$i-" + row.joinToString("-") { it.category.id.toString() }) {
+                    TileRow(
+                        first = { m -> BudgetTile(row[0], hide, pace[row[0].category.id]?.crossDay, forecasts[row[0].category.id], m) { editing = row[0].category.id to row[0].limit } },
+                        second = row.getOrNull(1)?.let { u -> { m -> BudgetTile(u, hide, pace[u.category.id]?.crossDay, forecasts[u.category.id], m) { editing = u.category.id to u.limit } } },
+                    )
+                }
+            }
         }
-        items(usages, key = { it.category.id }) { u -> BudgetRow(u, hide, pace[u.category.id]?.crossDay, forecasts[u.category.id]) { editing = u.category.id to u.limit } }
+        // RF-ORC-03: as sugestões pela média, fechadas com setinha.
         if (suggestions.isNotEmpty()) {
-            item {
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(top = 8.dp)) {
-                        Icon(Icons.Rounded.AutoAwesome, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
-                        Spacer(Modifier.width(6.dp))
-                        Text(Res.s(R.string.plan_sugestoes_pela_sua_media), style = MaterialTheme.typography.labelLarge)
-                    }
-                    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        suggestions.forEach { (cat, v) ->
-                            AssistChip(onClick = { editing = cat.id to v }, label = { Text("${cat.name} · ${Money.format(v)}") })
+            item(key = "media") {
+                FlatItem {
+                    Expandable(Res.s(R.string.plan_sugestoes_pela_sua_media), summary = suggestions.joinToString(", ") { it.first.name }) {
+                        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            suggestions.forEach { (cat, v) ->
+                                AssistChip(onClick = { editing = cat.id to v }, label = { Text("${cat.name} · ${if (hide) Money.HIDDEN else Money.format(v)}") })
+                            }
                         }
                     }
                 }
@@ -234,6 +274,16 @@ private fun BudgetsTab(l: Ledger) {
         }
     }
 
+    if (editingGeneral) {
+        GeneralBudgetSheet(
+            initial = l.budgetOf(GeneralBudget.ID)?.limitAmount ?: generalSuggestion ?: 0L,
+            suggestion = generalSuggestion, exists = general != null,
+            onDismiss = { editingGeneral = false },
+            onSave = { v -> editingGeneral = false; c.launch { c.repo.saveBudget(GeneralBudget.ID, v); c.message(Res.s(R.string.plan_orcamento_salvo)) } },
+            onDelete = { editingGeneral = false; c.launch { c.repo.deleteBudget(GeneralBudget.ID); c.message(Res.s(R.string.plan_orcamento_removido)) } },
+        )
+    }
+    seeingBills?.let { sg -> BudgetBillsSheet(l, sg, onDismiss = { seeingBills = null }) }
     editing?.let { (catId, suggested) ->
         BudgetSheet(
             l, catId, if (catId != null) l.budgetOf(catId)?.limitAmount ?: suggested else suggested,
@@ -241,6 +291,194 @@ private fun BudgetsTab(l: Ledger) {
             onSave = { id, v -> editing = null; c.launch { c.repo.saveBudget(id, v); c.message(Res.s(R.string.plan_orcamento_salvo)) } },
             onDelete = { id -> editing = null; c.launch { c.repo.deleteBudget(id); c.message(Res.s(R.string.plan_orcamento_removido)) } },
         )
+    }
+}
+
+/* ------------------------- RF-ORC-09: orçamento × contas fixas ------------------------- */
+
+private fun bbMoney(v: Long, hide: Boolean) = if (hide) Money.HIDDEN else Money.format(v)
+
+/** A frase principal da sugestão (criar o orçamento, subir o limite ou só os meses das contas que não são mensais). */
+fun budgetBillText(l: Ledger, sg: BudgetBills.Suggestion, hide: Boolean = false): String {
+    val name = l.category[sg.categoryId]?.name.orEmpty()
+    return when {
+        sg.createsBudget -> Res.s(R.string.bb_create, name, bbMoney(sg.monthly, hide))
+        sg.raisesLimit -> Res.s(R.string.bb_raise, name, bbMoney(sg.monthly, hide), bbMoney(sg.current ?: 0L, hide))
+        else -> sg.monthOnly.first().let { m -> monthOnlyText(m, hide) }
+    }
+}
+
+private fun monthOnlyText(m: BudgetBills.MonthOnly, hide: Boolean) =
+    Res.s(R.string.bb_month_only, Dates.monthYearInSentence(m.ym), m.bills.joinToString(", ") { it.name }, bbMoney(m.delta, hide))
+
+fun budgetBillAction(sg: BudgetBills.Suggestion, hide: Boolean = false): String = when {
+    sg.createsBudget -> Res.s(R.string.bb_apply_create, bbMoney(sg.suggested, hide))
+    sg.raisesLimit -> Res.s(R.string.bb_apply_raise, bbMoney(sg.suggested, hide))
+    else -> Res.s(R.string.bb_apply_months)
+}
+
+/** Aceitar: o limite de sempre (ou o orçamento novo) e os ajustes só nos meses das contas que não são mensais (DAD-12). */
+suspend fun applyBudgetBills(c: io.github.h3yk0.cryo.AppContainer, sg: BudgetBills.Suggestion) {
+    if (sg.current == null || sg.suggested > sg.current) c.repo.saveBudget(sg.categoryId, sg.suggested)
+    for (m in sg.monthOnly) c.repo.adjustMonthLimit(sg.categoryId, m.ym.key(), m.delta)
+}
+
+@Composable
+private fun BudgetBillItem(l: Ledger, sg: BudgetBills.Suggestion, hide: Boolean, onApply: () -> Unit, onNotNow: () -> Unit, onSee: () -> Unit) {
+    Column(Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.Top) {
+            Icon(Icons.Rounded.EventRepeat, null, Modifier.size(20.dp), tint = CryoTheme.colors.warning)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(budgetBillText(l, sg, hide), style = MaterialTheme.typography.bodyLarge)
+                // As contas que não são mensais, mês a mês (a primeira já está na frase quando é só ela).
+                val extra = if (!sg.createsBudget && !sg.raisesLimit) sg.monthOnly.drop(1) else sg.monthOnly
+                extra.forEach { m ->
+                    Text(monthOnlyText(m, hide), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+                }
+            }
+        }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.padding(top = 8.dp)) {
+            FilledTonalButton(onClick = onApply) { Text(budgetBillAction(sg, hide)) }
+            TextButton(onClick = onNotNow) { Text(Res.s(R.string.bb_not_now)) }
+            TextButton(onClick = onSee) { Text(Res.s(R.string.bb_see_bills)) }
+        }
+    }
+}
+
+/** As contas fixas da categoria; cada uma pode trocar de categoria (ou ir para uma categoria nova). */
+@Composable
+private fun BudgetBillsSheet(l: Ledger, sg: BudgetBills.Suggestion, onDismiss: () -> Unit) {
+    val c = LocalContainer.current
+    val nav = LocalNav.current
+    val hide = LocalSettings.current.hideValues
+    var moving by remember { mutableStateOf<io.github.h3yk0.cryo.data.db.Bill?>(null) }
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+            val bill = moving
+            if (bill == null) {
+                Text(Res.s(R.string.bb_sheet_title, l.category[sg.categoryId]?.name.orEmpty()), style = MaterialTheme.typography.titleLarge)
+                Text(Res.s(R.string.bb_sheet_text), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))
+                sg.bills.forEach { b ->
+                    FlatItem {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f)) {
+                                Text(b.name, style = MaterialTheme.typography.titleSmall)
+                                Text(bbMoney(b.amount, hide), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            TextButton(onClick = { moving = b }) { Text(Res.s(R.string.bb_change_category)) }
+                        }
+                    }
+                }
+            } else {
+                Text(Res.s(R.string.bb_pick_category), style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(bottom = 8.dp))
+                l.categories(CategoryKind.EXPENSE).filter { it.id != bill.categoryId }.forEach { cat ->
+                    Row(
+                        Modifier.fillMaxWidth().clickable {
+                            onDismiss()
+                            c.launch { c.repo.saveBill(bill.copy(categoryId = cat.id)); c.message(Res.s(R.string.bb_moved, bill.name, cat.name)) }
+                        }.padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IconBadge(categoryIcon(cat.icon), Color(cat.color), 32.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Text(cat.name, style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+                TextButton(onClick = { onDismiss(); nav.go(Routes.categoryEdit(kind = CategoryKind.EXPENSE)) }) {
+                    Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.bb_new_category))
+                }
+            }
+        }
+    }
+}
+
+/**
+ * RF-ORC-10: o bloco largo do Geral, na cor do estado (DS-TOM: bom; atenção a partir de 80%; alerta ao passar). Sem o Geral
+ * definido, o convite com a sugestão pela renda fixa (a pessoa muda, PRI-09).
+ */
+@Composable
+private fun GeneralBudgetCard(u: GeneralBudget.Usage?, suggestion: Long?, hide: Boolean, onEdit: () -> Unit) {
+    val tones = CryoTheme.tones
+    val tone = when {
+        u == null -> null
+        u.ratio >= 1f -> tones.alert
+        u.ratio >= 0.8f -> tones.attention
+        else -> tones.good
+    }
+    val fg = tone?.onContainer ?: MaterialTheme.colorScheme.onSurface
+    Column(
+        Modifier.fillMaxWidth().depthCard(shape = Tiles.Shape, color = tone?.container ?: CryoTheme.depth.card)
+            .clickable(role = androidx.compose.ui.semantics.Role.Button, onClick = onEdit).padding(18.dp),
+    ) {
+        CompositionLocalProvider(LocalContentColor provides fg) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconBadge(Icons.Rounded.AccountBalanceWallet, tone?.accent ?: MaterialTheme.colorScheme.primary, 36.dp)
+                Spacer(Modifier.width(10.dp))
+                Text(Res.s(R.string.budget_general), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f).semantics { heading() })
+                Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = fg.copy(alpha = 0.6f))
+            }
+            Spacer(Modifier.height(10.dp))
+            if (u == null) {
+                Text(Res.s(R.string.budget_general_hint), style = MaterialTheme.typography.bodyMedium)
+                suggestion?.let {
+                    Text(
+                        Res.s(R.string.budget_general_suggest, bbMoney(it, hide)), style = MaterialTheme.typography.bodySmall,
+                        color = fg.copy(alpha = 0.75f), modifier = Modifier.padding(top = 4.dp),
+                    )
+                }
+                FilledTonalButton(onClick = onEdit, modifier = Modifier.padding(top = 10.dp)) { Text(Res.s(R.string.budget_general_set)) }
+                return@CompositionLocalProvider
+            }
+            Text(
+                if (u.remaining >= 0) Res.s(R.string.budget_left, bbMoney(u.remaining, hide)) else Res.s(R.string.budget_over, bbMoney(-u.remaining, hide)),
+                style = MaterialTheme.typography.headlineSmall, color = tone?.accent ?: fg,
+            )
+            Text(Res.s(R.string.goal_progress, bbMoney(u.spent, hide), bbMoney(u.limit, hide)), style = MaterialTheme.typography.bodyMedium)
+            Spacer(Modifier.height(10.dp))
+            UsageBar(u.ratio, height = 10.dp, baseColor = tone?.accent ?: MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(8.dp))
+            if (u.perDay > 0) Text(Res.s(R.string.budget_general_per_day, bbMoney(u.perDay, hide)), style = MaterialTheme.typography.bodySmall)
+            if (u.divided > 0) {
+                Text(
+                    if (u.overDivided) Res.s(R.string.budget_general_over_divided, bbMoney(u.divided, hide))
+                    else Res.s(R.string.budget_general_divided, bbMoney(u.divided, hide), bbMoney(u.limit, hide)),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (u.overDivided) tones.alert.accent else fg.copy(alpha = 0.75f),
+                )
+            }
+        }
+    }
+}
+
+/** RF-ORC-10: definir, mudar ou tirar o Geral; a sugestão é um toque (e a pessoa digita o que quiser). */
+@Composable
+private fun GeneralBudgetSheet(initial: Long, suggestion: Long?, exists: Boolean, onDismiss: () -> Unit, onSave: (Long) -> Unit, onDelete: () -> Unit) {
+    val hide = LocalSettings.current.hideValues
+    var amount by remember { mutableLongStateOf(initial) }
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+            Text(Res.s(R.string.budget_general_title), style = MaterialTheme.typography.titleLarge)
+            Text(Res.s(R.string.budget_general_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Spacer(Modifier.height(16.dp))
+            AmountField(amount, { amount = it }, label = Res.s(R.string.plan_limite_por_mes))
+            if (suggestion != null && suggestion != amount) {
+                AssistChip(onClick = { amount = suggestion }, label = { Text(Res.s(R.string.budget_general_use, bbMoney(suggestion, hide))) })
+            }
+            if (suggestion != null) {
+                Text(Res.s(R.string.budget_general_how), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Spacer(Modifier.height(20.dp))
+            CryoButton(onClick = { onSave(amount) }, enabled = amount > 0, modifier = Modifier.fillMaxWidth().height(56.dp)) {
+                Text(Res.s(R.string.plan_salvar_orcamento))
+            }
+            if (exists) {
+                Spacer(Modifier.height(8.dp))
+                OutlinedButton(onClick = onDelete, modifier = Modifier.fillMaxWidth().height(52.dp)) {
+                    Text(Res.s(R.string.plan_remover_orcamento), color = MaterialTheme.colorScheme.error)
+                }
+            }
+        }
     }
 }
 
@@ -254,47 +492,40 @@ private fun budgetSuggestions(l: Ledger): List<Pair<io.github.h3yk0.cryo.data.db
     }.sortedByDescending { it.second }.take(3)
 }
 
+/**
+ * RF-ORC-11: o bloco de uma categoria: o ícone, o quanto resta, a barra na cor do estado e, enquanto o mês não acabou, como
+ * deve fechar (RF-PRV-06) ou o dia em que o ritmo passa do limite (RF-MOT-07). A cor pastel só quando pede atenção (DS-TOM-02).
+ */
 @Composable
-private fun BudgetRow(u: BudgetUsage, hide: Boolean, crossDay: Int?, forecast: CategoryOutlook?, onClick: () -> Unit) {
-    FlatItem(onClick = onClick) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            IconBadge(categoryIcon(u.category.icon), Color(u.category.color), 36.dp)
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f)) {
-                Text(u.category.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                Text(
-                    Res.s(R.string.goal_progress, if (hide) Money.HIDDEN else Money.format(u.spent), if (hide) Money.HIDDEN else Money.format(u.limit)),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            val pct = (u.ratio * 100).toInt()
-            Pill(
-                "$pct%",
-                when { u.ratio >= 1f -> CryoTheme.colors.expenseContainer; u.ratio >= 0.8f -> CryoTheme.colors.warningContainer; else -> MaterialTheme.colorScheme.surfaceContainerHighest },
-                when { u.ratio >= 1f -> CryoTheme.colors.onExpenseContainer; u.ratio >= 0.8f -> CryoTheme.colors.onWarningContainer; else -> MaterialTheme.colorScheme.onSurface },
-            )
-        }
-        Spacer(Modifier.height(10.dp))
-        UsageBar(u.ratio)
-        Text(
-            if (u.remaining >= 0) Res.s(R.string.budget_left, if (hide) Money.HIDDEN else Money.format(u.remaining)) else Res.s(R.string.plan_passou_limite, if (hide) Money.HIDDEN else Money.format(-u.remaining)),
-            style = MaterialTheme.typography.bodySmall,
-            color = if (u.remaining >= 0) MaterialTheme.colorScheme.onSurfaceVariant else CryoTheme.colors.expense,
-            modifier = Modifier.padding(top = 4.dp),
-        )
+private fun BudgetTile(u: BudgetUsage, hide: Boolean, crossDay: Int?, forecast: CategoryOutlook?, modifier: Modifier, onClick: () -> Unit) {
+    val tones = CryoTheme.tones
+    val chance = forecast?.let { (it.chanceOver * 100).roundToInt() } ?: 0
+    val tone = when {
+        u.ratio >= 1f -> tones.alert
+        u.ratio >= 0.8f || crossDay != null || chance >= 50 -> tones.attention
+        else -> null
+    }
+    val lines = buildList {
         if (forecast != null && u.remaining >= 0) {
-            val close = if (hide) Money.HIDDEN else Money.format(forecast.mid)
-            val chance = (forecast.chanceOver * 100).roundToInt()
-            Text(
-                if (chance >= 5) Res.s(R.string.prv_cat_close, close, Num.percent(chance)) else Res.s(R.string.prv_cat_close_ok, close),
-                style = MaterialTheme.typography.bodySmall,
-                color = if (chance >= 50) CryoTheme.colors.warning else MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-        if (crossDay != null) {
-            Text(Res.s(R.string.engine_pace_row, crossDay), style = MaterialTheme.typography.bodySmall, color = CryoTheme.colors.warning)
+            add(Res.s(R.string.budget_tile_close, bbMoney(forecast.mid, hide)))
+            if (chance >= 5) add(Res.s(R.string.budget_tile_risk, Num.percent(chance)))
+        } else if (crossDay != null) {
+            add(Res.s(R.string.budget_tile_pace, crossDay))
+        } else {
+            add(Res.s(R.string.goal_progress, bbMoney(u.spent, hide), bbMoney(u.limit, hide)))
         }
     }
+    CryoTile(
+        u.category.name, modifier, icon = categoryIcon(u.category.icon), iconColor = Color(u.category.color),
+        subtitle = lines.joinToString("\n"), tone = tone, progress = u.ratio, progressColor = Color(u.category.color), onClick = onClick,
+        valueContent = {
+            Text(
+                if (u.remaining >= 0) Res.s(R.string.budget_left, bbMoney(u.remaining, hide)) else Res.s(R.string.budget_over, bbMoney(-u.remaining, hide)),
+                style = MaterialTheme.typography.titleMedium, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                color = if (u.remaining < 0) tones.alert.accent else LocalContentColor.current,
+            )
+        },
+    )
 }
 
 @Composable
@@ -310,7 +541,7 @@ private fun BudgetSheet(
     var amount by remember { mutableLongStateOf(initial) }
     val existing = categoryId?.let { l.budgetOf(it) }
     val options = l.categories(CategoryKind.EXPENSE).filter { it.id == categoryId || l.budgetOf(it.id) == null }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Text(if (existing != null) Res.s(R.string.plan_editar_orcamento) else Res.s(R.string.plan_novo_orcamento), style = MaterialTheme.typography.titleLarge)
             Text(Res.s(R.string.plan_quanto_voce_quer_gastar), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -338,6 +569,16 @@ private fun BudgetSheet(
 }
 
 /* ============================== Contas fixas ============================== */
+
+/** RF-FIX-12 (1.6): pula a conta fixa no mês e oferece o desfazer. Usado em Planejar e nas Previstas do Extrato. */
+fun skipBillWithUndo(c: io.github.h3yk0.cryo.AppContainer, bill: io.github.h3yk0.cryo.data.db.Bill, ym: java.time.YearMonth) {
+    c.launch {
+        c.repo.skipBill(bill.id, ym)
+        c.message(Res.s(R.string.bill_skipped_msg, bill.name, Dates.monthYearInSentence(ym)), Res.s(R.string.wallet_desfazer)) {
+            c.repo.unskipBill(bill.id, ym)
+        }
+    }
+}
 
 @Composable
 private fun BillsTab(l: Ledger) {
@@ -389,19 +630,31 @@ private fun BillsTab(l: Ledger) {
                 }
             }
         }
+        // RF-FIX-13: três blocos no topo; as que faltam primeiro; as pagas (e as puladas) fechadas com setinha (DS-EXP).
+        val onPayBill: (BillStatus) -> Unit = { s -> if (found.any { it.bill.id == s.bill.id && it.ym == s.ym }) { thenPay = s; reviewing = s.bill.id } else paying = s }
+        val onUndoBill: (BillStatus) -> Unit = { s -> if (s.inferred) reviewing = s.bill.id else undoing = s }
         if (pay.isNotEmpty()) {
-            item {
-                val total = pay.sumOf { it.bill.amount }
-                val paid = pay.filter { it.payment != null }
-                SummaryLine(Res.s(R.string.plan_pagar), Res.s(R.string.plan_pagas, paid.size, pay.size), total, hide)
+            val open = pay.filter { it.payment == null }
+            val paid = pay.filter { it.payment != null }
+            item(key = "resumo") {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    BillStat(Res.s(R.string.plan_pagar), open.sumOf { it.bill.amount }, hide, Modifier.weight(1f), open.any { it.state == BillState.OVERDUE })
+                    BillStat(Res.s(R.string.bills_paid), paid.sumOf { it.payment?.amount ?: it.bill.amount }, hide, Modifier.weight(1f))
+                    BillStat(Res.s(R.string.bills_total), pay.sumOf { it.payment?.amount ?: it.bill.amount }, hide, Modifier.weight(1f))
+                }
             }
-            items(pay, key = { "p${it.bill.id}" }) { s ->
-                BillRow(
-                    s, l, hide,
-                    // RF-CFX-06: antes de criar um pagamento, o Cryo olha se ele já está no Extrato.
-                    onPay = { if (found.any { it.bill.id == s.bill.id && it.ym == s.ym }) { thenPay = s; reviewing = s.bill.id } else paying = s },
-                    onUndo = { if (s.inferred) reviewing = s.bill.id else undoing = s },
-                )
+            items(open, key = { "p${it.bill.id}" }) { s ->
+                // RF-CFX-06: antes de criar um pagamento, o Cryo olha se ele já está no Extrato.
+                BillRow(s, l, hide, onPay = { onPayBill(s) }, onUndo = { onUndoBill(s) }, onSkip = { skipBillWithUndo(c, s.bill, s.ym) })
+            }
+            if (paid.isNotEmpty()) {
+                item(key = "pagas") {
+                    Expandable(Res.s(R.string.bills_paid_group, paid.size), Modifier.padding(horizontal = 4.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            paid.forEach { s -> BillRow(s, l, hide, onPay = { onPayBill(s) }, onUndo = { onUndoBill(s) }, onSkip = null) }
+                        }
+                    }
+                }
             }
         }
         if (installments.isNotEmpty()) {
@@ -411,7 +664,17 @@ private fun BillsTab(l: Ledger) {
                     installments.sumOf { it.info.debt.installmentAmount }, hide,
                 )
             }
-            items(installments, key = { "d${it.info.debt.id}" }) { m -> DebtInstallmentRow(m, l, hide, onPay = { payingDebt = m.info }) }
+            items(installments.filter { !it.paid }, key = { "d${it.info.debt.id}" }) { m -> DebtInstallmentRow(m, l, hide, onPay = { payingDebt = m.info }) }
+            val paidDebts = installments.filter { it.paid }
+            if (paidDebts.isNotEmpty()) {
+                item(key = "dpagas") {
+                    Expandable(Res.s(R.string.bills_debts_paid_group, paidDebts.size), Modifier.padding(horizontal = 4.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            paidDebts.forEach { m -> DebtInstallmentRow(m, l, hide, onPay = { payingDebt = m.info }) }
+                        }
+                    }
+                }
+            }
         }
         if (receive.isNotEmpty()) {
             item {
@@ -419,13 +682,42 @@ private fun BillsTab(l: Ledger) {
                 val got = receive.count { it.payment != null }
                 SummaryLine(Res.s(R.string.plan_receber), Res.s(R.string.plan_recebidos, got, receive.size), total, hide)
             }
-            items(receive, key = { "r${it.bill.id}" }) { s ->
-                BillRow(
-                    s, l, hide,
-                    // RF-CFX-06: antes de criar um pagamento, o Cryo olha se ele já está no Extrato.
-                    onPay = { if (found.any { it.bill.id == s.bill.id && it.ym == s.ym }) { thenPay = s; reviewing = s.bill.id } else paying = s },
-                    onUndo = { if (s.inferred) reviewing = s.bill.id else undoing = s },
-                )
+            items(receive.filter { it.payment == null }, key = { "r${it.bill.id}" }) { s ->
+                BillRow(s, l, hide, onPay = { onPayBill(s) }, onUndo = { onUndoBill(s) }, onSkip = { skipBillWithUndo(c, s.bill, s.ym) })
+            }
+            val received = receive.filter { it.payment != null }
+            if (received.isNotEmpty()) {
+                item(key = "recebidas") {
+                    Expandable(Res.s(R.string.bills_received_group, received.size), Modifier.padding(horizontal = 4.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                            received.forEach { s -> BillRow(s, l, hide, onPay = { onPayBill(s) }, onUndo = { onUndoBill(s) }, onSkip = null) }
+                        }
+                    }
+                }
+            }
+        }
+        // RF-FIX-12: as puladas neste mês, com "Voltar a contar" (fechadas com setinha).
+        val skipped = l.skippedBills(ym)
+        if (skipped.isNotEmpty()) {
+            item(key = "puladas") {
+                Expandable(Res.s(R.string.bills_skipped_group, skipped.size), Modifier.padding(horizontal = 4.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        skipped.forEach { b ->
+                            FlatItem {
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(b.name, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Text(
+                                            if (hide) Money.HIDDEN else Money.format(b.amount), style = MaterialTheme.typography.bodyMedium,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    TextButton(onClick = { c.launch { c.repo.unskipBill(b.id, ym) } }) { Text(Res.s(R.string.bill_unskip)) }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         item {
@@ -437,6 +729,10 @@ private fun BillsTab(l: Ledger) {
                     Text(Res.s(R.string.plan_receber))
                 }
             }
+        }
+        // RF-FIX-13, DS-BLOCO-02: "O que se repete" (RF-MOT-02) num botão-bloco no fim da aba.
+        item(key = "repete") {
+            TileButton(Res.s(R.string.engine_recurring_title), Icons.Rounded.Autorenew, subtitle = Res.s(R.string.bills_recurring_sub)) { nav.go(Routes.RECURRING) }
         }
     }
 
@@ -474,7 +770,7 @@ private fun BillsTab(l: Ledger) {
     }
     undoing?.let { s ->
         val tx = s.payment
-        ModalBottomSheet(onDismissRequest = { undoing = null }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        CryoSheet(onDismissRequest = { undoing = null }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
             Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
                 Text(Res.s(R.string.plan_desmarcar_pagamento), style = MaterialTheme.typography.titleLarge)
                 Text(
@@ -527,7 +823,7 @@ private fun BillSuggestionsSheet(list: List<BillSuggestion>, l: Ledger, onOther:
     val c = LocalContainer.current
     val hide = LocalSettings.current.hideValues
     val undo = Res.s(R.string.wallet_desfazer)
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Text(Res.s(R.string.cfx_sheet_title), style = MaterialTheme.typography.titleLarge)
             Text(
@@ -623,6 +919,22 @@ private fun DebtInstallmentRow(m: DebtMath.MonthInstallment, l: Ledger, hide: Bo
     }
 }
 
+/** RF-FIX-13: um dos três blocos do topo das contas fixas (A pagar, Pagas, Total do mês). */
+@Composable
+private fun BillStat(label: String, value: Long, hide: Boolean, modifier: Modifier, alert: Boolean = false) {
+    val tone = if (alert) CryoTheme.tones.alert else null
+    Column(
+        modifier.depthCard(shape = MaterialTheme.shapes.large, color = tone?.container ?: CryoTheme.depth.card).padding(horizontal = 12.dp, vertical = 12.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = tone?.onContainer ?: MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(4.dp))
+        Text(
+            if (hide) Money.HIDDEN else Money.format(value), style = MaterialTheme.typography.titleSmall,
+            color = tone?.accent ?: MaterialTheme.colorScheme.onSurface, maxLines = 1, overflow = TextOverflow.Ellipsis,
+        )
+    }
+}
+
 @Composable
 private fun SummaryLine(title: String, sub: String, total: Long, hide: Boolean) {
     Row(Modifier.fillMaxWidth().padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -635,7 +947,7 @@ private fun SummaryLine(title: String, sub: String, total: Long, hide: Boolean) 
 }
 
 @Composable
-private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, onUndo: () -> Unit) {
+private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, onUndo: () -> Unit, onSkip: (() -> Unit)? = null) {
     val nav = LocalNav.current
     val b = s.bill
     val cat = b.categoryId?.let { l.category[it] }
@@ -671,6 +983,10 @@ private fun BillRow(s: BillStatus, l: Ledger, hide: Boolean, onPay: () -> Unit, 
                     )
                     val part = if (s.parts > 1) " · " + Res.s(R.string.bill_part_of, s.part, s.parts) else ""
                     Text(freq + part, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                // RF-FIX-12 (1.6): pular o mês (sem lançamento nenhum), com desfazer.
+                if (onSkip != null && s.payment == null) {
+                    TextButton(onClick = onSkip, contentPadding = PaddingValues(0.dp)) { Text(Res.s(R.string.bill_skip)) }
                 }
             }
             Spacer(Modifier.width(8.dp))
@@ -800,6 +1116,7 @@ private fun BillCycleFields(
 fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
     val l = rememberLedger() ?: return LoadingBox()
     val c = LocalContainer.current
+    val hideNow = LocalSettings.current.hideValues
     val nav = LocalNav.current
     val ctx = androidx.compose.ui.platform.LocalContext.current
     val existing = id?.let { l.bill[it] }
@@ -846,7 +1163,16 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
                     c.repo.markBillPaidLinking(b.copy(id = saved), payYm, amount, payYm.dayClamped(day), (source as? Source.Acc)?.id, payCard)
                 }
                 c.billReview.value = if (b.id != 0L) b.id else saved
-                c.message(Res.s(R.string.plan_salvo))
+                // RF-ORC-09 (1.6): as contas fixas da categoria não cabem no orçamento: a mensagem oferece ajustar.
+                val sg = b.categoryId?.let { cat ->
+                    BudgetBills.suggestion(Ledger(c.repo.loadOnce(), l.today), cat, l.today.ym())
+                        ?.takeIf { c.budgetBills.dismissed()[cat] != it.signature }
+                }
+                if (sg != null) {
+                    c.message(budgetBillText(l, sg, hideNow), budgetBillAction(sg, hideNow)) { applyBudgetBills(c, sg) }
+                } else {
+                    c.message(Res.s(R.string.plan_salvo))
+                }
             }
             nav.back()
         },
@@ -933,15 +1259,20 @@ fun BillEditorScreen(id: Long?, kindArg: CategoryKind) {
 
 /* ================================= Metas ================================= */
 
+/**
+ * RF-MET-07 (reforma visual da 1.6, LA12): o total guardado no topo (com a previsão das metas, RF-MOT-16) e cada meta num
+ * bloco, em duas colunas; tocar abre a folha da meta com Guardar, Retirar, Editar e Arquivar.
+ */
 @Composable
 private fun GoalsTab(l: Ledger) {
     val nav = LocalNav.current
-    val c = LocalContainer.current
     val hide = LocalSettings.current.hideValues
     val archived = l.s.goals.filter { it.archived }
     val archivedSaved = archived.sumOf { l.goalSaved(it.id) }
     var action by remember { mutableStateOf<Pair<Goal, Boolean>?>(null) } // meta, guardar?
+    var opened by remember { mutableStateOf<Goal?>(null) }
     val engine = rememberEngine()
+    val forecast = engine?.goalForecast
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (l.activeGoals.isEmpty()) {
             item {
@@ -958,37 +1289,36 @@ private fun GoalsTab(l: Ledger) {
                 }
             }
         } else {
-            item {
-                Column(Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 12.dp)) {
-                    Text(Res.s(R.string.plan_guardado_metas), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSecondaryContainer)
-                    MoneyText(
-                        l.activeGoals.sumOf { l.goalSaved(it.id) }, style = MaterialTheme.typography.headlineSmall,
-                        color = MaterialTheme.colorScheme.onSecondaryContainer,
-                    )
+            item(key = "total") {
+                FlatItem {
+                    Text(Res.s(R.string.plan_guardado_metas), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    MoneyText(l.activeGoals.sumOf { l.goalSaved(it.id) }, style = MaterialTheme.typography.headlineSmall)
                     if (archivedSaved > 0) {
                         Text(
                             Res.s(R.string.plan_mais_metas_arquivadas, if (hide) Money.HIDDEN else Money.format(archivedSaved)),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer,
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
+                    }
+                    // RF-MOT-16: a previsão das metas (antes em Análises) mora aqui; a explicação, fechada com setinha.
+                    if (forecast != null && forecast.neededMonthly > 0) {
+                        Text(
+                            Res.s(R.string.gf_top, if (hide) Money.HIDDEN else Money.format(forecast.neededMonthly), if (hide) Money.HIDDEN else Money.format(forecast.surplusMonthly.coerceAtLeast(0))),
+                            style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 8.dp),
+                        )
+                        Expandable(Res.s(R.string.insights_como_cheguei_nesse_numero)) {
+                            Text(Res.s(R.string.gf_how), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                 }
             }
-        }
-        items(l.activeGoals, key = { it.id }) { g ->
-            GoalCard(
-                g, l, hide,
-                onClick = { nav.go(Routes.goalEdit(g.id)) },
-                outlook = engine?.goals?.get(g.id),
-                actions = { saved ->
-                    FilledTonalButton(onClick = { action = g to true }) { Text(Res.s(R.string.plan_guardar)) }
-                    OutlinedButton(onClick = { action = g to false }, enabled = saved > 0) { Text(Res.s(R.string.plan_retirar)) }
-                    if (saved >= g.target) {
-                        TextButton(onClick = { archiveGoal(c, g) }) {
-                            Icon(Icons.Rounded.Archive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.wallet_arquivar))
-                        }
-                    }
-                },
-            )
+            l.activeGoals.chunked(2).forEachIndexed { i, row ->
+                item(key = "metas$i-" + row.joinToString("-") { it.id.toString() }) {
+                    TileRow(
+                        first = { m -> GoalTile(row[0], l, hide, forecast?.items?.firstOrNull { it.goal.id == row[0].id }, m) { opened = row[0] } },
+                        second = row.getOrNull(1)?.let { g -> { m -> GoalTile(g, l, hide, forecast?.items?.firstOrNull { it.goal.id == g.id }, m) { opened = g } } },
+                    )
+                }
+            }
         }
         item {
             CryoButton(onClick = { nav.go(Routes.goalEdit()) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
@@ -997,13 +1327,81 @@ private fun GoalsTab(l: Ledger) {
         }
         if (archived.isNotEmpty()) {
             item {
-                OutlinedButton(onClick = { nav.go(Routes.GOALS_ARCHIVE) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
-                    Icon(Icons.Rounded.Inventory2, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_metas_arquivadas_2, archived.size))
+                TileButton(Res.s(R.string.plan_metas_arquivadas_2, archived.size), Icons.Rounded.Inventory2) { nav.go(Routes.GOALS_ARCHIVE) }
+            }
+        }
+    }
+    opened?.let { g ->
+        GoalSheet(
+            g, l, hide, forecast?.items?.firstOrNull { it.goal.id == g.id }, engine?.goals?.get(g.id),
+            onDismiss = { opened = null },
+            onMoney = { deposit -> opened = null; action = g to deposit },
+            onEdit = { opened = null; nav.go(Routes.goalEdit(g.id)) },
+        )
+    }
+    action?.let { (g, deposit) -> GoalMoneySheet(g, deposit, l, onDismiss = { action = null }) }
+}
+
+/** RF-MET-07: o bloco de uma meta: a ilustração, o anel do progresso, o nome, o guardado e a frase curta da previsão. */
+@Composable
+private fun GoalTile(g: Goal, l: Ledger, hide: Boolean, forecast: io.github.h3yk0.cryo.domain.engine.GoalForecastItem?, modifier: Modifier, onClick: () -> Unit) {
+    val saved = l.goalSaved(g.id)
+    val ratio = saved.toFloat() / g.target.coerceAtLeast(1)
+    val line = when {
+        saved >= g.target -> Res.s(R.string.plan_meta_alcancada)
+        forecast != null -> goalForecastText(forecast)
+        else -> Res.s(R.string.goal_tile_of, if (hide) Money.HIDDEN else Money.format(g.target))
+    }
+    val late = forecast != null && saved < g.target &&
+        (forecast.fit == io.github.h3yk0.cryo.domain.engine.GoalFit.LATE || forecast.fit == io.github.h3yk0.cryo.domain.engine.GoalFit.NO_ROOM)
+    CryoTile(
+        g.name, modifier, subtitle = line, onClick = onClick,
+        tone = if (late) CryoTheme.tones.attention else null,
+        leading = { io.github.h3yk0.cryo.ui.components.GoalBadge(g, 40.dp) },
+        trailing = { ProgressRing(ratio, Color(g.color)) },
+        valueContent = { MoneyText(saved, style = MaterialTheme.typography.titleLarge) },
+    )
+}
+
+/** RF-MET-07: a folha da meta: o progresso, quanto guardar por mês, a previsão e as quatro ações. */
+@Composable
+private fun GoalSheet(
+    g: Goal, l: Ledger, hide: Boolean,
+    forecast: io.github.h3yk0.cryo.domain.engine.GoalForecastItem?, outlook: GoalOutlook?,
+    onDismiss: () -> Unit, onMoney: (deposit: Boolean) -> Unit, onEdit: () -> Unit,
+) {
+    val c = LocalContainer.current
+    val saved = l.goalSaved(g.id)
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                io.github.h3yk0.cryo.ui.components.GoalBadge(g, 48.dp)
+                Spacer(Modifier.width(12.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(g.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    Text(
+                        Res.s(R.string.goal_sheet_progress, if (hide) Money.HIDDEN else Money.format(saved), if (hide) Money.HIDDEN else Money.format(g.target)),
+                        style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                ProgressRing(saved.toFloat() / g.target.coerceAtLeast(1), Color(g.color), size = 52.dp)
+            }
+            Spacer(Modifier.height(12.dp))
+            GoalDetails(g, l, hide, forecast, outlook)
+            Spacer(Modifier.height(16.dp))
+            CryoButton(onClick = { onMoney(true) }, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.plan_guardar)) }
+            Spacer(Modifier.height(8.dp))
+            OutlinedButton(onClick = { onMoney(false) }, enabled = saved > 0, modifier = Modifier.fillMaxWidth().height(52.dp)) { Text(Res.s(R.string.plan_retirar)) }
+            Row(Modifier.fillMaxWidth().padding(top = 4.dp), horizontalArrangement = Arrangement.SpaceBetween) {
+                TextButton(onClick = onEdit) {
+                    Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.plan_editar))
+                }
+                TextButton(onClick = { onDismiss(); archiveGoal(c, g) }) {
+                    Icon(Icons.Rounded.Archive, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.wallet_arquivar))
                 }
             }
         }
     }
-    action?.let { (g, deposit) -> GoalMoneySheet(g, deposit, l, onDismiss = { action = null }) }
 }
 
 private fun archiveGoal(c: io.github.h3yk0.cryo.AppContainer, g: Goal) {
@@ -1022,6 +1420,8 @@ private fun GoalCard(
     onClick: () -> Unit,
     faded: Boolean = false,
     outlook: GoalOutlook? = null,
+    /** RF-MOT-16 (1.6): a resposta da previsão de metas (no lugar do ritmo dos depósitos). */
+    forecast: io.github.h3yk0.cryo.domain.engine.GoalForecastItem? = null,
     actions: @Composable androidx.compose.foundation.layout.FlowRowScope.(saved: Long) -> Unit,
 ) {
     val saved = l.goalSaved(g.id)
@@ -1041,31 +1441,56 @@ private fun GoalCard(
         }
         Spacer(Modifier.height(10.dp))
         UsageBar(ratio, baseColor = Color(g.color), height = 12.dp, warn = false)
-        val need = l.goalMonthlyNeeded(g)
-        val info = when {
-            saved >= g.target -> Res.s(R.string.plan_meta_alcancada)
-            g.archived && saved <= 0 -> Res.s(R.string.plan_arquivada_sem_dinheiro_guardado)
-            g.archived -> Res.s(R.string.debt_arquivada_faltavam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
-            need != null && g.deadline != null -> {
-                val months = ChronoUnit.MONTHS.between(l.today.ym(), g.deadline.ym()) + 1
-                Res.s(
-                    R.string.goal_save_per_month, if (hide) Money.HIDDEN else Money.format(need),
-                    Dates.monthYearInSentence(g.deadline.ym(), l.today), Res.p(R.plurals.count_months, months.toInt(), months.toInt()),
-                )
-            }
-            else -> Res.s(R.string.plan_faltam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
-        }
-        Text(info, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
-        // RF-MOT-10: no ritmo dos depósitos, quando chega lá e a chance de bater o prazo.
-        val eta = outlook?.etaYm
-        if (outlook != null && !g.archived && !outlook.done && eta != null && outlook.pace > 0) {
-            val chance = outlook.chanceByDeadline?.let { " · " + Res.s(R.string.engine_goal_chance, Num.percent((it * 100).toInt())) }.orEmpty()
-            Text(
-                Res.s(R.string.engine_goal_eta, if (hide) Money.HIDDEN else Money.format(outlook.pace), Dates.monthYearInSentence(eta, l.today)) + chance,
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 2.dp),
+        GoalDetails(g, l, hide, forecast, outlook)
+        FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { actions(saved) }
+    }
+}
+
+/** Quanto guardar por mês, a previsão (RF-MOT-16) ou o ritmo dos depósitos (RF-MOT-10): no cartão das arquivadas e na folha da meta. */
+@Composable
+private fun GoalDetails(g: Goal, l: Ledger, hide: Boolean, forecast: io.github.h3yk0.cryo.domain.engine.GoalForecastItem?, outlook: GoalOutlook?) {
+    val saved = l.goalSaved(g.id)
+    val need = l.goalMonthlyNeeded(g)
+    val info = when {
+        saved >= g.target -> Res.s(R.string.plan_meta_alcancada)
+        g.archived && saved <= 0 -> Res.s(R.string.plan_arquivada_sem_dinheiro_guardado)
+        g.archived -> Res.s(R.string.debt_arquivada_faltavam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
+        need != null && g.deadline != null -> {
+            val months = ChronoUnit.MONTHS.between(l.today.ym(), g.deadline.ym()) + 1
+            Res.s(
+                R.string.goal_save_per_month, if (hide) Money.HIDDEN else Money.format(need),
+                Dates.monthYearInSentence(g.deadline.ym(), l.today), Res.p(R.plurals.count_months, months.toInt(), months.toInt()),
             )
         }
-        FlowRow(Modifier.padding(top = 8.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) { actions(saved) }
+        else -> Res.s(R.string.plan_faltam, if (hide) Money.HIDDEN else Money.format(max(0, g.target - saved)))
+    }
+    Text(info, style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(top = 6.dp))
+    // RF-MOT-16 (1.6): a resposta da previsão de metas (a sobra prevista do ano, pelo prazo mais perto).
+    if (forecast != null && !g.archived && forecast.fit != io.github.h3yk0.cryo.domain.engine.GoalFit.DONE) {
+        Text(
+            goalForecastText(forecast), style = MaterialTheme.typography.bodySmall,
+            color = when (forecast.fit) {
+                io.github.h3yk0.cryo.domain.engine.GoalFit.LATE -> CryoTheme.colors.warning
+                io.github.h3yk0.cryo.domain.engine.GoalFit.NO_ROOM -> CryoTheme.colors.expense
+                else -> MaterialTheme.colorScheme.primary
+            },
+            modifier = Modifier.padding(top = 2.dp),
+        )
+        if (forecast.shortMonthly > 0) {
+            Text(
+                Res.s(R.string.gf_short, if (hide) Money.HIDDEN else Money.format(forecast.shortMonthly)),
+                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+    // RF-MOT-10: sem a previsão (motor ainda calculando), o ritmo dos depósitos.
+    val eta = outlook?.etaYm
+    if (forecast == null && outlook != null && !g.archived && !outlook.done && eta != null && outlook.pace > 0) {
+        val chance = outlook.chanceByDeadline?.let { " · " + Res.s(R.string.engine_goal_chance, Num.percent((it * 100).toInt())) }.orEmpty()
+        Text(
+            Res.s(R.string.engine_goal_eta, if (hide) Money.HIDDEN else Money.format(outlook.pace), Dates.monthYearInSentence(eta, l.today)) + chance,
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }
 

@@ -33,6 +33,6 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <b>Visual Material You</b>
 As cores acompanham o seu papel de parede (Android 12 ou mais novo), com tema claro e escuro.
 
-O registro por voz usa o reconhecimento de fala instalado no celular. Digitar a frase funciona sempre.
+A voz é entendida no próprio celular pelo Whisper: baixe o modelo de voz uma vez pelo navegador e o Cryo confere o arquivo. Digitar a frase funciona sempre.
 
-Disponível em 10 línguas (português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês e hindi), com a moeda que você escolher.
+Disponível em 14 línguas (português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês, hindi, russo, ucraniano, árabe e hebraico), com a moeda que você escolher.

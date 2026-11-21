@@ -26,7 +26,6 @@ import androidx.compose.material.icons.rounded.Mic
 import androidx.compose.material3.FilledIconButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -53,6 +52,7 @@ import io.github.h3yk0.cryo.domain.PhraseParser
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.components.CryoButton
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 fun Ledger.parseContext(settings: AppSettings) = ParseContext(
     today = today, accounts = s.accounts, cards = s.cards, categories = s.categories,
@@ -115,7 +115,7 @@ fun QuickEntryBar(l: Ledger, modifier: Modifier = Modifier) {
 /** RF-VOZ-02: antes de o Android perguntar, o Cryo explica para que é o microfone e que o áudio não sai do celular. */
 @Composable
 fun MicPermissionSheet(onDismiss: () -> Unit, onAllow: () -> Unit) {
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Icon(Icons.Rounded.Mic, null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(36.dp))
             Spacer(Modifier.height(12.dp))
@@ -135,7 +135,7 @@ fun MicPermissionSheet(onDismiss: () -> Unit, onAllow: () -> Unit) {
 fun QuickConfirmSheet(d: TxDraft, l: Ledger, onDismiss: () -> Unit, onSaved: () -> Unit, title: String = Res.s(R.string.quick_confira_lancamento)) {
     val c = LocalContainer.current
     val sheet = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheet) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = sheet) {
         Column(
             Modifier
                 .verticalScroll(rememberScrollState())

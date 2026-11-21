@@ -32,6 +32,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
 import android.provider.Settings
+import io.github.h3yk0.cryo.domain.AppLocale
 import kotlin.math.roundToLong
 
 /*
@@ -61,26 +62,32 @@ object Motion {
     /** Quanto a tela desliza no eixo X (DS-MOV-02): um décimo da largura, só para mostrar a direção. */
     private const val SHIFT = 10
 
+    /**
+     * RF-LNG-11: em árabe e hebraico (da direita para a esquerda) "para a frente" é para a esquerda; o deslize
+     * espelha, como o Android faz com a navegação dele.
+     */
+    private val dir: Int get() = if (AppLocale.language.rtl) -1 else 1
+
     /* ---------- DS-MOV-02: abrir e voltar telas (eixo X do Material) ---------- */
 
     /** A tela nova entra pela direita. */
     fun forwardEnter(): EnterTransition =
-        slideInHorizontally(tween(MEDIUM, easing = EmphasizedDecelerate)) { it / SHIFT } +
+        slideInHorizontally(tween(MEDIUM, easing = EmphasizedDecelerate)) { dir * it / SHIFT } +
             fadeIn(tween(MEDIUM - 90, delayMillis = 90, easing = EmphasizedDecelerate))
 
     /** A tela de baixo sai um pouco para a esquerda. */
     fun forwardExit(): ExitTransition =
-        slideOutHorizontally(tween(MEDIUM, easing = EmphasizedAccelerate)) { -it / SHIFT } +
+        slideOutHorizontally(tween(MEDIUM, easing = EmphasizedAccelerate)) { -dir * it / SHIFT } +
             fadeOut(tween(90, easing = EmphasizedAccelerate))
 
     /** Ao voltar, a tela de baixo volta da esquerda. */
     fun backEnter(): EnterTransition =
-        slideInHorizontally(tween(MEDIUM, easing = EmphasizedDecelerate)) { -it / SHIFT } +
+        slideInHorizontally(tween(MEDIUM, easing = EmphasizedDecelerate)) { -dir * it / SHIFT } +
             fadeIn(tween(MEDIUM - 90, delayMillis = 90, easing = EmphasizedDecelerate))
 
     /** Ao voltar, a tela de cima sai pela direita. */
     fun backExit(): ExitTransition =
-        slideOutHorizontally(tween(MEDIUM, easing = EmphasizedAccelerate)) { it / SHIFT } +
+        slideOutHorizontally(tween(MEDIUM, easing = EmphasizedAccelerate)) { dir * it / SHIFT } +
             fadeOut(tween(90, easing = EmphasizedAccelerate))
 
     /* ---------- DS-MOV-03: trocar de aba ("fade through") ---------- */

@@ -10,6 +10,7 @@ import io.github.h3yk0.cryo.data.AutoBackupStore
 import io.github.h3yk0.cryo.data.BackupPlaces
 import io.github.h3yk0.cryo.data.DevSettings
 import io.github.h3yk0.cryo.data.EngineStore
+import io.github.h3yk0.cryo.data.IncomePlanStore
 import io.github.h3yk0.cryo.data.BackupProtection
 import io.github.h3yk0.cryo.data.Vault
 import io.github.h3yk0.cryo.domain.engine.EngineRunner
@@ -59,6 +60,18 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
     /** RF-MOT: o motor financeiro e o pouco que ele guarda (como HMAC: RF-SEG-02). */
     val engineStore = EngineStore(app, sandbox, vault)
     val engine = EngineRunner(engineStore::hash)
+
+    /** RF-ORC-07 (1.6): as escolhas do orçamento pela renda. */
+    val incomePlan = IncomePlanStore(app, sandbox)
+
+    /** RF-ORC-09 (1.6): o "Agora não" das sugestões do orçamento com as contas fixas. */
+    val budgetBills = io.github.h3yk0.cryo.data.BudgetBillStore(app, sandbox)
+
+    /** Muda a cada "Agora não", para as telas lerem de novo o que foi dispensado. */
+    val budgetBillsVersion = MutableStateFlow(0)
+
+    /** RF-INI-19 (reforma visual da 1.6): o que a central de avisos já mostrou (só o HMAC da chave de cada aviso, RF-SEG-02). */
+    val inbox = io.github.h3yk0.cryo.data.InboxStore(app, sandbox) { vault.hmac(it) }
 
     /** RF-SEG-03: backups protegidos com senha (a chave fica trancada pelo cofre). */
     val backupProtection = BackupProtection(app, sandbox, vault)

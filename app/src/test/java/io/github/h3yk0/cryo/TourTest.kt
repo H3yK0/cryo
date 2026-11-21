@@ -203,6 +203,11 @@ class TourPhrasesTest {
     @Config(qualifiers = "+ko-rKR") @Test fun coreano() = check()
     @Config(qualifiers = "+zh-rCN") @Test fun chines() = check()
     @Config(qualifiers = "+hi-rIN") @Test fun hindi() = check()
+    // 1.6 (RF-LNG-11). O Android chama o hebraico de "iw" nas pastas e nos qualificadores.
+    @Config(qualifiers = "+ru-rRU") @Test fun russo() = check()
+    @Config(qualifiers = "+uk-rUA") @Test fun ucraniano() = check()
+    @Config(qualifiers = "+ar-rSA-ldrtl") @Test fun arabe() = check()
+    @Config(qualifiers = "+iw-rIL-ldrtl") @Test fun hebraico() = check()
 
     /** Os valores dos exemplos ficam redondos e na escala de cada moeda. */
     @Test fun valoresRedondos() {

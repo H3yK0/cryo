@@ -53,7 +53,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -131,6 +130,7 @@ import java.time.YearMonth
 import kotlin.math.max
 import kotlin.math.roundToInt
 import io.github.h3yk0.cryo.ui.components.CryoButton
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /* ============================== Textos e ícones ============================== */
 
@@ -753,7 +753,7 @@ fun DebtPaySheet(info: DebtInfo, l: Ledger, payoff: Boolean, onDismiss: () -> Un
     val overInstallment = amount - minOf(installmentPart, remaining)
     val asksExtra = !payoff && info.hasInstallments && overInstallment > 0 && amount < remaining
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Text(
                 when {

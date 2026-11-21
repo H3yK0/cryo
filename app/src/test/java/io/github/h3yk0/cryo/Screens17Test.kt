@@ -96,7 +96,8 @@ class Screens17Test {
 
     @Config(qualifiers = "+w393dp-h1600dp-xxhdpi")
     @Test fun painelDoMes() {
-        val budgets = runBlocking { c.repo.loadOnce().budgets }
+        // O Geral (código 0, RF-ORC-10) não é categoria: o remanejamento é entre categorias.
+        val budgets = runBlocking { c.repo.loadOnce().budgets }.filter { it.categoryId != io.github.h3yk0.cryo.domain.GeneralBudget.ID }
         runBlocking { c.repo.moveBudget(budgets[1].categoryId, budgets[0].categoryId, 5_000, day.ym().key()) }
         rule.waitUntil(5_000) { c.repo.snapshot.value?.budgetAdjustments?.isNotEmpty() == true }
         show { BudgetMonthScreen() }
@@ -118,7 +119,7 @@ class Screens17Test {
     }
 
     @Test fun momentoOrcamento() {
-        val budgets = runBlocking { c.repo.loadOnce().budgets }
+        val budgets = runBlocking { c.repo.loadOnce().budgets }.filter { it.categoryId != io.github.h3yk0.cryo.domain.GeneralBudget.ID }
         val cat = c.repo.snapshot.value!!.categories.first { it.id == budgets[0].categoryId }
         val other = c.repo.snapshot.value!!.categories.first { it.id == budgets[1].categoryId }
         show {

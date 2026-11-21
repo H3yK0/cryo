@@ -29,7 +29,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -73,6 +72,7 @@ import io.github.h3yk0.cryo.ui.components.depthCard
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /** "+R$ 50" / "−R$ 30": quanto o limite mudou só neste mês. */
 private fun signed(v: Long) = (if (v >= 0) "+" else "−") + Money.format(kotlin.math.abs(v))
@@ -227,7 +227,7 @@ private fun CategoryMonthSheet(l: Ledger, u: BudgetUsage, onDismiss: () -> Unit,
     val ym = l.today.ym()
     val base = l.budgetOf(u.category.id)?.limitAmount ?: 0L
     var amount by remember { mutableLongStateOf(u.limit) }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconBadge(categoryIcon(u.category.icon), Color(u.category.color), 40.dp)
@@ -265,7 +265,7 @@ internal fun MoveSheet(l: Ledger, presetTo: Long?, onDismiss: () -> Unit) {
     val need = usages.firstOrNull { it.category.id == to }?.let { -it.remaining }?.coerceAtLeast(0) ?: 0L
     val free = usages.firstOrNull { it.category.id == from }?.remaining?.coerceAtLeast(0) ?: 0L
     var amount by remember(from, to) { mutableLongStateOf(if (need > 0) ((minOf(need, free) + 999) / 1000 * 1000).coerceAtMost(free) else 0L) }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
             Text(Res.s(R.string.budget_move_title), style = MaterialTheme.typography.titleLarge)
             Text(Res.s(R.string.budget_move_text), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -7,6 +7,7 @@ import io.github.h3yk0.cryo.data.db.Bill
 import io.github.h3yk0.cryo.data.db.Budget
 import io.github.h3yk0.cryo.data.db.BudgetAdjustment
 import io.github.h3yk0.cryo.data.db.NoSpendDay
+import io.github.h3yk0.cryo.data.db.BillSkip
 import io.github.h3yk0.cryo.data.db.Category
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.data.db.CreditCard
@@ -37,6 +38,8 @@ data class Snapshot(
     val debtAdjustments: List<DebtAdjustment> = emptyList(),
     val budgetAdjustments: List<BudgetAdjustment> = emptyList(),
     val noSpendDays: List<NoSpendDay> = emptyList(),
+    /** DAD-16 (1.6): os meses pulados das contas fixas. */
+    val billSkips: List<BillSkip> = emptyList(),
 )
 
 /* ----------------------------- Cartão ----------------------------- */
@@ -404,11 +407,23 @@ class Ledger(val s: Snapshot, val today: LocalDate) {
      */
     val inferredBillPayments: Map<Pair<Long, Int>, Tx> by lazy { BillMatcher.certain(s.bills, s.txs, billPayments.keys) }
 
+    /** RF-FIX-12 (1.6): (conta fixa, mês AAAAMM) pulados. */
+    val billSkipKeys: Set<Pair<Long, Int>> by lazy { s.billSkips.mapTo(HashSet()) { it.billId to it.ym } }
+
+    fun isSkipped(billId: Long, ym: YearMonth): Boolean = (billId to ym.key()) in billSkipKeys
+
+    /** RF-FIX-12: as contas fixas que venceriam em [ym] e foram puladas ("Puladas neste mês"). */
+    fun skippedBills(ym: YearMonth): List<Bill> = s.bills
+        .filter { it.active && BillCycle.partOf(it, ym) != null && isSkipped(it.id, ym) }
+        .sortedBy { it.dueDay }
+
     fun billStatuses(ym: YearMonth): List<BillStatus> = s.bills
         .filter { it.active }
         // RF-CFX-09: só as que vencem neste mês (a anual aparece no mês dela; a parcelada, em cada parcela).
         .mapNotNull { b ->
             val part = BillCycle.partOf(b, ym) ?: return@mapNotNull null
+            // RF-FIX-12: o mês pulado sai de tudo o que lê os vencimentos (lista, avisos, previsão, projeção, saúde).
+            if (isSkipped(b.id, ym)) return@mapNotNull null
             val due = ym.dayClamped(b.dueDay)
             val linked = billPayments[b.id to ym.key()]
             val pay = linked ?: inferredBillPayments[b.id to ym.key()]

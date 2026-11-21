@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -35,6 +34,7 @@ import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /*
  * RF-SEG-03/04: as telas da proteção dos backups. A senha só existe na memória enquanto a folha está aberta: o que fica
@@ -55,7 +55,7 @@ fun ProtectBackupSheet(busy: Boolean, onDismiss: () -> Unit, onConfirm: (CharArr
         b.isNotEmpty() && a != b -> Res.s(R.string.sec_password_mismatch)
         else -> null
     }
-    ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding().imePadding()) {
             Text(Res.s(R.string.sec_protect_sheet_title), style = MaterialTheme.typography.titleLarge)
             Text(
@@ -92,7 +92,7 @@ private fun PasswordField(value: String, onChange: (String) -> Unit, label: Stri
 @Composable
 fun BackupPasswordSheet(error: String?, busy: Boolean, onDismiss: () -> Unit, onSubmit: (CharArray) -> Unit) {
     var pw by remember { mutableStateOf("") }
-    ModalBottomSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = { if (!busy) onDismiss() }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding().imePadding()) {
             Text(Res.s(R.string.sec_open_title), style = MaterialTheme.typography.titleLarge)
             Text(Res.s(R.string.sec_open_help), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(vertical = 8.dp))

@@ -150,6 +150,15 @@ data class MonthOutlook(
     val models: List<io.github.h3yk0.cryo.domain.predict.ModelShare> = emptyList(),
     /** RF-PRV-03: a época do ano aplicada ao gasto do dia a dia (1 = época comum; 1,4 = estes dias costumam custar 40% a mais). */
     val season: Double = 1.0,
+    /** RF-PRV-10 (1.6): as entradas avulsas previstas até o fim do mês (P50), já contadas em [mid]; 0 quando desligadas. */
+    val extraIncomeMid: Long = 0,
+    /** RF-PRV-10: as entradas avulsas entram na conta (escolha da pessoa, ou o Cryo sozinho: [extraIncomeAuto]). */
+    val extraIncomeOn: Boolean = false,
+    /** O que o Cryo escolheria sozinho: houve entradas avulsas em pelo menos 2 dos 3 últimos meses ([extraIncomeMonths]). */
+    val extraIncomeAuto: Boolean = false,
+    val extraIncomeMonths: Int = 0,
+    /** RF-PRV-05: o acerto conferido no passado (o erro que se repete para o mesmo lado), já somado em [mid]. */
+    val pastShift: Long = 0,
 ) {
     val expectedIncome: Long get() = expected.filter { it.recurrence.type == TxType.INCOME }.sumOf { (it.recurrence.amount * it.probability).roundToLong() }
     val expectedExpense: Long get() = expected.filter { it.recurrence.type == TxType.EXPENSE }.sumOf { (it.recurrence.amount * it.probability).roundToLong() }
@@ -280,25 +289,40 @@ object Outlook {
 
     /**
      * As recorrências que ainda devem acontecer até [until] e não estão no app de outro jeito: sem conta fixa (a conta fixa
-     * já entra na previsão) e sem lançamento agendado com a mesma descrição.
+     * já entra na previsão) e sem a ocorrência que um lançamento agendado com a mesma descrição já cobre.
+     *
+     * ERR-060 (auditoria da 1.6): cada agendado substitui **só a ocorrência mais perto dele** (até um período de distância),
+     * nunca a recorrência inteira. Antes, o salário de dezembro agendado apagava todos os outros meses de salário da
+     * projeção de 12 meses e de "Como vou fechar o ano?". Na previsão do mês nada muda: lá só cabe uma ocorrência, e o
+     * agendado (até 7 dias depois do fim do período, como antes) continua tomando o lugar dela.
      */
     fun expectedItems(l: Ledger, recurrences: List<Recurrence>, today: LocalDate, until: LocalDate): List<ExpectedItem> {
         val billKeys = l.s.bills.filter { it.active }.mapTo(HashSet()) { TxKey.of(it.name) }
-        val scheduled = HashSet<String>()
-        for (t in l.s.txs) if (t.date.isAfter(today) && !t.date.isAfter(until.plusDays(7))) scheduled += t.type.ordinal.toString() + "|" + TxKey.of(t.description)
+        val scheduled = HashMap<String, MutableList<LocalDate>>()
+        for (t in l.s.txs) if (t.date.isAfter(today) && !t.date.isAfter(until.plusDays(7))) {
+            scheduled.getOrPut(t.type.ordinal.toString() + "|" + TxKey.of(t.description)) { ArrayList() } += t.date
+        }
         val out = ArrayList<ExpectedItem>()
         for (r in recurrences) {
             if (r.billId != null || r.key in billKeys || r.status == RecurrenceStatus.ENDED) continue
-            if ((r.type.ordinal.toString() + "|" + r.key) in scheduled) continue
             val p = (0.6 + 0.4 * r.confidence).coerceAtMost(0.98)
+            val items = ArrayList<ExpectedItem>()
             if (r.status == RecurrenceStatus.LATE) {
                 // Atrasou (o salário que não veio): metade da chance de vir ainda neste período, amanhã.
                 val tomorrow = today.plusDays(1)
-                if (!tomorrow.isAfter(until)) out += ExpectedItem(r, tomorrow, 0.5)
-                for (date in r.occurrences(tomorrow, until)) out += ExpectedItem(r, date, p)
+                if (!tomorrow.isAfter(until)) items += ExpectedItem(r, tomorrow, 0.5)
+                for (date in r.occurrences(tomorrow, until)) items += ExpectedItem(r, date, p)
             } else {
-                for (date in r.occurrences(today, until)) out += ExpectedItem(r, date, p)
+                for (date in r.occurrences(today, until)) items += ExpectedItem(r, date, p)
             }
+            // Cada agendado tira uma ocorrência só: a mais perto dele, se estiver a até um período (o que está mais longe
+            // que isso não é esta ocorrência, é outra coisa com o mesmo nome).
+            val reach = kotlin.math.ceil(r.period.days).toLong()
+            scheduled[r.type.ordinal.toString() + "|" + r.key]?.sorted()?.forEach { date ->
+                val nearest = items.minByOrNull { kotlin.math.abs(ChronoUnit.DAYS.between(it.date, date)) } ?: return@forEach
+                if (kotlin.math.abs(ChronoUnit.DAYS.between(nearest.date, date)) <= reach) items.remove(nearest)
+            }
+            out += items
         }
         return out.sortedBy { it.date }
     }

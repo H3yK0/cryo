@@ -59,4 +59,5 @@ target_include_directories(cryo_whisper PRIVATE whisper/include whisper/src)
 target_compile_definitions(cryo_whisper PRIVATE WHISPER_VERSION="1.9.5")
 target_compile_features(cryo_whisper PRIVATE cxx_std_17)
 target_compile_options(cryo_whisper PRIVATE -fvisibility=hidden)
-target_link_libraries(cryo_whisper PRIVATE ggml android)
+# Sem a biblioteca "android" desde a 1.6: o modelo é um arquivo comum (RF-VOZ-15), não um asset do APK.
+target_link_libraries(cryo_whisper PRIVATE ggml)

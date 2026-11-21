@@ -17,7 +17,11 @@ App Android per le finanze personali: semplice, completa, offline e open source.
   <a href="README.ja.md">日本語</a> ·
   <a href="README.ko.md">한국어</a> ·
   <a href="README.zh-CN.md">中文</a> ·
-  <a href="README.hi.md">हिन्दी</a>
+  <a href="README.hi.md">हिन्दी</a> ·
+  <a href="README.ru.md">Русский</a> ·
+  <a href="README.uk.md">Українська</a> ·
+  <a href="README.ar.md">العربية</a> ·
+  <a href="README.he.md">עברית</a>
 </p>
 
 <p align="center">
@@ -38,7 +42,7 @@ App Android per le finanze personali: semplice, completa, offline e open source.
 - **Debiti.** Prestiti, finanziamenti, accordi e soldi che devi a qualcuno, separati dal resto: quanto manca, rate in ritardo, quanto del reddito va in rate e quando sarai libero.
 - **Pianificazione.** Spese fisse con promemoria, budget per categoria e obiettivi di risparmio con un importo mensile suggerito.
 - **Investimenti e trasferimenti** tra conti.
-- **10 lingue e la tua valuta.** Italiano, inglese, portoghese, spagnolo, francese, tedesco, giapponese, coreano, cinese e hindi, nella valuta che scegli (euro, franco svizzero, dollaro, sterlina, yen, won, rupia, real e altre). La registrazione a frase e l'importazione degli estratti funzionano in tutte.
+- **14 lingue e la tua valuta.** Italiano, inglese, portoghese, spagnolo, francese, tedesco, giapponese, coreano, cinese, hindi, russo, ucraino, arabo ed ebraico (da destra a sinistra), nella valuta che scegli (euro, dollaro, sterlina, yen, won, rupia, rublo, grivnia, shekel, riyal e altre). La registrazione a frase e l'importazione degli estratti funzionano in tutte.
 - **Un giro animato** mostra come usare l'app la prima volta che la apri (e di nuovo quando vuoi, nelle Impostazioni).
 - **Material You**, tema chiaro e scuro e animazioni fluide che seguono l'opzione "Rimuovi animazioni" del telefono.
 
@@ -51,7 +55,7 @@ App Android per le finanze personali: semplice, completa, offline e open source.
 - **Backup protetti da password** (facoltativo): i file sono cifrati con AES-256 e nessuno può leggerli senza la tua password. La chiave resta nell'archivio sicuro di Android.
 - Backup in un file `.json` ed esportazione in un foglio `.csv`, quando vuoi.
 
-La registrazione a voce usa il riconoscimento vocale già installato sul telefono. Scrivere la frase funziona sempre.
+**Una voce che resta sul telefono.** La voce viene capita sul telefono stesso da Whisper (un modello vocale aperto); l'audio non diventa mai un file. Il modello si scarica una volta con il browser — Cryo non ha il permesso di accedere a internet — e Cryo accetta solo il file ufficiale, controllandone lo SHA-256 ([i modelli](../VOZ-MODELOS.md)). Senza, usa il riconoscimento vocale del telefono. Scrivere la frase funziona sempre.
 
 ## Installazione
 
@@ -71,7 +75,7 @@ Requisiti: JDK 21 e l'Android SDK (piattaforma 36). L'APK pubblicato è compilat
 
 Per firmare con la tua chiave, crea `keystore/keystore.properties` con `storeFile`, `storePassword`, `keyAlias` e `keyPassword`. La cartella `keystore/` non va mai nel repository.
 
-Per rigenerare le schermate della pagina F-Droid e di questi README (cartella `fastlane/`), nelle 10 lingue:
+Per rigenerare le schermate della pagina F-Droid e di questi README (cartella `fastlane/`), nelle 14 lingue:
 
 ```bash
 ./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true
@@ -91,9 +95,9 @@ I documenti del progetto (requisiti in [docs/PRD.md](../PRD.md), guida visiva, i
 
 ## Contribuire
 
-Suggerimenti e segnalazioni di problemi sono benvenuti in [Issues](https://github.com/H3yK0/cryo/issues), in una qualsiasi delle 10 lingue.
+Suggerimenti e segnalazioni di problemi sono benvenuti in [Issues](https://github.com/H3yK0/cryo/issues), in una qualsiasi delle 14 lingue.
 
-- **Traduzioni:** le 9 traduzioni sono state fatte con l'aiuto dell'IA. Se parli una di queste lingue e qualcosa suona strano, apri una issue: la revisione di madrelingua è molto gradita.
+- **Traduzioni:** le 13 traduzioni sono state fatte con l'aiuto dell'IA. Se parli una di queste lingue e qualcosa suona strano, apri una issue: la revisione di madrelingua è molto gradita.
 - **L'estratto della tua banca:** l'app ha una **modalità sviluppatore** (tocca 7 volte la versione in Impostazioni › Informazioni) con una modalità di prova che usa un database separato e dati di esempio, estratti di esempio in tutti i formati e un rapporto di lettura condivisibile in versione anonima. Se l'estratto della tua banca non viene letto bene, puoi aiutare senza inviare i tuoi dati: vedi [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (in portoghese).
 
 ## Sostenere

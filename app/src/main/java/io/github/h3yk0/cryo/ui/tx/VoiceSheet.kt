@@ -37,7 +37,6 @@ import androidx.compose.material.icons.rounded.Payments
 import androidx.compose.material.icons.rounded.Repeat
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -102,11 +101,13 @@ import io.github.h3yk0.cryo.voice.VoiceProblem
 import io.github.h3yk0.cryo.voice.VoicePrompt
 import io.github.h3yk0.cryo.voice.VoiceUi
 import io.github.h3yk0.cryo.voice.WhisperEngine
+import io.github.h3yk0.cryo.voice.WhisperModelStore
 import io.github.h3yk0.cryo.voice.WhisperListener
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /*
  * RF-VOZ-03/08: a tela de "ouvindo", com o eco aprovado pelo Hanry (protótipo de 09/11/2026). O microfone respira com a
@@ -138,7 +139,12 @@ fun VoiceSheet(
     val listener = remember(kind, round) {
         listeners?.invoke(kind, pctx) ?: when (kind) {
             VoiceEngineKind.WHISPER -> WhisperListener(scope, MicInput(), {
-                WhisperEngine.open(context.assets, pctx.language, VoicePrompt.build(pctx), flash = c.dev.enabled && VoiceSettings(context).fastAttention)
+                // RF-VOZ-15, ERR-057 e ERR-066: o modelo guardado, conferido de novo (o SHA-256 no primeiro uso de cada
+                // abertura do app; isto roda fora da linha principal, enquanto o microfone liga). Arquivo que não bate sai e
+                // a pessoa é avisada; arquivo que bate e não abre (falta de memória) fica: desta vez, o reconhecedor do celular.
+                WhisperModelStore(context).openWith { file ->
+                    WhisperEngine.open(file, pctx.language, VoicePrompt.build(pctx), flash = c.dev.enabled && VoiceSettings(context).fastAttention)
+                }
             })
             VoiceEngineKind.PHONE -> SystemListener(context)
         }
@@ -176,7 +182,7 @@ fun VoiceSheet(
     LaunchedEffect(done) { if (done && drafts.isNotEmpty()) haptics.confirm() }
     var adjusting by remember { mutableStateOf<TxDraft?>(null) }
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.fillMaxWidth().padding(horizontal = 20.dp).padding(bottom = 20.dp).navigationBarsPadding()) {
             StatusRow(ui, kind, hasResult = drafts.isNotEmpty(), devMs = if (devMode) ui.finalMs else null)
             Words(ui)

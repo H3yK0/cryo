@@ -60,7 +60,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -139,6 +138,7 @@ import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.LocalDate
 import io.github.h3yk0.cryo.ui.components.BottomBarSurface
 import io.github.h3yk0.cryo.ui.components.CryoButton
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /**
  * Importar extrato: escolher o arquivo, conferir a lista e importar. Nada entra no Cryo sem passar pela conferência.
@@ -884,7 +884,7 @@ private fun RowEditor(
     var payBill by remember(r.index, r.type) { mutableStateOf(r.payBill) }
     val kind = ImportModel.kindOf(r.type)
 
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Text(Res.s(R.string.import_conferir_movimentacao), style = MaterialTheme.typography.titleLarge)
             Row(verticalAlignment = Alignment.CenterVertically) {

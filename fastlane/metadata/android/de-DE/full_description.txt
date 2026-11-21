@@ -33,6 +33,6 @@ Schreib oder sag „Mittagessen 12,50 mit Karte“ oder „Fernseher 900 in 6 Ra
 <b>Material-You-Design</b>
 Die Farben folgen deinem Hintergrundbild (Android 12 oder neuer), mit hellem und dunklem Design.
 
-Die Spracherfassung nutzt die Spracherkennung auf deinem Handy. Tippen funktioniert immer.
+Sprache wird direkt auf dem Handy von Whisper verstanden: Lade das Sprachmodell einmal mit dem Browser herunter, Cryo prüft die Datei. Tippen funktioniert immer.
 
-Verfügbar in 10 Sprachen (Portugiesisch, Englisch, Spanisch, Französisch, Deutsch, Italienisch, Japanisch, Koreanisch, Chinesisch und Hindi), in der Währung deiner Wahl.
+Verfügbar in 14 Sprachen (Portugiesisch, Englisch, Spanisch, Französisch, Deutsch, Italienisch, Japanisch, Koreanisch, Chinesisch, Hindi, Russisch, Ukrainisch, Arabisch und Hebräisch), in der Währung deiner Wahl.

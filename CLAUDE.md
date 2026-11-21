@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **17/11/2026**.
+Situação descrita aqui: **21/11/2026**.
 
 ---
 
@@ -37,7 +37,7 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | Código | https://github.com/H3yK0/cryo (branch `main`, tags `vX.Y`) |
 | F-Droid | https://f-droid.org/packages/io.github.h3yk0.cryo/ (publicado; receita em `docs/fdroid/`) |
 | Releases | https://github.com/H3yK0/cryo/releases (APK `Cryo-X.Y.apk` em cada uma) |
-| Idioma | 10 línguas a partir da 1.4 (base pt-BR; en, es, fr, de, it, ja, ko, zh-CN, hi), na moeda escolhida. Até a 1.3: só português e reais |
+| Idioma | 14 línguas a partir da 1.6 (base pt-BR; en, es, fr, de, it, ja, ko, zh-CN, hi e, desde a 1.6, ru, uk, ar e he — pasta `values-iw`), na moeda escolhida. 10 línguas na 1.4 e na 1.5; até a 1.3: só português e reais |
 | Assinatura | Chave própria do Hanry. SHA-256 do certificado: `6e13e284c2f00b72473589391776ed2f28dbad5506f515de3fac99a364a3a2e7` |
 
 ## 3. Onde estamos
@@ -49,7 +49,8 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.2 | 3 | Publicada no GitHub e no F-Droid (commit `a9b3d209bc51ee7531afda8174192a94f1e36f81`). |
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
-| 1.5 | 10 | **Pronta** (12/11/2026), sem push, aguardando o teste e o "pode publicar" do Hanry. **Junta tudo o que foi feito depois da 1.4** (decisão do Hanry, 12/11/2026): as versões de trabalho 1.5 a 1.9 nunca foram publicadas e viraram as **cinco etapas da 1.5**, descritas abaixo. `versionCode` 10 (os números de 6 a 9 foram só APKs de teste; não voltar atrás, para instalar por cima deles). Branch `versao-1.5`. |
+| 1.5 | 10 | **Publicada no GitHub em 16/11/2026** (Release `v1.5`, etiqueta no commit `18444d8`, branches `main` e `versao-1.5`). **Não vai para o F-Droid** (decisão do Hanry, 16/11/2026): o modelo de voz ia dentro do APK (ERR-057). Junta as cinco etapas feitas depois da 1.4 (descritas abaixo). |
+| 1.6 | 11 | **Lançada em 21/11/2026** (o Hanry testou o APK no celular e deu o "pode publicar"): branches `main` e `versao-1.6` e etiqueta `v1.6` neste commit; etiqueta `voice-model-1` no commit da 1.4 (`f8a402b`). As **Releases** `v1.6` (com `Cryo-1.6.apk`, SHA-256 `daebb287…3e86ee`) e `voice-model-1` (com `ggml-base-q5_1.bin` e a licença) são criadas pelo Hanry na página do GitHub (daqui não há como criar Release); o **merge request do F-Droid** também é dele (`docs/fdroid/1.6-receita.md`). Conferir com `list_releases` na próxima sessão. Modelo de voz fora do APK, o fim do mês real, orçamento pela renda e o Geral, 4 línguas novas, os lotes LA1–LA8 e o visual em blocos com a central de avisos (descrição abaixo). **Reconstruída em 20/11/2026**: o contêiner foi apagado com a 1.6 sem commit (veja "Salvar o trabalho" na seção 4). |
 
 > **Numeração (decisão do Hanry, 12/11/2026).** A próxima versão pública é a **1.5** e ela junta tudo o que veio depois da 1.4.
 > O trabalho foi feito em cinco etapas, que na época tinham nome de versão mas nunca saíram: **etapa 1** (ícone, profundidade,
@@ -256,7 +257,86 @@ código anterior. Todos os testes passam.
   devolvê-las pela "Fatura em que entra" ou acertar o mês com "Ajustar total". O issue #3 ainda está sem resposta no GitHub (há um
   rascunho de resposta na entrega da 1.5; só o Hanry posta).
 
-### Para a próxima sessão (pedidos do Hanry de 17/11/2026 que ficaram de fora por custo)
+### O que a 1.6 traz (versionCode 11; lançada em 21/11/2026, branch `versao-1.6`, etiqueta `v1.6`)
+
+- **Modelo de voz fora do APK** (RF-VOZ-15, ERR-057, `docs/VOZ-MODELOS.md`): `voice/WhisperModels.kt` (os 6 modelos oficiais, com
+  tamanho e SHA-256), `voice/WhisperModelStore.kt` (copia para `noBackupFilesDir/whisper/` conferindo no caminho; confere de
+  novo antes de usar), `ui/screens/VoiceModelUi.kt` (a folha "Baixe a voz do Cryo uma vez" e Ajustes › Modelo de voz). A ponte
+  nativa abre arquivo (`nativeOpenFile`); `assets/whisper/` e os shims de teste saíram; `SourceTreeTest` barra binários. APK de
+  ~65 MB para ~9 MB. O teste no computador (`build-host.sh`) baixa o modelo (ou `CRYO_WHISPER_MODEL=/caminho`).
+- **O fim do mês real** (RF-PRV-10 reescrito em 21/11/2026, ERR-056 e ERR-064 com a lei nova): `domain/predict/MonthEnd.kt`
+  (`MonthEnds.of(l)`, sem o motor) é a conta única do Início, de Análises e da central: **renda − despesas**, só o que já
+  aconteceu e o que é fixo, nada estimado. Linhas (`EndLine`): renda fixa (contas fixas de entrada, agendados e o que entra
+  todo mês há 3 meses, `MonthEnds.monthlyIncome`), outras entradas, contas fixas, metas e investimentos (com o que falta
+  guardar no mês para as metas com prazo, `goalLeftThisMonth`), dívidas e parcelas, despesas variáveis e saídas agendadas.
+  "Com o dia a dia / Só o certo" e "Contar entradas avulsas" saíram da tela (a escolha das avulsas ficou só para o motor).
+- **Orçamento pela renda** (RF-ORC-07/08): `domain/IncomePlan.kt`, `data/IncomePlanStore.kt`, `ui/screens/BudgetIncomeScreen.kt`
+  (rota `plan/budgets/income`). O plano nunca sugere limite menor que as contas fixas mensais (RF-ORC-09).
+- **Russo, ucraniano, árabe e hebraico** (RF-LNG-11, ERR-058): textos tirados exatos do APK que o Hanry testou; `PhraseLang`
+  ganhou `prefix` (artigo e preposições grudados no árabe e no hebraico); palavras-chave em radical no russo e no ucraniano
+  ("зарплат"); `LocaleSettings.latinDigits` (árabe com 0–9) e `Res.s/Res.p` formatando com `AppLocale.locale`; RTL nos
+  deslizes (`Motion.kt`); colunas, meses e codificações dos extratos (windows-1251, KOI8, windows-1256, windows-1255).
+- **Lotes LA1–LA8** (aprovados na DLA de 19/11/2026, PRD 3.14, PRC-11):
+  - LA1 `ui/components/HealthRing.kt`: a nota da saúde ao lado do saldo (RF-INI-18).
+  - LA2 e LA3 `domain/AccountStatement.kt`: extrato da conta por dia com o saldo depois de cada lançamento (RF-CON-08) e o
+    filtro "Todas as contas" do Extrato (RF-EXT-09); a linha do lançamento com a bolinha da conta (RF-EXT-08, `TxRow`).
+  - LA4 `EntryDefaults` (`ui/tx/TxEditorScreen.kt`): o último dia usado (`AppSettings.lastTxDate`, chip "Último:") e a fatura
+    da tela do cartão (`Routes.txNew(..., invoice)`) (RF-LAN-10, RF-CAR-12).
+  - LA5 agendados com fundo e reloginho (RF-EXT-10); "Previstas" no Extrato e **pular o mês** (RF-EXT-11, RF-FIX-12):
+    tabela `bill_skips` (banco versão 6), `Ledger.billStatuses` tira o mês pulado de tudo; "Puladas neste mês".
+  - LA6 `ui/components/Sheet.kt` (`CryoSheet`): a lista de idiomas tremia (ERR-059); toda folha passa por ela.
+  - LA7 `domain/BudgetBills.kt` + `data/BudgetBillStore.kt`: o orçamento conta com as contas fixas (RF-ORC-09).
+  - LA8 `domain/predict/BudgetPlan.kt` (o orçamento no fim do mês, RF-PRV-11), `domain/engine/YearOutlook.kt` ("Como vou fechar
+    o ano?", RF-MOT-17: projeção até 31/12, sinais, zoom, arrastar e pinçar; `YearChart` em `Charts.kt`) e
+    `domain/engine/GoalForecast.kt` (previsão de metas, RF-MOT-16), no lugar de "Próximos meses".
+  - A chave "nunca mexer no saldo" na conta fixa **não será feita** (decisão do Hanry, 19/11/2026).
+- Banco de dados **versão 6** (migração 5→6 automática, só cria `bill_skips`). 53 textos novos dos lotes nas 13 línguas.
+- **Reforma visual** (pedido do Hanry de 21/11/2026, lotes LA9 a LA13, DLA no PRD 11.1b, PRD 3.17):
+  - LA9 **central de avisos** (RF-INI-19/20): `domain/Inbox.kt` (regras puras: grupos, ordem, o número do sino, o destaque;
+    a percepção que repete um aviso fica de fora pelo `topic` "alert:…" de `Insight`), `data/InboxStore.kt` (o "visto" é só o
+    HMAC da chave, SharedPreferences `cryo_inbox`/`cryo_inbox_teste`, esquece depois de 90 dias), `ui/screens/InboxScreen.kt`
+    (rota `inbox`); o sino entra no `HomeHeader(bell = …)`. No Início, no máximo um destaque (`ToneNotice`), nunca o fim do mês.
+  - LA10 **tons e blocos**: `CryoTheme.tones` (`ui/theme/Theme.kt`: alerta rosa, atenção pêssego, bom menta, informação
+    azul-gelo, com o par escuro) e `ui/components/Tiles.kt` (`CryoTile` com `leading`/`trailing`, `TileRow`, `TileButton`
+    com `stacked`, `Expandable`, `ToneNotice`, `GroupTitle`, `ProgressRing`). Início em blocos (`homeTiles` em `HomeScreen.kt`).
+  - LA11 **Análises** (RF-ANA-07): o fim do mês real com Renda × Despesas e as linhas fechadas; os 6 meses logo abaixo; o
+    ano (a explicação fechada); a saúde; o fluxo em blocos (`FlowBlocks`, o desenho do Sankey num `Expandable`); as 4 maiores
+    categorias. Saíram as percepções, a previsão de metas (foi para Planejar › Metas) e "O que se repete" (central e Contas fixas).
+  - LA12 **Planejar**: o orçamento **Geral** (RF-ORC-10, `domain/GeneralBudget.kt`; DAD-17: é o `Budget` de código de
+    categoria 0, `GeneralBudget.ID`, sem migração), orçamentos em blocos (`BudgetTile`), botões-bloco para a renda e o painel,
+    as sugestões das contas fixas num cartão só; contas fixas com três blocos (`BillStat`), as pagas e as puladas fechadas e
+    "O que se repete" no fim (RF-FIX-13); metas em blocos com a folha das quatro ações (`GoalTile`, `GoalSheet`, RF-MET-07).
+  - LA13 **Ajustes por tipo** (RF-AJU-13; a conta principal numa folha, a senha dos backups em Segurança) e **Ajustes › Voz**
+    (RF-VOZ-16, `VoiceSettingsScreen` em `ui/screens/VoiceModelUi.kt`, rota `settings/voice`).
+  - 73 textos novos nas 14 línguas (`tr_visual.py` no rascunho da sessão); 48 textos que ficaram sem uso saíram das 14 línguas.
+- **Diferenças conhecidas da 1.6 original** (a reconstrução refez a lógica a partir do APK): a tela do orçamento pela renda da
+  1.6 original tinha uma folha a mais (26 `CryoSheet` contra 25 agora); o registro por frase não lê milhar com espaço
+  ("25 000"), como na 1.6 — anotado como ideia.
+- **Auditoria independente** (21/11/2026: relatório do GPT-6 conferido no código, com testes; correções aprovadas pelo Hanry;
+  PRD 3.16, ERR-060 a ERR-066):
+  - `Outlook.expectedItems`: um agendado tira só a ocorrência que ele cobre (até um período dela), nunca a recorrência
+    inteira (ERR-060: um salário agendado apagava os outros 11 meses da projeção). `RecurrenceScheduledTest`.
+  - `Projection` (passo 4): pagamento de dívida agendado só conta dentro do período e cobre a parcela de vencimento mais
+    perto; o que sobra vai para as seguintes e depois para as anteriores (ERR-061). `DebtProjectionTest`.
+  - `ImportPlanner.plan`: a mesma fatura só casa a **parcela** do Cryo; o pareamento é global, pela mesma fatura e pela data
+    mais perto, nunca pela ordem do arquivo (ERR-062). Testes novos em `StatementImportTest`.
+  - `BackupCrypto.isEncrypted` olha a chave `"cipher":` do envelope (ERR-063). `BackupEnvelopeTest`.
+  - `MonthEnds.of` sem o motor fica sem a linha dos orçamentos (ERR-064). `MonthEndTest`.
+  - `WhisperEngine` conta as chamadas em andamento: fechar pede para parar, espera e solta uma vez só; a ponte é trocável nos
+    testes (`WhisperBridge`, ERR-065). `WhisperEngineGuardTest`, `WhisperHostTest.fecharNoMeioDeUmaContaEhSeguro`.
+  - `WhisperModelStore`: SHA-256 no primeiro uso de cada abertura (`usableFile`), temporário largado apagado, `openWith` não
+    apaga um modelo bom que não abriu (ERR-066). Testes novos em `WhisperModelStoreTest`.
+  - Conferidos sem defeito: a criptografia do backup, a compilação reproduzível (o APK sai idêntico compilado em outra
+    pasta), o alinhamento de 16 KB e a escolha do processador.
+
+### Para a próxima sessão
+
+1. **Proposta da 1.7** (PRD, roteiro): contas a receber, corrigir o saldo de uma conta, escolher vários lançamentos, calculadora
+   no campo de valor (a lista da olhada no Tally).
+2. Registro por frase: aceitar milhar separado por espaço ("25 000", comum em russo, ucraniano e francês) — ideia, não pedida.
+3. Revisão das traduções por quem fala cada língua (RF-LNG-08), principalmente as 4 novas.
+
+### Os pedidos de 17/11/2026 (feitos na 1.6)
 
 1. **Orçamento a partir da renda** (requisito novo em RF-ORC, PRD primeiro): perguntar a renda fixa e a média das variáveis
    (o motor já acha o salário em `Recurrences` e tem a mediana das entradas avulsas), uma chave "contar a renda variável"
@@ -269,31 +349,33 @@ código anterior. Todos os testes passam.
    loja (fastlane), READMEs, `PrdConformanceTest` e `StoreScreenshotsTest` (a lista de línguas passa de 10 para 14).
    Árabe e hebraico são **da direita para a esquerda**: conferir os desenhos próprios (`Charts.kt`, `Art.kt`, `Depth.kt`,
    `Tour.kt`), os ícones que precisam espelhar e os valores em dinheiro dentro de frases.
-3. **Conta fixa**: uma chave na própria conta fixa para "nunca mexer no saldo" (hoje a escolha é a cada pagamento) e a
-   mesma escolha ao criar com "Já paguei o de ...".
+3. **Conta fixa**: uma chave na própria conta fixa para "nunca mexer no saldo" — **não será feita** (Hanry, 19/11/2026: o
+   previsto só vira lançamento quando é pago, e na hora já existe a escolha de não mexer no saldo, RF-FIX-11).
 
 ### Próximos passos imediatos
 
-1. **1.5** (branch `versao-1.5`, `versionCode` 10): pronta em 12/11/2026, sem push, `Cryo-1.5.apk` para o teste do Hanry.
-   **Conferir no celular** o que ele ainda não testou: importar um extrato com uma conta fixa (a linha vem como "Paga: ...") e o
-   cartão "Conferir" em Planejar › Contas fixas; a foto do perfil (seletor do Android); a primeira dica do guia (só depois de
-   2 minutos de uso e de um lançamento); os sons novos; os cartões da previsão em Análises, Orçamentos e no investimento com os
-   dados de verdade dele (se um número parecer estranho, pedir o relatório anônimo, nunca o dado real, e medir no laboratório
-   antes de mudar); a figurinha animando na cortina (RF-AVI-09) e o modo compras na Now Bar (RF-AVI-10).
-   O APK antigo chamado `Cryo-1.5.apk` (07/11/2026, `versionCode` 6) e o `git bundle` daquela etapa ficaram para trás: valem só
-   o APK e o branch novos.
-2. **Lançar a 1.5** só com o "pode publicar" do Hanry (seção 11): push de `versao-1.5` e de `main`, Release `v1.5` com
-   `Cryo-1.5.apk` e, **porque a 1.5 tem código nativo**, o merge request no fdroiddata com a linha do NDK (rascunho em
-   `docs/fdroid/1.5-receita.md`). Ele tinha pedido para lançar por volta de 07/12/2026: confirmar a data com ele.
-3. **Issue #3** do GitHub (estorno no cartão e total da fatura): as duas coisas estão na 1.5; responder depois de publicar (só o
-   Hanry posta; há um rascunho na entrega).
-4. **F-Droid**: o merge request !56186 (licença AGPL e build da 1.4) foi aceito em 07/11/2026; a cópia em `docs/fdroid/` é igual à
-   receita oficial. Conferir em https://f-droid.org/packages/io.github.h3yk0.cryo/ que a 1.4 apareceu. Se não aparecer, olhar o
-   registro de builds do F-Droid (https://monitor.f-droid.org/builds) à procura de falha.
-5. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
-6. Importação: perguntar ao Hanry quais bancos ele usa e aprender os formatos (com relatório anônimo).
-7. Voz: medir no A55 o tempo com e sem a chave "Atenção rápida no Whisper" (modo desenvolvedor › Voz; RF-VOZ-13: se ficar
-   estável e mais rápida, ligar por padrão).
+1. **1.6** (`versionCode` 11): pronta em 20/11/2026, com as correções da auditoria e a reforma visual em 21/11/2026;
+   `Cryo-1.6.apk` (SHA-256 `daebb287…3e86ee`) **testado pelo Hanry e aprovado como lançável** em 21/11/2026. Ele achou
+   "algumas coisinhas que podem melhorar" (ainda não ditas: perguntar). O que foi conferido no teste: o Início em blocos, o
+   sino e a central de avisos (o destaque some no ×; abrir a central zera o número); o fim do mês real (Início e Análises, com
+   "Como cheguei nesse número"); o Geral em Planejar › Orçamentos (a sugestão e o dividido); contas fixas e metas em blocos;
+   Ajustes por tipo e Ajustes › Voz; a folha "Baixe a voz do Cryo uma vez" (o modelo que ele já baixou serve); árabe e hebraico
+   (tela espelhada, algarismos 0–9 no árabe); o extrato da conta; "Todas as contas" e as "Previstas" com "Pular este mês";
+   "Como vou fechar o ano?" (zoom na primeira vista, arrastar e pinçar).
+2. **1.6 lançada** (21/11/2026, "pode publicar" do Hanry): push de `versao-1.6` e de `main` e das etiquetas `v1.6` (este
+   commit) e `voice-model-1` (no commit da 1.4, `f8a402b`, para o robô do F-Droid não tomá-la por versão). O APK compilado de
+   um clone limpo deste commit é idêntico ao que o Hanry testou (`daebb287…3e86ee`).
+3. **O que ficou com o Hanry** (daqui não há como criar Release nem abrir merge request no GitLab): a Release `v1.6` (escolher
+   a etiqueta que já existe, anexar `Cryo-1.6.apk` com esse nome exato, notas em inglês e português), a Release
+   `voice-model-1` (escolher a etiqueta que já existe, anexar `ggml-base-q5_1.bin` e a licença MIT; sem ela o botão "Baixar o
+   modelo" do app dá erro, e só o link do Hugging Face funciona) e o merge request no fdroiddata (rascunho em
+   `docs/fdroid/1.6-receita.md`: bloco da 1.6 com NDK, 1.5 desligada, `UpdateCheckMode: Tags ^v[0-9.]+$`). Conferir na
+   próxima sessão (`list_releases`) e acompanhar a 1.6 entrar na loja.
+4. **1.6.1** (nome só com números: a receita do F-Droid só olha etiquetas `v` + números): as "coisinhas que podem melhorar"
+   que o Hanry achou no teste da 1.6 (pequenas e incrementais; perguntar quais são). PRD primeiro, como sempre.
+5. **Issue #3** do GitHub: responder agora que a 1.6 saiu (só o Hanry posta).
+6. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
+7. Voz: medir no A55 o tempo com e sem a chave "Atenção rápida no Whisper" (modo desenvolvedor › Voz; RF-VOZ-13).
 
 ---
 
@@ -311,6 +393,10 @@ código anterior. Todos os testes passam.
   guardada (só a chave derivada, trancada pelo cofre do Android). Nada de `Log`, `println` ou `printStackTrace` (RF-SEG-07).
 
 **Processo**
+- **Salvar o trabalho sem commit** (lição de 19–20/11/2026: o contêiner da nuvem é apagado quando a sessão fica parada, e a 1.6
+  inteira se perdeu duas vezes): enquanto o Hanry não autoriza commit, a cada etapa concluída o Claude gera um backup zip (os
+  arquivos mudados e novos por cima do commit-base, mais `APAGADOS.txt` e um LEIA-ME) e entrega ao Hanry pelo envio de arquivos.
+  Se a sessão cair, um backup restaura tudo num clone limpo. O registro da sessão anterior também serve (`list_events`).
 - **Biblioteca de erros = lei** (pedido do Hanry, 10/11/2026): **[docs/ERROS.md](docs/ERROS.md)** lista cada erro já corrigido, a
   lei ("o que nunca mais pode acontecer") e o teste que guarda. Antes de mexer numa área, ler as linhas dela. Nenhum
   teste-guarda pode ser apagado, desligado ou afrouxado. Todo defeito novo corrigido entra lá no mesmo commit, com teste que
@@ -435,12 +521,14 @@ do Cryo, não do git). O modelo fica em `app/src/main/assets/whisper/ggml-base-q
 
 ## 8. Banco de dados e formatos
 
-**Room** (`cryo.db`, versão 5; teste: `cryo-teste.db`). Tabelas: `accounts`, `cards`, `categories`, `transactions`,
+**Room** (`cryo.db`, versão 6; teste: `cryo-teste.db`). O orçamento **Geral** (1.6, RF-ORC-10, DAD-17) é a linha de `budgets`
+com `categoryId = 0` (`GeneralBudget.ID`): nenhuma categoria tem esse número, e toda conta por categoria já o ignora. Tabelas: `accounts`, `cards`, `categories`, `transactions`,
 `investments`, `investment_yields`, `goals`, `bills`, `budgets`, `debts`, `debt_adjustments` e (1.5) `budget_adjustments`
 (remanejar só no mês; `moveGroup` liga as duas pontas) e `no_spend_days`.
 Migrações automáticas: 1→2 (dívidas, com `Migration1To2`), 2→3 (`transactions.importKey` + índice), 3→4 (tabelas novas e
 `goals.art`, preenchido a partir do emoji por `Migration3To4`) e 4→5 (`bills.every`, `installments`, `cashAmount`, `endYm`,
-todas com valor padrão: quem vem da 1.4 continua com a conta mensal de sempre). Schemas em `app/schemas/`.
+todas com valor padrão: quem vem da 1.4 continua com a conta mensal de sempre) e 5→6 (1.6: `bill_skips`, os meses pulados das
+contas fixas, chave `billId` + `ym`; vai no backup como `billSkips`). Schemas em `app/schemas/`.
 
 **Tipos de movimentação** (`TxType`): `EXPENSE`, `INCOME` (no cartão = estorno), `TRANSFER` (conta → conta),
 `CARD_PAYMENT` (conta → cartão, com `invoiceYm`), `INVEST_IN`/`INVEST_OUT`, `GOAL_IN`/`GOAL_OUT` (caixinhas),
@@ -496,10 +584,20 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Perfil (1.5) | `ui/components/Avatar.kt`, `ui/screens/ProfileScreens.kt` |
 | Guia "Aprender o Cryo" (1.5) | `domain/Guide.kt`, `data/GuideStore.kt`, `ui/components/Guide.kt`, `ui/screens/LearnScreen.kt` |
 | Proteção dos dados (cofre, HMAC, backup com senha) | `data/Vault.kt`, `data/BackupCrypto.kt`, `data/EngineStore.kt`, `ui/screens/SecurityUi.kt` |
+| Modelo de voz baixado pela pessoa (1.6) | `voice/WhisperModels.kt`, `voice/WhisperModelStore.kt`, `ui/screens/VoiceModelUi.kt`, `docs/VOZ-MODELOS.md` |
+| Fim do mês que fecha, orçamento no fim do mês (1.6) | `domain/predict/MonthEnd.kt`, `domain/predict/BudgetPlan.kt`, `ForecastCard` em `InsightsScreen.kt` |
+| Orçamento pela renda e com as contas fixas (1.6) | `domain/IncomePlan.kt`, `domain/BudgetBills.kt`, `data/IncomePlanStore.kt`, `data/BudgetBillStore.kt`, `ui/screens/BudgetIncomeScreen.kt` |
+| Extrato da conta, filtro por conta, previstas e pular o mês (1.6) | `domain/AccountStatement.kt`, `AccountDetailScreen` em `WalletScreens.kt`, `TransactionsScreen.kt`, `Ledger.billStatuses` |
+| "Como vou fechar o ano?" e previsão de metas (1.6) | `domain/engine/YearOutlook.kt`, `domain/engine/GoalForecast.kt`, `YearChart` em `Charts.kt`, cartões em `EngineScreens.kt` |
+| Saúde no Início, folhas (1.6) | `ui/components/HealthRing.kt`, `ui/components/Sheet.kt` (`CryoSheet`) |
+| Central de avisos e o sino (1.6, LA9) | `domain/Inbox.kt`, `data/InboxStore.kt`, `ui/screens/InboxScreen.kt`, `HomeHeader(bell)` em `ui/components/Sections.kt` |
+| Blocos, resumo com setinha, tons por prioridade (1.6, LA10) | `ui/components/Tiles.kt`, `CryoTheme.tones` em `ui/theme/Theme.kt` |
+| Orçamento Geral (1.6, LA12) | `domain/GeneralBudget.kt`, `GeneralBudgetCard`/`GeneralBudgetSheet` em `ui/screens/PlanScreens.kt` |
+| Ajustes › Voz (1.6, LA13) | `VoiceSettingsScreen` em `ui/screens/VoiceModelUi.kt`, `voiceSummary` em `SettingsScreens.kt` |
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 970 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 1.100 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -523,6 +621,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `ForecastTest`, `ForecastLabTest`, `Audit18Test`, `Audit18DataTest`, `KnownIssuesTest`, `Screens18Test` | Etapa 4: o previsor contra o primeiro motor em mundos inventados (`ForecastWorld`), a faixa de 80%, a época do ano, categorias e investimentos; o laboratório completo (só com `-PforecastLab=true`); as correções da auditoria; a biblioteca de erros (`docs/ERROS.md`) inteira e com as guardas ligadas; imagens 82–85 (previsão conferida, orçamentos, investimento, carteira) |
 | `BillCycleTest` | Contas fixas não mensais: ritmo, parcelas, juros, prazo, os modelos de cada língua e o `Ledger` seguindo o ciclo (JVM puro) |
 | `BillMatchTest`, `BillFlowTest`, `ProfileTest`, `GuidePlannerTest`, `GuideFlowTest`, `CardFixTest`, `Screens19Test` | Etapa 5: o casador de contas fixas e a previsão sem dobro; importar, ligar, desligar, juntar e criar a conta fixa depois; o perfil (imagens 86–88); as regras do guia com datas inventadas e as telas dele (89–91); estorno, fatura mantida ao editar, escolha da fatura e ajustar total (92–94) |
+| `MonthEndTest`, `IncomePlanTest`, `BudgetBillsTest`, `WhisperModelStoreTest`, `SourceTreeTest` | 1.6: o fim do mês (com os orçamentos), o orçamento pela renda e com as contas fixas, o modelo de voz baixado, nenhum binário no repositório |
+| `AccountStatementTest`, `StatementTest`, `EntryDefaultsTest`, `BillSkipTest`, `YearOutlookTest`, `GoalForecastTest`, `Screens16Test` | 1.6 (lotes LA): extrato da conta, filtro por conta, último dia e fatura da tela, pular o mês (com o backup), o ano, as metas e as imagens 106–114 |
+| `InboxTest`, `GeneralBudgetTest`, `MonthEndTest`, `ScreensVisualTest` | Reforma visual da 1.6 (LA9–LA13): a central (grupos, ordem, o sino, o destaque, nada repetido, o "visto" só em HMAC), o Geral (o gasto que conta, a sugestão, o dividido, nunca vira categoria), o fim do mês real (a soma das linhas, nada estimado) e as imagens 115–125 |
+| `RecurrenceScheduledTest`, `DebtProjectionTest`, `BackupEnvelopeTest`, `WhisperEngineGuardTest` | Auditoria da 1.6 (ERR-060 a ERR-066): agendado × recorrência, parcelas de dívida na projeção, backup aberto com "cipher", fechar o Whisper com contas em andamento (mais os testes novos em `StatementImportTest`, `MonthEndTest`, `WhisperModelStoreTest` e `WhisperHostTest`) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
 **Armadilhas já descobertas (economizam horas):**
@@ -533,7 +635,7 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 104 conta fixa paga por fora, 105 busca com período, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 104 conta fixa paga por fora, 105 busca com período, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual), 106–114 lotes LA1–LA8, 115–125 reforma visual (`ScreensVisualTest`).
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -595,8 +697,23 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - **Janela curta do Whisper** (`audio_ctx`): bem mais rápida, mas às vezes entra em repetição. Só nas palavras ao vivo (com
   limite de 48 pedaços); o resultado final usa a janela inteira.
 - **Microfone falso nos testes**: o `FakeMic` despeja o áudio na hora; para testar "Pronto" e "Cancelar" use `paced = true`.
-- Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos). Um init script local em
-  `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google resolve; ele fica fora do projeto e não muda o APK.
+- Claude Code na nuvem: o Maven Central às vezes responde 429 (excesso de pedidos) ou redireciona arquivos grandes para um
+  espelho que a rede não libera. Um init script local em `~/.gradle/init.d/` trocando o Maven Central pelo espelho do Google
+  (`maven-central.storage-download.googleapis.com`) resolve, inclusive para o Robolectric (`robolectric.dependency.repo.url`);
+  ele fica fora do projeto e não muda o APK. O SDK do Android vem de `dl.google.com` (o ambiente "cryo" libera esse endereço).
+- **Folhas que sobem de baixo**: sempre `CryoSheet` (ERR-059; `PrdConformanceTest.folhasPelaCryoSheet`).
+- **Imagens 106–114** (1.6): `Screens16Test`. Nas imagens da loja, as sugestões de orçamento × contas fixas ficam dispensadas.
+- **`Expandable` fechado não está na árvore** (DS-EXP): para achar um texto de dentro, toque antes no título (veja
+  `Screens16Test.orcamentoComAsContasFixas`). Em Análises há dois "Como cheguei nesse número" (o do mês e o do ano): use
+  `onAllNodesWithText(...)[0]`.
+- **O Geral é um orçamento de código 0**: teste que pega "o primeiro orçamento" dos dados de exemplo precisa pular o
+  `GeneralBudget.ID` (o Room devolve a tabela pela chave, e o 0 vem primeiro).
+- **Whisper de verdade no computador sem internet para o Hugging Face**: o modelo recomendado está no histórico do git (a 1.5
+  o levava dentro do APK): `git show 18444d8:app/src/main/assets/whisper/ggml-base-q5_1.bin > /fora/do/projeto/ggml-base-q5_1.bin`
+  e `CRYO_WHISPER_MODEL=/fora/do/projeto/ggml-base-q5_1.bin app/src/test/cpp/build-host.sh` (o script confere o SHA-256).
+  Nunca devolva o arquivo para dentro do projeto (`SourceTreeTest`).
+- **Nada chama a ponte do Whisper por fora do `WhisperEngine`** (ERR-065): é ele que garante que nenhuma chamada chega a um
+  modelo já solto. Para testar a ordem das chamadas entre threads, use uma `WhisperBridge` falsa (`WhisperEngineGuardTest`).
 
 ## 11. Publicar uma versão
 
@@ -635,10 +752,15 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
 - **1.3** (06/11/2026): importar extrato, modo desenvolvedor, correção do bloqueio.
 - **1.4** (06/11/2026): 10 línguas e moeda do app, frases e extratos de outros países, visual 2.0 com 4 abas, passeio animado,
   animações, restaurar na apresentação, licença AGPL, PRD, GitHub em 10 línguas.
-- **1.5** (pronta em 12/11/2026, aguardando o teste do Hanry; junta as cinco etapas feitas depois da 1.4): ícone novo G4 e
+- **1.5** (16/11/2026, só no GitHub; junta as cinco etapas feitas depois da 1.4): ícone novo G4 e
   profundidade; motor financeiro e previsor conferido no passado; backup com senha e proteção dos dados; voz no aparelho com o
   Whisper; avisos inteligentes, sons, momentos e ilustrações próprias; painel do mês; auditoria e biblioteca de erros como lei;
   contas fixas que se acertam com o extrato; perfil; guia "Aprender o Cryo"; no cartão, estorno, escolha da fatura e ajustar total.
+- **1.6** (21/11/2026, no GitHub; no F-Droid depois do merge request da receita): modelo de voz fora do APK (F-Droid), o fim do mês real (renda −
+  despesas, nada estimado), orçamento pela renda, com as contas fixas e o Geral, russo, ucraniano, árabe e hebraico, os lotes
+  LA1–LA8 (saúde no Início, extrato da conta, filtro por conta, previstas e pular o mês, último dia e fatura da tela, o ano e as
+  metas, a lista que tremia) e a reforma visual LA9–LA13 (Início em blocos, central de avisos com o sino, tons pastel por
+  prioridade, Análises e Planejar resumidos, Ajustes por tipo e a voz numa tela própria).
 
 Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 
@@ -748,6 +870,16 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
   recalcula; a pessoa escolhe a fatura quando precisa.
 - **"Ajustar total" é um lançamento à vista**, não um número escondido: quem olha a fatura vê o ajuste e pode apagá-lo; os totais
   continuam sendo sempre a soma do que está lançado.
+- **O fim do mês real, sem cenários** (21/11/2026, pedido do Hanry): o número do mês passou a ser renda − despesas com só o
+  que já aconteceu e o que é fixo. A previsão por cenários continua no motor (categorias, o ano, as metas), mas o número do
+  mês não estima nada: é uma conta que a pessoa confere linha por linha e que só cai conforme as despesas entram.
+- **O Geral é uma linha de `budgets`** (código de categoria 0) e não uma tabela ou um arquivo à parte: vai e volta no backup,
+  fica separado no modo de teste e sai com "Apagar todos os dados" sem migração; as versões antigas simplesmente não o mostram.
+- **Central de avisos com um destaque só** (DS-PSI): a lista de avisos e as percepções saíram do meio do Início e de
+  Análises; o sino conta o que é importante e novo, e o Início mostra no máximo um destaque. O "visto" é só o HMAC da chave do
+  aviso (RF-SEG-02), como no motor.
+- **Cor pastel só onde há prioridade** (efeito de isolamento): se tudo é colorido, nada chama o olho; o tom nunca é o único
+  sinal (sempre há ícone ou texto), e a profundidade continua.
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
 
@@ -769,9 +901,9 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
-2. **1.5** (tudo o que veio depois da 1.4, numa versão só): pronta, aguardando o teste e o "pode publicar" do Hanry.
+2. **1.5**: publicada no GitHub (16/11/2026); não vai para o F-Droid. **1.6**: lançada no GitHub em 21/11/2026; entra no F-Droid quando o merge request da receita for aceito. Próxima: **1.6.1**.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. Depois da 1.5 (a próxima será a 1.6): widgets na tela inicial; dívida quitada e última parcela como momentos (RF-MOM-04);
+4. Depois da 1.6 (a próxima será a 1.7, proposta no PRD): widgets na tela inicial; dívida quitada e última parcela como momentos (RF-MOM-04);
    as lições que ficaram fora do guia (esconder valores, transferir, calendário, backup com senha).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 

@@ -64,6 +64,8 @@ data class AppSettings(
     val avatar: String = "",
     /** A cor de fundo da bolinha (0 = a do tema). */
     val avatarColor: Int = 0,
+    /** RF-LAN-10: o último dia usado num lançamento (fica guardado para a próxima vez). */
+    val lastTxDate: LocalDate? = null,
 )
 
 private val Context.dataStore by preferencesDataStore("settings")
@@ -85,6 +87,7 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
         val reminders = booleanPreferencesKey("reminders")
         val avatar = stringPreferencesKey("avatar")
         val avatarColor = intPreferencesKey("avatar_color")
+        val lastTxDate = longPreferencesKey("last_tx_date")
     }
 
     val flow: Flow<AppSettings> = store.data.map { p ->
@@ -99,6 +102,7 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
             remindersEnabled = p[K.reminders] ?: true,
             avatar = p[K.avatar] ?: "",
             avatarColor = p[K.avatarColor] ?: 0,
+            lastTxDate = p[K.lastTxDate]?.let { runCatching { LocalDate.ofEpochDay(it) }.getOrNull() },
         )
     }
 
@@ -111,6 +115,7 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
     suspend fun setName(v: String) = store.edit { it[K.name] = v.trim() }
     suspend fun setAvatar(value: String, color: Int) = store.edit { it[K.avatar] = value.take(64); it[K.avatarColor] = color }
     suspend fun setReminders(v: Boolean) = store.edit { it[K.reminders] = v }
+    suspend fun setLastTxDate(d: LocalDate) = store.edit { it[K.lastTxDate] = d.toEpochDay() }
     /** Volta todos os ajustes ao padrão. */
     suspend fun clear() = store.edit { it.clear() }
 
@@ -129,6 +134,11 @@ private data class Part2(
     val y: List<InvestmentYield>, val g: List<Goal>, val b: List<Bill>, val bu: List<Budget>, val d: List<Debt>,
 )
 
+private data class Part3(
+    val adj: List<DebtAdjustment>, val badj: List<io.github.h3yk0.cryo.data.db.BudgetAdjustment>, val nsd: List<NoSpendDay>,
+    val skips: List<io.github.h3yk0.cryo.data.db.BillSkip>,
+)
+
 /** O que foi gravado numa ação, para o botão "Desfazer". */
 data class Undo(val txs: List<Tx> = emptyList(), val adjustments: List<DebtAdjustment> = emptyList())
 
@@ -139,9 +149,12 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     val snapshot: StateFlow<Snapshot?> = combine(
         combine(dao.accounts(), dao.cards(), dao.categories(), dao.txs(), dao.investments(), ::Part1),
         combine(dao.yields(), dao.goals(), dao.bills(), dao.budgets(), dao.debts(), ::Part2),
-        dao.debtAdjustments(), dao.budgetAdjustments(), dao.noSpendDays(),
-    ) { p1, p2, adj, badj, nsd ->
-        Snapshot(p1.a, p1.c, p1.cat, p1.t, p1.i, p2.y, p2.g, p2.b, p2.bu, p2.d, adj, budgetAdjustments = badj, noSpendDays = nsd)
+        combine(dao.debtAdjustments(), dao.budgetAdjustments(), dao.noSpendDays(), dao.billSkips(), ::Part3),
+    ) { p1, p2, p3 ->
+        Snapshot(
+            p1.a, p1.c, p1.cat, p1.t, p1.i, p2.y, p2.g, p2.b, p2.bu, p2.d, p3.adj,
+            budgetAdjustments = p3.badj, noSpendDays = p3.nsd, billSkips = p3.skips,
+        )
     }
         .stateIn(scope, SharingStarted.Eagerly, null)
 
@@ -150,7 +163,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         Snapshot(
             dao.accountsOnce(), dao.cardsOnce(), dao.categoriesOnce(), dao.txsOnce(), dao.investmentsOnce(),
             dao.yieldsOnce(), dao.goalsOnce(), dao.billsOnce(), dao.budgetsOnce(), dao.debtsOnce(), dao.debtAdjustmentsOnce(),
-            budgetAdjustments = dao.budgetAdjustmentsOnce(), noSpendDays = dao.noSpendDaysOnce(),
+            budgetAdjustments = dao.budgetAdjustmentsOnce(), noSpendDays = dao.noSpendDaysOnce(), billSkips = dao.billSkipsOnce(),
         )
     }
 
@@ -331,7 +344,14 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
 
     suspend fun saveBill(b: Bill): Long = dao.putBill(b)
 
-    suspend fun deleteBill(b: Bill) = db.withTransaction { dao.unlinkBill(b.id); dao.deleteBill(b.id) }
+    // DAD-16: apagar a conta fixa leva os meses pulados dela.
+    suspend fun deleteBill(b: Bill) = db.withTransaction { dao.unlinkBill(b.id); dao.deleteBillSkipsOf(b.id); dao.deleteBill(b.id) }
+
+    /** RF-FIX-12 (1.6): pula a conta fixa no mês (sem lançamento nenhum). */
+    suspend fun skipBill(billId: Long, ym: YearMonth) = dao.putBillSkip(io.github.h3yk0.cryo.data.db.BillSkip(billId, ym.key()))
+
+    /** RF-FIX-12: "Voltar a contar" (e o desfazer do pular). */
+    suspend fun unskipBill(billId: Long, ym: YearMonth) = dao.deleteBillSkip(billId, ym.key())
 
     suspend fun markBillPaid(
         bill: Bill, ym: YearMonth, amount: Long, date: LocalDate, accountId: Long?, card: CreditCard?,
@@ -521,7 +541,7 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
         dao.putAccounts(s.accounts); dao.putCards(s.cards); dao.putCategories(s.categories); dao.putTxs(s.txs)
         dao.putInvestments(s.investments); dao.putYields(s.yields); dao.putGoals(s.goals); dao.putBills(s.bills)
         dao.putBudgets(s.budgets); dao.putDebts(s.debts); dao.putDebtAdjustments(s.debtAdjustments)
-        dao.putBudgetAdjustments(s.budgetAdjustments); dao.putNoSpendDays(s.noSpendDays)
+        dao.putBudgetAdjustments(s.budgetAdjustments); dao.putNoSpendDays(s.noSpendDays); dao.putBillSkips(s.billSkips)
         if (fromOldVersion) ensureDebtCategory()
     }
 
@@ -533,6 +553,6 @@ class FinanceRepository(private val db: CryoDatabase, scope: CoroutineScope) {
     private suspend fun clearTables() {
         dao.clearTxs(); dao.clearAccounts(); dao.clearCards(); dao.clearCategories(); dao.clearInvestments()
         dao.clearYields(); dao.clearGoals(); dao.clearBills(); dao.clearBudgets(); dao.clearDebts()
-        dao.clearDebtAdjustments(); dao.clearBudgetAdjustments(); dao.clearNoSpendDays()
+        dao.clearDebtAdjustments(); dao.clearBudgetAdjustments(); dao.clearNoSpendDays(); dao.clearBillSkips()
     }
 }

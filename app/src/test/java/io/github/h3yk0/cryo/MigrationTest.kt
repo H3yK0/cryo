@@ -90,6 +90,31 @@ class MigrationTest {
      * DAD-15 (1.5): a conta fixa ganha ritmo, parcelas, preço à vista e prazo. Quem vinha da 1.4 (banco 4) continua com
      * a conta mensal de sempre, e as colunas novas já funcionam.
      */
+    /** DAD-16 (1.6): a migração 5→6 só cria a tabela dos meses pulados; nada do que existia muda. */
+    @Test fun atualizaDa5Para6ComOsMesesPulados() = runBlocking {
+        val file = ctx.getDatabasePath("cryo.db")
+        file.delete()
+        val db = createSchema(file, 5)
+        db.insert(
+            "bills", null,
+            ContentValues().apply {
+                put("name", "Academia"); put("amount", 12_000); put("dueDay", 10); put("kind", "EXPENSE")
+                put("remind", 1); put("remindDaysBefore", 1); put("active", 1); put("startYm", 202601); put("createdAt", 0)
+                put("every", 1); put("installments", 1); put("cashAmount", 0); put("endYm", 0)
+            },
+        )
+        db.version = 5
+        db.close()
+
+        val room = CryoDatabase.build(ctx)
+        val bill = room.dao().billsOnce().single()
+        assertEquals("Academia", bill.name)
+        assertEquals(0, room.dao().billSkipsOnce().size)
+        room.dao().putBillSkip(io.github.h3yk0.cryo.data.db.BillSkip(bill.id, 202611))
+        assertEquals(listOf(bill.id to 202611), room.dao().billSkipsOnce().map { it.billId to it.ym })
+        room.close()
+    }
+
     @Test fun atualizaDa4Para5MantendoAsContasFixasMensais() = runBlocking {
         val file = ctx.getDatabasePath("cryo.db")
         file.delete()

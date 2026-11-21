@@ -14,7 +14,6 @@ import io.github.h3yk0.cryo.data.db.AccountType
 import io.github.h3yk0.cryo.data.db.Tx
 import io.github.h3yk0.cryo.data.db.TxType
 import io.github.h3yk0.cryo.domain.Ledger
-import io.github.h3yk0.cryo.domain.engine.EngineOptions
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -36,7 +35,7 @@ object AlertRun {
         val l = Ledger(snapshot, today)
         // Os contas ficam valendo o interruptor antigo de lembretes (Ajustes › Lembretes).
         if (!c.settings.current().remindersEnabled) state.setEnabled(AlertGroup.BILLS, false)
-        val report = if (slot == AlertSlot.MORNING) runCatching { c.engine.run(snapshot, today, EngineOptions()) }.getOrNull() else null
+        val report = if (slot == AlertSlot.MORNING) runCatching { c.engine.run(snapshot, today, c.engineStore.options.value) }.getOrNull() else null
         return AlertPlanner(l, report, state).plan(slot).count { Alerts.post(ctx, it, state) }
     }
 }

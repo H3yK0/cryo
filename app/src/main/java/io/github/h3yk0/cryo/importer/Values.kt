@@ -14,6 +14,7 @@ import java.nio.charset.CharacterCodingException
 import java.nio.charset.Charset
 import java.nio.charset.CodingErrorAction
 import java.time.LocalDate
+import io.github.h3yk0.cryo.domain.latinDigits
 
 /**
  * Leitura de datas, valores e textos do jeito que os bancos escrevem: os brasileiros ("01/10/2026", "1.234,56") e os de
@@ -24,8 +25,8 @@ object Values {
 
     /**
      * Texto do arquivo: UTF-8 (com ou sem BOM), UTF-16 (com BOM) ou, se não for, a codificação antiga mais comum na
-     * língua do app: Shift_JIS no Japão, CP949/EUC-KR na Coreia, GB18030 na China; no resto, Windows-1252 (o "ANSI" de
-     * muitos bancos).
+     * língua do app: Shift_JIS no Japão, CP949/EUC-KR na Coreia, GB18030 na China, Windows-1251 em russo e ucraniano,
+     * Windows-1256 em árabe, Windows-1255 em hebraico (RF-LNG-11); no resto, Windows-1252 (o "ANSI" de muitos bancos).
      */
     fun decode(bytes: ByteArray, language: AppLanguage = AppLocale.language): Pair<String, String> {
         if (bytes.size >= 2 && bytes[0] == 0xFF.toByte() && bytes[1] == 0xFE.toByte()) {
@@ -40,6 +41,9 @@ object Values {
             AppLanguage.JA -> listOf("windows-31j", "Shift_JIS", "EUC-JP")
             AppLanguage.KO -> listOf("x-windows-949", "EUC-KR")
             AppLanguage.ZH -> listOf("GB18030", "GBK", "Big5")
+            AppLanguage.RU, AppLanguage.UK -> listOf("windows-1251", "KOI8-R", "KOI8-U")
+            AppLanguage.AR -> listOf("windows-1256")
+            AppLanguage.HE -> listOf("windows-1255")
             else -> emptyList()
         }
         for (name in local) {
@@ -58,16 +62,29 @@ object Values {
 
     /* ------------------------------------ datas ------------------------------------ */
 
-    /** Meses abreviados em português, inglês, espanhol, francês, alemão e italiano (as 3 primeiras letras). */
+    /**
+     * Meses abreviados (as 3 primeiras letras) em português, inglês, espanhol, francês, alemão e italiano e, desde a 1.6
+     * (RF-LNG-11), em russo e ucraniano (os bancos escrevem "15 янв" e "15 січ"), em árabe ("15 يناير") e em hebraico
+     * ("15 בינואר": a preposição "ב" vem grudada no mês).
+     */
     private val MONTHS = mapOf(
         "jan" to 1, "fev" to 2, "feb" to 2, "mar" to 3, "abr" to 4, "apr" to 4, "mai" to 5, "may" to 5, "jun" to 6,
         "jul" to 7, "ago" to 8, "aug" to 8, "set" to 9, "sep" to 9, "out" to 10, "oct" to 10, "nov" to 11,
         "dez" to 12, "dec" to 12, "ene" to 1, "gen" to 1, "avr" to 4, "mag" to 5, "giu" to 6, "lug" to 7, "aou" to 8,
         "okt" to 10, "ott" to 10, "dic" to 12,
+        "янв" to 1, "фев" to 2, "мар" to 3, "апр" to 4, "мая" to 5, "май" to 5, "июн" to 6, "июл" to 7, "авг" to 8,
+        "сен" to 9, "окт" to 10, "ноя" to 11, "дек" to 12,
+        "січ" to 1, "лют" to 2, "бер" to 3, "кві" to 4, "тра" to 5, "чер" to 6, "лип" to 7, "сер" to 8, "вер" to 9,
+        "жов" to 10, "лис" to 11, "гру" to 12,
+        "ينا" to 1, "فبر" to 2, "مار" to 3, "ابر" to 4, "ماي" to 5, "يون" to 6, "يول" to 7, "اغس" to 8, "سبت" to 9,
+        "اكت" to 10, "نوف" to 11, "ديس" to 12,
+        "ינו" to 1, "פבר" to 2, "מרץ" to 3, "מרס" to 3, "אפר" to 4, "מאי" to 5, "יונ" to 6, "יול" to 7, "אוג" to 8,
+        "ספט" to 9, "אוק" to 10, "נוב" to 11, "דצמ" to 12,
+        "בינ" to 1, "בפב" to 2, "במר" to 3, "באפ" to 4, "במא" to 5, "בספ" to 9, "בנו" to 11, "בדצ" to 12,
     )
 
-    /** Francês: "juin" e "juillet" começam igual. */
-    private val MONTHS4 = mapOf("juin" to 6, "juil" to 7)
+    /** Quando as 3 letras não bastam: francês "juin"/"juillet"; hebraico com o "ב" ("ביוני"/"ביולי", "באוגוסט"/"באוקטובר"). */
+    private val MONTHS4 = mapOf("juin" to 6, "juil" to 7, "ביונ" to 6, "ביול" to 7, "באוג" to 8, "באוק" to 10)
 
     /** O número do mês por um nome ("outubro", "Oct", "févr.", "Juli"). */
     fun month(word: String): Int? {
@@ -80,9 +97,11 @@ object Values {
     private val ISO = Regex("""^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})\.?(?:[tT ].*)?$""")
     private val DMY = Regex("""^(\d{1,2})[/.-](\d{1,2})[/.-](\d{2}|\d{4})(?:\s.*)?$""")
     private val DM = Regex("""^(\d{1,2})[/.-](\d{1,2})\.?$""")
+    // Mês por extenso em qualquer escrita (\p{L}: latim, cirílico, árabe, hebraico); o ano pode vir com "г." (russo) ou "р."
+    // (ucraniano): "15 января 2026 г.".
     private val TEXT_MONTH =
-        Regex("""^(\d{1,2})$ORD\.?[\s-]*(?:de\s+)?([a-z]{3,9})\.?(?:[\s-]*(?:de\s+)?(\d{4}|\d{2}))?(?:\s+\d{1,2}:\d{2}.*)?$""")
-    private val MONTH_TEXT = Regex("""^([a-z]{3,9})\.?[\s-]+(\d{1,2})$ORD,?(?:[\s-]+(\d{4}|\d{2}))?(?:\s+\d{1,2}:\d{2}.*)?$""")
+        Regex("""^(\d{1,2})$ORD\.?[\s-]*(?:de\s+)?(\p{L}{3,10})\.?(?:[\s-]*(?:de\s+)?(\d{4}|\d{2})(?:\s*(?:г|р)\.?)?)?(?:\s+\d{1,2}:\d{2}.*)?$""")
+    private val MONTH_TEXT = Regex("""^(\p{L}{3,10})\.?[\s-]+(\d{1,2})$ORD,?(?:[\s-]+(\d{4}|\d{2}))?(?:\s+\d{1,2}:\d{2}.*)?$""")
     private val CJK_DATE = Regex("""[年월月년일日号]""")
 
     /**
@@ -191,13 +210,25 @@ object Values {
 
     private val NUMBER = Regex("""^\d[\d.,]*$""")
 
-    /** Símbolos e códigos de moeda que saem do valor ("R$", "US$", "€", "₹", "Rs.", "EUR", "円"...). */
+    /**
+     * As marcas invisíveis de direção do texto (árabe e hebraico, RF-LNG-11): os bancos as põem em volta do valor
+     * ("\u200F-1,234.50") e elas impediriam a leitura do número.
+     */
+    private val BIDI_MARKS = Regex("[\\u200E\\u200F\\u061C\\u202A-\\u202E\\u2066-\\u2069]")
+
+    /**
+     * Símbolos e códigos de moeda que saem do valor ("R$", "US$", "€", "₹", "Rs.", "EUR", "円"...; desde a 1.6 também "₽",
+     * "руб.", "₴", "грн.", "₪", "ש״ח", "ر.س", "د.إ", "ج.م").
+     */
     private val CURRENCY = Regex(
-        """(?i)R\$|US\$|U\${'$'}S|C\$|A\$|MX\$|\$|€|£|¥|￥|₩|₹|\bRs\.?|\b(?:BRL|USD|EUR|GBP|INR|JPY|KRW|CNY|RMB|CHF|MXN|CAD|AUD|ARS|CLP|COP|PEN|UYU)\b|元|円|원""",
+        """(?i)R\$|US\$|U\${'$'}S|C\$|A\$|MX\$|\$|€|£|¥|￥|₩|₹|\bRs\.?|₽|₴|₪|\b(?:BRL|USD|EUR|GBP|INR|JPY|KRW|CNY|RMB|CHF|MXN|CAD|AUD|ARS|CLP|COP|PEN|UYU|RUB|UAH|ILS|NIS|SAR|AED|EGP)\b|""" +
+            """元|円|원|руб\.?|грн\.?|ש"ח|ש״ח|ر\.س\.?|د\.إ\.?|ج\.م\.?""",
     )
 
-    /** Línguas em que a vírgula separa os centavos (no resto, "1,500" é mil e quinhentos). */
-    private val COMMA_DECIMAL = setOf(AppLanguage.PT_BR, AppLanguage.ES, AppLanguage.FR, AppLanguage.DE, AppLanguage.IT)
+    /** Línguas em que a vírgula separa os centavos (no resto, "1,500" é mil e quinhentos). Russo e ucraniano: "1 234,56". */
+    private val COMMA_DECIMAL = setOf(
+        AppLanguage.PT_BR, AppLanguage.ES, AppLanguage.FR, AppLanguage.DE, AppLanguage.IT, AppLanguage.RU, AppLanguage.UK,
+    )
 
     /**
      * Valor em centavos, com sinal. Entende "R$ 1.234,56", "-1.234,56", "1.234,56-", "(1.234,56)", "1.234,56 D",
@@ -206,7 +237,9 @@ object Values {
      * [decimalComma]: true = vírgula separa os centavos (padrão brasileiro); false = ponto; null = descobre sozinho.
      */
     fun amount(text: String?, decimalComma: Boolean? = null): Long? {
-        var t = text?.trim()?.replace('−', '-')?.replace('\u00A0', ' ')?.replace('\u202F', ' ')?.replace('\u2009', ' ') ?: return null
+        // RF-LNG-11: algarismos árabes viram 0–9 e as marcas de direção saem.
+        var t = text?.trim()?.latinDigits()?.replace(BIDI_MARKS, "")?.replace('−', '-')?.replace('\u00A0', ' ')?.replace('\u202F', ' ')
+            ?.replace('\u2009', ' ')?.trim() ?: return null
         if (t.isEmpty()) return null
         var negative = false
         if (t.startsWith("(") && t.endsWith(")")) { negative = true; t = t.substring(1, t.length - 1).trim() }
@@ -314,7 +347,8 @@ object Values {
 
     /** "Total", "Total da fatura", "Total de compras" (mas não "Total Distribuidora", que é nome de loja). */
     private val TOTAL = Regex(
-        """^(?:total|totale|summe|gesamt|gesamtsumme|合計|合计|总计|합계|총계|कुल)(?: (?:de|da|do|dos|das|geral|a pagar|no periodo|""" +
+        """^(?:total|totale|summe|gesamt|gesamtsumme|合計|合计|总计|합계|총계|कुल|итого|всего|разом|усього|المجموع|الاجمالي|סה"כ|סך הכל)""" +
+            """(?: (?:de|da|do|dos|das|geral|a pagar|no periodo|""" +
             """for|of|del|des|du|der|di|della)\b|:|$)""",
     )
 
@@ -324,6 +358,8 @@ object Values {
         "beginning balance", "ending balance", "balance brought forward", "balance carried forward", "brought forward",
         "carried forward", "b/f", "c/f", "solde", "kontostand", "anfangssaldo", "endsaldo", "alter saldo", "neuer saldo",
         "残高", "繰越", "前月繰越", "잔액", "이월", "余额", "期初余额", "期末余额", "上期余额", "शेष", "प्रारंभिक शेष",
+        "остаток", "входящий остаток", "исходящий остаток", "баланс", "залишок", "вхідний залишок", "вихідний залишок",
+        "الرصيد", "رصيد", "الرصيد الافتتاحي", "الرصيد الختامي", "יתרה", "יתרת פתיחה", "יתרת סגירה",
     ).map { it.normalized() }
 
     /** Linhas de saldo e totais não são movimentações. */

@@ -28,11 +28,12 @@ data class EngineOptions(
     val goalYield: Double = 0.0,
     /** Chaves (hash, RF-SEG-02) das recorrências que a pessoa disse que não são recorrentes. */
     val dismissed: Set<String> = emptySet(),
+    /** RF-PRV-10 (1.6): contar as entradas avulsas na previsão do mês (null = o Cryo decide pelos 3 últimos meses). */
+    val extraIncome: Boolean? = null,
 )
 
 /** Uma percepção com nota de importância (RF-MOT-11). [topic] evita duas frases sobre a mesma coisa. */
 data class RankedInsight(val text: String, val positive: Boolean?, val score: Double, val topic: String) {
-    fun toInsight() = Insight(text, positive)
 }
 
 /** Tudo o que o motor calculou para um dia e uma fotografia dos dados. */
@@ -56,6 +57,10 @@ data class EngineReport(
     /** RF-PRV-07: rentabilidade no tempo, sobe e desce e projeção de cada investimento, e da carteira inteira. */
     val investOutlook: Map<Long, io.github.h3yk0.cryo.domain.predict.InvestOutlook> = emptyMap(),
     val portfolioOutlook: io.github.h3yk0.cryo.domain.predict.InvestOutlook? = null,
+    /** RF-MOT-17 (1.6): o saldo até 31/12 (deste ano, ou do que vem a partir de outubro), com os orçamentos planejados. */
+    val year: Projection? = null,
+    /** RF-MOT-16 (1.6): no ritmo de agora, as metas cabem? */
+    val goalForecast: GoalForecast? = null,
 ) {
     /** Assinaturas e outras saídas que se repetem, ativas, por mês. */
     val monthlyRecurringExpense: Long
@@ -67,6 +72,9 @@ data class EngineReport(
  * calculado. Os sorteios usam uma semente tirada dos próprios dados: os mesmos dados dão sempre o mesmo resultado.
  */
 object FinanceEngine {
+    /** RF-MOT-17: cenários da projeção do ano (metade da dos próximos meses: o período é maior e a faixa já estabiliza). */
+    const val YEAR_SCENARIOS = 200
+
     fun seedOf(s: Snapshot, today: LocalDate): Long {
         var h = Rng.mix(0x43727930L, today.toEpochDay())
         for (t in s.txs) {
@@ -89,13 +97,19 @@ object FinanceEngine {
         val all = Recurrences.detect(s.txs, today)
         val recurrences = if (options.dismissed.isEmpty()) all else all.filter { hasher(it.key) !in options.dismissed }
         // RF-PRV: a previsão do mês vem do previsor novo (1.8); a da 1.5 ([Outlook.month]) fica como régua nos testes.
-        val outlook = io.github.h3yk0.cryo.domain.predict.Forecaster.month(l, recurrences, seed)
+        val outlook = io.github.h3yk0.cryo.domain.predict.Forecaster.month(l, recurrences, seed, extraIncome = options.extraIncome)
         val projection = Projections.project(l, recurrences, Rng.mix(seed, 1))
         val anomalies = Anomalies.find(l, recurrences)
         val health = HealthScore.of(l)
         // RF-PRV-06: as categorias vêm do previsor da 1.8, e o aviso de ritmo usa esse número.
         val categories = io.github.h3yk0.cryo.domain.predict.CategoryForecasts.of(l, recurrences, Rng.mix(seed, 3))
         val pace = Pacing.alerts(l, categories.associateBy { it.categoryId })
+        // RF-MOT-17 e RF-MOT-16 (1.6): o ano (com o orçamento planejado, RF-PRV-11) e as metas a partir dele.
+        val year = Projections.project(
+            l, recurrences, Rng.mix(seed, 5), scenarios = YEAR_SCENARIOS,
+            until = YearOutlooks.until(today), budgetPace = categories.associate { it.categoryId to it.mid },
+        )
+        val goalForecast = GoalForecasts.of(l, year)
         val suggestions = Pacing.suggestions(l)
         val rates = DebtPlanner.rates(l)
         val payoff = DebtPlanner.plan(l, options.debtExtra, options.strategy)
@@ -110,6 +124,8 @@ object FinanceEngine {
                 io.github.h3yk0.cryo.domain.predict.InvestForecasts.of(l, inv.id, Rng.mix(seed, 4))?.let { inv.id to it }
             }.toMap(),
             portfolioOutlook = io.github.h3yk0.cryo.domain.predict.InvestForecasts.of(l, null, Rng.mix(seed, 4)),
+            year = year,
+            goalForecast = goalForecast,
         )
         return report.copy(insights = Ranking.rank(l, report))
     }
@@ -215,7 +231,7 @@ internal object Ranking {
             out += RankedInsight(Res.s(R.string.engine_ins_recurring_total, money(subs)), null, score(subs, 0.4, 0.5), "subs")
         }
         // As percepções de antes (comparação com o mês passado) continuam, com nota menor.
-        for ((i, ins) in l.insights().withIndex()) out += RankedInsight(ins.text, ins.positive, 0.5 - i * 0.05, "classic:$i")
+        for ((i, ins) in l.insights().withIndex()) out += RankedInsight(ins.text, ins.positive, 0.5 - i * 0.05, ins.topic ?: "classic:$i")
 
         return out.sortedByDescending { it.score }.distinctBy { it.topic }.take(max)
     }

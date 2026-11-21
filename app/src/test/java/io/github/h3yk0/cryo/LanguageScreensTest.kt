@@ -86,4 +86,9 @@ class LanguageScreensTest {
     @Config(qualifiers = "+ko-rKR") @Test fun coreano() = shots("ko", "KRW")
     @Config(qualifiers = "+zh-rCN") @Test fun chines() = shots("zh", "CNY")
     @Config(qualifiers = "+hi-rIN") @Test fun hindi() = shots("hi", "INR")
+    // 1.6 (RF-LNG-11): árabe e hebraico da direita para a esquerda.
+    @Config(qualifiers = "+ru-rRU") @Test fun russo() = shots("ru", "RUB")
+    @Config(qualifiers = "+uk-rUA") @Test fun ucraniano() = shots("uk", "UAH")
+    @Config(qualifiers = "+ar-rSA-ldrtl") @Test fun arabe() = shots("ar", "SAR")
+    @Config(qualifiers = "+iw-rIL-ldrtl") @Test fun hebraico() = shots("he", "ILS")
 }

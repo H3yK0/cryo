@@ -186,6 +186,17 @@ data class BudgetAdjustment(
     val createdAt: Long = System.currentTimeMillis(),
 )
 
+/**
+ * DAD-16 (1.6, RF-FIX-12): o mês ([ym] AAAAMM) em que a conta fixa foi pulada (a academia que não cobra nas férias). Não
+ * cria lançamento nenhum: o mês sai da lista, dos avisos, das previstas, da previsão e da projeção.
+ */
+@Entity(tableName = "bill_skips", primaryKeys = ["billId", "ym"])
+data class BillSkip(
+    val billId: Long,
+    val ym: Int,
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
 /** DAD-13: um dia que a pessoa confirmou que foi sem gastos (conta na sequência, RF-MOM-03). */
 @Entity(tableName = "no_spend_days")
 data class NoSpendDay(

@@ -119,6 +119,36 @@ private val DarkExt = CryoColors(
 
 val LocalCryoColors = staticCompositionLocalOf { LightExt }
 
+/**
+ * DS-TOM-01 (reforma visual da 1.6, LA10-1): um tom de prioridade. [container] é o fundo pastel do bloco; [onContainer], o texto
+ * (contraste de 4,5:1 ou mais sobre o fundo); [accent], o ícone e o número em destaque.
+ */
+@Immutable
+data class CryoTone(val container: Color, val onContainer: Color, val accent: Color)
+
+/**
+ * DS-TOM-01: os quatro tons brandos, por prioridade. São de significado (como o verde e o vermelho): não mudam com o papel de
+ * parede. DS-TOM-02: só nos blocos que pedem prioridade, no máximo um ou dois por tela.
+ */
+@Immutable
+data class CryoTones(val alert: CryoTone, val attention: CryoTone, val good: CryoTone, val info: CryoTone)
+
+private val LightTones = CryoTones(
+    alert = CryoTone(container = Color(0xFFFBE7E6), onContainer = Color(0xFF561716), accent = Color(0xFFBF3A35)),
+    attention = CryoTone(container = Color(0xFFFFF0DC), onContainer = Color(0xFF4A2A00), accent = Color(0xFFA86200)),
+    good = CryoTone(container = Color(0xFFE2F3E5), onContainer = Color(0xFF123B1C), accent = Color(0xFF2B7A3B)),
+    info = CryoTone(container = Color(0xFFE2F0F7), onContainer = Color(0xFF0D3747), accent = Color(0xFF1C7595)),
+)
+
+private val DarkTones = CryoTones(
+    alert = CryoTone(container = Color(0xFF3B2324), onContainer = Color(0xFFFFDAD7), accent = Color(0xFFFF8C86)),
+    attention = CryoTone(container = Color(0xFF3A2D1B), onContainer = Color(0xFFFFE1BF), accent = Color(0xFFFFB866)),
+    good = CryoTone(container = Color(0xFF1D3323), onContainer = Color(0xFFCAEFD1), accent = Color(0xFF88D898)),
+    info = CryoTone(container = Color(0xFF1A2F39), onContainer = Color(0xFFCFEAF6), accent = Color(0xFF7DCDE9)),
+)
+
+val LocalCryoTones = staticCompositionLocalOf { LightTones }
+
 /** O degradê do ícone (DS-ICO-02), usado no cabeçalho do Início quando as cores do papel de parede estão desligadas. */
 private val IconStart = Color(0xFF0A4F66)
 private val IconEnd = Color(0xFF168FAD)
@@ -147,6 +177,10 @@ object CryoTheme {
     /** DS-PROF: cores da profundidade (fundo agrupado, cartões, sombras, cabeçalho). */
     val depth: CryoDepth
         @Composable get() = LocalCryoDepth.current
+
+    /** DS-TOM: os tons pastel por prioridade (alerta, atenção, bom, informação). */
+    val tones: CryoTones
+        @Composable get() = LocalCryoTones.current
 }
 
 private val CryoTypography = Typography().let { t ->
@@ -195,7 +229,11 @@ fun CryoTheme(mode: ThemeMode = ThemeMode.SYSTEM, dynamicColor: Boolean = true, 
     val depth = depthFor(scheme, dark, dynamic)
     // DS-PROF-02: o fundo das telas (e das barras de cima) é o "agrupado"; os cartões ficam por cima, mais claros.
     val grouped = scheme.copy(background = depth.grouped, surface = depth.grouped)
-    CompositionLocalProvider(LocalCryoColors provides if (dark) DarkExt else LightExt, LocalCryoDepth provides depth) {
+    CompositionLocalProvider(
+        LocalCryoColors provides if (dark) DarkExt else LightExt,
+        LocalCryoDepth provides depth,
+        LocalCryoTones provides if (dark) DarkTones else LightTones,
+    ) {
         MaterialTheme(colorScheme = grouped, typography = CryoTypography, shapes = CryoShapes, content = content)
     }
 }

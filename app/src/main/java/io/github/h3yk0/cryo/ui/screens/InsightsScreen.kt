@@ -2,14 +2,6 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
-import kotlin.math.roundToInt
-import io.github.h3yk0.cryo.ui.components.rememberEngine
-import io.github.h3yk0.cryo.domain.Num
-import io.github.h3yk0.cryo.domain.engine.Certainty
-import io.github.h3yk0.cryo.domain.engine.MonthOutlook
-import io.github.h3yk0.cryo.domain.predict.ModelKind
-import io.github.h3yk0.cryo.R
-import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -23,47 +15,52 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.data.db.CategoryKind
 import io.github.h3yk0.cryo.domain.Dates
 import io.github.h3yk0.cryo.domain.FlowKind
 import io.github.h3yk0.cryo.domain.FlowNode
-import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
-import io.github.h3yk0.cryo.domain.MonthForecast
-import io.github.h3yk0.cryo.domain.forecast
-import io.github.h3yk0.cryo.domain.insights
+import io.github.h3yk0.cryo.domain.MoneyFlow
+import io.github.h3yk0.cryo.domain.Num
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.key
 import io.github.h3yk0.cryo.domain.lastMonths
 import io.github.h3yk0.cryo.domain.moneyFlow
+import io.github.h3yk0.cryo.domain.predict.EndItem
+import io.github.h3yk0.cryo.domain.predict.EndLine
+import io.github.h3yk0.cryo.domain.predict.ModelKind
+import io.github.h3yk0.cryo.domain.predict.MonthEnd
+import io.github.h3yk0.cryo.domain.predict.MonthEnds
 import io.github.h3yk0.cryo.domain.ym
 import io.github.h3yk0.cryo.domain.ymOf
 import io.github.h3yk0.cryo.ui.LocalNav
 import io.github.h3yk0.cryo.ui.Routes
-import io.github.h3yk0.cryo.ui.components.FlatItem
-import io.github.h3yk0.cryo.ui.components.InfoCard
 import io.github.h3yk0.cryo.ui.components.CryoTopBar
 import io.github.h3yk0.cryo.ui.components.DonutChart
-import io.github.h3yk0.cryo.ui.components.ForecastChart
+import io.github.h3yk0.cryo.ui.components.Expandable
+import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.HeatmapCalendar
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.LegendDot
@@ -73,27 +70,34 @@ import io.github.h3yk0.cryo.ui.components.MonthBarsChart
 import io.github.h3yk0.cryo.ui.components.MonthSelector
 import io.github.h3yk0.cryo.ui.components.SankeyChart
 import io.github.h3yk0.cryo.ui.components.SectionTitle
+import io.github.h3yk0.cryo.ui.components.UsageBar
 import io.github.h3yk0.cryo.ui.components.categoryIcon
+import io.github.h3yk0.cryo.ui.components.depthCard
+import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 
+/**
+ * TELA-ANALISES (RF-ANA-07, reforma visual da 1.6, LA11): o mês (seletor), o fim do mês real (RF-PRV-10), os últimos 6
+ * meses, como vou fechar o ano, a saúde financeira, o fluxo do dinheiro em blocos, as categorias e o calendário de calor.
+ * As percepções e o que saiu do padrão moram na central de avisos (RF-INI-19); a previsão de metas, em Planejar › Metas.
+ */
 @Composable
 fun InsightsScreen() {
     val l = rememberLedger() ?: return LoadingBox()
     var ymKey by rememberSaveable { mutableIntStateOf(l.today.ym().key()) }
     val ym = ymOf(ymKey)
     val isCurrent = ym == l.today.ym()
-    val forecast = remember(l) { l.forecast() }
     val flow = remember(l, ymKey) { l.moneyFlow(ym) }
     val cats = remember(l, ymKey) { l.byCategory(ym, CategoryKind.EXPENSE) }
     val bars = remember(l, ymKey) { l.lastMonths(6, if (ym.isAfter(l.today.ym())) l.today.ym() else ym) }
-    val classic = remember(l) { l.insights() }
     val summary = remember(l, ymKey) { l.monthSummary(ym) }
+    // RF-PRV-10: o mesmo número do Início (renda × despesas, só o real).
+    val end = remember(l) { MonthEnds.of(l) }
     val nav = LocalNav.current
     // RF-MOT: o motor calcula fora da linha principal; enquanto não chega, a tela mostra o que já tinha.
     val engine = rememberEngine()
-    val insights = engine?.insights?.map { it.toInsight() } ?: classic
 
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.tab_insights)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
@@ -108,97 +112,33 @@ fun InsightsScreen() {
                 )
             }
 
+            item(key = "fim") { if (isCurrent) MonthEndCard(end) else MonthResultCard(summary) }
+
+            // DS-PSI-02: a comparação rápida logo abaixo do mês.
+            item { SectionTitle(Res.s(R.string.insights_ultimos_6_meses)) }
+            item {
+                FlatItem {
+                    MonthBarsChart(bars)
+                    Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                        LegendDot(CryoTheme.colors.income); Text(Res.s(R.string.insights_entradas), style = MaterialTheme.typography.labelMedium)
+                        LegendDot(CryoTheme.colors.expense); Text(Res.s(R.string.insights_saidas), style = MaterialTheme.typography.labelMedium)
+                    }
+                }
+            }
+
             if (isCurrent) {
-                engine?.let { e -> item { HealthCard(e.health) { nav.go(Routes.HEALTH) } } }
-                item { ForecastCard(forecast, engine?.outlook) }
-                if (insights.isNotEmpty()) {
-                    item {
-                        // Direção 2.0: as observações como avisos discretos (DS-COMP-17), como no Início.
-                        Column {
-                            SectionTitle(Res.s(R.string.home_insights))
-                            insights.forEach {
-                                InfoCard(Icons.Rounded.Lightbulb, it.text, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.padding(vertical = 4.dp))
-                            }
-                        }
-                    }
-                }
                 engine?.let { e ->
-                    item { ProjectionCard(e.projection) }
-                    item { RecurringCard(e, l) { nav.go(Routes.RECURRING) } }
-                    if (e.anomalies.isNotEmpty()) item { AnomaliesCard(e.anomalies) { id -> nav.go(Routes.txEdit(id)) } }
-                }
-            } else {
-                item {
-                    FlatItem {
-                        Text(Res.s(R.string.insights_resultado_mes), style = MaterialTheme.typography.titleMedium)
-                        Spacer(Modifier.height(8.dp))
-                        Line(Res.s(R.string.month_in), summary.income, CryoTheme.colors.income)
-                        Line(Res.s(R.string.month_out), -summary.expense, CryoTheme.colors.expense)
-                        if (summary.invested != 0L) Line(Res.s(R.string.insights_investido), -summary.invested, MaterialTheme.colorScheme.onSurface)
-                        if (summary.saved != 0L) Line(Res.s(R.string.plan_guardado_metas), -summary.saved, MaterialTheme.colorScheme.onSurface)
-                        HorizontalDivider(Modifier.padding(vertical = 6.dp))
-                        Line(Res.s(R.string.insights_sobrou), summary.result, if (summary.result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
-                    }
+                    // RF-MOT-17: o ano continua aqui; a saúde financeira é um bloco só.
+                    e.year?.let { y -> item(key = "ano") { YearOutlookCard(l, y) } }
+                    item(key = "saude") { HealthCard(e.health) { nav.go(Routes.HEALTH) } }
                 }
             }
 
             item { SectionTitle(Res.s(R.string.insights_fluxo_dinheiro)) }
-            item {
-                FlatItem {
-                    if (flow.isEmpty) {
-                        Text(Res.s(R.string.insights_registre_entradas_saidas_para), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                        Text(
-                            Res.s(R.string.insights_onde_dinheiro_veio_cima),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(12.dp))
-                        SankeyChart(flow)
-                        Spacer(Modifier.height(12.dp))
-                        Row(Modifier.fillMaxWidth()) {
-                            FlowLegend(Res.s(R.string.insights_onde_veio), flow.sources, flow.total, Modifier.weight(1f))
-                            Spacer(Modifier.width(12.dp))
-                            FlowLegend(Res.s(R.string.insights_para_onde_foi), flow.destinations, flow.total, Modifier.weight(1f))
-                        }
-                    }
-                }
-            }
+            item { FlowBlocks(flow) }
 
             item { SectionTitle(Res.s(R.string.insights_gastos_por_categoria_2)) }
-            item {
-                FlatItem {
-                    if (cats.isEmpty()) {
-                        Text(Res.s(R.string.insights_sem_gastos_neste_mes), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                        val total = cats.sumOf { it.total }
-                        DonutChart(
-                            values = cats.map { it.total },
-                            colors = cats.map { Color(it.category?.color ?: 0xFF9E9E9E.toInt()) },
-                            modifier = Modifier.fillMaxWidth(0.62f).align(Alignment.CenterHorizontally),
-                            description = Res.s(R.string.insights_gastos_por_categoria) + cats.joinToString { "${it.category?.name}: ${Money.format(it.total)}" },
-                        ) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(Res.s(R.string.insights_total), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                MoneyText(total, style = MaterialTheme.typography.titleMedium)
-                            }
-                        }
-                        Spacer(Modifier.height(12.dp))
-                        cats.forEach { ct ->
-                            val cat = ct.category
-                            Row(
-                                Modifier.fillMaxWidth().clickable(enabled = cat != null) { cat?.let { nav.open(Routes.txs(it.id)) } }.padding(vertical = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                if (cat != null) IconBadge(categoryIcon(cat.icon), Color(cat.color), 32.dp)
-                                Spacer(Modifier.width(10.dp))
-                                Text(cat?.name ?: Res.s(R.string.insights_sem_categoria), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                Text("${ct.total * 100 / total.coerceAtLeast(1)}%  ", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                MoneyText(ct.total, style = MaterialTheme.typography.titleSmall)
-                            }
-                        }
-                    }
-                }
-            }
+            item { CategoriesBlock(cats) { id -> nav.open(Routes.txs(id)) } }
 
             item { SectionTitle(Res.s(R.string.insights_calendario_calor)) }
             item {
@@ -222,117 +162,241 @@ fun InsightsScreen() {
                     )
                 }
             }
+        }
+    }
+}
 
-            item { SectionTitle(Res.s(R.string.insights_ultimos_6_meses)) }
-            item {
-                FlatItem {
-                    MonthBarsChart(bars)
-                    Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        LegendDot(CryoTheme.colors.income); Text(Res.s(R.string.insights_entradas), style = MaterialTheme.typography.labelMedium)
-                        LegendDot(CryoTheme.colors.expense); Text(Res.s(R.string.insights_saidas), style = MaterialTheme.typography.labelMedium)
-                    }
+/**
+ * RF-PRV-10 e RF-ANA-07: o fim do mês real, na cor do resultado (DS-TOM: menta quando sobra, rosa quando falta). O número,
+ * a frase de quanto dá por dia, Renda × Despesas em duas barras e "Como cheguei nesse número" fechado com setinha (DS-EXP).
+ * ERR-056: o número de cima é sempre a soma das linhas de baixo (e o mesmo do Início).
+ */
+@Composable
+private fun MonthEndCard(end: MonthEnd) {
+    val hide = LocalSettings.current.hideValues
+    val tone = if (end.total >= 0) CryoTheme.tones.good else CryoTheme.tones.alert
+    Column(
+        Modifier.fillMaxWidth().padding(vertical = 5.dp)
+            .depthCard(shape = MaterialTheme.shapes.large, color = tone.container)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
+    ) {
+        CompositionLocalProvider(LocalContentColor provides tone.onContainer) {
+            Text(Res.s(R.string.insights_previsao_fim_mes), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+            Row(verticalAlignment = Alignment.Bottom) {
+                MoneyText(end.total, signed = true, style = MaterialTheme.typography.headlineMedium, color = tone.accent)
+                Text(
+                    if (end.total >= 0) Res.s(R.string.insights_devem_sobrar) else Res.s(R.string.insights_devem_faltar),
+                    style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(bottom = 4.dp),
+                )
+            }
+            Text(
+                when {
+                    end.total > 0 -> Res.s(R.string.home_month_left, money(end.total, hide), money(end.perDay, hide))
+                    end.total < 0 -> Res.s(R.string.home_month_short, money(-end.total, hide))
+                    else -> Res.s(R.string.home_month_even)
+                },
+                style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 2.dp),
+            )
+            Spacer(Modifier.height(14.dp))
+            val top = maxOf(end.income, end.expenses).coerceAtLeast(1)
+            EndBar(Res.s(R.string.insights_end_income), end.income, top, CryoTheme.colors.income)
+            Spacer(Modifier.height(10.dp))
+            EndBar(Res.s(R.string.insights_end_expenses), end.expenses, top, CryoTheme.colors.expense)
+            Spacer(Modifier.height(6.dp))
+            Expandable(Res.s(R.string.insights_como_cheguei_nesse_numero)) {
+                Text(
+                    Res.s(R.string.insights_end_note), style = MaterialTheme.typography.bodySmall,
+                    color = LocalContentColor.current.copy(alpha = 0.8f), modifier = Modifier.padding(bottom = 6.dp),
+                )
+                for (item in end.items) {
+                    Line(
+                        endLineLabel(item.line), item.amount,
+                        if (item.amount >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+                        detail = pendingText(item, hide),
+                    )
                 }
+                HorizontalDivider(Modifier.padding(vertical = 6.dp), color = LocalContentColor.current.copy(alpha = 0.2f))
+                Line(Res.s(R.string.month_end), end.total, tone.accent, bold = true)
             }
         }
     }
 }
 
+/** RF-ANA-07: uma barra de Renda ou de Despesas, do tamanho da maior das duas. */
 @Composable
-private fun ForecastCard(f: MonthForecast, o: MonthOutlook?) {
-    val hide = LocalSettings.current.hideValues
-    // RF-MOT-03: com o motor, o número é o mais provável dos cenários e vem com a faixa; sem ele, a conta da 1.4.
-    val result = o?.mid ?: f.projectedResult
+private fun EndBar(label: String, value: Long, top: Long, color: Color) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+        MoneyText(value, style = MaterialTheme.typography.titleSmall)
+    }
+    Spacer(Modifier.height(4.dp))
+    UsageBar(value.toFloat() / top, height = 12.dp, baseColor = color, warn = false)
+}
+
+/** Mês que não é o atual: o resultado de verdade (entrou, saiu, investido, guardado e o que sobrou). */
+@Composable
+private fun MonthResultCard(summary: io.github.h3yk0.cryo.domain.MonthSummary) {
     FlatItem {
-        Text(Res.s(R.string.insights_previsao_fim_mes), style = MaterialTheme.typography.titleMedium)
-        Row(verticalAlignment = Alignment.Bottom) {
-            MoneyText(
-                result, signed = true, style = MaterialTheme.typography.headlineMedium,
-                color = if (result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
-            )
-            Text(
-                if (result >= 0) Res.s(R.string.insights_devem_sobrar) else Res.s(R.string.insights_devem_faltar),
-                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(bottom = 4.dp),
-            )
-        }
-        if (o != null && f.remainingDays > 0) {
-            Text(
-                Res.s(R.string.engine_between_80, if (hide) Money.HIDDEN else Money.format(o.low), if (hide) Money.HIDDEN else Money.format(o.high)),
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            // RF-PRV-05: a faixa já foi conferida no passado da própria pessoa.
-            o.calibration?.let { cal ->
-                Text(
-                    Res.s(R.string.prv_checked, cal.hits, cal.months, if (hide) Money.HIDDEN else Money.format(cal.typicalError)),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (o.chanceNegative >= 0.05) {
-                Text(
-                    Res.s(R.string.engine_ins_chance_red, Num.percent((o.chanceNegative * 100).roundToInt())),
-                    style = MaterialTheme.typography.bodySmall, color = CryoTheme.colors.warning,
-                )
-            }
-        }
+        Text(Res.s(R.string.insights_resultado_mes), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
         Spacer(Modifier.height(8.dp))
-        ForecastChart(f, band = o?.band, endValue = o?.mid)
-        Text(
-            Res.s(R.string.insights_linha_cheia_que_ja, f.daysInMonth),
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(12.dp))
-        Text(Res.s(R.string.insights_como_cheguei_nesse_numero), style = MaterialTheme.typography.titleSmall)
-        Spacer(Modifier.height(4.dp))
-        Line(Res.s(R.string.insights_ja_entrou), f.incomeSoFar, CryoTheme.colors.income)
-        if (f.pendingBillsIncome + f.scheduledIncome > 0) Line(Res.s(R.string.insights_ainda_vai_entrar_fixos), f.pendingBillsIncome + f.scheduledIncome, CryoTheme.colors.income)
-        Line(Res.s(R.string.insights_ja_saiu), -f.expenseSoFar, CryoTheme.colors.expense)
-        if (f.pendingBillsExpense > 0) Line(Res.s(R.string.insights_contas_fixas_pagar), -f.pendingBillsExpense, CryoTheme.colors.expense)
-        if (f.scheduledExpense > 0) Line(Res.s(R.string.insights_parcelas_agendados), -f.scheduledExpense, CryoTheme.colors.expense)
-        if (f.pendingDebts > 0) Line(Res.s(R.string.insights_parcelas_dividas_pagar), -f.pendingDebts, CryoTheme.colors.expense)
-        if (o != null) {
-            if (o.expectedIncome > 0) Line(Res.s(R.string.engine_line_expected_income), o.expectedIncome, CryoTheme.colors.income)
-            if (o.expectedExpense > 0) Line(Res.s(R.string.engine_line_expected_expense), -o.expectedExpense, CryoTheme.colors.expense)
-            if (f.remainingDays > 0) {
-                Line(Res.s(R.string.insights_dia_dia_dia_dias, if (hide) Money.HIDDEN else Money.format(o.dailyRate), f.remainingDays), -o.variableMid, CryoTheme.colors.expense)
-            }
-        } else if (f.remainingDays > 0) {
-            Line(Res.s(R.string.insights_dia_dia_dia_dias, if (hide) Money.HIDDEN else Money.format(f.dailyRate), f.remainingDays), -f.projectedVariable, CryoTheme.colors.expense)
-        }
+        Line(Res.s(R.string.month_in), summary.income, CryoTheme.colors.income)
+        Line(Res.s(R.string.month_out), -summary.expense, CryoTheme.colors.expense)
+        if (summary.invested != 0L) Line(Res.s(R.string.insights_investido), -summary.invested, MaterialTheme.colorScheme.onSurface)
+        if (summary.saved != 0L) Line(Res.s(R.string.plan_guardado_metas), -summary.saved, MaterialTheme.colorScheme.onSurface)
         HorizontalDivider(Modifier.padding(vertical = 6.dp))
-        Line(
-            Res.s(if (o != null) R.string.engine_line_most_likely else R.string.insights_resultado_previsto), result,
-            if (result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true,
-        )
-        if (o != null) {
-            Text(
-                Res.s(R.string.engine_forecast_how, Num.int(o.scenarios.toLong()), o.historyDays),
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 6.dp),
-            )
-            // RF-PRV-08: a previsão se explica (o que mais pesou e a época do ano).
-            val top = o.models.filter { it.weight >= 0.15 }.take(3)
-            if (f.remainingDays > 0 && top.isNotEmpty()) {
-                Text(
-                    Res.s(R.string.prv_models, top.joinToString(" · ") { Res.s(modelName(it.kind)) + " " + Num.percent((it.weight * 100).roundToInt()) }),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (f.remainingDays > 0 && kotlin.math.abs(o.season - 1) >= 0.05) {
-                Text(
-                    Res.s(if (o.season > 1) R.string.prv_season_up else R.string.prv_season_down, Num.percent((kotlin.math.abs(o.season - 1) * 100).roundToInt())),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            if (o.certainty == Certainty.LOW) {
-                Text(Res.s(R.string.engine_forecast_low), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        } else if (f.usedHistory) {
-            Text(
-                Res.s(R.string.insights_como_mes_esta_comeco),
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier = Modifier.padding(top = 6.dp),
+        Line(Res.s(R.string.insights_sobrou), summary.result, if (summary.result >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, bold = true)
+    }
+}
+
+/** RF-PRV-10: o nome de cada linha de "Como cheguei nesse número". */
+private fun endLineLabel(line: EndLine): String = Res.s(
+    when (line) {
+        EndLine.IN_FIXED -> R.string.end_in_fixed
+        EndLine.IN_OTHER -> R.string.end_in_other
+        EndLine.OUT_BILLS -> R.string.end_out_bills
+        EndLine.OUT_GOALS -> R.string.end_out_goals
+        EndLine.OUT_DEBTS -> R.string.end_out_debts
+        EndLine.OUT_VARIABLE -> R.string.end_out_variable
+        EndLine.OUT_SCHEDULED -> R.string.end_out_scheduled
+    },
+)
+
+/** O que ainda vem (ou falta pagar, ou guardar) dentro de uma linha; null quando já aconteceu tudo. */
+private fun pendingText(item: EndItem, hide: Boolean): String? {
+    if (item.pending == 0L || item.line == EndLine.OUT_SCHEDULED) return null
+    val v = money(kotlin.math.abs(item.pending), hide)
+    return Res.s(
+        when {
+            item.pending > 0 -> R.string.end_pending_in
+            item.line == EndLine.OUT_GOALS -> R.string.end_pending_save
+            else -> R.string.end_pending_out
+        },
+        v,
+    )
+}
+
+private fun money(v: Long, hide: Boolean) = if (hide) Money.HIDDEN else Money.format(v)
+
+/**
+ * RF-ANA-03 e RF-ANA-07: o fluxo do dinheiro em blocos: Entrou, Saiu e Sobrou lado a lado; "De onde veio" e "Para onde
+ * foi" cada um no seu bloco, com barras. O desenho do caminho (Sankey) continua, fechado com setinha (DS-EXP).
+ */
+@Composable
+private fun FlowBlocks(flow: MoneyFlow) {
+    if (flow.isEmpty) {
+        FlatItem { Text(Res.s(R.string.insights_registre_entradas_saidas_para), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        return
+    }
+    val totalIn = flow.sources.filter { it.kind != FlowKind.FROM_BALANCE }.sumOf { it.value }
+    val totalOut = flow.destinations.filter { it.kind != FlowKind.SURPLUS }.sumOf { it.value }
+    val left = totalIn - totalOut
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            FlowStat(Res.s(R.string.month_in), totalIn, CryoTheme.colors.income, Modifier.weight(1f))
+            FlowStat(Res.s(R.string.month_out), totalOut, CryoTheme.colors.expense, Modifier.weight(1f))
+            FlowStat(
+                Res.s(R.string.insights_sobrou), left, if (left >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+                Modifier.weight(1f), signed = true,
             )
         }
+        FlowBars(Res.s(R.string.insights_onde_veio), flow.sources, totalIn.coerceAtLeast(1))
+        FlowBars(Res.s(R.string.insights_para_onde_foi), flow.destinations, maxOf(totalIn, totalOut).coerceAtLeast(1))
+        FlatItem {
+            Expandable(Res.s(R.string.insights_flow_drawing)) {
+                Text(
+                    Res.s(R.string.insights_onde_dinheiro_veio_cima),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(12.dp))
+                SankeyChart(flow)
+            }
+        }
+    }
+}
+
+/** Um dos três blocos pequenos do fluxo (Entrou, Saiu, Sobrou). */
+@Composable
+private fun FlowStat(label: String, value: Long, color: Color, modifier: Modifier, signed: Boolean = false) {
+    Column(
+        modifier.depthCard(shape = MaterialTheme.shapes.large).padding(horizontal = 12.dp, vertical = 12.dp),
+    ) {
+        Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Spacer(Modifier.height(4.dp))
+        MoneyText(value, style = MaterialTheme.typography.titleSmall, color = color, signed = signed)
+    }
+}
+
+/** "De onde veio" ou "Para onde foi": cada parte numa barra, com o valor e quanto é do total. */
+@Composable
+private fun FlowBars(title: String, nodes: List<FlowNode>, total: Long) {
+    val hide = LocalSettings.current.hideValues
+    val surplus = CryoTheme.colors.income
+    val neutral = MaterialTheme.colorScheme.outline
+    FlatItem {
+        Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
+        nodes.forEach { n ->
+            val color = when (n.kind) {
+                FlowKind.SURPLUS -> surplus
+                FlowKind.FROM_BALANCE -> neutral
+                else -> Color(n.color)
+            }
+            Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                Text(n.label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(
+                    (if (hide) "" else Money.compact(n.value) + " · ") + Num.percent((n.value * 100 / total).toInt()),
+                    style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Spacer(Modifier.height(4.dp))
+            UsageBar(n.value.toFloat() / total, height = 8.dp, baseColor = color, warn = false)
+        }
+    }
+}
+
+/** RF-ANA-07: o gráfico das categorias, as 4 maiores e o resto fechado com setinha (DS-EXP). */
+@Composable
+private fun CategoriesBlock(cats: List<io.github.h3yk0.cryo.domain.CategoryTotal>, onOpen: (Long) -> Unit) {
+    FlatItem {
+        if (cats.isEmpty()) {
+            Text(Res.s(R.string.insights_sem_gastos_neste_mes), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            return@FlatItem
+        }
+        val total = cats.sumOf { it.total }
+        DonutChart(
+            values = cats.map { it.total },
+            colors = cats.map { Color(it.category?.color ?: 0xFF9E9E9E.toInt()) },
+            modifier = Modifier.fillMaxWidth(0.62f).align(Alignment.CenterHorizontally),
+            description = Res.s(R.string.insights_gastos_por_categoria) + cats.joinToString { "${it.category?.name}: ${Money.format(it.total)}" },
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(Res.s(R.string.insights_total), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                MoneyText(total, style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        Spacer(Modifier.height(12.dp))
+        cats.take(TOP_CATEGORIES).forEach { CategoryLine(it, total, onOpen) }
+        if (cats.size > TOP_CATEGORIES) {
+            Expandable(Res.s(R.string.insights_cats_all), Modifier.padding(top = 4.dp)) {
+                cats.drop(TOP_CATEGORIES).forEach { CategoryLine(it, total, onOpen) }
+            }
+        }
+    }
+}
+
+private const val TOP_CATEGORIES = 4
+
+@Composable
+private fun CategoryLine(ct: io.github.h3yk0.cryo.domain.CategoryTotal, total: Long, onOpen: (Long) -> Unit) {
+    val cat = ct.category
+    Row(
+        Modifier.fillMaxWidth().clickable(enabled = cat != null) { cat?.let { onOpen(it.id) } }.padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        if (cat != null) IconBadge(categoryIcon(cat.icon), Color(cat.color), 32.dp)
+        Spacer(Modifier.width(10.dp))
+        Text(cat?.name ?: Res.s(R.string.insights_sem_categoria), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
+        Text(Num.percent((ct.total * 100 / total.coerceAtLeast(1)).toInt()) + "  ", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        MoneyText(ct.total, style = MaterialTheme.typography.titleSmall)
     }
 }
 
@@ -348,44 +412,14 @@ internal fun modelName(k: ModelKind): Int = when (k) {
 }
 
 @Composable
-private fun Line(label: String, value: Long, color: Color, bold: Boolean = false) {
+private fun Line(label: String, value: Long, color: Color, bold: Boolean = false, detail: String? = null) {
     Row(Modifier.fillMaxWidth().padding(vertical = 3.dp), verticalAlignment = Alignment.CenterVertically) {
-        Text(
-            label, style = if (bold) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.weight(1f),
-        )
+        Column(Modifier.weight(1f)) {
+            Text(label, style = if (bold) MaterialTheme.typography.titleSmall else MaterialTheme.typography.bodyMedium)
+            detail?.let {
+                Text(it, style = MaterialTheme.typography.bodySmall, color = LocalContentColor.current.copy(alpha = 0.75f))
+            }
+        }
         MoneyText(value, signed = true, color = color, style = MaterialTheme.typography.bodyMedium, fontWeight = if (bold) FontWeight.Bold else null)
     }
 }
-
-@Composable
-private fun FlowLegend(title: String, nodes: List<FlowNode>, total: Long, modifier: Modifier = Modifier) {
-    val hide = LocalSettings.current.hideValues
-    val surplus = CryoTheme.colors.income
-    val neutral = MaterialTheme.colorScheme.outline
-    Column(modifier) {
-        Text(title, style = MaterialTheme.typography.labelLarge)
-        nodes.forEach { n ->
-            Row(Modifier.padding(top = 4.dp), verticalAlignment = Alignment.Top) {
-                LegendDot(
-                    when (n.kind) {
-                        FlowKind.SURPLUS -> surplus
-                        FlowKind.FROM_BALANCE -> neutral
-                        else -> Color(n.color)
-                    },
-                )
-                Spacer(Modifier.width(6.dp))
-                Column {
-                    Text(n.label, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(
-                        (if (hide) "" else "${Money.compact(n.value)} · ") + "${n.value * 100 / total.coerceAtLeast(1)}%",
-                        style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-            }
-        }
-    }
-}
-
-@Suppress("unused")
-private fun Ledger.unused() = Unit

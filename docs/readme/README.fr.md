@@ -17,7 +17,11 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
   <a href="README.ja.md">日本語</a> ·
   <a href="README.ko.md">한국어</a> ·
   <a href="README.zh-CN.md">中文</a> ·
-  <a href="README.hi.md">हिन्दी</a>
+  <a href="README.hi.md">हिन्दी</a> ·
+  <a href="README.ru.md">Русский</a> ·
+  <a href="README.uk.md">Українська</a> ·
+  <a href="README.ar.md">العربية</a> ·
+  <a href="README.he.md">עברית</a>
 </p>
 
 <p align="center">
@@ -38,7 +42,7 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
 - **Dettes.** Prêts, crédits, accords et argent que vous devez à quelqu'un, à part du reste : ce qu'il reste, les échéances en retard, la part de vos revenus qui part en remboursements et quand vous serez libre.
 - **Planification.** Charges fixes avec rappel, budget par catégorie et objectifs d'épargne avec un montant mensuel suggéré.
 - **Investissements et virements** entre comptes.
-- **10 langues et votre monnaie.** Français, anglais, portugais, espagnol, allemand, italien, japonais, coréen, chinois et hindi, dans la monnaie de votre choix (euro, franc suisse, dollar, livre, yen, won, roupie, real et d'autres). La saisie par phrase et l'import de relevés fonctionnent dans toutes.
+- **14 langues et votre monnaie.** Français, anglais, portugais, espagnol, allemand, italien, japonais, coréen, chinois, hindi, russe, ukrainien, arabe et hébreu (de droite à gauche), dans la monnaie de votre choix (euro, dollar, livre, yen, won, roupie, rouble, hryvnia, shekel, riyal et d'autres). La saisie par phrase et l'import de relevés fonctionnent dans toutes.
 - **Une visite animée** montre comment utiliser l'app à la première ouverture (et à nouveau quand vous voulez, dans les Réglages).
 - **Material You**, thème clair et sombre et animations fluides qui respectent l'option « Supprimer les animations » du téléphone.
 
@@ -51,7 +55,7 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
 - **Sauvegardes protégées par mot de passe** (facultatif) : les fichiers sont chiffrés en AES-256 et illisibles sans votre mot de passe. La clé reste dans le coffre sécurisé d'Android.
 - Sauvegarde dans un fichier `.json` et export vers un tableur `.csv`, quand vous voulez.
 
-La saisie à la voix utilise la reconnaissance vocale déjà installée sur votre téléphone. Écrire la phrase fonctionne toujours.
+**Une voix qui reste sur le téléphone.** La voix est comprise sur le téléphone même par Whisper (un modèle vocal ouvert) ; l'audio ne devient jamais un fichier. Le modèle se télécharge une fois avec le navigateur — Cryo n'a pas la permission d'accès à internet — et Cryo n'accepte que le fichier officiel, en vérifiant son SHA-256 ([les modèles](../VOZ-MODELOS.md)). Sans lui, la reconnaissance du téléphone prend le relais. Écrire la phrase fonctionne toujours.
 
 ## Installation
 
@@ -71,7 +75,7 @@ Prérequis : JDK 21 et le SDK Android (plateforme 36). L'APK publié est compil�
 
 Pour signer avec votre propre clé, créez `keystore/keystore.properties` avec `storeFile`, `storePassword`, `keyAlias` et `keyPassword`. Le dossier `keystore/` ne va jamais dans le dépôt.
 
-Pour régénérer les captures de la page F-Droid et de ces README (dossier `fastlane/`), dans les 10 langues :
+Pour régénérer les captures de la page F-Droid et de ces README (dossier `fastlane/`), dans les 14 langues :
 
 ```bash
 ./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true
@@ -91,9 +95,9 @@ Les documents du projet (exigences dans [docs/PRD.md](../PRD.md), guide visuel, 
 
 ## Contribuer
 
-Les suggestions et les signalements de bugs sont les bienvenus dans [Issues](https://github.com/H3yK0/cryo/issues), dans n'importe laquelle des 10 langues.
+Les suggestions et les signalements de bugs sont les bienvenus dans [Issues](https://github.com/H3yK0/cryo/issues), dans n'importe laquelle des 14 langues.
 
-- **Traductions :** les 9 traductions ont été faites avec l'aide de l'IA. Si vous parlez l'une de ces langues et que quelque chose sonne faux, ouvrez une issue : la relecture par des locuteurs natifs est très appréciée.
+- **Traductions :** les 13 traductions ont été faites avec l'aide de l'IA. Si vous parlez l'une de ces langues et que quelque chose sonne faux, ouvrez une issue : la relecture par des locuteurs natifs est très appréciée.
 - **Le relevé de votre banque :** l'app a un **mode développeur** (touchez 7 fois la version dans Réglages › À propos) avec un mode test qui utilise une base de données séparée et des données d'exemple, des relevés d'exemple dans tous les formats et un rapport de lecture partageable en version anonyme. Si le relevé de votre banque n'est pas bien lu, vous pouvez aider sans envoyer vos données : voir [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (en portugais).
 
 ## Soutenir

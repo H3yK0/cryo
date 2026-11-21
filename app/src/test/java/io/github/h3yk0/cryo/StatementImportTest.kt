@@ -948,4 +948,77 @@ class StatementImportTest {
         assertEquals(listOf(-1250L), st.lines.map { it.amount })
         assertEquals(2, st.skipped.size)
     }
+
+    /* ------------------- repetidas: a mesma fatura e o pareamento (auditoria da 1.6, ERR-062) ------------------- */
+
+    private fun cardPlan(lines: List<StatementLine>, txs: List<Tx>, invoiceYm: Int? = 202612) = ImportPlanner.plan(
+        Statement(StatementFormat.CSV, lines, isCard = true), ImportTarget(cardId = 7, invoiceYm = invoiceYm),
+        Snapshot(accounts = listOf(account), cards = listOf(card), categories = categories, txs = txs), emptyMap(), invert = true,
+    )
+
+    /** ERR-062: a mesma fatura sozinha não faz duas compras de mesmo valor virarem uma; ela só vale para a parcela. */
+    @Test fun mesmaFaturaSoValeParaParcela() {
+        val farmacia = Tx(id = 50, type = TxType.EXPENSE, amount = 8000, date = d(5, 11), description = "Farmácia", cardId = 7, invoiceYm = 202612)
+        // O restaurante 14 dias depois, mesmo valor, mesma fatura: é outra compra (antes saía desmarcada como repetida).
+        val other = cardPlan(listOf(StatementLine(d(19, 11), "RESTAURANTE SABOR", 8000)), listOf(farmacia)).single()
+        assertEquals(RowFlag.NONE, other.flag)
+        assertTrue(other.selected)
+        // Lançada à mão 5 dias antes do banco, e não é parcela: também é nova.
+        assertEquals(RowFlag.NONE, cardPlan(listOf(StatementLine(d(10, 11), "AMAZON US", 8000)), listOf(farmacia)).single().flag)
+        // Até 3 dias continua parecida (a regra de sempre).
+        assertEquals(RowFlag.LOOKS_DUPLICATE, cardPlan(listOf(StatementLine(d(7, 11), "PADARIA", 8000)), listOf(farmacia)).single().flag)
+        // A parcela 2/3 do Cryo, com o banco mostrando a data da compra (20/10): é a mesma, e a parecida é a 2/3 (a desta
+        // fatura), não a 1/3 (que tem a mesma data da linha, mas é de outra fatura).
+        val tv1 = Tx(id = 60, type = TxType.EXPENSE, amount = 10000, date = d(20, 10), description = "TV", cardId = 7, invoiceYm = 202611, installmentGroup = "g", installmentNumber = 1, installmentTotal = 3)
+        val tv2 = tv1.copy(id = 61, date = d(20, 11), invoiceYm = 202612, installmentNumber = 2)
+        val parcel = cardPlan(listOf(StatementLine(d(20, 10), "LOJA TV - Parcela 2/3", 10000)), listOf(tv1, tv2)).single()
+        assertEquals(RowFlag.LOOKS_DUPLICATE, parcel.flag)
+        assertEquals(61L, parcel.match?.id)
+    }
+
+    /** ERR-062: cada linha fica com a parecida de data mais perto, e não com a primeira que aparece no arquivo. */
+    @Test fun cadaLinhaFicaComAParecidaDeDataMaisPerto() {
+        // A fatura tem as duas compras de R$ 80; à mão, só o restaurante (19/11).
+        val rest = Tx(id = 51, type = TxType.EXPENSE, amount = 8000, date = d(19, 11), description = "Restaurante", cardId = 7, invoiceYm = 202612)
+        val rows = cardPlan(listOf(StatementLine(d(5, 11), "FARMACIA", 8000), StatementLine(d(19, 11), "RESTAURANTE", 8000)), listOf(rest))
+        assertEquals(listOf(RowFlag.NONE, RowFlag.LOOKS_DUPLICATE), rows.map { it.flag })
+        assertEquals(51L, rows[1].match?.id)
+        // Na conta, dentro de 3 dias: Uber (10/11) e Padaria (12/11) no extrato; à mão, só a padaria.
+        val pad = Tx(id = 52, type = TxType.EXPENSE, amount = 2500, date = d(12, 11), description = "Padaria", accountId = 1)
+        val acc = ImportPlanner.plan(
+            Statement(StatementFormat.CSV, listOf(StatementLine(d(10, 11), "UBER", -2500), StatementLine(d(12, 11), "PADARIA", -2500))),
+            ImportTarget(accountId = 1), Snapshot(accounts = listOf(account), categories = categories, txs = listOf(pad)), emptyMap(), invert = false,
+        )
+        assertEquals(listOf(RowFlag.NONE, RowFlag.LOOKS_DUPLICATE), acc.map { it.flag })
+        assertEquals(listOf(true, false), acc.map { it.selected })
+        // Duas à mão e as duas no extrato: cada linha com a sua.
+        val farm = rest.copy(id = 53, date = d(5, 11), description = "Farmácia")
+        val both = cardPlan(listOf(StatementLine(d(5, 11), "FARMACIA", 8000), StatementLine(d(19, 11), "RESTAURANTE", 8000)), listOf(rest, farm))
+        assertEquals(listOf(53L, 51L), both.map { it.match?.id })
+    }
+
+    /** Os outros casos do relatório da auditoria: o que já era certo continua certo. */
+    @Test fun repetidasNosOutrosCasosDaAuditoria() {
+        // Duas compras novas de mesmo valor no mesmo arquivo, nada no Cryo: as duas entram.
+        val two = cardPlan(listOf(StatementLine(d(5, 11), "FARMACIA", 8000), StatementLine(d(19, 11), "RESTAURANTE", 8000)), emptyList())
+        assertEquals(listOf(RowFlag.NONE, RowFlag.NONE), two.map { it.flag })
+        // Estorno (entrada no cartão) do mesmo valor de uma compra: o sinal é outro, não casa.
+        val farmacia = Tx(id = 50, type = TxType.EXPENSE, amount = 8000, date = d(5, 11), description = "Farmácia", cardId = 7, invoiceYm = 202612)
+        assertEquals(RowFlag.NONE, cardPlan(listOf(StatementLine(d(6, 11), "ESTORNO FARMACIA", -8000)), listOf(farmacia)).single().flag)
+        // Outra conta: o gasto à mão é da conta 2, o extrato é da conta 1.
+        val other = ImportPlanner.plan(
+            Statement(StatementFormat.CSV, listOf(StatementLine(d(5, 11), "FARMACIA", -8000))), ImportTarget(accountId = 1),
+            Snapshot(accounts = listOf(account), categories = categories, txs = listOf(farmacia.copy(cardId = null, invoiceYm = null, accountId = 2))), emptyMap(), invert = false,
+        )
+        assertEquals(RowFlag.NONE, other.single().flag)
+        // Arquivos que se sobrepõem (de 01 a 10/11 e depois de 05 a 15/11, mesmo formato): o que já entrou é reconhecido.
+        val target = ImportTarget(accountId = 1)
+        val first = Statement(StatementFormat.CSV, listOf(StatementLine(d(1, 11), "MERCADO", -9000), StatementLine(d(5, 11), "POSTO", -15000)))
+        val saved = ImportPlanner.plan(first, target, Snapshot(accounts = listOf(account), categories = categories), emptyMap(), false)
+            .mapIndexed { i, r -> ImportPlanner.toTx(r, target, null, now = 0).copy(id = 700L + i) }
+        val second = Statement(StatementFormat.CSV, listOf(StatementLine(d(5, 11), "POSTO", -15000), StatementLine(d(9, 11), "FARMACIA", -4000)))
+        val again = ImportPlanner.plan(second, target, Snapshot(accounts = listOf(account), categories = categories, txs = saved), emptyMap(), false)
+        assertEquals(listOf(RowFlag.IMPORTED_BEFORE, RowFlag.NONE), again.map { it.flag })
+        assertEquals(701L, again[0].match?.id)
+    }
 }

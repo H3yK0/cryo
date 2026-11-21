@@ -17,7 +17,11 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
   <a href="README.ja.md">日本語</a> ·
   <a href="README.ko.md">한국어</a> ·
   <a href="README.zh-CN.md">中文</a> ·
-  <a href="README.hi.md">हिन्दी</a>
+  <a href="README.hi.md">हिन्दी</a> ·
+  <a href="README.ru.md">Русский</a> ·
+  <a href="README.uk.md">Українська</a> ·
+  <a href="README.ar.md">العربية</a> ·
+  <a href="README.he.md">עברית</a>
 </p>
 
 <p align="center">
@@ -38,7 +42,7 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
 - **Schulden.** Kredite, Finanzierungen, Vereinbarungen und Geld, das du jemandem schuldest, getrennt vom Rest: wie viel noch fehlt, überfällige Raten, wie viel deines Einkommens in Raten geht und wann du schuldenfrei bist.
 - **Planung.** Fixkosten mit Erinnerung, Budget pro Kategorie und Sparziele mit vorgeschlagenem Monatsbetrag.
 - **Geldanlagen und Überweisungen** zwischen Konten.
-- **10 Sprachen und deine Währung.** Deutsch, Englisch, Portugiesisch, Spanisch, Französisch, Italienisch, Japanisch, Koreanisch, Chinesisch und Hindi, in der Währung deiner Wahl (Euro, Franken, Dollar, Pfund, Yen, Won, Rupie, Real und mehr). Erfassen per Satz und der Import von Kontoauszügen funktionieren in allen.
+- **14 Sprachen und deine Währung.** Deutsch, Englisch, Portugiesisch, Spanisch, Französisch, Italienisch, Japanisch, Koreanisch, Chinesisch, Hindi, Russisch, Ukrainisch, Arabisch und Hebräisch (von rechts nach links), in der Währung deiner Wahl (Euro, Dollar, Pfund, Yen, Won, Rupie, Rubel, Hrywnja, Schekel, Riyal und mehr). Erfassen per Satz und Kontoauszug-Import funktionieren in allen.
 - **Eine kurze animierte Tour** zeigt beim ersten Öffnen, wie die App funktioniert (und wieder, wann du willst, in den Einstellungen).
 - **Material You**, helles und dunkles Design und flüssige Animationen, die der Handy-Option „Animationen entfernen“ folgen.
 
@@ -51,7 +55,7 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
 - **Passwortgeschützte Sicherungen** (optional): Die Dateien werden mit AES-256 verschlüsselt und sind ohne dein Passwort nicht lesbar. Der Schlüssel bleibt im sicheren Schlüsselspeicher von Android.
 - Sicherung in eine `.json`-Datei und Export als `.csv`-Tabelle, wann du willst.
 
-Die Spracheingabe nutzt die Spracherkennung, die schon auf deinem Handy installiert ist. Den Satz zu tippen funktioniert immer.
+**Sprache, die auf dem Handy bleibt.** Sprache wird direkt auf dem Handy von Whisper (einem offenen Sprachmodell) verstanden; die Aufnahme wird nie zu einer Datei. Das Modell lädst du einmal mit dem Browser herunter — Cryo hat keine Internetberechtigung — und Cryo nimmt nur die offizielle Datei an und prüft ihren SHA-256 ([die Modelle](../VOZ-MODELOS.md)). Ohne Modell nutzt Cryo die Spracherkennung des Handys. Den Satz zu tippen funktioniert immer.
 
 ## Installation
 
@@ -71,7 +75,7 @@ Voraussetzungen: JDK 21 und das Android SDK (Plattform 36). Die veröffentlichte
 
 Um mit deinem eigenen Schlüssel zu signieren, lege `keystore/keystore.properties` mit `storeFile`, `storePassword`, `keyAlias` und `keyPassword` an. Der Ordner `keystore/` kommt nie ins Repository.
 
-Um die Bildschirmfotos der F-Droid-Seite und dieser READMEs (Ordner `fastlane/`) in den 10 Sprachen neu zu erzeugen:
+Um die Bildschirmfotos der F-Droid-Seite und dieser READMEs (Ordner `fastlane/`) in den 14 Sprachen neu zu erzeugen:
 
 ```bash
 ./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true
@@ -91,9 +95,9 @@ Die Projektdokumente (Anforderungen in [docs/PRD.md](../PRD.md), visueller Leitf
 
 ## Mitmachen
 
-Vorschläge und Fehlermeldungen sind unter [Issues](https://github.com/H3yK0/cryo/issues) willkommen, in jeder der 10 Sprachen.
+Vorschläge und Fehlermeldungen sind unter [Issues](https://github.com/H3yK0/cryo/issues) willkommen, in jeder der 14 Sprachen.
 
-- **Übersetzungen:** Die 9 Übersetzungen entstanden mit Hilfe von KI. Wenn du eine dieser Sprachen sprichst und dir etwas seltsam vorkommt, eröffne bitte ein Issue: Durchsicht durch Muttersprachler ist sehr willkommen.
+- **Übersetzungen:** Die 13 Übersetzungen entstanden mit Hilfe von KI. Wenn du eine dieser Sprachen sprichst und dir etwas seltsam vorkommt, eröffne bitte ein Issue: Durchsicht durch Muttersprachler ist sehr willkommen.
 - **Der Kontoauszug deiner Bank:** Die App hat einen **Entwicklermodus** (7-mal auf die Version tippen, unter Einstellungen › Über) mit einem Testmodus, der eine eigene Datenbank und Beispieldaten nutzt, Beispielauszüge in allen Formaten und einen Lesebericht, der in anonymer Fassung geteilt werden kann. Wird der Auszug deiner Bank nicht richtig gelesen, kannst du helfen, ohne deine Daten zu schicken: siehe [docs/IMPORTACAO.md](../IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (auf Portugiesisch).
 
 ## Unterstützen

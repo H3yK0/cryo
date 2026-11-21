@@ -89,7 +89,8 @@ object Columns {
     private enum class Role { DATE, DESCRIPTION, AMOUNT, CREDIT, DEBIT, BALANCE, KIND, ID, INSTALLMENT }
 
     /**
-     * Nomes de coluna nas 10 línguas do app (RF-IMP-21), já normalizados (minúsculas, sem acento nas letras latinas).
+     * Nomes de coluna nas 14 línguas do app (RF-IMP-21; russo, ucraniano, árabe e hebraico desde a 1.6, RF-LNG-11), já
+     * normalizados (minúsculas, sem acento nas letras latinas, sem as vogais escritas do árabe e do hebraico).
      * Ex.: "Data"/"Date"/"Fecha"/"Datum"/"日付"/"날짜"/"日期"/"तारीख".
      */
     private val NAMES: List<Pair<Role, List<String>>> = listOf(
@@ -103,6 +104,10 @@ object Columns {
             "data operazione", "data contabile", "data valuta", "日付", "取引日", "利用日", "ご利用日", "お取引日", "年月日",
             "날짜", "거래일", "거래일자", "거래일시", "이용일", "이용일자", "日期", "交易日期", "记账日期", "交易时间", "入账日期",
             "तारीख", "दिनांक", "तिथि",
+            "дата", "дата операции", "дата проводки", "дата платежа", "дата транзакции", "дата и время операции",
+            "дата списания", "дата операції", "дата і час операції", "дата транзакції", "дата проведення", "التاريخ",
+            "تاريخ العملية", "تاريخ المعاملة", "تاريخ القيد", "تاريخ الحركة", "تاريخ القيمة", "תאריך", "תאריך עסקה",
+            "תאריך ערך", "תאריך רכישה", "תאריך חיוב", "תאריך פעולה",
         ),
         Role.DESCRIPTION to listOf(
             "descricao", "historico", "description", "title", "titulo", "lancamento", "lancamentos",
@@ -114,12 +119,19 @@ object Columns {
             "causale", "dettagli", "esercente", "摘要", "内容", "ご利用店名", "利用店名", "お取引内容", "取引内容", "明細",
             "ご利用先", "내용", "적요", "거래내용", "가맹점", "가맹점명", "이용가맹점", "기재내용", "交易摘要", "说明", "备注",
             "商户", "交易对方", "商品说明", "对方户名", "विवरण", "ब्योरा", "नैरेशन",
+            "описание", "описание операции", "назначение платежа", "назначение", "контрагент", "получатель",
+            "наименование", "детали", "опис", "опис операції", "деталі операції", "деталі", "призначення платежу",
+            "отримувач", "الوصف", "البيان", "التفاصيل", "وصف العملية", "تفاصيل العملية", "المستفيد", "תיאור",
+            "תיאור התנועה", "פרטים", "שם בית העסק", "שם בית עסק", "שם העסק",
         ),
         Role.AMOUNT to listOf(
             "valor", "amount", "valor (r$)", "valor r$", "valor em r$", "quantia", "montante", "valor rs",
             "valor da transacao", "valor do lancamento", "transaction amount", "value", "importe", "monto", "cantidad",
             "montant", "betrag", "umsatz", "importo", "金額", "ご利用金額", "利用金額", "お取引金額", "금액", "거래금액",
             "이용금액", "결제금액", "金额", "交易金额", "发生额", "राशि", "रकम",
+            "сумма", "сумма операции", "сумма платежа", "сумма в валюте счета", "сумма в валюте карты", "сума",
+            "сума операції", "сума в валюті картки", "сума в валюті рахунку", "المبلغ", "القيمة", "مبلغ العملية",
+            "مبلغ المعاملة", "סכום", "סכום חיוב", "סכום החיוב", "סכום העסקה", "סכום עסקה",
         ),
         Role.CREDIT to listOf(
             "credito", "creditos", "entrada", "entradas", "valor credito", "credito (r$)", "entradas (r$)",
@@ -127,6 +139,8 @@ object Columns {
             "deposit amount", "abono", "abonos", "ingreso", "ingresos", "haber", "recettes", "entree", "haben",
             "gutschrift", "eingang", "accrediti", "avere", "entrate", "入金", "お預入れ", "預入金額", "入金額", "입금",
             "입금액", "입금금액", "맡기신금액", "收入", "贷方", "收入金额", "存入", "जमा", "क्रेडिट",
+            "приход", "поступление", "поступления", "зачисление", "кредит", "надходження", "зарахування", "прихід", "دائن",
+            "الدائن", "إيداع", "الإيداعات", "وارد", "זכות", "זיכוי", "הפקדה",
         ),
         Role.DEBIT to listOf(
             "debito", "debitos", "saida", "saidas", "valor debito", "debito (r$)", "saidas (r$)",
@@ -134,18 +148,24 @@ object Columns {
             "withdrawal amount", "cargo", "cargos", "retiro", "retiros", "debe", "egreso", "egresos", "depenses", "sortie",
             "soll", "belastung", "ausgang", "addebiti", "dare", "uscite", "出金", "お引出し", "引出金額", "出金額",
             "お支払金額", "출금", "출금액", "찾으신금액", "출금금액", "支出", "借方", "支出金额", "निकासी", "डेबिट",
+            "расход", "списание", "списания", "дебет", "витрати", "списання", "видаток", "مدين", "المدين", "سحب",
+            "السحوبات", "صادر", "חובה", "חיוב", "משיכה",
         ),
         Role.BALANCE to listOf(
             "saldo", "balance", "saldo (r$)", "saldo do dia", "running balance", "closing balance", "available balance",
             "solde", "kontostand", "残高", "差引残高", "잔액", "거래후잔액", "余额", "账户余额", "शेष", "बैलेंस",
+            "остаток", "баланс", "остаток после операции", "залишок", "залишок після операції", "الرصيد", "رصيد", "יתרה",
         ),
         Role.KIND to listOf(
             "c/d", "d/c", "tipo", "natureza", "cd", "dc", "dr/cr", "cr/dr", "type", "transaction type", "sens", "soll/haben",
             "s/h", "segno", "区分", "구분", "收/支", "收支", "प्रकार",
+            "тип", "тип операции", "тип операції", "النوع", "نوع العملية", "סוג", "סוג פעולה",
         ),
         Role.ID to listOf(
             "identificador", "id", "fitid", "codigo da transacao", "transaction id", "ref no", "ref no.", "reference number",
             "chq/ref no", "referencia", "reference", "referenz", "riferimento", "取引番号", "거래번호", "交易单号", "流水号",
+            "номер операции", "референс", "референс проводки", "номер документа", "номер операції", "رقم العملية",
+            "المرجع", "الرقم المرجعي", "אסמכתא", "מספר אסמכתא",
         ),
         Role.INSTALLMENT to listOf(
             "parcela", "parcelas", "parcelamento", "numero da parcela", "n parcela", "installment", "cuota", "echeance",
@@ -160,14 +180,30 @@ object Columns {
     private val IGNORED = Regex(
         """cotacao|nome (?:no|do) cartao|final do cartao|titular|portador|exchange rate|""" +
             """tipo de cambio|taux de change|wechselkurs|tasso di cambio|為替|환율|汇率|card member|cardholder|""" +
-            """name on card|card no|card number|kartennummer|numero de tarjeta|カード番号|카드번호|卡号""",
+            """name on card|card no|card number|kartennummer|numero de tarjeta|カード番号|카드번호|卡号|""" +
+            // RF-LNG-11: a cotação, a moeda da operação, o cashback, a tarifa e o número do cartão em russo, ucraniano,
+            // árabe e hebraico (os extratos de lá trazem essas colunas ao lado do valor).
+            """курс|валюта операци|валюте операци|валюті операці|валюта транзакці|валюті транзакці|кэшбэк|кешбэк|кешбек|""" +
+            """комисси|комісі|номер карт|سعر الصرف|رقم البطاقة|שער המרה|שער חליפין|מספר כרטיס|4 ספרות""",
     )
 
     private val CURRENCY_WORDS = listOf(
         Regex("""us\$|u\$|\busd\b|dolar|dollar""") to "USD", Regex("""r\$|\bbrl\b|\breais\b""") to "BRL",
         Regex("""€|\beur\b|\beuros?\b""") to "EUR", Regex("""£|\bgbp\b""") to "GBP", Regex("""円|\bjpy\b""") to "JPY",
         Regex("""원|\bkrw\b""") to "KRW", Regex("""元|\bcny\b|\brmb\b""") to "CNY", Regex("""₹|\binr\b""") to "INR",
+        Regex("""₽|\brub\b|руб""") to "RUB", Regex("""₴|\buah\b|грн""") to "UAH",
+        Regex("""₪|\bils\b|\bnis\b|ש"ח|ש״ח|שקל""") to "ILS", Regex("""\bsar\b|ر\.س|ريال""") to "SAR",
+        Regex("""\baed\b|د\.ا|درهم""") to "AED", Regex("""\begp\b|ج\.م|جنيه""") to "EGP",
     )
+
+    /**
+     * RF-LNG-11: quando o extrato tem duas colunas de valor (a da operação, na moeda da compra, e a da conta), vale a que
+     * está na moeda da conta ou do cartão: "Сумма в валюте счета", "Сума в валюті картки", "סכום חיוב".
+     */
+    private val ACCOUNT_AMOUNT = listOf(
+        "сумма платежа", "сумма в валюте счета", "сумма в валюте карты", "сума в валюті картки", "сума в валюті рахунку",
+        "סכום חיוב", "סכום החיוב",
+    ).map { it.normalized() }
 
     /** A moeda que o nome da coluna cita ("Valor em US$" → USD, "Amount (EUR)" → EUR), se citar. */
     private fun headerCurrency(n: String): String? = CURRENCY_WORDS.firstOrNull { it.first.containsMatchIn(n) }?.second
@@ -198,7 +234,10 @@ object Columns {
             val roles = rows[r].map { roleOf(it.text) }
             val date = roles.indexOf(Role.DATE)
             if (date < 0) continue
-            val amount = roles.indexOf(Role.AMOUNT).takeIf { it >= 0 }
+            // RF-LNG-11: com mais de uma coluna de valor, a que está na moeda da conta ([ACCOUNT_AMOUNT]).
+            val amounts = roles.withIndex().filter { it.value == Role.AMOUNT }.map { it.index }
+            val amount = amounts.firstOrNull { c -> rows[r][c].text.normalized().let { h -> ACCOUNT_AMOUNT.any { h.startsWith(it) } } }
+                ?: amounts.firstOrNull()
             val credit = roles.indexOf(Role.CREDIT).takeIf { it >= 0 }
             val debit = roles.indexOf(Role.DEBIT).takeIf { it >= 0 }
             if (amount == null && credit == null && debit == null) continue
@@ -225,11 +264,12 @@ object Columns {
 
     private val DEBIT_WORDS = setOf(
         "d", "db", "deb", "debito", "debit", "saida", "-", "dr", "withdrawal", "s", "soll", "cargo", "addebito", "dare",
-        "出金", "支出", "출금", "निकासी", "डेबिट",
+        "出金", "支出", "출금", "निकासी", "डेबिट", "дебет", "расход", "списание", "витрата", "списання", "مدين", "سحب", "חובה", "חיוב",
     )
     private val CREDIT_WORDS = setOf(
         "c", "cr", "cred", "credito", "credit", "entrada", "+", "deposit", "h", "haben", "abono", "accredito", "avere",
-        "入金", "收入", "입금", "जमा", "क्रेडिट",
+        "入金", "收入", "입금", "जमा", "क्रेडिट", "кредит", "приход", "зачисление", "надходження", "зарахування", "دائن", "ايداع",
+        "זכות", "זיכוי",
     )
 
     /** -1 = débito, 1 = crédito, 0 = não diz. */

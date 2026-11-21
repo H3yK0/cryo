@@ -124,6 +124,10 @@ object Backup {
         if (s.noSpendDays.isNotEmpty()) root.put("noSpendDays", s.noSpendDays.toJson {
             JSONObject().put("date", it.date.toString()).put("createdAt", it.createdAt)
         })
+        // DAD-16 (1.6): os meses pulados das contas fixas.
+        if (s.billSkips.isNotEmpty()) root.put("billSkips", s.billSkips.toJson {
+            JSONObject().put("billId", it.billId).put("ym", it.ym).put("createdAt", it.createdAt)
+        })
         return root.toString(1)
     }
 
@@ -207,6 +211,7 @@ object Backup {
         debtAdjustments = s.debtAdjustments.map { it.copy(amount = money(it.amount, signed = true), date = day(it.date)) },
         budgetAdjustments = s.budgetAdjustments.map { it.copy(amount = money(it.amount, signed = true), ym = ym(it.ym)) },
         noSpendDays = s.noSpendDays.map { it.copy(date = day(it.date)) },
+        billSkips = s.billSkips.map { it.copy(ym = ym(it.ym)) },
     )
 
     private fun read(root: JSONObject): Snapshot {
@@ -310,6 +315,9 @@ object Backup {
             }.orEmpty(),
             noSpendDays = root.optJSONArray("noSpendDays")?.mapObj {
                 io.github.h3yk0.cryo.data.db.NoSpendDay(date = LocalDate.parse(it.getString("date")), createdAt = it.optLong("createdAt"))
+            }.orEmpty(),
+            billSkips = root.optJSONArray("billSkips")?.mapObj {
+                io.github.h3yk0.cryo.data.db.BillSkip(billId = it.getLong("billId"), ym = it.getInt("ym"), createdAt = it.optLong("createdAt"))
             }.orEmpty(),
         )
     }

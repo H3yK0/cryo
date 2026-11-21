@@ -2,14 +2,12 @@
 // Copyright (C) 2026 Hanry Franco
 //
 // RF-VOZ-01: a ponte entre o Kotlin (voice/WhisperNative.kt) e o whisper.cpp. Só três trabalhos:
-//  1. abrir o modelo direto de dentro do APK (assets), sem copiar para um arquivo;
+//  1. abrir o modelo que a pessoa instalou (RF-VOZ-15, 1.6: noBackupFilesDir/whisper/, já conferido pelo SHA-256);
 //  2. transformar o áudio (que só existe na memória) em texto;
 //  3. soltar tudo ao fechar o microfone (RF-VOZ-09).
 // Nada aqui grava arquivo, abre rede ou escreve em log (RF-SEG-07): as mensagens do Whisper vão para uma função vazia.
 
 #include <jni.h>
-#include <android/asset_manager.h>
-#include <android/asset_manager_jni.h>
 
 #include <algorithm>
 #include <atomic>
@@ -24,20 +22,16 @@ namespace {
 // As mensagens do Whisper e do ggml (nomes de arquivo, tempos) não vão para lugar nenhum.
 void silent(enum ggml_log_level, const char *, void *) {}
 
+// O contrato com o Kotlin (ERR-065, auditoria da 1.6): nativeClose faz `delete` da sessão, então NENHUMA outra chamada
+// com o mesmo identificador pode estar em andamento nem vir depois dele. Quem garante isso é o WhisperEngine
+// (voice/WhisperEngine.kt): ele conta as chamadas em andamento, pede para parar e espera todas terminarem antes de
+// fechar, e depois de fechar não chama mais nada. O mutex abaixo só protege a conta do Whisper em si.
 struct Session {
     whisper_context * ctx = nullptr;
     std::atomic<bool> aborted{false};   // "Cancelar" ou microfone fechado: a conta em andamento para no próximo passo
     std::mutex busy;                     // fechar espera a transcrição em andamento terminar
     float noSpeech = 0.f;
 };
-
-// O modelo é lido em pedaços direto do APK (fica guardado sem compressão: noCompress "bin" no Gradle).
-size_t assetRead(void * ctx, void * out, size_t n) {
-    int r = AAsset_read(static_cast<AAsset *>(ctx), out, n);
-    return r > 0 ? static_cast<size_t>(r) : 0;
-}
-bool assetEof(void * ctx) { return AAsset_getRemainingLength64(static_cast<AAsset *>(ctx)) <= 0; }
-void assetClose(void * ctx) { AAsset_close(static_cast<AAsset *>(ctx)); }
 
 bool shouldAbort(void * data) { return static_cast<Session *>(data)->aborted.load(); }
 
@@ -56,20 +50,15 @@ Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeAvailable(JNIEnv *, jobject)
 }
 
 JNIEXPORT jlong JNICALL
-Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpen(JNIEnv * env, jobject, jobject assets, jstring path, jboolean flash) {
-    AAssetManager * mgr = AAssetManager_fromJava(env, assets);
-    if (mgr == nullptr) return 0;
+Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpenFile(JNIEnv * env, jobject, jstring path, jboolean flash) {
     const char * p = env->GetStringUTFChars(path, nullptr);
-    AAsset * asset = AAssetManager_open(mgr, p, AASSET_MODE_STREAMING);
-    env->ReleaseStringUTFChars(path, p);
-    if (asset == nullptr) return 0;
-
-    whisper_model_loader loader{asset, assetRead, assetEof, assetClose};
+    if (p == nullptr) return 0;
     whisper_context_params cp = whisper_context_default_params();
     cp.use_gpu = false;
     // RF-VOZ-13: a "atenção rápida" só com a chave experimental do modo desenvolvedor (ainda não conferida no celular).
     cp.flash_attn = flash;
-    whisper_context * ctx = whisper_init_with_params(&loader, cp);   // fecha o asset sozinho, dando certo ou não
+    whisper_context * ctx = whisper_init_from_file_with_params(p, cp);   // lê o arquivo e o fecha, dando certo ou não
+    env->ReleaseStringUTFChars(path, p);
     if (ctx == nullptr) return 0;
     auto * s = new Session();
     s->ctx = ctx;

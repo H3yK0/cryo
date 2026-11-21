@@ -10,7 +10,7 @@ import java.util.Locale
  * O app define tudo isso ao abrir e quando a pessoa troca nos Ajustes; nos testes de regras fica o padrão (português e real).
  */
 
-/** As 10 línguas do Cryo (RF-LNG-01). A primeira é a base (`values/`). */
+/** As 14 línguas do Cryo (RF-LNG-01; russo, ucraniano, árabe e hebraico desde a 1.6, RF-LNG-11). A primeira é a base (`values/`). */
 enum class AppLanguage(val tag: String, val nativeName: String, val defaultCurrency: String) {
     PT_BR("pt-BR", "Português (Brasil)", "BRL"),
     EN("en", "English", "USD"),
@@ -21,15 +21,33 @@ enum class AppLanguage(val tag: String, val nativeName: String, val defaultCurre
     JA("ja", "日本語", "JPY"),
     KO("ko", "한국어", "KRW"),
     ZH("zh-CN", "中文（简体）", "CNY"),
-    HI("hi", "हिन्दी", "INR");
+    HI("hi", "हिन्दी", "INR"),
+    RU("ru", "Русский", "RUB"),
+    UK("uk", "Українська", "UAH"),
+    AR("ar", "العربية", "SAR"),
+    HE("he", "עברית", "ILS");
 
     val locale: Locale get() = Locale.forLanguageTag(tag)
     val code: String get() = tag.substringBefore('-')
 
+    /** RF-LNG-11: árabe e hebraico se escrevem da direita para a esquerda (as telas espelham pelo Compose). */
+    val rtl: Boolean get() = this == AR || this == HE
+
     companion object {
-        /** A língua do Cryo para um locale do celular: a mesma língua, ou inglês quando ela não está entre as 10 (RF-LNG-02). */
-        fun forLocale(l: Locale): AppLanguage = entries.firstOrNull { it.code == l.language } ?: EN
+        /** A língua do Cryo para um locale do celular: a mesma língua, ou inglês quando ela não está entre as 14 (RF-LNG-02). */
+        fun forLocale(l: Locale): AppLanguage = entries.firstOrNull { it.code == languageCode(l) } ?: EN
         fun forTag(tag: String?): AppLanguage? = tag?.takeIf { it.isNotBlank() }?.let { t -> entries.firstOrNull { it.tag == t } }
+
+        /**
+         * O código da língua de um locale, sempre o atual: o Android ainda devolve os códigos antigos de algumas línguas
+         * (o hebraico chega como "iw", e é por "iw" que ele acha a pasta `values-iw`). O Cryo guarda e compara o novo ("he").
+         */
+        fun languageCode(l: Locale): String = when (val c = l.language) {
+            "iw" -> "he"
+            "in" -> "id"
+            "ji" -> "yi"
+            else -> c
+        }
     }
 }
 
@@ -37,6 +55,8 @@ enum class AppLanguage(val tag: String, val nativeName: String, val defaultCurre
 val SupportedCurrencies: List<String> = listOf(
     "BRL", "USD", "EUR", "GBP", "CAD", "AUD", "MXN", "ARS", "CLP", "COP", "PEN", "UYU", "CHF",
     "KRW", "INR", "CNY", "JPY", "TWD", "HKD", "SGD",
+    // RF-LNG-11 (1.6): as moedas das línguas novas (rublo, grívnia, shekel e as três árabes mais usadas).
+    "RUB", "UAH", "ILS", "SAR", "AED", "EGP",
 )
 
 /**

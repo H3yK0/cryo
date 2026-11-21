@@ -63,11 +63,18 @@ object BackupCrypto {
         }
     }
 
-    /** O arquivo é um backup protegido com senha? (Olha só o começo, sem abrir.) */
+    /**
+     * O arquivo é um backup protegido com senha? (Olha só o começo, sem abrir.) ERR-063 (auditoria da 1.6): o que conta é a
+     * **chave** `"cipher":` do envelope. Dentro de um texto do JSON (o nome de uma conta, uma descrição) as aspas vêm
+     * escapadas (`\"`), então nenhum dado da pessoa forma essa chave; antes bastava a palavra "cipher" entre aspas, e o
+     * backup aberto de quem tinha uma conta chamada "cipher" pedia senha e não abria.
+     */
     fun isEncrypted(text: String): Boolean {
         val head = text.take(600)
-        return head.contains("\"Cryo\"") && head.contains("\"cipher\"")
+        return head.contains("\"Cryo\"") && CIPHER_KEY.containsMatchIn(head)
     }
+
+    private val CIPHER_KEY = Regex("\"cipher\"\\s*:")
 
     private fun aad(app: String, version: Int, exportedAt: Long, testMode: Boolean, iterations: Int, salt: String) =
         "$app|$version|$exportedAt|$testMode|$iterations|$salt".toByteArray(Charsets.UTF_8)

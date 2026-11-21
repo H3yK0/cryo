@@ -33,6 +33,6 @@ Cryo est une appli de gestion de budget simple et complète. Elle suit revenus, 
 <b>Design Material You</b>
 Les couleurs suivent votre fond d'écran (Android 12 ou plus récent), en thème clair ou sombre.
 
-La saisie vocale utilise la reconnaissance vocale installée sur le téléphone. Taper la phrase fonctionne toujours.
+La voix est comprise sur le téléphone par Whisper : téléchargez une fois le modèle vocal avec le navigateur et Cryo vérifie le fichier. Taper la phrase fonctionne toujours.
 
-Disponible en 10 langues (portugais, anglais, espagnol, français, allemand, italien, japonais, coréen, chinois et hindi), dans la devise de votre choix.
+Disponible en 14 langues (portugais, anglais, espagnol, français, allemand, italien, japonais, coréen, chinois, hindi, russe, ukrainien, arabe et hébreu), dans la devise de votre choix.

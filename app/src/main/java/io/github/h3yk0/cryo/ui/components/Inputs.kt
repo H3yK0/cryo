@@ -264,17 +264,24 @@ private fun LocalDate.toUtcMillis() = atStartOfDay(ZoneOffset.UTC).toInstant().t
 private fun Long.utcMillisToDate(): LocalDate = Instant.ofEpochMilli(this).atZone(ZoneOffset.UTC).toLocalDate()
 
 @Composable
-fun DateChooser(date: LocalDate, today: LocalDate, onChange: (LocalDate) -> Unit) {
+fun DateChooser(date: LocalDate, today: LocalDate, onChange: (LocalDate) -> Unit, last: LocalDate? = null) {
     var showPicker by rememberSaveable { mutableStateOf(false) }
     val isToday = date == today
     val isYesterday = date == today.minusDays(1)
+    // RF-LAN-10: o último dia usado num lançamento vira um botão (quando não é hoje nem ontem).
+    val lastDay = last?.takeIf { it != today && it != today.minusDays(1) }
+    val isLast = lastDay != null && date == lastDay
+    val other = !isToday && !isYesterday && !isLast
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FilterChip(selected = isToday, onClick = { onChange(today) }, label = { Text(Res.s(R.string.date_today)) })
         FilterChip(selected = isYesterday, onClick = { onChange(today.minusDays(1)) }, label = { Text(Res.s(R.string.date_yesterday)) })
+        if (lastDay != null) {
+            FilterChip(selected = isLast, onClick = { onChange(lastDay) }, label = { Text(Res.s(R.string.date_last, Dates.short(lastDay))) })
+        }
         FilterChip(
-            selected = !isToday && !isYesterday,
+            selected = other,
             onClick = { showPicker = true },
-            label = { Text(if (!isToday && !isYesterday) Dates.full(date) else Res.s(R.string.input_outra_data)) },
+            label = { Text(if (other) Dates.full(date) else Res.s(R.string.input_outra_data)) },
             leadingIcon = { Icon(Icons.Rounded.CalendarMonth, null, Modifier.size(18.dp)) },
         )
     }

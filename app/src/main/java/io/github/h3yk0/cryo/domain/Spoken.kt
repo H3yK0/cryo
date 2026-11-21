@@ -137,7 +137,13 @@ object Spoken {
 
     private val DIGIT = Regex("\\d")
     private val LETTER = Regex("\\p{L}{2,}")
-    private val CENTS = Regex("^\\d{1,2}\\s*(?:centavos?|cents?|céntimos?|centimes?|centesimi|cent)\\b", RegexOption.IGNORE_CASE)
+    // RF-LNG-11: copeques (russo e ucraniano), halalas e piastras (árabe), agorot (hebraico). Sem "\b" no fim: o do Java e o do
+    // Android não tratam igual as letras fora do latim.
+    private val CENTS = Regex(
+        "^\\d{1,2}\\s*(?:centavos?|cents?|céntimos?|centimes?|centesimi|cent|копе(?:ек|йки|йка)|коп|копій(?:ок|ки|ка)|" +
+            "هللة|هللات|قرش|قروش|אגורות|אגורה)(?![\\p{L}\\p{N}])",
+        RegexOption.IGNORE_CASE,
+    )
 
     /**
      * "almoço 30 e uber 15" → ["almoço 30", "uber 15"]. Separa no "e", na vírgula e no ponto, mas só fica separado o que
@@ -152,6 +158,10 @@ object Spoken {
             AppLanguage.DE -> "\\s+(?:und dann|und auch|und|plus|dann)\\s+"
             AppLanguage.IT -> "\\s+(?:e poi|e anche|e|più|poi)\\s+"
             AppLanguage.HI -> "\\s+(?:और फिर|और|फिर)\\s+"
+            AppLanguage.RU -> "\\s+(?:а потом|и ещё|и еще|и|плюс|потом)\\s+"
+            AppLanguage.UK -> "\\s+(?:а потім|і ще|і|й|та|плюс|потім)\\s+"
+            AppLanguage.AR -> "\\s+(?:ثم|و)\\s+"
+            AppLanguage.HE -> "\\s+(?:ואחר כך|ואז|וגם|ועוד|פלוס)\\s+"
             else -> "(?!)"
         }
         // Vírgula ou ponto seguidos de espaço separam; "32,50" (sem espaço) é um valor.

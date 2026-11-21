@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -45,6 +44,7 @@ import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.depthCard
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import java.time.LocalDate
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /**
  * RF-AVI-10: o modo compras no Início. Enquanto a sessão dura, um cartão com o que já foi gasto desde que começou (só os
@@ -85,7 +85,7 @@ fun ShoppingStartSheet(onDismiss: () -> Unit) {
     val c = LocalContainer.current
     var cap by remember { mutableLongStateOf(SampleData.m(30000)) }
     val ask = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.imePadding().padding(horizontal = 24.dp).padding(bottom = 24.dp)) {
             ArtImage(Art.SHOPPING, 64.dp)
             Spacer(Modifier.height(14.dp))

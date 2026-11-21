@@ -267,6 +267,8 @@ fun HomeHeader(
     /** RF-PRF-02: a bolinha abre o perfil (no lugar da engrenagem que havia aqui). */
     onProfile: () -> Unit,
     avatar: (@Composable () -> Unit)? = null,
+    /** RF-INI-19 (reforma visual da 1.6): o sino da central de avisos, ao lado do olho. */
+    bell: (@Composable () -> Unit)? = null,
     content: @Composable ColumnScope.() -> Unit,
 ) {
     val dark = CryoTheme.colors.isDark
@@ -317,6 +319,7 @@ fun HomeHeader(
                     )
                     Text(subtitle, style = MaterialTheme.typography.bodySmall, color = onContainer.copy(alpha = 0.8f))
                 }
+                bell?.invoke()
                 IconButton(onClick = onToggleHide) {
                     Icon(
                         if (hideValues) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,

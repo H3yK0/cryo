@@ -33,6 +33,6 @@ Type or say a phrase like "lunch 32.50 on debit" or "tv 1200 in 10 installments 
 <b>Material You design</b>
 Colors follow your wallpaper (Android 12+), with light and dark themes.
 
-Voice entry uses the speech recognizer installed on your device. Typing the phrase always works.
+Voice is understood on your phone by Whisper: download the voice model once with your browser and Cryo checks the file. Typing the phrase always works.
 
-Available in 10 languages (Portuguese, English, Spanish, French, German, Italian, Japanese, Korean, Chinese and Hindi), in the currency you choose.
+Available in 14 languages (Portuguese, English, Spanish, French, German, Italian, Japanese, Korean, Chinese, Hindi, Russian, Ukrainian, Arabic and Hebrew), in the currency you choose.

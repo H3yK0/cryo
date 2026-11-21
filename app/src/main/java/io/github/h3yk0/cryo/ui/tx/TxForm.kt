@@ -28,7 +28,6 @@ import androidx.compose.material3.FilterChip
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -81,6 +80,7 @@ import io.github.h3yk0.cryo.ui.components.categoryIcon
 import io.github.h3yk0.cryo.ui.components.typeLabel
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import java.time.LocalDate
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /** Rascunho de lançamento: tudo o que o formulário edita, antes de salvar. */
 @Stable
@@ -380,7 +380,7 @@ private fun InvoicePickerSheet(
         val to = maxOf(center.plusMonths(3), selected)
         generateSequence(from) { it.plusMonths(1) }.takeWhile { !it.isAfter(to) }.toList()
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
             Text(Res.s(R.string.tx_invoice_pick), style = MaterialTheme.typography.titleLarge)
             Text(
@@ -427,7 +427,7 @@ private fun InvoicePickerSheet(
  * Formulário completo de lançamento, usado tanto no registro rápido (compacto) quanto na tela de edição.
  */
 @Composable
-fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifier, autoFocusAmount: Boolean = false) {
+fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifier, autoFocusAmount: Boolean = false, lastDate: LocalDate? = null) {
     val simpleTypes = listOf(TxType.EXPENSE to Res.s(R.string.wallet_despesa), TxType.INCOME to Res.s(R.string.wallet_receita), TxType.TRANSFER to Res.s(R.string.home_shortcut_transfer))
     Column(modifier) {
         if (d.type in simpleTypes.map { it.first } && (d.original == null || d.original.billId == null)) {
@@ -599,7 +599,7 @@ fun TxForm(d: TxDraft, l: Ledger, compact: Boolean, modifier: Modifier = Modifie
         }
 
         FieldLabel(Res.s(R.string.wallet_data))
-        DateChooser(d.date, l.today, onChange = { d.date = it })
+        DateChooser(d.date, l.today, last = lastDate, onChange = { d.date = it })
 
         if (!compact) {
             Spacer(Modifier.height(12.dp))

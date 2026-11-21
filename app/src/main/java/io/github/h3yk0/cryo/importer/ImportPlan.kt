@@ -91,7 +91,7 @@ class CategoryGuesser(
     }
     private val keywords = active.flatMap { c ->
         c.keywords.split(',').map { it.trim().normalized() }.filter { it.isNotEmpty() }
-            .map { kw -> KeywordRule(c, kw, PhraseParser.wordRegex(kw, PhraseLang.current.plural)) }
+            .map { kw -> KeywordRule(c, kw, PhraseParser.wordRegex(kw, PhraseLang.current.plural, PhraseLang.current.prefix)) }
     }
 
     fun guess(kind: CategoryKind, description: String): Long? {
@@ -207,6 +207,12 @@ object ImportPlanner {
         }
     }
 
+    /** Uma linha do extrato na conferência, antes da busca por parecidas: a chave, o valor com sinal, a fatura e o já importado. */
+    private class PlanLine(val index: Int, val line: StatementLine, val key: String, val signed: Long, val invoice: Int?, val before: Tx?)
+
+    /** Uma linha do extrato e um lançamento do Cryo que podem ser a mesma movimentação (ERR-062). */
+    private class SimilarPair(val line: Int, val tx: Tx, val sameInvoice: Boolean, val days: Long)
+
     fun plan(
         st: Statement,
         target: ImportTarget,
@@ -226,32 +232,55 @@ object ImportPlanner {
         val candidates = snapshot.txs.mapNotNull { t -> effect(t, target)?.let { t to it } }
         val scope = scopeOf(target)
         val card = target.cardId?.let { id -> snapshot.cards.firstOrNull { it.id == id } }
-        val used = HashSet<Long>()
         val seen = HashMap<String, Int>()
 
-        val rows = st.lines.mapIndexed { i, line ->
+        // Primeira passada: a chave de cada linha e o que já veio numa importação anterior.
+        val lines = st.lines.mapIndexed { i, line ->
             val base = baseKeyOf(line)
             val occurrence = seen.merge(base, 1, Int::plus)!! - 1
             val key = keyOf(line, occurrence, target, st.format)
-            val lineKind = kindOfKey(key)
             val signed = if (invert) -line.amount else line.amount
-            val type = if (signed < 0) TxType.EXPENSE else TxType.INCOME
-            val category = guesser.guess(if (type == TxType.EXPENSE) CategoryKind.EXPENSE else CategoryKind.INCOME, line.description)
-
             // No cartão, a mesma linha numa fatura diferente é outra cobrança: muitos bancos repetem a data, a descrição e
             // o valor da compra original em cada parcela. O pagamento da fatura fica fora disso (ele vai para a fatura
             // que pagou, não para a escolhida).
             val invoice = card?.let { target.invoiceYm ?: CardMath.invoiceFor(it, line.date).key() }
             val before = imported[key]?.firstOrNull { invoice == null || it.type == TxType.CARD_PAYMENT || it.invoiceYm == invoice }
-            val similar = if (before != null) null else candidates
-                .filter { (t, eff) ->
-                    t.id !in used && eff == signed && comparable(t, scope, lineKind) && (
-                        abs(ChronoUnit.DAYS.between(t.date, line.date)) <= 3 ||
-                            target.invoiceYm != null && t.invoiceYm == target.invoiceYm
-                        )
-                }
-                .minByOrNull { (t, _) -> abs(ChronoUnit.DAYS.between(t.date, line.date)) }?.first
-            similar?.let { used += it.id }
+            PlanLine(i, line, key, signed, invoice, before)
+        }
+
+        // ERR-062 (auditoria da 1.6): as parecidas. Mesmo valor e até 3 dias; no cartão, também a PARCELA do Cryo na mesma
+        // fatura escolhida (o banco repete a data da compra em cada parcela). A mesma fatura sozinha não basta: duas compras
+        // de R$ 80 em dias diferentes são duas compras. Cada linha fica com uma parecida só e cada lançamento com uma linha
+        // só, escolhidos primeiro pela mesma fatura e depois pela data mais perto, nunca pela ordem do arquivo (senão a
+        // Farmácia de 05/11 "levava" o Restaurante de 19/11 lançado à mão, e o Restaurante entrava em dobro).
+        val pairs = ArrayList<SimilarPair>()
+        for (p in lines) {
+            if (p.before != null) continue
+            val lineKind = kindOfKey(p.key)
+            for ((t, eff) in candidates) {
+                if (eff != p.signed || !comparable(t, scope, lineKind)) continue
+                val days = abs(ChronoUnit.DAYS.between(t.date, p.line.date))
+                val sameInvoice = p.invoice != null && t.invoiceYm == p.invoice
+                if (days <= 3 || target.invoiceYm != null && sameInvoice && t.installmentTotal > 1) pairs += SimilarPair(p.index, t, sameInvoice, days)
+            }
+        }
+        pairs.sortWith(compareBy<SimilarPair>({ !it.sameInvoice }, { it.days }, { it.line }, { it.tx.id }))
+        val similarOf = HashMap<Int, Tx>()
+        val used = HashSet<Long>()
+        for (c in pairs) if (c.line !in similarOf && c.tx.id !in used) {
+            similarOf[c.line] = c.tx
+            used += c.tx.id
+        }
+
+        val rows = lines.map { p ->
+            val i = p.index
+            val line = p.line
+            val key = p.key
+            val signed = p.signed
+            val before = p.before
+            val type = if (signed < 0) TxType.EXPENSE else TxType.INCOME
+            val category = guesser.guess(if (type == TxType.EXPENSE) CategoryKind.EXPENSE else CategoryKind.INCOME, line.description)
+            val similar = similarOf[i]
             val desc = line.description.normalized()
             val flag = when {
                 before != null -> RowFlag.IMPORTED_BEFORE

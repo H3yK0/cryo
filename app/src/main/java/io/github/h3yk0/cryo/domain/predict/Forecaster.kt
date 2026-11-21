@@ -44,7 +44,16 @@ object Forecaster {
     private const val PAST_MONTHS = 12
     private const val MIN_PAST = 4
 
-    fun month(l: Ledger, recurrences: List<Recurrence>, seed: Long, scenarios: Int = SCENARIOS, calibrate: Boolean = true): MonthOutlook {
+    /**
+     * [extraIncome] (RF-PRV-10, 1.6): contar ou não as entradas avulsas (o dinheiro que entra sem ser conta fixa nem coisa
+     * que se repete: uma venda, um bico, um presente). Null = o Cryo decide: só conta quando houve avulsas em pelo menos 2
+     * dos 3 últimos meses. ERR-056: antes elas contavam sempre, e quem recebeu uma vez via o mês fechar com dinheiro que não
+     * ia entrar de novo.
+     */
+    fun month(
+        l: Ledger, recurrences: List<Recurrence>, seed: Long, scenarios: Int = SCENARIOS, calibrate: Boolean = true,
+        extraIncome: Boolean? = null,
+    ): MonthOutlook {
         val base = l.forecast()
         val today = l.today
         val ym = today.ym()
@@ -59,6 +68,12 @@ object Forecaster {
         val income = DailySeries.of(l.s.txs, today, SpendingModel.extraIncome(excludeIncome))
         val fcVar = Ensemble.forecast(spending, spending.n - 1, remaining)
         val fcInc = Ensemble.forecast(income, income.n - 1, remaining)
+        // RF-PRV-10: em quantos dos 3 últimos meses entrou dinheiro avulso (receita sem conta fixa e fora do que se repete).
+        val extraMonths = (1..3).count { k ->
+            l.monthTxs(ym.minusMonths(k.toLong())).any { it.type == TxType.INCOME && it.billId == null && it.id !in excludeIncome }
+        }
+        val extraAuto = extraMonths >= 2
+        val extraOn = extraIncome ?: extraAuto
         val expected = Outlook.expectedItems(l, recurrences, today, ym.atEndOfMonth())
 
         // Como o gasto previsto se espalha pelos dias que faltam: pelo jeito de cada dia da semana.
@@ -76,6 +91,7 @@ object Forecaster {
         val n = scenarios.coerceAtLeast(1)
         val results = DoubleArray(n)
         val variables = DoubleArray(n)
+        val incomes = DoubleArray(n)
         val paths = Array(remaining) { DoubleArray(n) }
         val recNet = DoubleArray(days + 2)
         for (sc in 0 until n) {
@@ -87,7 +103,9 @@ object Forecaster {
                 recNet[e.date.dayOfMonth] += if (r.type == TxType.INCOME) amt else -amt
             }
             val v = if (remaining > 0) (fcVar.point * (1.0 + fcVar.drawError(rng))).coerceAtLeast(0.0) else 0.0
-            val inc = if (remaining > 0) (fcInc.point * (1.0 + fcInc.drawError(rng))).coerceAtLeast(0.0) else 0.0
+            // O sorteio acontece sempre (os outros números não mudam com a chave); a entrada só conta se estiver ligada.
+            val drawn = if (remaining > 0) (fcInc.point * (1.0 + fcInc.drawError(rng))).coerceAtLeast(0.0) else 0.0
+            val inc = if (extraOn) drawn else 0.0
             var cum = baseResult.toDouble()
             for (k in 0 until remaining) {
                 val day = d + 1 + k
@@ -95,10 +113,12 @@ object Forecaster {
                 paths[k][sc] = cum
             }
             variables[sc] = v
+            incomes[sc] = inc
             results[sc] = if (remaining > 0) cum else baseResult.toDouble() + planned.sum()
         }
         val sorted = results.copyOf().also { it.sort() }
         variables.sort()
+        incomes.sort()
         var mid = Stats.quantileSorted(sorted, 0.5)
         var low = Stats.quantileSorted(sorted, 0.1)
         var high = Stats.quantileSorted(sorted, 0.9)
@@ -169,6 +189,11 @@ object Forecaster {
             calibration = calibration,
             models = fcVar.weights.entries.sortedByDescending { it.value }.map { ModelShare(it.key, it.value) },
             season = if (remaining > 0) fcVar.season else 1.0,
+            extraIncomeMid = if (extraOn && remaining > 0) Stats.quantileSorted(incomes, 0.5).roundToLong() else 0L,
+            extraIncomeOn = extraOn,
+            extraIncomeAuto = extraAuto,
+            extraIncomeMonths = extraMonths,
+            pastShift = shift.roundToLong(),
         )
     }
 

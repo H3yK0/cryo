@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -49,6 +48,9 @@ import io.github.h3yk0.cryo.voice.SystemListener
 import io.github.h3yk0.cryo.voice.VoiceEngineKind
 import io.github.h3yk0.cryo.voice.VoiceSettings
 import io.github.h3yk0.cryo.voice.WhisperEngine
+import io.github.h3yk0.cryo.voice.WhisperModelStore
+import io.github.h3yk0.cryo.ui.screens.VoiceModelNeededSheet
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /** O que o botão de voz sabe fazer: ouvir (toque) e abrir o campo de digitar (toque longo). */
 class VoiceLauncher(val listen: () -> Unit, val type: () -> Unit)
@@ -68,6 +70,10 @@ fun rememberVoiceLauncher(l: Ledger?): VoiceLauncher {
     val voiceSettings = remember { VoiceSettings(context) }
     var listening by remember { mutableStateOf<VoiceEngineKind?>(null) }
     var askMic by remember { mutableStateOf(false) }
+    // RF-VOZ-15 (1.6): o Whisper sem o modelo instalado pede o arquivo antes de ouvir.
+    var needModel by remember { mutableStateOf(false) }
+    // Com qual ouvido começar quando o microfone for liberado (o Whisper recém-instalado ou o "Agora não" do celular).
+    var pendingKind by remember { mutableStateOf<VoiceEngineKind?>(null) }
 
     fun submit(t: String) {
         if (t.isBlank() || l == null) return
@@ -97,8 +103,15 @@ fun rememberVoiceLauncher(l: Ledger?): VoiceLauncher {
 
     val micPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         askMic = false
-        if (granted) listening = voiceSettings.engine
+        if (granted) listening = pendingKind ?: voiceSettings.engine
         else { c.message(Res.s(R.string.voice_mic_denied)); legacyListen() }
+        pendingKind = null
+    }
+
+    /** Começa a ouvir com [kind], pedindo o microfone antes se ainda não pode. */
+    fun start(kind: VoiceEngineKind) {
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) listening = kind
+        else { listening = null; askMic = true; pendingKind = kind }
     }
 
     fun listen() {
@@ -108,14 +121,21 @@ fun rememberVoiceLauncher(l: Ledger?): VoiceLauncher {
         val inApp = (engine == VoiceEngineKind.WHISPER && WhisperEngine.supported) || SystemListener.available(context)
         if (!inApp) return legacyListen()
         val kind = if (engine == VoiceEngineKind.PHONE && !SystemListener.available(context)) VoiceEngineKind.WHISPER else engine
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) listening = kind
-        else askMic = true
+        // RF-VOZ-15: o Whisper precisa do modelo que a pessoa baixa uma vez (desde a 1.6 ele não vem no app).
+        if (kind == VoiceEngineKind.WHISPER && WhisperModelStore(context).installed() == null) { needModel = true; return }
+        start(kind)
     }
 
     if (l != null) {
         draft?.let { d -> QuickConfirmSheet(d, l, onDismiss = { draft = null }, onSaved = { draft = null }) }
         if (typing) TypeSheet(onDismiss = { typing = false }, onSend = { typing = false; c.guideCount(io.github.h3yk0.cryo.domain.GuideCount.PHRASE); submit(it) })
-        if (askMic) MicPermissionSheet(onDismiss = { askMic = false }, onAllow = { micPermission.launch(Manifest.permission.RECORD_AUDIO) })
+        if (askMic) MicPermissionSheet(onDismiss = { askMic = false; pendingKind = null }, onAllow = { micPermission.launch(Manifest.permission.RECORD_AUDIO) })
+        if (needModel) VoiceModelNeededSheet(
+            onDismiss = { needModel = false },
+            onInstalled = { needModel = false; start(VoiceEngineKind.WHISPER) },
+            // "Agora não": desta vez o reconhecedor do celular (só no aparelho), ou a tela de voz do sistema.
+            onUsePhone = { needModel = false; if (SystemListener.available(context)) start(VoiceEngineKind.PHONE) else legacyListen() },
+        )
         listening?.let { kind -> VoiceSheet(l, kind, onDismiss = { listening = null }, onLegacy = { listening = null; legacyListen() }) }
     }
     // Um novo a cada composição: o "ouvir" sempre enxerga o Ledger de agora.
@@ -127,7 +147,7 @@ fun rememberVoiceLauncher(l: Ledger?): VoiceLauncher {
 private fun TypeSheet(onDismiss: () -> Unit, onSend: (String) -> Unit) {
     var text by remember { mutableStateOf("") }
     val focus = remember { FocusRequester() }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.imePadding().padding(horizontal = 20.dp).padding(bottom = 24.dp)) {
             Text(Res.s(R.string.bar_type_title), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))

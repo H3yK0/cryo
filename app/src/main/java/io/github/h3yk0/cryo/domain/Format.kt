@@ -142,11 +142,17 @@ object Money {
         AppLanguage.ZH to listOf(1e4 to "万", 1e8 to "亿"),
         AppLanguage.KO to listOf(1e4 to "만", 1e8 to "억"),
         AppLanguage.HI to listOf(1e3 to "${NBSP}हज़ार", 1e5 to "${NBSP}लाख", 1e7 to "${NBSP}करोड़"),
+        // RF-LNG-11 (1.6). Em hebraico, os apps de banco usam K, M e B como no inglês.
+        AppLanguage.RU to listOf(1e3 to "${NBSP}тыс.", 1e6 to "${NBSP}млн", 1e9 to "${NBSP}млрд"),
+        AppLanguage.UK to listOf(1e3 to "${NBSP}тис.", 1e6 to "${NBSP}млн", 1e9 to "${NBSP}млрд"),
+        AppLanguage.AR to listOf(1e3 to "${NBSP}ألف", 1e6 to "${NBSP}مليون", 1e9 to "${NBSP}مليار"),
+        AppLanguage.HE to listOf(1e3 to "K", 1e6 to "M", 1e9 to "B"),
     )
 
     /** Converte "1234,5" / "1.234,56" / "12.5" / "$1,234" em centésimos. Retorna null se inválido. */
     fun parse(text: String): Long? {
-        val t = text.trim().filter { it.isDigit() || it == ',' || it == '.' }
+        // RF-LNG-11: "١٢٫٥٠" (algarismos e vírgula decimal árabes) vale o mesmo que "12.50".
+        val t = text.trim().latinDigits().filter { it.isDigit() || it == ',' || it == '.' }
         if (t.isEmpty()) return null
         val normalized = when {
             t.contains(',') && t.contains('.') -> if (t.lastIndexOf(',') > t.lastIndexOf('.')) t.replace(".", "").replace(',', '.') else t.replace(",", "")
@@ -238,11 +244,60 @@ object Dates {
 
 /**
  * Texto em minúsculas e sem acentos, para comparações tolerantes ("Almoço" == "almoco", "Café" == "cafe"). Só tira os acentos
- * das letras latinas: em hindi, japonês e coreano, os sinais fazem parte da palavra.
+ * das letras latinas: em hindi, japonês e coreano, os sinais fazem parte da palavra. Em russo, ucraniano, árabe e hebraico
+ * (RF-LNG-11), o texto passa também por [foldScripts].
  */
 fun String.normalized(): String {
     val decomposed = Normalizer.normalize(lowercase(Locale.ROOT), Normalizer.Form.NFD).replace(LATIN_MARKS, "")
-    return Normalizer.normalize(decomposed, Normalizer.Form.NFC)
+    val s = Normalizer.normalize(decomposed, Normalizer.Form.NFC)
+    return if (s.any { it in '\u0400'..'\u06FF' }) foldScripts(s) else s
 }
 
 private val LATIN_MARKS = Regex("(?<=\\p{IsLatin})\\p{Mn}+")
+
+/**
+ * RF-LNG-11: os algarismos árabes viram 0–9 ("٣٢" e "۳۲" valem "32"), a vírgula decimal árabe "٫" vira "." e o separador de
+ * milhar "٬" vira ",". O Cryo mostra 0–9 no árabe (`LocaleSettings.latinDigits`), mas lê os dois: na frase, no campo de valor
+ * e no extrato.
+ */
+fun String.latinDigits(): String {
+    if (none { it in '\u0660'..'\u066C' || it in '\u06F0'..'\u06F9' }) return this
+    val sb = StringBuilder(length)
+    for (c in this) {
+        sb.append(
+            when (c) {
+                in '\u0660'..'\u0669' -> c - 0x0630
+                in '\u06F0'..'\u06F9' -> c - 0x06C0
+                '\u066B' -> '.'
+                '\u066C' -> ','
+                else -> c
+            },
+        )
+    }
+    return sb.toString()
+}
+
+/**
+ * RF-LNG-11: o mesmo jeito de escrever, de vários modos, vira um só (como os acentos no português): "ё" → "е" (o russo quase
+ * nunca escreve o "ё"); no árabe, as formas do alef (أ إ آ ٱ) → ا, o "ى" final → ي, sem o traço de alongar (ـ) e sem as
+ * vogais escritas (fatha, kasra...); no hebraico, sem os pontos das vogais (niqqud). A vírgula e o ponto e vírgula do árabe
+ * viram os comuns, e os algarismos viram 0–9 ([latinDigits]).
+ */
+private fun foldScripts(text: String): String {
+    val s = text.latinDigits()
+    val sb = StringBuilder(text.length)
+    for (c in s) {
+        when {
+            c == 'ё' -> sb.append('е')
+            c == '\u060C' -> sb.append(',')
+            c == '\u061B' -> sb.append(';')
+            c == 'أ' || c == 'إ' || c == 'آ' || c == 'ٱ' -> sb.append('ا')
+            c == 'ى' -> sb.append('ي')
+            c == '\u0640' -> Unit
+            c in '\u064B'..'\u065F' || c == '\u0670' || c in '\u0591'..'\u05C7' ->
+                if (Character.getType(c) != Character.NON_SPACING_MARK.toInt()) sb.append(c)
+            else -> sb.append(c)
+        }
+    }
+    return sb.toString()
+}

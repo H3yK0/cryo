@@ -274,10 +274,13 @@ class Screens19Test {
         captureScreenRoboImage("screenshots/100_importacoes_feitas.png")
     }
 
-    /** RF-MOT-04: em Análises, numa frase: a conta fica negativa? quando? qual o menor saldo? */
+    /**
+     * RF-MOT-04: em Análises, numa frase: a conta fica negativa? quando? qual o menor saldo? Desde a 1.6 a frase fica no
+     * cartão "Como vou fechar o ano?" (RF-MOT-17), que ocupou o lugar de "Próximos meses".
+     */
     @Test fun previsaoDizSeAContaFicaNegativa() {
         show { InsightsScreen() }
-        rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Próximos meses", substring = true))
+        rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Como vou fechar o ano?", substring = true))
         rule.onNode(hasScrollToNodeAction()).performScrollToNode(hasText("Menor saldo previsto", substring = true))
         waitText("Menor saldo previsto")
         assertTrue(

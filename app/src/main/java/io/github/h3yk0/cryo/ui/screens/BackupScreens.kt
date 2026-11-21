@@ -72,6 +72,7 @@ import io.github.h3yk0.cryo.data.BackupTargetState
 import io.github.h3yk0.cryo.data.FolderMode
 import io.github.h3yk0.cryo.data.FoundBackup
 import io.github.h3yk0.cryo.data.PlaceCheck
+import io.github.h3yk0.cryo.domain.AppLocale
 import io.github.h3yk0.cryo.domain.Dates
 import io.github.h3yk0.cryo.notify.AutoBackupWork
 import io.github.h3yk0.cryo.notify.Reminders
@@ -100,7 +101,7 @@ import io.github.h3yk0.cryo.ui.components.CryoButton
 fun backupWhen(at: Long, now: Long = System.currentTimeMillis(), zone: ZoneId = ZoneId.systemDefault()): String {
     val d = Instant.ofEpochMilli(at).atZone(zone)
     val today = Instant.ofEpochMilli(now).atZone(zone).toLocalDate()
-    val time = "%02d:%02d".format(d.hour, d.minute)
+    val time = String.format(AppLocale.locale, "%02d:%02d", d.hour, d.minute) // ERR-058: algarismos da língua do app
     val day = d.toLocalDate()
     return when {
         day == today -> Res.s(R.string.backup_hoje, time)

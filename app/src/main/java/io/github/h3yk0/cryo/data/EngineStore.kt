@@ -10,8 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 
 /**
  * O pouco que o motor financeiro guarda (RF-SEG-02): as recorrências que a pessoa disse que não são recorrentes, como
- * **HMAC-SHA256** da chave (nunca a descrição), e a inflação que ela informou para comparar o rendimento. O resto do motor
- * fica só na memória. No modo de teste, um arquivo separado.
+ * **HMAC-SHA256** da chave (nunca a descrição), a inflação que ela informou para comparar o rendimento e (1.6, RF-PRV-10)
+ * as duas chaves da previsão do fim do mês. O resto do motor fica só na memória. No modo de teste, um arquivo separado.
  */
 class EngineStore(ctx: Context, sandbox: Boolean, private val vault: Vault) {
     private val prefs = ctx.getSharedPreferences(if (sandbox) "cryo_engine_teste" else "cryo_engine", Context.MODE_PRIVATE)
@@ -38,6 +38,18 @@ class EngineStore(ctx: Context, sandbox: Boolean, private val vault: Vault) {
     val inflationFlow: StateFlow<Double?> = _inflation
 
     /**
+     * As entradas avulsas na previsão por cenários do motor. Null = o Cryo decide sozinho (liga com avulsas em 2 dos 3
+     * últimos meses). Desde 21/11/2026 o fim do mês da tela é o real (RF-PRV-10, sem cenários) e esta escolha saiu da tela;
+     * fica só para o motor e para os testes.
+     */
+    var extraIncome: Boolean?
+        get() = if (prefs.contains(EXTRA)) prefs.getBoolean(EXTRA, false) else null
+        set(v) {
+            prefs.edit().apply { if (v == null) remove(EXTRA) else putBoolean(EXTRA, v) }.apply()
+            _options.value = read()
+        }
+
+    /**
      * RF-CFX-04: a conta fixa que a pessoa já confirmou para uma descrição de extrato ("DEB AUT CIA ENERG" = Luz). Como nas
      * recorrências, fica só o HMAC da descrição normalizada, nunca o texto.
      */
@@ -57,7 +69,8 @@ class EngineStore(ctx: Context, sandbox: Boolean, private val vault: Vault) {
         _options.value = read(set)
     }
 
-    private fun read(set: Set<String> = prefs.getStringSet(DISMISSED, emptySet()).orEmpty()) = EngineOptions(dismissed = HashSet(set))
+    private fun read(set: Set<String> = prefs.getStringSet(DISMISSED, emptySet()).orEmpty()) =
+        EngineOptions(dismissed = HashSet(set), extraIncome = if (prefs.contains(EXTRA)) prefs.getBoolean(EXTRA, false) else null)
 
     fun clear() {
         prefs.edit().clear().apply()
@@ -68,6 +81,7 @@ class EngineStore(ctx: Context, sandbox: Boolean, private val vault: Vault) {
     private companion object {
         const val DISMISSED = "dismissed"
         const val INFLATION = "inflation"
+        const val EXTRA = "extra_income"
         const val PREFIX = "recorrencia:"
         const val BILL = "bill."
         const val BILL_PREFIX = "contafixa:"

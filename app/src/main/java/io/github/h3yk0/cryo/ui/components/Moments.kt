@@ -22,7 +22,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -233,7 +232,7 @@ private fun BudgetMoment(m: Moment.Budget, onClose: () -> Unit) {
     val nav = LocalNav.current
     val red = CryoTheme.colors.expense
     val amber = CryoTheme.colors.warning
-    ModalBottomSheet(onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onClose, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         val t = progress(1800, 200)
         val ms = (t * 1800).toInt()
         val target = m.spent.toFloat() / m.limit.coerceAtLeast(1)

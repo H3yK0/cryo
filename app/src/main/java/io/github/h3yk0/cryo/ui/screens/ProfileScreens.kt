@@ -38,7 +38,6 @@ import androidx.compose.material.icons.rounded.UploadFile
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -83,6 +82,7 @@ import io.github.h3yk0.cryo.ui.components.depthCard
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /**
  * RF-PRF-03 (TELA-PERFIL): o painel que a bolinha do Início abre. No alto, a pessoa; depois os atalhos do dia a dia e, em
@@ -176,7 +176,7 @@ private fun ProfileEditSheet(s: AppSettings, onDismiss: () -> Unit) {
             if (ok) avatar = "photo:" + System.currentTimeMillis() else c.message(Res.s(R.string.prf_photo_failed))
         }
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).imePadding().padding(horizontal = 20.dp).padding(bottom = 28.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 ProfileAvatar(s.copy(userName = name, avatar = avatar, avatarColor = color), 64.dp)

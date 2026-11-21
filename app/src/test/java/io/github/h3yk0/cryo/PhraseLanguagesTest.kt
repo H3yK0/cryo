@@ -19,7 +19,7 @@ import java.time.LocalDate
 import java.util.Locale
 
 /**
- * Registro por frase nas outras 9 línguas (PRD: RF-REG-09). As categorias aqui são do próprio teste (com as
+ * Registro por frase nas outras 13 línguas (PRD: RF-REG-09; russo, ucraniano, árabe e hebraico desde a 1.6, RF-LNG-11). As categorias aqui são do próprio teste (com as
  * palavras-chave de cada língua), para o teste não depender das traduções.
  */
 class PhraseLanguagesTest {
@@ -210,6 +210,64 @@ class PhraseLanguagesTest {
         p("15 सितंबर बिजली 1200").check(TxType.EXPENSE, 120_000, LocalDate.of(2026, 9, 15))
         p("5 हज़ार किराया").check(TxType.EXPENSE, 500_000)
         p("चाय ५० रुपये").check(TxType.EXPENSE, 5000)
+    }
+
+    /** RF-LNG-11 (1.6): russo, com as terminações dos casos ("такси"/"такси", "продукты"/"продуктов"). */
+    @Test fun russo() {
+        val p = parser(
+            AppLanguage.RU, Locale.forLanguageTag("ru-RU"), accounts("Сбербанк", "Накопления", "Кошелек"),
+            // Como no app (values-ru, cat_*_keywords), as palavras-chave em russo são radicais: "зарплат" casa com
+            // "зарплата" e com "зарплату" (o caso muda o fim da palavra).
+            cats("обед,кофе,продукт", "такси,бензин", "аренд,свет", "зарплат"),
+        )
+        p("обед 350 рублей наличными").run { check(TxType.EXPENSE, 35_000); assertEquals(3L, accountId); assertEquals(1L, categoryId) }
+        p("вчера такси 400").run { check(TxType.EXPENSE, 40_000, yesterday); assertEquals(2L, categoryId) }
+        p("получил зарплату 80 тысяч").run { check(TxType.INCOME, 8_000_000); assertEquals(5L, categoryId) }
+        p("телевизор 30000 в рассрочку на 12 месяцев кредиткой").run { assertEquals(1L, cardId); assertEquals(12, installments); assertEquals(3_000_000L, amount) }
+        p("15 сентября аренда 25000").check(TxType.EXPENSE, 2_500_000, LocalDate.of(2026, 9, 15))
+        p("3 дня назад кофе 250 ₽").check(TxType.EXPENSE, 25_000, today.minusDays(3))
+        p("продуктов на 1500 рублей 50 копеек").check(TxType.EXPENSE, 150_050)
+        // "ё" e "е" são a mesma letra para o Cryo.
+        p("перевёл со Сбербанка в Кошелек 2000").run { check(TxType.TRANSFER, 200_000); assertEquals(1L, accountId); assertEquals(3L, toAccountId) }
+    }
+
+    @Test fun ucraniano() {
+        val p = parser(
+            AppLanguage.UK, Locale.forLanguageTag("uk-UA"), accounts("Монобанк", "Заощадження", "Гаманець"),
+            // Radicais, como no app (values-uk): "зарплат" casa com "зарплата" e "зарплату".
+            cats("обід,кав,продукт", "таксі,бензин", "оренд,світл", "зарплат"),
+        )
+        p("обід 200 гривень готівкою").run { check(TxType.EXPENSE, 20_000); assertEquals(3L, accountId); assertEquals(1L, categoryId) }
+        p("вчора таксі 150").run { check(TxType.EXPENSE, 15_000, yesterday); assertEquals(2L, categoryId) }
+        p("отримав зарплату 30 тисяч").run { check(TxType.INCOME, 3_000_000); assertEquals(5L, categoryId) }
+        p("15 вересня оренда 12000 грн").check(TxType.EXPENSE, 1_200_000, LocalDate.of(2026, 9, 15))
+        p("кава 85 ₴").check(TxType.EXPENSE, 8_500)
+    }
+
+    /** Árabe: algarismos ٠–٩ e o "ال" grudado na palavra ("التاكسي" = "تاكسي"); as vogais escritas não atrapalham. */
+    @Test fun arabe() {
+        val p = parser(
+            AppLanguage.AR, Locale.forLanguageTag("ar-SA"), accounts("الراجحي", "توفير", "محفظة"),
+            cats("غداء,قهوة,بقالة", "تاكسي,بنزين", "إيجار,كهرباء", "راتب"),
+        )
+        p("غداء 45 ريال نقدا").run { check(TxType.EXPENSE, 4_500); assertEquals(3L, accountId); assertEquals(1L, categoryId) }
+        p("أمس التاكسي 30").run { check(TxType.EXPENSE, 3_000, yesterday); assertEquals(2L, categoryId) }
+        p("الراتب ١٢٠٠٠").run { check(TxType.INCOME, 1_200_000); assertEquals(5L, categoryId) }
+        p("قهوة ١٥٫٥٠").check(TxType.EXPENSE, 1_550)
+        p("15 سبتمبر إيجار 3000").check(TxType.EXPENSE, 300_000, LocalDate.of(2026, 9, 15))
+    }
+
+    /** Hebraico: as letras grudadas na frente ("במזומן", "לסופר") e o ₪. */
+    @Test fun hebraico() {
+        val p = parser(
+            AppLanguage.HE, Locale.forLanguageTag("he-IL"), accounts("לאומי", "חיסכון", "ארנק"),
+            cats("ארוחה,קפה,סופר", "מונית,דלק", "שכירות,חשמל", "משכורת"),
+        )
+        p("קפה 18 שקל במזומן").run { check(TxType.EXPENSE, 1_800); assertEquals(3L, accountId); assertEquals(1L, categoryId) }
+        p("אתמול מונית 60").run { check(TxType.EXPENSE, 6_000, yesterday); assertEquals(2L, categoryId) }
+        p("קיבלתי משכורת 12000").run { check(TxType.INCOME, 1_200_000); assertEquals(5L, categoryId) }
+        p("₪250 בסופר").run { check(TxType.EXPENSE, 25_000); assertEquals(1L, categoryId) }
+        p("15 בספטמבר שכירות 5000").check(TxType.EXPENSE, 500_000, LocalDate.of(2026, 9, 15))
     }
 
     /** Qualquer frase, em qualquer língua, com o leitor de qualquer língua: nunca quebra e nunca inventa valor negativo. */

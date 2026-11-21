@@ -2,9 +2,13 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
-import io.github.h3yk0.cryo.ui.components.ChoiceRow
 import io.github.h3yk0.cryo.voice.VoiceEngineKind
 import io.github.h3yk0.cryo.voice.VoiceSettings
+import io.github.h3yk0.cryo.voice.WhisperModelStore
+import io.github.h3yk0.cryo.ui.components.Expandable
+import io.github.h3yk0.cryo.ui.components.CryoSheet
+import androidx.compose.material.icons.rounded.AccountBalance
+import androidx.compose.material.icons.rounded.Mic
 import io.github.h3yk0.cryo.voice.WhisperEngine
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
@@ -160,6 +164,7 @@ fun SettingsScreen() {
     var showCurrency by rememberSaveable { mutableStateOf(false) }
     var pendingImport by remember { mutableStateOf<Backup.Restored?>(null) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
+    var showMainAccount by rememberSaveable { mutableStateOf(false) }
     val autoBackup by c.autoBackup.flow.collectAsState(initial = null)
     // O bloqueio vale para o app inteiro (no modo de teste, vem dos ajustes de verdade).
     val lock by c.lockSettings.flow.collectAsState(initial = null)
@@ -209,65 +214,72 @@ fun SettingsScreen() {
 
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.settings), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp)) {
+            // RF-AJU-13 (reforma visual da 1.6, LA13): um grupo por tipo, cada um no seu cartão (DS-PSI-04).
             item { Header(Res.s(R.string.settings_perfil)) }
             item {
                 SettingsGroup {
-                SettingLink(Icons.Rounded.Person, Res.s(R.string.settings_seu_nome), s.userName.ifBlank { Res.s(R.string.settings_toque_para_dizer_como) }) { editName = true }
-                            }
-}
-
-            item { Header(Res.s(R.string.settings_idioma_moeda)) }
-            item {
-                SettingsGroup {
-                SettingLink(Icons.Rounded.Language, Res.s(R.string.locale_language_title), languageSummary(ctx)) { showLanguage = true }
-                SettingLink(Icons.Rounded.Payments, Res.s(R.string.locale_currency_title), currencySummary(ctx)) { showCurrency = true }
-                            }
-}
+                    SettingLink(Icons.Rounded.Person, Res.s(R.string.settings_seu_nome), s.userName.ifBlank { Res.s(R.string.settings_toque_para_dizer_como) }) { editName = true }
+                }
+            }
 
             item { Header(Res.s(R.string.settings_aparencia)) }
             item {
                 SettingsGroup {
-                FieldLabel(Res.s(R.string.settings_tema))
-                Segmented(
-                    listOf(ThemeMode.SYSTEM to Res.s(R.string.settings_automatico), ThemeMode.LIGHT to Res.s(R.string.settings_claro), ThemeMode.DARK to Res.s(R.string.settings_escuro)), s.themeMode,
-                    { m -> c.launch { c.settings.setTheme(m) } },
-                )
-                Spacer(Modifier.height(8.dp))
-                if (Build.VERSION.SDK_INT >= 31) {
-                    SwitchRow(
-                        Res.s(R.string.settings_cores_papel_parede_material), s.dynamicColor,
-                        { v -> c.launch { c.settings.setDynamic(v) } }, Res.s(R.string.settings_app_combina_com_cores),
+                    FieldLabel(Res.s(R.string.settings_tema))
+                    Segmented(
+                        listOf(ThemeMode.SYSTEM to Res.s(R.string.settings_automatico), ThemeMode.LIGHT to Res.s(R.string.settings_claro), ThemeMode.DARK to Res.s(R.string.settings_escuro)), s.themeMode,
+                        { m -> c.launch { c.settings.setTheme(m) } },
                     )
-                } else {
-                    Text(
-                        Res.s(R.string.settings_cores_papel_parede_precisam),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    Spacer(Modifier.height(8.dp))
+                    if (Build.VERSION.SDK_INT >= 31) {
+                        SwitchRow(
+                            Res.s(R.string.settings_cores_papel_parede_material), s.dynamicColor,
+                            { v -> c.launch { c.settings.setDynamic(v) } }, Res.s(R.string.settings_app_combina_com_cores),
+                        )
+                    } else {
+                        Text(
+                            Res.s(R.string.settings_cores_papel_parede_precisam),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                 }
-                            }
-}
+            }
+
+            item { Header(Res.s(R.string.settings_idioma_moeda)) }
+            item {
+                SettingsGroup {
+                    SettingLink(Icons.Rounded.Language, Res.s(R.string.locale_language_title), languageSummary(ctx)) { showLanguage = true }
+                    SettingLink(Icons.Rounded.Payments, Res.s(R.string.locale_currency_title), currencySummary(ctx)) { showCurrency = true }
+                }
+            }
 
             item { Header(Res.s(R.string.settings_privacidade_seguranca)) }
             item {
                 SettingsGroup {
-                SwitchRow(
-                    Res.s(R.string.settings_bloquear_com_digital_ou), lock?.lockEnabled ?: s.lockEnabled,
-                    { v ->
-                        if (v && !canUseDeviceLock(ctx)) {
-                            c.message(Res.s(R.string.settings_cadastre_digital_rosto_ou))
-                        } else if (v) {
-                            confirmDeviceLock(ctx) {
-                                c.launch { c.lockSettings.setLock(true); c.message(Res.s(R.string.settings_pede_desbloqueio_ao_abrir)) }
+                    SwitchRow(
+                        Res.s(R.string.settings_bloquear_com_digital_ou), lock?.lockEnabled ?: s.lockEnabled,
+                        { v ->
+                            if (v && !canUseDeviceLock(ctx)) {
+                                c.message(Res.s(R.string.settings_cadastre_digital_rosto_ou))
+                            } else if (v) {
+                                confirmDeviceLock(ctx) {
+                                    c.launch { c.lockSettings.setLock(true); c.message(Res.s(R.string.settings_pede_desbloqueio_ao_abrir)) }
+                                }
+                            } else {
+                                c.launch { c.lockSettings.setLock(false) }
                             }
-                        } else {
-                            c.launch { c.lockSettings.setLock(false) }
-                        }
-                    },
-                    Res.s(R.string.settings_pede_desbloqueio_ao_abrir),
-                )
-                SwitchRow(Res.s(R.string.hide_values), s.hideValues, { v -> c.launch { c.settings.setHideValues(v) } }, Res.s(R.string.settings_hide_values_hint, Money.HIDDEN))
-                            }
-}
+                        },
+                        Res.s(R.string.settings_pede_desbloqueio_ao_abrir),
+                    )
+                    SwitchRow(Res.s(R.string.hide_values), s.hideValues, { v -> c.launch { c.settings.setHideValues(v) } }, Res.s(R.string.settings_hide_values_hint, Money.HIDDEN))
+                    // RF-SEG-03: a senha dos backups é segurança, então mora aqui (antes ficava no meio de "Seus dados").
+                    SwitchRow(
+                        Res.s(R.string.sec_protect_title), protectedBackups,
+                        { on -> if (on) showProtect = true else { c.backupProtection.disable(); c.message(Res.s(R.string.sec_protect_disabled)) } },
+                        subtitle = Res.s(if (protectedBackups) R.string.sec_protect_on else R.string.sec_protect_off),
+                    )
+                }
+            }
 
             item { Header(Res.s(R.string.settings_lembretes)) }
             item {
@@ -277,57 +289,69 @@ fun SettingsScreen() {
                 }
             }
 
-            item { Header(Res.s(R.string.settings_registro_rapido)) }
+            item { Header(Res.s(R.string.settings_group_entries)) }
             item {
                 SettingsGroup {
-                FieldLabel(Res.s(R.string.settings_conta_principal_usada_quando))
-                AccountChips(l.activeAccounts, s.defaultAccountId, { id -> c.launch { c.settings.setDefaultAccount(id) } })
-                Spacer(Modifier.height(8.dp))
-                SettingLink(Icons.Rounded.Category, Res.s(R.string.settings_categorias), Res.s(R.string.settings_nomes_icones_cores_palavras)) { nav.go(Routes.CATEGORIES) }
-                Spacer(Modifier.height(8.dp))
-                VoiceEngineChoice()
-                            }
-}
+                    // A conta principal numa folha: a escolha aparece só quando a pessoa quer mudar (DS-PSI-05).
+                    val main = s.defaultAccountId?.let { id -> l.activeAccounts.firstOrNull { it.id == id } }
+                    SettingLink(
+                        Icons.Rounded.AccountBalance, Res.s(R.string.settings_main_account),
+                        main?.name ?: Res.s(R.string.settings_main_account_none),
+                    ) { showMainAccount = true }
+                    SettingLink(Icons.Rounded.Category, Res.s(R.string.settings_categorias), Res.s(R.string.settings_nomes_icones_cores_palavras)) { nav.go(Routes.CATEGORIES) }
+                }
+            }
+
+            // RF-VOZ-16: a voz é uma linha só; a escolha do ouvido e o modelo ficam em Ajustes › Voz.
+            item { Header(Res.s(R.string.settings_group_voice)) }
+            item {
+                SettingsGroup {
+                    SettingLink(Icons.Rounded.Mic, Res.s(R.string.settings_voice_title), voiceSummary(ctx)) { nav.go(Routes.VOICE_SETTINGS) }
+                }
+            }
 
             item { Header(Res.s(R.string.settings_seus_dados)) }
             item {
                 SettingsGroup {
-                if (c.sandbox) {
-                    TestModeNote(
-                        Res.s(R.string.settings_modo_teste_dados_abaixo),
-                    )
-                } else {
-                    Text(
-                        Res.s(R.string.settings_tudo_fica_guardado_so),
-                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 4.dp),
-                    )
-                    SettingLink(
-                        Icons.Rounded.Backup, Res.s(R.string.settings_backup_automatico),
-                        autoBackup?.let { autoBackupSummary(it) } ?: Res.s(R.string.settings_numa_pasta_celular_ou),
-                        warning = autoBackup?.hasProblem == true,
-                    ) { nav.go(Routes.AUTO_BACKUP) }
+                    if (c.sandbox) {
+                        TestModeNote(Res.s(R.string.settings_modo_teste_dados_abaixo))
+                    } else {
+                        // DS-EXP-01: a explicação começa fechada, numa linha com setinha.
+                        Expandable(Res.s(R.string.settings_data_where), Modifier.padding(horizontal = 12.dp)) {
+                            Text(
+                                Res.s(R.string.settings_tudo_fica_guardado_so),
+                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.padding(bottom = 8.dp),
+                            )
+                        }
+                        SettingLink(
+                            Icons.Rounded.Backup, Res.s(R.string.settings_backup_automatico),
+                            autoBackup?.let { autoBackupSummary(it) } ?: Res.s(R.string.settings_numa_pasta_celular_ou),
+                            warning = autoBackup?.hasProblem == true,
+                        ) { nav.go(Routes.AUTO_BACKUP) }
+                    }
+                    SettingLink(Icons.Rounded.UploadFile, Res.s(R.string.settings_importar_extrato_banco), Res.s(R.string.settings_ofx_csv_planilha_ou)) {
+                        nav.go(Routes.import())
+                    }
+                    SettingLink(Icons.Rounded.FileDownload, Res.s(R.string.settings_salvar_copia_agora), Res.s(R.string.settings_arquivo_json_com_tudo)) {
+                        exportJson.launch(if (c.sandbox) "cryo-teste-backup-${LocalDate.now()}.json" else "cryo-backup-${LocalDate.now()}.json")
+                    }
+                    SettingLink(Icons.Rounded.FileUpload, Res.s(R.string.settings_restaurar_backup_2), Res.s(R.string.settings_substitui_dados_atuais_pelos)) {
+                        importJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
+                    }
+                    SettingLink(Icons.Rounded.TableChart, Res.s(R.string.settings_exportar_planilha_csv), Res.s(R.string.settings_abre_excel_ou_planilhas)) {
+                        exportCsv.launch("cryo-movimentacoes-${LocalDate.now()}.csv")
+                    }
                 }
-                SettingLink(Icons.Rounded.UploadFile, Res.s(R.string.settings_importar_extrato_banco), Res.s(R.string.settings_ofx_csv_planilha_ou)) {
-                    nav.go(Routes.import())
+            }
+
+            // RF-AJU-13: apagar tudo fica sozinho, em vermelho, longe dos outros toques (DS-PSI-04).
+            item {
+                Spacer(Modifier.height(16.dp))
+                SettingsGroup {
+                    SettingLink(Icons.Rounded.DeleteForever, Res.s(R.string.settings_apagar_todos_dados), Res.s(R.string.settings_comecar_zero), danger = true) { confirmErase = true }
                 }
-                SettingLink(Icons.Rounded.FileDownload, Res.s(R.string.settings_salvar_copia_agora), Res.s(R.string.settings_arquivo_json_com_tudo)) {
-                    exportJson.launch(if (c.sandbox) "cryo-teste-backup-${LocalDate.now()}.json" else "cryo-backup-${LocalDate.now()}.json")
-                }
-                SettingLink(Icons.Rounded.FileUpload, Res.s(R.string.settings_restaurar_backup_2), Res.s(R.string.settings_substitui_dados_atuais_pelos)) {
-                    importJson.launch(arrayOf("application/json", "text/plain", "application/octet-stream"))
-                }
-                SwitchRow(
-                    Res.s(R.string.sec_protect_title), protectedBackups,
-                    { on -> if (on) showProtect = true else { c.backupProtection.disable(); c.message(Res.s(R.string.sec_protect_disabled)) } },
-                    subtitle = Res.s(if (protectedBackups) R.string.sec_protect_on else R.string.sec_protect_off),
-                )
-                SettingLink(Icons.Rounded.TableChart, Res.s(R.string.settings_exportar_planilha_csv), Res.s(R.string.settings_abre_excel_ou_planilhas)) {
-                    exportCsv.launch("cryo-movimentacoes-${LocalDate.now()}.csv")
-                }
-                SettingLink(Icons.Rounded.DeleteForever, Res.s(R.string.settings_apagar_todos_dados), Res.s(R.string.settings_comecar_zero), danger = true) { confirmErase = true }
-                            }
-}
+            }
 
             if (devMode) {
                 item { Header(Res.s(R.string.settings_desenvolvedor)) }
@@ -402,6 +426,17 @@ fun SettingsScreen() {
     }
 
     if (showLanguage) LanguageSheet(onDismiss = { showLanguage = false })
+    if (showMainAccount) {
+        CryoSheet(onDismissRequest = { showMainAccount = false }) {
+            Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp)) {
+                Text(Res.s(R.string.settings_main_account), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(4.dp))
+                Text(Res.s(R.string.settings_conta_principal_usada_quando), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(12.dp))
+                AccountChips(l.activeAccounts, s.defaultAccountId, { id -> c.launch { c.settings.setDefaultAccount(id) }; showMainAccount = false })
+            }
+        }
+    }
     if (showCurrency) CurrencySheet(onDismiss = { showCurrency = false })
     if (editName) {
         var name by remember { mutableStateOf(s.userName) }
@@ -458,6 +493,10 @@ fun SettingsScreen() {
                     c.repo.eraseAll()
                     c.settings.setDefaultAccount(null)
                     c.settings.setOnboardingDone(false)
+                    // As escolhas do orçamento pela renda apontam para categorias que deixaram de existir.
+                    c.incomePlan.clear()
+                    c.budgetBills.clear()
+                    c.inbox.clear()
                 }
             },
             onDismiss = { confirmErase = false },
@@ -468,29 +507,12 @@ fun SettingsScreen() {
 const val SOURCE_URL = "https://github.com/H3yK0/cryo"
 const val DONATE_URL = "https://www.buymeacoffee.com/H3YK0"
 
-/** RF-VOZ-01: qual ouvido o registro por voz usa (Whisper dentro do Cryo ou o reconhecedor do celular). */
-@Composable
-private fun VoiceEngineChoice() {
-    val ctx = LocalContext.current
-    val voice = remember { VoiceSettings(ctx) }
-    var engine by remember { mutableStateOf(voice.engine) }
-    FieldLabel(Res.s(R.string.settings_voice_title))
-    if (!WhisperEngine.supported) {
-        Text(
-            Res.s(R.string.settings_voice_unsupported), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-        )
-        return
-    }
-    listOf(
-        Triple(VoiceEngineKind.WHISPER, R.string.settings_voice_whisper, R.string.settings_voice_whisper_desc),
-        Triple(VoiceEngineKind.PHONE, R.string.settings_voice_phone, R.string.settings_voice_phone_desc),
-    ).forEach { (kind, title, desc) ->
-        ChoiceRow(Res.s(title), Res.s(desc), selected = engine == kind) {
-            voice.engine = kind
-            engine = kind
-        }
-    }
+/** RF-VOZ-16: o resumo da linha da voz em Ajustes (o ouvido em uso e, no Whisper, o modelo). */
+private fun voiceSummary(ctx: Context): String = when {
+    !WhisperEngine.supported -> Res.s(R.string.settings_voice_sub_unsupported)
+    VoiceSettings(ctx).engine == VoiceEngineKind.PHONE -> Res.s(R.string.settings_voice_phone)
+    else -> WhisperModelStore(ctx).installed()?.let { Res.s(R.string.settings_voice_sub_whisper, Res.s(it.nameRes)) }
+        ?: Res.s(R.string.settings_voice_sub_whisper_none)
 }
 
 /** Toques na versão do app para ligar o modo desenvolvedor. */

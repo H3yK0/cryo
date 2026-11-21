@@ -2,6 +2,55 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.6 — a new look, the real end of the month, four new languages and the year ahead
+
+**A new look, calmer and easier to scan** (requested by users)
+- **Home made of tiles**: the month in a wide card in the colour of the result, with how much is left per day; your cards, accounts, budgets, debts, investments and goals in two columns of tiles, each with one number and one short line; the latest entries below
+- **Alerts center**: a **bell** on Home shows how many important alerts are new. Inside, three groups in soft priority colours: Needs attention, In the next few days and Cryo noticed. Each alert opens the right screen, and nothing is said twice. Home shows **at most one highlight**, the most important new one; × dismisses it, and the bell keeps the rest
+- **Soft priority colours**: pink for alert, peach for attention, mint for good and ice blue for information — only where something needs you, so it stands out, with the same depth as before
+- **Less to read**: explanations start closed behind a small arrow
+- **Insights**: the end of the month first, the last 6 months right below, "How will I end the year?", financial health, the money flow in blocks (in, out and left; where it came from and where it went, with bars — the flow drawing is one tap away) and the top 4 categories
+- **Plan**: an **Overall budget**, how much of your income you can spend this month (Cryo suggests your regular income minus what goes to goals, and you change it; it shows how much of it the category budgets already split, and warns when they add up to more). Budgets and goals as tiles; bills with three blocks on top (to pay, paid, month total), paid ones folded away and "Recurring" at the end; the goals forecast now lives in Plan › Goals
+- **Settings by type**: profile, appearance, language and currency, security and privacy (including protecting backups), reminders, entries (main account in a sheet, categories), voice (one line that opens Settings › Voice) and your data; "Erase all data" stands alone
+
+
+**Voice model outside the app** (so Cryo can be on F-Droid, and the app shrank from about 65 MB to about 9 MB)
+- The first time you tap the microphone, Cryo explains and opens your browser on the model file (the same one that came inside Cryo up to 1.5). Then pick the file you downloaded: Cryo copies it to its private folder and only accepts one of the six official Whisper models, checking its size and SHA-256. Settings › Voice › Voice model shows the model in use, lets you pick another or remove it. Cryo still has no internet permission — your browser does the download
+- Without a model, voice uses your phone's own offline recogniser
+
+**The real end of the month**
+- The end-of-month number is now **income minus expenses**, with only what already happened and what is fixed — **nothing estimated**. Income: what came in plus the regular income still to come (income bills, scheduled income and the salary Cryo recognises from your history, at its usual amount). Expenses: bills (paid and to pay), goals and investments (saved this month, plus what is left to save this month for goals with a deadline), debts and instalments, variable expenses already spent and scheduled payments. As expenses come in, the number goes down
+- It is the same on Home and in Insights and always the sum of the lines under "How I got to this number". Money that came in once (a sale last month) no longer counts as if it would come again
+
+**Budget from your income**
+- Plan › Budgets › **Plan from your income**: your fixed income (Cryo suggests what it found, like your salary) and, if you want, your variable income (counted at its weakest month). The 50/30/20 split is a starting point you adjust; limits per category start from what you usually spend, shrink together when they do not fit, and never go below your recurring bills. Nothing changes until you tap "Use these limits"
+- Where the saving part goes, by **type** only (never a product or bank): emergency fund (6 months of essentials, with how far you are), goals with a date, long term
+- **Budgets and recurring bills**: when a category's bills do not fit its budget, Cryo suggests adjusting it (on saving a bill and at the top of Budgets). Bills that are not monthly enter only in their month, as a one-month adjustment. "Not now" hides it until those bills change, and you can move a bill to another category or a new one
+
+**The year ahead**
+- **"How will I end the year?"**: your balance until 31 December (and, from October, next year too), with the 8-in-10 range — non-monthly bills, card bills, instalments, debts, planned budgets and your pace. On first view the chart zooms to red signals that pulse: the first day it may go negative, the tightest day and each big non-monthly bill. Then drag and pinch freely; "See the whole period" goes back. It replaces "Next months"
+- **Goals forecast**, in Plan › Goals: at the current pace, do your goals fit? The expected leftover goes first to the goals with the nearest deadline: "on time", "gets there in March, 2 months late" or "nothing left for it", and how much a month would be missing
+
+**Statements and bills** (requested by users)
+- **Each entry shows its account**: a dot in the account's or card's colour and its name in bold, in one statement with all of them. **"All accounts"** filters the Statement by one account or card, and the top summary becomes that account's own
+- **Account statement**: the account screen is now a statement by month, grouped by day, with the balance after each entry and at the end of the day, like your bank's — with filters and search
+- **Scheduled entries look scheduled**: another background tone and a little clock
+- **"Upcoming"** in the Statement lists the month's bills not yet paid, with their total and three actions: Paid, Adjust (another amount, account or day) and **Skip this month** (the gym that does not charge in the holidays). A skipped month leaves the list, alerts and forecasts; "Count it again" undoes it
+- **Date "Last: …"**: the last day you used is one tap away, and entries started from an account screen start on it — handy to type in an old statement. A new purchase from the card screen goes to the statement you were looking at
+
+**Languages**
+- **Russian, Ukrainian, Arabic and Hebrew**, with the rouble, hryvnia, shekel, Saudi riyal, UAE dirham and Egyptian pound. Arabic and Hebrew run right to left, and Arabic uses the 0–9 digits of your bank and keyboard. Logging by phrase or voice and statement import work in all 14 languages
+
+**Fixes**
+- The language list (Settings › Language and currency) no longer trembles; every sheet in the app now goes through one component that cannot get stuck under the status bar
+- Database version 6: skipped bill months. Existing data stays exactly as it was
+- **From an independent code audit** (each fix has a test that fails on the old code):
+  - One scheduled salary (or subscription) no longer removes that whole recurrence from the 12-month and year forecasts: it replaces only the occurrence it covers
+  - A scheduled debt payment covers the instalment due nearest to it, and only inside the forecast period: a March payment no longer hides the December instalment, and nothing counts twice
+  - Statement import: two purchases with the same amount on the same card statement are no longer taken for one (only an instalment matches across the statement), and each line is paired with the closest-date entry instead of the first one in the file
+  - An unprotected backup with the word "cipher" in its data (an account named so) opens without asking for a password
+  - Voice: closing the model always waits for the work in progress, so no call ever reaches a released model; the downloaded model is checked again by its SHA-256 the first time it is used after the app opens, an interrupted copy leaves no file behind, and a good model that fails to open (low memory) is no longer deleted
+
 ## 1.5 — voice on your phone, a financial engine, smart alerts and bills that match your statement
 
 Everything built since 1.4, in one release. All of it still runs on your phone, with no internet.

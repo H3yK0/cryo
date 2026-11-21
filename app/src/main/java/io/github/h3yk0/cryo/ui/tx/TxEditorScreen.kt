@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.tx
 
+import java.time.LocalDate
 import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.key
@@ -54,6 +55,19 @@ fun LoadingBox() {
     Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) { CircularProgressIndicator() }
 }
 
+/** RF-LAN-10 e RF-CAR-12 (1.6, pedidos de quem usa, LA4): como começa um lançamento novo. */
+object EntryDefaults {
+    /**
+     * Vindo da tela de uma conta (lançando um extrato antigo em sequência), começa no último dia usado num lançamento;
+     * pelo resto do app, hoje.
+     */
+    fun startDate(fromAccountScreen: Boolean, lastTxDate: LocalDate?, today: LocalDate): LocalDate =
+        if (fromAccountScreen) lastTxDate ?: today else today
+
+    /** Da tela do cartão, a compra nova entra na fatura que estava na tela (mudar a data volta a seguir a data). */
+    fun invoice(fromCardScreen: Boolean, viewedInvoice: Int?): Int? = if (fromCardScreen) viewedInvoice else null
+}
+
 /** Tela completa de lançamento (novo ou edição). */
 @Composable
 fun TxEditorScreen(
@@ -61,6 +75,8 @@ fun TxEditorScreen(
     initialType: TxType,
     presetAccountId: Long?,
     presetCardId: Long?,
+    /** RF-CAR-12: a fatura que a pessoa estava vendo na tela do cartão (AAAAMM). */
+    presetInvoiceYm: Int? = null,
     onDone: () -> Unit,
 ) {
     val l = rememberLedger() ?: return LoadingBox()
@@ -74,8 +90,10 @@ fun TxEditorScreen(
             val acc = presetAccountId ?: settings.defaultAccountId?.takeIf { l.account[it]?.archived == false }
                 ?: l.activeAccounts.firstOrNull()?.id
             TxDraft(
-                type = initialType, date = l.today,
+                type = initialType,
+                date = EntryDefaults.startDate(presetAccountId != null, settings.lastTxDate, l.today),
                 source = presetCardId?.let { Source.Card(it) } ?: acc?.let { Source.Acc(it) },
+                invoiceYm = EntryDefaults.invoice(presetCardId != null, presetInvoiceYm),
             )
         }
     }
@@ -118,6 +136,8 @@ fun TxEditorScreen(
                         onClick = {
                             c.launch {
                                 val r = saveDraft(draft, c.repo, l)
+                                // RF-LAN-10: o dia usado fica guardado para o próximo lançamento.
+                                runCatching { c.settings.setLastTxDate(draft.date) }
                                 c.afterSave(r, income = draft.type == io.github.h3yk0.cryo.data.db.TxType.INCOME)
                             }
                             onDone()
@@ -141,7 +161,7 @@ fun TxEditorScreen(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp),
         ) {
-            TxForm(draft, l, compact = false, autoFocusAmount = !draft.isEditing)
+            TxForm(draft, l, compact = false, autoFocusAmount = !draft.isEditing, lastDate = settings.lastTxDate)
             Spacer(Modifier.height(24.dp))
         }
     }

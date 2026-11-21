@@ -127,7 +127,7 @@ object Routes {
     const val PLAN = "plan?tab={tab}"
     const val WALLET = "wallet"
     const val INSIGHTS = "insights"
-    const val TX_NEW = "tx/new?type={type}&account={account}&card={card}"
+    const val TX_NEW = "tx/new?type={type}&account={account}&card={card}&invoice={invoice}"
     const val TX_EDIT = "tx/edit/{id}"
     const val ACCOUNT = "account/{id}"
     const val ACCOUNT_EDIT = "account/edit/{id}"
@@ -154,14 +154,22 @@ object Routes {
     const val RECURRING = "insights/recurring"
     const val DEBT_PLAN = "debts/plan"
     const val BUDGET_MONTH = "plan/budgets/month"
+    /** RF-ORC-07 (1.6): o orçamento pela renda. */
+    const val BUDGET_INCOME = "plan/budgets/income"
     const val ALERT_SETTINGS = "settings/alerts"
+    /** RF-INI-19 (reforma visual da 1.6): a central de avisos, aberta pelo sino do Início. */
+    const val INBOX = "inbox"
+    /** RF-VOZ-16: Ajustes › Voz (o ouvido e o modelo de voz). */
+    const val VOICE_SETTINGS = "settings/voice"
     const val PROFILE = "profile"
     const val LEARN = "learn"
     const val IMPORTS = "imports"
 
     fun txs(category: Long = 0) = "txs?category=$category"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
-    fun txNew(type: TxType = TxType.EXPENSE, account: Long = 0, card: Long = 0) = "tx/new?type=${type.name}&account=$account&card=$card"
+    /** [invoice]: a fatura (AAAAMM) em que a compra do cartão entra (RF-CAR-12); 0 = a da data. */
+    fun txNew(type: TxType = TxType.EXPENSE, account: Long = 0, card: Long = 0, invoice: Int = 0) =
+        "tx/new?type=${type.name}&account=$account&card=$card&invoice=$invoice"
     fun txEdit(id: Long) = "tx/edit/$id"
     fun account(id: Long) = "account/$id"
     fun accountEdit(id: Long = 0) = "account/edit/$id"
@@ -375,6 +383,7 @@ fun CryoRoot(openOnStart: String?) {
                         navArgument("type") { type = NavType.StringType; defaultValue = TxType.EXPENSE.name },
                         navArgument("account") { type = NavType.LongType; defaultValue = 0L },
                         navArgument("card") { type = NavType.LongType; defaultValue = 0L },
+                        navArgument("invoice") { type = NavType.IntType; defaultValue = 0 },
                     ),
                 ) { e ->
                     val a = e.arguments
@@ -383,6 +392,7 @@ fun CryoRoot(openOnStart: String?) {
                         initialType = runCatching { TxType.valueOf(a?.getString("type") ?: "") }.getOrDefault(TxType.EXPENSE),
                         presetAccountId = a?.getLong("account")?.takeIf { it > 0 },
                         presetCardId = a?.getLong("card")?.takeIf { it > 0 },
+                        presetInvoiceYm = a?.getInt("invoice")?.takeIf { it > 0 },
                         onDone = navigator::back,
                     )
                 }
@@ -456,7 +466,10 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.RECURRING) { RecurringScreen() }
                 composable(Routes.DEBT_PLAN) { DebtPlanScreen() }
                 composable(Routes.BUDGET_MONTH) { BudgetMonthScreen() }
+                composable(Routes.BUDGET_INCOME) { io.github.h3yk0.cryo.ui.screens.BudgetIncomeScreen() }
                 composable(Routes.ALERT_SETTINGS) { AlertSettingsScreen() }
+                composable(Routes.INBOX) { io.github.h3yk0.cryo.ui.screens.InboxScreen() }
+                composable(Routes.VOICE_SETTINGS) { io.github.h3yk0.cryo.ui.screens.VoiceSettingsScreen() }
                 composable(
                     Routes.CATEGORY_EDIT,
                     arguments = listOf(

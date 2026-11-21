@@ -75,6 +75,19 @@ Como usar:
 - **Modo de teste** (modo desenvolvedor): `tertiaryContainer` + ícone de frasco (`Science`), em qualquer lugar onde apareça.
 - Nunca depender só da cor: sempre há sinal (`+`/`−`), ícone ou texto junto.
 
+**Tons por prioridade** (`CryoTheme.tones`, DS-TOM, 1.6): fundos pastel para blocos e cartões inteiros, cada um com a cor do
+texto e a do destaque (contraste de 4,5:1 ou mais). Não mudam com o papel de parede: são significado, como o verde e o vermelho.
+
+| Tom | Claro (fundo · texto · destaque) | Escuro |
+|---|---|---|
+| **Alerta** (`alert`) | `#FBE7E6` · `#561716` · `#BF3A35` | `#3B2324` · `#FFDAD7` · `#FF8C86` |
+| **Atenção** (`attention`) | `#FFF0DC` · `#4A2A00` · `#A86200` | `#3A2D1B` · `#FFE1BF` · `#FFB866` |
+| **Bom** (`good`) | `#E2F3E5` · `#123B1C` · `#2B7A3B` | `#1D3323` · `#CAEFD1` · `#88D898` |
+| **Informação** (`info`) | `#E2F0F7` · `#0D3747` · `#1C7595` | `#1A2F39` · `#CFEAF6` · `#7DCDE9` |
+
+Só onde há prioridade: no máximo um ou dois blocos com tom por tela; o resto fica no cartão neutro (se tudo é colorido, nada
+chama o olho). A profundidade continua (sombra e fio de luz).
+
 ### 2.4 Paleta para itens (`data/DefaultData.kt` › `Palette`)
 
 20 cores para categorias, contas, cartões, metas e investimentos, todas legíveis no claro e no escuro:
@@ -160,9 +173,13 @@ escuras nem sombras duras: a profundidade vem de contraste suave entre o fundo e
 
 - **Barra de abas** (4, desde a 1.4): Início · Extrato · Planejar · Análises. A Carteira abre pelo Início.
   Ícones: `Home`, `ReceiptLong`, `EventNote`, `Insights` (estilo Rounded).
-- **Início** (2.0, profundidade na 1.5): cabeçalho em degradê que pousa sobre a tela (`HomeHeader`: saudação, data, olho,
-  engrenagem, saldo e patrimônio; cantos de baixo 28 dp e sombra), atalhos redondos com volume, campo de registro rápido em pílula
-  com microfone, avisos discretos e seções em cartões (mês, cartão, contas, dívidas, investimentos).
+- **Início** (2.0, profundidade na 1.5, blocos na 1.6): cabeçalho em degradê que pousa sobre a tela (`HomeHeader`: a bolinha do
+  perfil, saudação, data, o **sino** da central de avisos com o número dos novos, o olho, saldo, patrimônio e o anel da saúde;
+  cantos de baixo 28 dp e sombra), atalhos redondos com volume, campo de registro rápido em pílula, **no máximo um destaque** (o
+  aviso mais importante e novo, com ×), o mês num cartão largo na cor do resultado e o resto em **blocos de duas colunas**
+  (cartões, contas, orçamentos, dívidas, investimentos, metas); as últimas movimentações em lista.
+- **Central de avisos** (1.6): três grupos com título (Precisa de atenção, Nos próximos dias, O Cryo percebeu), cada aviso num
+  cartão na cor da prioridade, com o ícone num círculo do tom e a setinha para a tela certa.
 - **Ajustes** (1.5): grupos em cartões, como os Ajustes do iPhone; em Sobre, o ícone do app (`CryoBadge`) ao lado do nome.
 - **Passeio "Como usar o Cryo"** (RF-TOUR): 5 páginas com uma ilustração animada em cima (cartão `surfaceContainerLow`, cantos
   28 dp, montada com os próprios componentes), título `headlineSmall`, texto `bodyLarge` em `onSurfaceVariant`, pontos de página e
@@ -262,6 +279,21 @@ A folha de voz (`ui/tx/VoiceSheet.kt`, RF-VOZ-08) segue o protótipo aprovado pe
   R$ 45,00"), "Ajustar" e "Falar de novo".
 - "Remover animações": sem anéis, e palavras e cartõezinhos já no lugar. Imagens 58–62.
 
+### 6.2a Blocos, resumo com setinha e tons (1.6, `ui/components/Tiles.kt`)
+
+- **Bloco** (`CryoTile`, DS-COMP-27): quase quadrado (um pouco mais alto que largo, mínimo 148 dp), cantos de 24 dp, 12 dp
+  entre eles, em grade de duas colunas (`TileRow`, a mesma altura nos dois). Em cima o ícone (ou a ilustração da meta) e a
+  setinha (ou o anel de progresso); embaixo o título curto, **um número** e uma linha curta; barra de uso opcional. Com tom, o
+  fundo fica pastel; sem tom, o cartão neutro. Tocar abre a tela completa ou a folha.
+- **Botão-bloco** (`TileButton`): ações secundárias (planejar pela renda, painel do mês, o que se repete, metas arquivadas):
+  ícone, título, uma linha e a setinha; deitado numa linha só, ou em pé (`stacked`) quando são dois lado a lado.
+- **Resumo com setinha** (`Expandable`, DS-COMP-28): o título (e, se quiser, uma linha de resumo) com a setinha para baixo;
+  tocar abre o conteúdo ali mesmo e a setinha gira. Toda explicação começa fechada ("Como cheguei nesse número", "Onde ficam
+  seus dados", as contas pagas, as sugestões).
+- **Aviso no tom** (`ToneNotice`): o ícone num círculo do destaque, o texto na cor do tom e a setinha (ou o × do destaque).
+- **Anel de progresso** (`ProgressRing`): a meta, com a porcentagem no meio; cresce ao aparecer.
+- Imagens: 115–125 (`ScreensVisualTest`).
+
 ### 6.2 Barra com voz, ilustrações e momentos (1.5)
 
 - **Barra de baixo com o botão de voz no centro** (RF-ALC-01): 2 abas de cada lado; o botão tem 68 dp, a cor principal com
@@ -353,6 +385,7 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 | <img src="visual/analises.png" width="220"><br>Análises | <img src="visual/dividas.png" width="220"><br>Dívidas | <img src="visual/divida-detalhe.png" width="220"><br>Detalhe da dívida |
 | <img src="visual/ajustes.png" width="220"><br>Ajustes | <img src="visual/backup-automatico.png" width="220"><br>Backup automático | <img src="visual/backup-encontrado.png" width="220"><br>Backup encontrado |
 | <img src="visual/boas-vindas.png" width="220"><br>Boas-vindas | <img src="visual/inicio-escuro.png" width="220"><br>Tema escuro | <img src="visual/inicio-material-you.png" width="220"><br>Material You |
+| <img src="visual/central-de-avisos.png" width="220"><br>Central de avisos (1.6) | <img src="visual/orcamento-geral.png" width="220"><br>Orçamento Geral (1.6) | <img src="visual/ajustes-voz.png" width="220"><br>Ajustes › Voz (1.6) |
 
 **Motor financeiro (1.5)**: os números vêm com a explicação de onde saíram e, quando são previsão, com a faixa (8 em cada 10
 cenários). A nota de saúde usa verde (Bem/Ótima), âmbar (Em construção) e vermelho (Atenção), sempre com a palavra junto.

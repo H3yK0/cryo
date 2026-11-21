@@ -2,7 +2,6 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.voice
 
-import android.content.res.AssetManager
 import android.os.Build
 import java.io.File
 
@@ -31,7 +30,12 @@ internal object WhisperNative {
     }
 
     external fun nativeAvailable(): Boolean
-    external fun nativeOpen(assets: AssetManager, path: String, flash: Boolean): Long
+
+    /**
+     * RF-VOZ-15 (1.6): abre o modelo guardado em `noBackupFilesDir/whisper/` ([WhisperModelStore]). Até a 1.5 ele era lido
+     * de dentro do APK (assets); desde a 1.6 o modelo não vem mais no APK. 0 = não abriu (arquivo estragado ou sem memória).
+     */
+    external fun nativeOpenFile(path: String, flash: Boolean): Long
     external fun nativeTranscribe(
         handle: Long, pcm: FloatArray, samples: Int, language: String, prompt: String?,
         threads: Int, greedy: Boolean, audioCtx: Int, maxTokens: Int,

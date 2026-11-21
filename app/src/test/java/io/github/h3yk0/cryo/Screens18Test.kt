@@ -12,6 +12,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
 import androidx.compose.ui.test.onAllNodesWithText
+import androidx.compose.ui.test.performClick
+import androidx.compose.ui.test.onNodeWithText
 import androidx.navigation.compose.rememberNavController
 import androidx.test.core.app.ApplicationProvider
 import com.github.takahirom.roborazzi.captureScreenRoboImage
@@ -89,18 +91,27 @@ class Screens18Test {
     private fun waitText(t: String) =
         rule.waitUntil(10_000) { rule.onAllNodesWithText(t, substring = true).fetchSemanticsNodes().isNotEmpty() }
 
+    /**
+     * RF-PRV-08 e RF-PRV-10 (desde 21/11/2026): o fim do mês de Análises é o real, renda × despesas, e se explica em
+     * "Como cheguei nesse número" (fechado com setinha, DS-EXP). A faixa dos cenários e o "conferida no passado" saíram.
+     */
     @Config(qualifiers = "+w393dp-h1900dp-xxhdpi")
     @Test fun previsaoConferidaEExplicada() {
         show { InsightsScreen() }
-        waitText("Conferida no seu passado")
-        waitText("O que mais pesou na conta")
-        captureScreenRoboImage("screenshots/82_previsao_conferida.png")
+        waitText("Previsão do fim do mês")
+        waitText("Renda")
+        // O primeiro "Como cheguei nesse número" é o do fim do mês (o do ano vem depois).
+        rule.onAllNodesWithText("Como cheguei nesse número")[0].performClick()
+        waitText("Renda fixa")
+        assertTrue(rule.onAllNodesWithText("Conferida no seu passado", substring = true).fetchSemanticsNodes().isEmpty())
+        captureScreenRoboImage("screenshots/82_fim_do_mes_real.png")
     }
 
     @Config(qualifiers = "+w393dp-h1200dp-xxhdpi")
     @Test fun orcamentosComOFechamentoDoMes() {
         show { PlanScreen(0) }
-        waitText("Deve fechar o mês perto de")
+        // RF-ORC-11: no bloco de cada categoria, a frase curta do fechamento (RF-PRV-06).
+        waitText("Fecha o mês perto de")
         captureScreenRoboImage("screenshots/83_orcamentos_fechamento.png")
     }
 

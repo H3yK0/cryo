@@ -128,6 +128,15 @@ import io.github.h3yk0.cryo.domain.Ledger
 import io.github.h3yk0.cryo.domain.Money
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import java.time.LocalDate
+import androidx.compose.foundation.text.InlineTextContent
+import androidx.compose.foundation.text.appendInlineContent
+import androidx.compose.ui.text.Placeholder
+import androidx.compose.ui.text.PlaceholderVerticalAlign
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.withStyle
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material.icons.rounded.Schedule
 
 /* ============================ Acesso global ============================ */
 
@@ -344,25 +353,39 @@ fun txTitle(t: Tx, l: Ledger): String = t.description.ifBlank {
     t.categoryId?.let { l.category[it]?.name } ?: typeLabel(t.type)
 }
 
-fun txSubtitle(t: Tx, l: Ledger): String {
-    val parts = ArrayList<String>()
+/**
+ * Um pedaço da linha de baixo de um lançamento. [color] marca uma conta ou um cartão (RF-EXT-08: a bolinha na cor dela,
+ * com o nome em destaque); [before] é o que vem antes do pedaço (" · " entre informações, " → " de onde para onde).
+ */
+data class TxPart(val text: String, val color: Int? = null, val before: String = " · ")
+
+fun txSubtitleParts(t: Tx, l: Ledger): List<TxPart> {
+    val parts = ArrayList<TxPart>()
+    fun acc(id: Long?, before: String = " · ") = TxPart(l.accountName(id), id?.let { l.account[it]?.color }, before)
     when (t.type) {
         TxType.EXPENSE, TxType.INCOME -> {
-            t.categoryId?.let { l.category[it]?.name }?.let { parts += it }
-            if (t.cardId != null) parts += Res.s(R.string.home_card_title, l.cardName(t.cardId)) else t.accountId?.let { parts += l.accountName(it) }
-            if (t.installmentTotal > 1) parts += Res.s(R.string.common_parcela, t.installmentNumber, t.installmentTotal)
+            t.categoryId?.let { l.category[it]?.name }?.let { parts += TxPart(it) }
+            if (t.cardId != null) parts += TxPart(Res.s(R.string.home_card_title, l.cardName(t.cardId)), l.card[t.cardId]?.color)
+            else if (t.accountId != null) parts += acc(t.accountId)
+            if (t.installmentTotal > 1) parts += TxPart(Res.s(R.string.common_parcela, t.installmentNumber, t.installmentTotal))
         }
-        TxType.TRANSFER -> parts += "${l.accountName(t.accountId)} → ${l.accountName(t.toAccountId)}"
-        TxType.CARD_PAYMENT -> parts += Res.s(R.string.common_cartao, l.accountName(t.accountId), l.cardName(t.cardId))
-        TxType.INVEST_IN -> parts += "${l.accountName(t.accountId)} → ${t.investmentId?.let { l.investment[it]?.name } ?: "investimento"}"
-        TxType.INVEST_OUT -> parts += "${t.investmentId?.let { l.investment[it]?.name } ?: "investimento"} → ${l.accountName(t.accountId)}"
-        TxType.GOAL_IN -> parts += "${l.accountName(t.accountId)} → ${t.goalId?.let { l.goal[it]?.name } ?: "meta"}"
-        TxType.GOAL_OUT -> parts += "${t.goalId?.let { l.goal[it]?.name } ?: "meta"} → ${l.accountName(t.accountId)}"
-        TxType.DEBT_IN -> parts += "${t.debtId?.let { l.debt[it]?.name } ?: "dívida"} → ${l.accountName(t.accountId)}"
+        TxType.TRANSFER -> { parts += acc(t.accountId); parts += acc(t.toAccountId, " → ") }
+        TxType.CARD_PAYMENT -> {
+            parts += acc(t.accountId)
+            parts += TxPart(Res.s(R.string.home_card_title, l.cardName(t.cardId)), t.cardId?.let { l.card[it]?.color }, " → ")
+        }
+        TxType.INVEST_IN -> { parts += acc(t.accountId); parts += TxPart(t.investmentId?.let { l.investment[it]?.name } ?: "investimento", before = " → ") }
+        TxType.INVEST_OUT -> { parts += TxPart(t.investmentId?.let { l.investment[it]?.name } ?: "investimento"); parts += acc(t.accountId, " → ") }
+        TxType.GOAL_IN -> { parts += acc(t.accountId); parts += TxPart(t.goalId?.let { l.goal[it]?.name } ?: "meta", before = " → ") }
+        TxType.GOAL_OUT -> { parts += TxPart(t.goalId?.let { l.goal[it]?.name } ?: "meta"); parts += acc(t.accountId, " → ") }
+        TxType.DEBT_IN -> { parts += TxPart(t.debtId?.let { l.debt[it]?.name } ?: "dívida"); parts += acc(t.accountId, " → ") }
     }
-    if (t.billId != null) parts += Res.s(R.string.common_conta_fixa)
-    return parts.joinToString(" · ")
+    if (t.billId != null) parts += TxPart(Res.s(R.string.common_conta_fixa))
+    return parts
 }
+
+fun txSubtitle(t: Tx, l: Ledger): String =
+    txSubtitleParts(t, l).withIndex().joinToString("") { (i, p) -> (if (i > 0) p.before else "") + p.text }
 
 @Composable
 fun TxLeadingBadge(t: Tx, l: Ledger, size: Dp = 40.dp) {
@@ -374,9 +397,16 @@ fun TxLeadingBadge(t: Tx, l: Ledger, size: Dp = 40.dp) {
     }
 }
 
-/** Linha de uma movimentação. [showDate]: põe a data no começo (listas sem cabeçalho de dia, como históricos). */
+/**
+ * Linha de uma movimentação. [showDate]: põe a data no começo (listas sem cabeçalho de dia, como históricos).
+ * [showSource]: mostra a conta ou o cartão com a bolinha da cor dela (RF-EXT-08); no extrato de uma conta só, não precisa.
+ * [balanceAfter]: o saldo da conta depois deste lançamento (RF-CON-08, extrato da conta).
+ */
 @Composable
-fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier, showDate: Boolean = false) {
+fun TxRow(
+    t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier, showDate: Boolean = false,
+    showSource: Boolean = true, balanceAfter: Long? = null,
+) {
     val signed = txSignedAmount(t)
     val future = t.date.isAfter(l.today)
     val datePart = if (!showDate) "" else (if (t.date.year == l.today.year) Dates.short(t.date) else Dates.full(t.date)) + " · "
@@ -385,9 +415,34 @@ fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier, 
         signed < 0 -> MaterialTheme.colorScheme.onSurface
         else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
+    val strong = MaterialTheme.colorScheme.onSurface
+    val parts = txSubtitleParts(t, l)
+    val dots = HashMap<String, InlineTextContent>()
+    val sub = buildAnnotatedString {
+        append(datePart)
+        parts.forEachIndexed { i, p ->
+            if (i > 0) append(p.before)
+            val c = p.color
+            if (c != null && showSource) {
+                // RF-EXT-08: a bolinha na cor da conta (ou do cartão) e o nome dela em destaque.
+                val id = "dot$i"
+                dots[id] = InlineTextContent(Placeholder(8.sp, 8.sp, PlaceholderVerticalAlign.TextCenter)) {
+                    Box(Modifier.fillMaxSize().clip(CircleShape).background(Color(c)))
+                }
+                appendInlineContent(id, " ")
+                append(" ")
+                withStyle(SpanStyle(color = strong, fontWeight = FontWeight.Medium)) { append(p.text) }
+            } else {
+                append(p.text)
+            }
+        }
+        if (future) append(Res.s(R.string.common_agendado))
+    }
     Row(
         modifier
             .fillMaxWidth()
+            // RF-EXT-10: o agendado tem fundo de outro tom (e um reloginho junto do valor).
+            .then(if (future) Modifier.background(MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.45f)) else Modifier)
             .clickable(onClick = onClick)
             .padding(horizontal = 16.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
@@ -397,19 +452,36 @@ fun TxRow(t: Tx, l: Ledger, onClick: () -> Unit, modifier: Modifier = Modifier, 
         Column(Modifier.weight(1f)) {
             Text(txTitle(t, l), style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
             Text(
-                datePart + txSubtitle(t, l) + if (future) Res.s(R.string.common_agendado) else "",
+                sub,
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 2, overflow = TextOverflow.Ellipsis,
+                inlineContent = dots,
             )
         }
         Spacer(Modifier.width(8.dp))
-        MoneyText(
-            if (signed == 0L) t.amount else signed,
-            signed = signed != 0L,
-            style = MaterialTheme.typography.titleSmall,
-            color = amountColor,
-        )
+        Column(horizontalAlignment = Alignment.End) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (future) {
+                    Icon(Icons.Rounded.Schedule, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(4.dp))
+                }
+                MoneyText(
+                    if (signed == 0L) t.amount else signed,
+                    signed = signed != 0L,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = amountColor,
+                )
+            }
+            if (balanceAfter != null) {
+                val hide = LocalSettings.current.hideValues
+                Text(
+                    Res.s(R.string.acc_balance_after, if (hide) Money.HIDDEN else Money.format(balanceAfter)),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (balanceAfter < 0) CryoTheme.colors.expense else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 

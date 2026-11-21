@@ -12,7 +12,7 @@ JNIEXPORT jboolean JNICALL
 Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeAvailable(JNIEnv *, jobject) { return JNI_FALSE; }
 
 JNIEXPORT jlong JNICALL
-Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpen(JNIEnv *, jobject, jobject, jstring, jboolean) { return 0; }
+Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeOpenFile(JNIEnv *, jobject, jstring, jboolean) { return 0; }
 
 JNIEXPORT jbyteArray JNICALL
 Java_io_github_h3yk0_cryo_voice_WhisperNative_nativeTranscribe(

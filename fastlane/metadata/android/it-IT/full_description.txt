@@ -33,6 +33,6 @@ Scrivi o di' "pranzo 14 con bancomat" o "tv 1000 in 10 rate con carta di credito
 <b>Design Material You</b>
 I colori seguono lo sfondo (Android 12 o più recente), con tema chiaro e scuro.
 
-La registrazione vocale usa il riconoscimento vocale installato sul telefono. Scrivere la frase funziona sempre.
+La voce viene capita sul telefono da Whisper: scarica una volta il modello vocale con il browser e Cryo controlla il file. Scrivere la frase funziona sempre.
 
-Disponibile in 10 lingue (portoghese, inglese, spagnolo, francese, tedesco, italiano, giapponese, coreano, cinese e hindi), nella valuta che scegli.
+Disponibile in 14 lingue (portoghese, inglese, spagnolo, francese, tedesco, italiano, giapponese, coreano, cinese, hindi, russo, ucraino, arabo ed ebraico), nella valuta che scegli.

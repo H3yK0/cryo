@@ -2,6 +2,24 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import io.github.h3yk0.cryo.domain.engine.ChartWindow
+import io.github.h3yk0.cryo.domain.engine.YearOutlooks
+import io.github.h3yk0.cryo.domain.engine.SignalKind
+import io.github.h3yk0.cryo.domain.engine.GoalFit
+import io.github.h3yk0.cryo.domain.engine.GoalForecast
+import io.github.h3yk0.cryo.domain.engine.GoalForecastItem
+import io.github.h3yk0.cryo.ui.components.animationsOn
+import io.github.h3yk0.cryo.ui.components.YearChart
+import io.github.h3yk0.cryo.ui.components.GoalBadge
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.material3.TextButton
+import androidx.compose.ui.draw.clip
+import androidx.compose.foundation.background
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,7 +52,6 @@ import androidx.compose.material.icons.rounded.Timeline
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -101,6 +118,7 @@ import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import kotlin.math.roundToInt
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /*
  * Telas e cartões do motor financeiro (RF-MOT-14), no visual da 1.5 (DS-PROF): cartões com profundidade sobre o fundo
@@ -277,26 +295,6 @@ private fun StatLine(icon: ImageVector, text: String, tint: Color?) {
     }
 }
 
-/** RF-MOT-02: o que se repete (as maiores), com o total por mês. */
-@Composable
-fun RecurringCard(r: EngineReport, l: Ledger, onAll: () -> Unit) {
-    val hide = LocalSettings.current.hideValues
-    val list = r.recurrences.filter { it.status != RecurrenceStatus.ENDED }
-    if (list.isEmpty()) return
-    FlatItem(onClick = onAll) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(Res.s(R.string.engine_recurring_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
-            Text(Res.s(R.string.engine_see_all), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-        }
-        Text(
-            Res.s(R.string.engine_recurring_month, money(r.monthlyRecurringExpense, hide)),
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Spacer(Modifier.height(6.dp))
-        list.take(4).forEach { RecurrenceRow(it, l, hide) }
-    }
-}
-
 @Composable
 private fun RecurrenceRow(rec: Recurrence, l: Ledger, hide: Boolean, onClick: (() -> Unit)? = null) {
     val cat = rec.categoryId?.let { l.category[it] }
@@ -340,40 +338,6 @@ private fun RecurrencePills(rec: Recurrence) {
         pills.forEach { (t, bg, fg) -> Pill(t, bg, fg) }
     }
 }
-
-/** RF-MOT-05: o que está fora do padrão. Tocar abre a movimentação. */
-@Composable
-fun AnomaliesCard(list: List<Anomaly>, onOpen: (Long) -> Unit) {
-    if (list.isEmpty()) return
-    val hide = LocalSettings.current.hideValues
-    FlatItem {
-        Text(Res.s(R.string.engine_anomalies_title), style = MaterialTheme.typography.titleMedium)
-        Spacer(Modifier.height(4.dp))
-        list.take(5).forEach { a ->
-            val (icon, text) = when (a.kind) {
-                AnomalyKind.OUTLIER -> Icons.AutoMirrored.Rounded.TrendingUp to Res.s(R.string.engine_anomaly_outlier, money(a.usual, hide))
-                AnomalyKind.DUPLICATE -> Icons.Rounded.ContentCopy to Res.s(R.string.engine_anomaly_duplicate)
-                AnomalyKind.PRICE_UP -> Icons.Rounded.Autorenew to Res.s(R.string.engine_anomaly_price_up, money(a.usual, hide))
-                AnomalyKind.CATEGORY_HIGH -> Icons.Rounded.Insights to Res.s(R.string.engine_anomaly_category, money(a.usual, hide))
-            }
-            Row(
-                Modifier.fillMaxWidth().then(if (a.txId != null) Modifier.clickable { onOpen(a.txId) } else Modifier).padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                IconBadge(icon, CryoTheme.colors.warning, 36.dp)
-                Spacer(Modifier.width(12.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(a.label, style = MaterialTheme.typography.bodyLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                    Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Spacer(Modifier.width(8.dp))
-                MoneyText(a.amount, style = MaterialTheme.typography.titleSmall)
-            }
-        }
-    }
-}
-
-/* ================================ Saúde financeira ================================ */
 
 @Composable
 fun HealthScreen() {
@@ -478,7 +442,7 @@ fun RecurringScreen() {
 private fun RecurrenceSheet(rec: Recurrence, l: Ledger?, onDismiss: () -> Unit, onDone: () -> Unit) {
     val c = LocalContainer.current
     val hide = LocalSettings.current.hideValues
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
             Text(rec.label, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
             Spacer(Modifier.height(8.dp))
@@ -602,3 +566,128 @@ private fun PlanResult(content: @Composable ColumnScope.() -> Unit) {
 
 /** Ícone para o atalho do plano (na tela de dívidas). */
 val PlanIcon: ImageVector get() = Icons.Rounded.Timeline
+
+/* ===================== RF-MOT-17 e RF-MOT-16 (1.6, LA8): o ano e as metas ===================== */
+
+private fun lerpWindow(a: ChartWindow, b: ChartWindow, t: Float) =
+    ChartWindow(a.from + (b.from - a.from) * t, a.to + (b.to - a.to) * t)
+
+/**
+ * RF-MOT-17: "Como vou fechar o ano?". O gráfico abre com o período inteiro e, na primeira vista, dá um zoom até os sinais
+ * vermelhos, que pulsam três vezes; depois a pessoa arrasta e aproxima com os dedos, e "Ver o período todo" volta ao começo.
+ * Com "Remover animações", o gráfico aparece direto, sem zoom e sem pulsar (DS-MOV-10: nada que se repete sem fim).
+ */
+@Composable
+fun YearOutlookCard(l: Ledger, p: Projection) {
+    val hide = LocalSettings.current.hideValues
+    val today = l.today
+    val years = if (YearOutlooks.hasNextYear(today)) listOf(today.year, today.year + 1) else listOf(today.year)
+    var year by rememberSaveable { mutableIntStateOf(today.year) }
+    val days = YearOutlooks.daysUntilEndOf(p, year)
+    val end = p.dateAt(days)
+    val signals = remember(l, p, days) { YearOutlooks.signals(l, p, days) }
+    val anim = animationsOn()
+    var window by remember(days) { mutableStateOf(YearOutlooks.full(days)) }
+    var zoomed by rememberSaveable { mutableStateOf(false) }
+    var pulse by remember { mutableFloatStateOf(0f) }
+    LaunchedEffect(days) {
+        if (!anim || zoomed) { zoomed = true; return@LaunchedEffect }
+        val start = window
+        val target = YearOutlooks.zoomWindow(p, signals, days)
+        val a = androidx.compose.animation.core.Animatable(0f)
+        a.animateTo(1f, androidx.compose.animation.core.tween(1200, delayMillis = 500, easing = androidx.compose.animation.core.FastOutSlowInEasing)) {
+            window = lerpWindow(start, target, value)
+        }
+        zoomed = true
+        val b = androidx.compose.animation.core.Animatable(0f)
+        repeat(3) {
+            b.snapTo(0f)
+            b.animateTo(1f, androidx.compose.animation.core.tween(800)) { pulse = value }
+        }
+        pulse = 0f
+    }
+    val (tightDate, tightValue) = p.tightestWithin(days)
+    FlatItem {
+        Text(Res.s(R.string.yr_title), style = MaterialTheme.typography.titleMedium, modifier = Modifier.semantics { heading() })
+        if (years.size > 1) {
+            Spacer(Modifier.height(8.dp))
+            Segmented(years.map { it to it.toString() }, year, { year = it })
+        }
+        Spacer(Modifier.height(12.dp))
+        Text(Res.s(R.string.engine_projection_balance_on, Dates.dayMonthYear(end)), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        MoneyText(p.mid[days], style = MaterialTheme.typography.headlineSmall, color = if (p.mid[days] < 0) CryoTheme.colors.expense else MaterialTheme.colorScheme.onSurface)
+        Text(
+            Res.s(R.string.engine_between, money(p.low[days], hide), money(p.high[days], hide)),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(8.dp))
+        val desc = Res.s(R.string.yr_chart_cd, Dates.dayMonthYear(end), money(p.mid[days], hide), money(tightValue, hide), Dates.dayMonth(tightDate))
+        YearChart(p, days, signals, window, onWindow = { window = it }, pulse = if (anim) pulse else 0f, description = desc)
+        if (window != YearOutlooks.full(days)) {
+            TextButton(onClick = { window = YearOutlooks.full(days) }, contentPadding = PaddingValues(horizontal = 0.dp)) { Text(Res.s(R.string.yr_see_all)) }
+        }
+        Spacer(Modifier.height(8.dp))
+        // RF-MOT-04 (issue #3): a conta fica negativa? a partir de quando? qual o menor saldo e em que dia.
+        val firstNeg = p.firstNegativeWithin(days)
+        val tint = if (firstNeg != null) CryoTheme.colors.expense else CryoTheme.colors.income
+        Surface(color = tint.copy(alpha = 0.10f), shape = MaterialTheme.shapes.large, modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(if (firstNeg != null) Icons.Rounded.PriorityHigh else Icons.Rounded.CheckCircle, null, Modifier.size(20.dp), tint = tint)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        if (firstNeg != null) Res.s(R.string.proj_negative_from, Dates.dayMonth(firstNeg)) else Res.s(R.string.proj_safe),
+                        style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold,
+                    )
+                }
+                Text(Res.s(R.string.proj_min_balance, money(tightValue, hide), Dates.dayMonth(tightDate)), style = MaterialTheme.typography.bodyMedium, modifier = Modifier.padding(top = 4.dp))
+                if (firstNeg != null) {
+                    Text(Res.s(R.string.proj_min_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(top = 4.dp))
+                }
+            }
+        }
+        if (signals.isNotEmpty()) {
+            Spacer(Modifier.height(10.dp))
+            Text(Res.s(R.string.yr_signals), style = MaterialTheme.typography.labelLarge)
+            signals.forEach { s ->
+                Row(Modifier.fillMaxWidth().padding(vertical = 5.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Box(Modifier.size(10.dp).clip(CircleShape).background(CryoTheme.colors.expense))
+                    Spacer(Modifier.width(10.dp))
+                    Column(Modifier.weight(1f)) {
+                        Text(
+                            when (s.kind) {
+                                SignalKind.FIRST_NEGATIVE -> Res.s(R.string.yr_sig_negative)
+                                SignalKind.TIGHTEST -> Res.s(R.string.yr_sig_tightest)
+                                SignalKind.BIG_BILL -> Res.s(R.string.yr_sig_bill, s.name.orEmpty())
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                        )
+                        Text(
+                            if (s.date.year == today.year) Dates.dayMonth(s.date) else Dates.dayMonthYear(s.date),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    MoneyText(if (s.kind == SignalKind.BIG_BILL) -s.amount else s.amount, signed = s.kind == SignalKind.BIG_BILL, style = MaterialTheme.typography.titleSmall)
+                }
+            }
+        }
+        if (p.chanceNegative >= 0.01) {
+            StatLine(Icons.Rounded.PriorityHigh, Res.s(R.string.engine_chance_negative, Num.percent((p.chanceNegative * 100).roundToInt())), CryoTheme.colors.warning)
+        }
+        // RF-ANA-07, DS-EXP-01: a explicação começa fechada, numa linha com a setinha.
+        io.github.h3yk0.cryo.ui.components.Expandable(Res.s(R.string.insights_como_cheguei_nesse_numero), Modifier.padding(top = 4.dp)) {
+            Text(Res.s(R.string.yr_how), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+/** RF-MOT-16: o texto de uma meta na previsão (o mesmo em Análises e em Planejar › Metas). */
+fun goalForecastText(g: GoalForecastItem): String = when (g.fit) {
+    GoalFit.DONE -> Res.s(R.string.gf_done)
+    GoalFit.ON_TIME -> Res.s(R.string.gf_on_time, Dates.monthYearInSentence(g.eta!!))
+    GoalFit.LATE -> Res.p(R.plurals.gf_late, g.monthsLate, Dates.monthYearInSentence(g.eta!!), g.monthsLate)
+    GoalFit.NO_DEADLINE -> Res.s(R.string.gf_no_deadline, Dates.monthYearInSentence(g.eta!!))
+    GoalFit.NO_ROOM -> Res.s(R.string.gf_no_room)
+}
+
+

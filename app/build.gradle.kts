@@ -20,8 +20,8 @@ android {
         applicationId = "io.github.h3yk0.cryo"
         minSdk = 26
         targetSdk = 36
-        versionCode = 10
-        versionName = "1.5"
+        versionCode = 11
+        versionName = "1.6"
 
         // RF-VOZ-01: o Whisper de verdade só no ARM de 64 bits; nos outros, uma biblioteca "vazia" (plano B), para o
         // APK continuar instalando em todo celular.
@@ -73,11 +73,10 @@ android {
         buildConfig = true
     }
 
-    // Android 13+: o Cryo aparece na tela "Idioma do app" do sistema com as 10 línguas (RF-LNG-02).
+    // Android 13+: o Cryo aparece na tela "Idioma do app" do sistema com as 14 línguas (RF-LNG-02).
+    // (Até a 1.5 o modelo do Whisper ia sem compressão dentro do APK; desde a 1.6 ele não vem mais no app, RF-VOZ-15.)
     androidResources {
         generateLocaleConfig = true
-        // O modelo do Whisper fica sem compressão dentro do APK: é lido direto de lá, sem copiar para um arquivo.
-        noCompress += "bin"
     }
 
     testOptions {
@@ -99,7 +98,8 @@ android {
             // ./gradlew testDebugUnitTest --tests '*WhisperHostTest' -PwhisperHost=true
             if (project.findProperty("whisperHost") == "true") {
                 it.systemProperty("cryo.whisperHostLib", layout.buildDirectory.file("whisper-host/libcryo_whisper_host.so").get().asFile.absolutePath)
-                it.environment("CRYO_ASSETS", file("src/main/assets").absolutePath)
+                // O modelo que o build-host.sh baixou e conferiu (RF-VOZ-15: ele não fica mais no repositório).
+                it.systemProperty("cryo.whisperModel", layout.buildDirectory.file("whisper-host/ggml-base-q5_1.bin").get().asFile.absolutePath)
             }
             it.maxHeapSize = "1536m"
         }

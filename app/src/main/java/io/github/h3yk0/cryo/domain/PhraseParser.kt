@@ -759,7 +759,8 @@ class PhraseParser(private val ctx: ParseContext) {
 
     /* ---------------------------- entidades ---------------------------- */
 
-    private fun kw(k: String) = re("\\b${Regex.escape(k)}${L.plural}\\b")
+    // RF-LNG-11: no árabe e no hebraico, o artigo e as preposições vêm grudados no começo da palavra ([PhraseLang.prefix]).
+    private fun kw(k: String) = re("\\b${L.prefix}${Regex.escape(k)}${L.plural}\\b")
 
     /** Alguma palavra-chave de categoria (fora da dívida) aparece na frase? Ex.: "gasolina da moto". */
     private fun keywordOutside(ranges: List<IntRange>): Boolean =
@@ -851,11 +852,11 @@ class PhraseParser(private val ctx: ParseContext) {
         private const val CJK_UNITS = "億亿万萬만千천百백"
         private val ZH_SINGLE = setOf('了', '的', '在', '给', '从', '我', '用', '和', '跟')
 
-        /** Símbolo antes do valor: "R$ 10", "$10", "€10", "₹10", "Rs. 10". */
-        private const val PREFIX_SYMBOLS = "r\\$|us\\$|u\\\$s|c\\$|a\\$|mx\\$|\\$|€|£|¥|￥|₩|₹"
-        private const val ALPHA_SYMBOLS = "rs\\.?|chf|eur|usd|inr|brl|gbp"
-        private const val SUFFIX_SYMBOLS = "€|\\$|£|¥|￥|₩|₹"
-        private val STOP_SYMBOLS = setOf("r$", "$", "us$", "€", "£", "¥", "￥", "₩", "₹")
+        /** Símbolo antes do valor: "R$ 10", "$10", "€10", "₹10", "Rs. 10", "₽100" (rublo), "₴100" (grívnia), "₪100" (shekel). */
+        private const val PREFIX_SYMBOLS = "r\\$|us\\$|u\\\$s|c\\$|a\\$|mx\\$|\\$|€|£|¥|￥|₩|₹|₽|₴|₪"
+        private const val ALPHA_SYMBOLS = "rs\\.?|chf|eur|usd|inr|brl|gbp|rub|uah|ils|nis|sar|aed|egp"
+        private const val SUFFIX_SYMBOLS = "€|\\$|£|¥|￥|₩|₹|₽|₴|₪"
+        private val STOP_SYMBOLS = setOf("r$", "$", "us$", "€", "£", "¥", "￥", "₩", "₹", "₽", "₴", "₪")
 
         /** "10x" em qualquer língua. */
         private val UNIVERSAL_INSTALLMENTS = listOf("(\\d{1,2}) ?x")
@@ -884,9 +885,9 @@ class PhraseParser(private val ctx: ParseContext) {
          * Palavra inteira em qualquer escrita ("\\b" que vale igual no Android e no Java, também para o hindi); em
          * japonês, chinês e coreano, pedaço de palavra (não há espaços, ou as partículas vêm grudadas).
          */
-        fun wordRegex(word: String, plural: String = ""): Regex =
+        fun wordRegex(word: String, plural: String = "", prefix: String = ""): Regex =
             if (word.any { Character.UnicodeScript.of(it.code) in CJK_SCRIPTS }) Regex(Regex.escape(word))
-            else Regex("$B${Regex.escape(word)}$plural$B")
+            else Regex("$B$prefix${Regex.escape(word)}$plural$B")
 
         /** Separa uma descrição em palavras (qualquer escrita). */
         fun wordsOf(norm: String): List<String> = norm.split(NON_WORD).filter { it.isNotEmpty() }

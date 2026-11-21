@@ -50,8 +50,9 @@ object LocaleSettings {
      */
     fun effective(ctx: Context, system: Locale): Effective {
         val language = chosenLanguage(ctx) ?: AppLanguage.forLocale(system)
-        val sameLanguage = system.language == language.code
-        val locale = if (sameLanguage) system else language.locale
+        // O hebraico chega do Android como "iw": compara pelo código novo (RF-LNG-11).
+        val sameLanguage = AppLanguage.languageCode(system) == language.code
+        val locale = latinDigits(language, if (sameLanguage) system else language.locale)
         val resources = when (language) {
             AppLanguage.PT_BR -> if (sameLanguage) system else language.locale
             AppLanguage.ZH -> language.locale
@@ -60,6 +61,13 @@ object LocaleSettings {
         val currency = chosenCurrency(ctx) ?: defaultCurrencyFor(system, language)
         return Effective(language, locale, currency, resources)
     }
+
+    /**
+     * RF-LNG-11: no árabe, os números saem com os algarismos 0–9 (os mesmos dos valores, dos extratos e do teclado do celular),
+     * não com os arábico-índicos (٠–٩). As outras línguas ficam como estão.
+     */
+    internal fun latinDigits(language: AppLanguage, locale: Locale): Locale =
+        if (language != AppLanguage.AR) locale else Locale.Builder().setLocale(locale).setUnicodeLocaleKeyword("nu", "latn").build()
 
     /** O locale do celular, como o Android entrega neste contexto (antes de o Cryo trocar a língua). */
     fun systemLocale(base: Context): Locale = base.resources.configuration.locales[0] ?: Locale.getDefault()
@@ -80,8 +88,12 @@ object LocaleSettings {
         val e = effective(base, systemLocale(base))
         AppLocale.set(e.language, e.locale, e.currency)
         val ctx = wrap(base)
-        Res.text = { id, args -> if (args.isEmpty()) ctx.getString(id) else ctx.getString(id, *args) }
-        Res.plural = { id, n, args -> if (args.isEmpty()) ctx.resources.getQuantityString(id, n) else ctx.resources.getQuantityString(id, n, *args) }
+        // ERR-058: os números dentro dos textos são formatados com o locale do Cryo, e não com o dos recursos: o Android tira
+        // o "-u-nu-latn" do locale dos recursos, e o %d sairia com os algarismos arábico-índicos no árabe.
+        Res.text = { id, args -> if (args.isEmpty()) ctx.getString(id) else String.format(AppLocale.locale, ctx.getString(id), *args) }
+        Res.plural = { id, n, args ->
+            if (args.isEmpty()) ctx.resources.getQuantityString(id, n) else String.format(AppLocale.locale, ctx.resources.getQuantityString(id, n), *args)
+        }
         AppLocale.datePattern = { skeleton, locale -> DateFormat.getBestDateTimePattern(locale, skeleton) }
         return ctx
     }

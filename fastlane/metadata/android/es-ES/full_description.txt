@@ -33,6 +33,6 @@ Escribe o di "almuerzo 12,50 con débito" o "tele 600 en 12 cuotas con tarjeta".
 <b>Diseño Material You</b>
 Los colores siguen tu fondo de pantalla (Android 12 o más reciente), con tema claro y oscuro.
 
-El registro por voz usa el reconocimiento de voz instalado en el móvil. Escribir la frase funciona siempre.
+La voz se entiende en el propio móvil con Whisper: descarga el modelo de voz una vez con el navegador y Cryo comprueba el archivo. Escribir la frase funciona siempre.
 
-Disponible en 10 idiomas (portugués, inglés, español, francés, alemán, italiano, japonés, coreano, chino e hindi), con la moneda que elijas.
+Disponible en 14 idiomas (portugués, inglés, español, francés, alemán, italiano, japonés, coreano, chino, hindi, ruso, ucraniano, árabe y hebreo), con la moneda que elijas.

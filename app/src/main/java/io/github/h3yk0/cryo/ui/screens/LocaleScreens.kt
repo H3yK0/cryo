@@ -11,7 +11,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -34,6 +33,7 @@ import io.github.h3yk0.cryo.domain.defaultCurrencyFor
 import io.github.h3yk0.cryo.ui.components.ChoiceRow
 import io.github.h3yk0.cryo.ui.components.ConfirmDialog
 import java.util.Currency
+import io.github.h3yk0.cryo.ui.components.CryoSheet
 
 /*
  * Idioma e moeda (PRD: RF-AJU-09, RF-AJU-10, RF-BOA-07). Usado nos Ajustes e na apresentação inicial.
@@ -68,7 +68,7 @@ fun LanguageSheet(onDismiss: () -> Unit) {
     val ctx = LocalContext.current
     val chosen = LocaleSettings.chosenLanguage(ctx)
     val device = AppLanguage.forLocale(LocaleSettings.systemLocale(ctx.applicationContext))
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
             Text(stringResource(R.string.locale_language_title), style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(12.dp))
@@ -102,7 +102,7 @@ fun CurrencySheet(onDismiss: () -> Unit) {
         if (effective == AppLocale.currency.currencyCode && code == chosen) return onDismiss()
         confirm = code ?: ""
     }
-    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+    CryoSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
         Column(Modifier.verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).padding(bottom = 24.dp).navigationBarsPadding()) {
             Text(stringResource(R.string.locale_currency_title), style = MaterialTheme.typography.titleLarge)
             Text(

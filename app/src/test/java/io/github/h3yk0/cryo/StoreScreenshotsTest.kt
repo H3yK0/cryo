@@ -80,6 +80,10 @@ class StoreScreenshotsTest {
         runBlocking { seed(c, day); c.autoBackup.clear() }
         val deadline = System.currentTimeMillis() + 10_000
         while ((c.repo.snapshot.value?.txs?.size ?: 0) < 50 && System.currentTimeMillis() < deadline) Thread.sleep(50)
+        // RF-ORC-09: nas imagens da loja, a tela de Orçamentos mostra os orçamentos (as sugestões das contas fixas ficam
+        // dispensadas, como depois de um "Agora não").
+        val l = io.github.h3yk0.cryo.domain.Ledger(runBlocking { c.repo.loadOnce() }, day)
+        io.github.h3yk0.cryo.domain.BudgetBills.suggestions(l, java.time.YearMonth.from(day)).forEach { c.budgetBills.dismiss(it.categoryId, it.signature) }
     }
 
     @Composable
@@ -150,4 +154,9 @@ class StoreScreenshotsTest {
     @Config(qualifiers = "+ko-rKR") @Test fun coreano() = shots("ko-KR")
     @Config(qualifiers = "+zh-rCN") @Test fun chines() = shots("zh-CN")
     @Config(qualifiers = "+hi-rIN") @Test fun hindi() = shots("hi-IN")
+    // 1.6 (RF-LNG-11): o F-Droid usa "iw-IL" para o hebraico; árabe e hebraico da direita para a esquerda.
+    @Config(qualifiers = "+ru-rRU") @Test fun russo() = shots("ru-RU")
+    @Config(qualifiers = "+uk-rUA") @Test fun ucraniano() = shots("uk")
+    @Config(qualifiers = "+ar-rSA-ldrtl") @Test fun arabe() = shots("ar")
+    @Config(qualifiers = "+iw-rIL-ldrtl") @Test fun hebraico() = shots("iw-IL")
 }

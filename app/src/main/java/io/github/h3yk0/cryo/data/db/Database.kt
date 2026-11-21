@@ -43,6 +43,7 @@ interface CryoDao {
     @Query("SELECT * FROM debt_adjustments ORDER BY date DESC, id DESC") fun debtAdjustments(): Flow<List<DebtAdjustment>>
     @Query("SELECT * FROM budget_adjustments ORDER BY ym, id") fun budgetAdjustments(): Flow<List<BudgetAdjustment>>
     @Query("SELECT * FROM no_spend_days ORDER BY date") fun noSpendDays(): Flow<List<NoSpendDay>>
+    @Query("SELECT * FROM bill_skips ORDER BY ym, billId") fun billSkips(): Flow<List<BillSkip>>
 
     // ---------- leitura única (lembretes e backup) ----------
     @Query("SELECT * FROM accounts ORDER BY sortOrder, id") suspend fun accountsOnce(): List<Account>
@@ -58,6 +59,7 @@ interface CryoDao {
     @Query("SELECT * FROM debt_adjustments ORDER BY date DESC, id DESC") suspend fun debtAdjustmentsOnce(): List<DebtAdjustment>
     @Query("SELECT * FROM budget_adjustments ORDER BY ym, id") suspend fun budgetAdjustmentsOnce(): List<BudgetAdjustment>
     @Query("SELECT * FROM no_spend_days ORDER BY date") suspend fun noSpendDaysOnce(): List<NoSpendDay>
+    @Query("SELECT * FROM bill_skips ORDER BY ym, billId") suspend fun billSkipsOnce(): List<BillSkip>
 
     // ---------- gravação ----------
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putAccount(a: Account): Long
@@ -85,6 +87,8 @@ interface CryoDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putBudgetAdjustments(a: List<BudgetAdjustment>)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putNoSpendDay(d: NoSpendDay)
     @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putNoSpendDays(d: List<NoSpendDay>)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putBillSkip(s: BillSkip)
+    @Insert(onConflict = OnConflictStrategy.REPLACE) suspend fun putBillSkips(s: List<BillSkip>)
 
     // ---------- exclusão ----------
     @Query("DELETE FROM transactions WHERE id = :id") suspend fun deleteTx(id: Long)
@@ -112,6 +116,8 @@ interface CryoDao {
     @Query("DELETE FROM budget_adjustments WHERE id = :id") suspend fun deleteBudgetAdjustment(id: Long)
     @Query("DELETE FROM budget_adjustments WHERE categoryId = :id") suspend fun deleteBudgetAdjustmentsOf(id: Long)
     @Query("DELETE FROM no_spend_days WHERE date = :date") suspend fun deleteNoSpendDay(date: LocalDate)
+    @Query("DELETE FROM bill_skips WHERE billId = :billId AND ym = :ym") suspend fun deleteBillSkip(billId: Long, ym: Int)
+    @Query("DELETE FROM bill_skips WHERE billId = :billId") suspend fun deleteBillSkipsOf(billId: Long)
 
     // ---------- consultas auxiliares ----------
     @Query("SELECT COUNT(*) FROM transactions WHERE accountId = :id OR toAccountId = :id") suspend fun countTxForAccount(id: Long): Int
@@ -139,6 +145,7 @@ interface CryoDao {
     @Query("DELETE FROM debt_adjustments") suspend fun clearDebtAdjustments()
     @Query("DELETE FROM budget_adjustments") suspend fun clearBudgetAdjustments()
     @Query("DELETE FROM no_spend_days") suspend fun clearNoSpendDays()
+    @Query("DELETE FROM bill_skips") suspend fun clearBillSkips()
 }
 
 /**
@@ -192,9 +199,9 @@ class Migration3To4 : AutoMigrationSpec {
     entities = [
         Account::class, CreditCard::class, Category::class, Tx::class, Investment::class,
         InvestmentYield::class, Goal::class, Bill::class, Budget::class, Debt::class, DebtAdjustment::class,
-        BudgetAdjustment::class, NoSpendDay::class,
+        BudgetAdjustment::class, NoSpendDay::class, BillSkip::class,
     ],
-    version = 5,
+    version = 6,
     exportSchema = true,
     autoMigrations = [
         AutoMigration(from = 1, to = 2, spec = Migration1To2::class),
@@ -205,6 +212,8 @@ class Migration3To4 : AutoMigrationSpec {
         // Versão 4 → 5 (Cryo 1.5): a conta fixa ganha ritmo, parcelas, preço à vista e prazo (DAD-15). As colunas nascem
         // com o valor de sempre (mensal, uma parcela, sem prazo): quem já usa não vê diferença nenhuma.
         AutoMigration(from = 4, to = 5),
+        // Versão 5 → 6 (Cryo 1.6): os meses pulados das contas fixas (DAD-16, RF-FIX-12). Só cria a tabela nova.
+        AutoMigration(from = 5, to = 6),
     ],
 )
 @TypeConverters(Converters::class)

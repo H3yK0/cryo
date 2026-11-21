@@ -2,6 +2,55 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.6 — visual novo, o fim do mês real, quatro línguas novas e o ano pela frente
+
+**Visual novo, mais calmo e fácil de ler** (pedido de quem usa)
+- **Início em blocos**: o mês num cartão largo na cor do resultado, com quanto dá por dia; cartões, contas, orçamentos, dívidas, investimentos e metas em blocos de duas colunas, cada um com um número e uma linha curta; as últimas movimentações embaixo
+- **Central de avisos**: um **sino** no Início mostra quantos avisos importantes são novos. Lá dentro, três grupos nas cores pastel da prioridade: Precisa de atenção, Nos próximos dias e O Cryo percebeu. Cada aviso abre a tela certa, e nada é dito duas vezes. O Início mostra **no máximo um destaque**, o mais importante e novo; o × dispensa, e o sino guarda o resto
+- **Cores pastel por prioridade**: rosa para alerta, pêssego para atenção, menta para o que está bem e azul-gelo para informação — só onde algo pede você, para chamar o olho, com a mesma profundidade de antes
+- **Menos para ler**: as explicações começam fechadas, numa linha com setinha
+- **Análises**: o fim do mês primeiro, os últimos 6 meses logo abaixo, "Como vou fechar o ano?", a saúde financeira, o fluxo do dinheiro em blocos (entrou, saiu e sobrou; de onde veio e para onde foi, com barras — o desenho do fluxo fica a um toque) e as 4 maiores categorias
+- **Planejar**: o orçamento **Geral**, quanto da renda você pode gastar no mês (o Cryo sugere a renda fixa menos o que vai para as metas, e você muda; ele mostra quanto já está dividido entre as categorias e avisa quando elas somam mais). Orçamentos e metas em blocos; contas fixas com três blocos no topo (a pagar, pagas, total do mês), as pagas fechadas com setinha e "O que se repete" no fim; a previsão de metas agora mora em Planejar › Metas
+- **Ajustes por tipo**: perfil, aparência, idioma e moeda, segurança e privacidade (com a senha dos backups), lembretes, lançamentos (conta principal numa folha, categorias), voz (uma linha que abre Ajustes › Voz) e seus dados; "Apagar todos os dados" fica sozinho
+
+
+**Modelo de voz fora do app** (assim o Cryo pode entrar no F-Droid, e o app caiu de uns 65 MB para uns 9 MB)
+- Na primeira vez que você toca no microfone, o Cryo explica e abre o navegador no arquivo do modelo (o mesmo que vinha dentro do Cryo até a 1.5). Depois é só escolher o arquivo baixado: o Cryo copia para a pasta dele e só aceita um dos seis modelos oficiais do Whisper, conferindo o tamanho e o SHA-256. Ajustes › Voz › Modelo de voz mostra o modelo em uso, troca ou remove. O Cryo continua sem permissão de internet: quem baixa é o navegador
+- Sem modelo, a voz usa o reconhecedor do próprio celular
+
+**O fim do mês real**
+- O número do fim do mês agora é **renda menos despesas**, só com o que já aconteceu e o que é fixo — **nada estimado**. Renda: o que já entrou mais a renda fixa que ainda vem (contas fixas de entrada, entradas agendadas e o salário que o Cryo reconhece pelo histórico, no valor de sempre). Despesas: contas fixas (pagas e a pagar), metas e investimentos (o guardado no mês e o que falta guardar neste mês para as metas com prazo), dívidas e parcelas, despesas variáveis já feitas e saídas agendadas. Conforme as despesas entram, o número cai
+- É o mesmo no Início e em Análises e sempre a soma das linhas de "Como cheguei nesse número". Dinheiro que entrou uma vez (uma venda no mês passado) não conta mais como se fosse entrar de novo
+
+**Orçamento pela renda**
+- Planejar › Orçamentos › **Planejar pela renda**: a renda fixa (o Cryo sugere o que achou, como o salário) e, se quiser, a variável (contando o mês mais fraco). A divisão 50/30/20 é um ponto de partida ajustável; os limites por categoria partem do que você costuma gastar, encolhem juntos quando não cabem e nunca ficam abaixo das contas fixas. Nada muda até você tocar em "Usar estes limites"
+- Para onde vai o guardar, só por **tipo** (nunca produto nem banco): reserva de emergência (6 meses do essencial, com quanto falta), objetivos com prazo, longo prazo
+- **Orçamento × contas fixas**: quando as contas fixas de uma categoria não cabem no orçamento, o Cryo sugere ajustar (ao salvar a conta fixa e no topo de Orçamentos). A conta que não é mensal entra só no mês dela, como ajuste daquele mês. "Agora não" esconde até as contas mudarem, e dá para trocar a conta fixa de categoria ou criar uma nova
+
+**O ano pela frente**
+- **"Como vou fechar o ano?"**: o saldo até 31 de dezembro (e, a partir de outubro, também o ano que vem), com a faixa de 8 em 10 cenários — contas que não são mensais, faturas, parcelas, dívidas, orçamentos planejados e o ritmo. Na primeira vista o gráfico dá um zoom até os sinais vermelhos que pulsam: o primeiro dia em que a conta pode ficar negativa, o dia mais apertado e cada conta grande que não é mensal. Depois é arrastar e aproximar à vontade; "Ver o período todo" volta. Ocupa o lugar de "Próximos meses"
+- **Previsão de metas**, em Planejar › Metas: no ritmo de agora, as metas cabem? A sobra prevista vai primeiro para as metas de prazo mais perto: "no prazo", "chega em março, 2 meses depois do prazo" ou "não sobra para ela", e quanto faltaria por mês
+
+**Extrato e contas fixas** (pedidos de quem usa)
+- **Cada lançamento mostra a conta**: uma bolinha na cor da conta ou do cartão e o nome em destaque, num extrato só com todas. **"Todas as contas"** filtra o Extrato por uma conta ou cartão, e o resumo do topo passa a ser o dela
+- **Extrato da conta**: a tela da conta virou um extrato por mês, agrupado por dia, com o saldo depois de cada lançamento e no fim do dia, como o do banco — com filtros e busca
+- **Agendado com cara de agendado**: fundo de outro tom e um reloginho
+- **"Previstas"** no Extrato lista as contas fixas do mês ainda não pagas, com o total e três ações: Já paguei, Ajustar (outro valor, conta ou dia) e **Pular este mês** (a academia que não cobra nas férias). O mês pulado sai da lista, dos avisos e das previsões; "Voltar a contar" desfaz
+- **Data "Último: …"**: o último dia usado fica a um toque, e o lançamento aberto pela tela da conta já começa nele — bom para lançar um extrato antigo. A compra nova pela tela do cartão entra na fatura que estava na tela
+
+**Línguas**
+- **Russo, ucraniano, árabe e hebraico**, com rublo, grívnia, shekel, rial saudita, dirham e libra egípcia. Árabe e hebraico da direita para a esquerda, e o árabe com os algarismos 0–9 do banco e do teclado. Registro por frase e voz e importação de extratos nas 14 línguas
+
+**Correções**
+- A lista de idiomas (Ajustes › Idioma e moeda) não fica mais tremendo; toda folha do app passa por um componente que não fica preso embaixo da barra de status
+- Banco de dados versão 6: os meses pulados das contas fixas. Os dados de quem já usa ficam exatamente como estavam
+- **De uma auditoria independente do código** (cada correção tem um teste que falha no código antigo):
+  - Um salário (ou assinatura) agendado não apaga mais a recorrência inteira da previsão de 12 meses e do ano: ele substitui só a ocorrência que cobre
+  - Um pagamento de dívida agendado cobre a parcela de vencimento mais perto dele, e só dentro do período da previsão: um pagamento de março não esconde mais a parcela de dezembro, e nada conta duas vezes
+  - Importação de extratos: duas compras de mesmo valor na mesma fatura não viram uma só (só a parcela casa pela fatura), e cada linha fica com o lançamento de data mais perto, não com o primeiro do arquivo
+  - Um backup sem senha com a palavra "cipher" nos dados (uma conta com esse nome) abre sem pedir senha
+  - Voz: fechar o modelo sempre espera a conta em andamento, e nenhuma chamada chega a um modelo já solto; o modelo baixado é conferido de novo pelo SHA-256 no primeiro uso de cada abertura do app, uma cópia interrompida não deixa arquivo para trás e um modelo bom que não abre (falta de memória) não é mais apagado
+
 ## 1.5 — voz no celular, motor financeiro, avisos inteligentes e contas fixas que se acertam com o extrato
 
 Tudo o que foi feito depois da 1.4, numa versão só. Continua tudo rodando no seu celular, sem internet.

@@ -17,7 +17,11 @@ A personal finance app for Android: simple to use, complete, offline and open so
   <a href="docs/readme/README.ja.md">日本語</a> ·
   <a href="docs/readme/README.ko.md">한국어</a> ·
   <a href="docs/readme/README.zh-CN.md">中文</a> ·
-  <a href="docs/readme/README.hi.md">हिन्दी</a>
+  <a href="docs/readme/README.hi.md">हिन्दी</a> ·
+  <a href="docs/readme/README.ru.md">Русский</a> ·
+  <a href="docs/readme/README.uk.md">Українська</a> ·
+  <a href="docs/readme/README.ar.md">العربية</a> ·
+  <a href="docs/readme/README.he.md">עברית</a>
 </p>
 
 <p align="center">
@@ -31,14 +35,15 @@ A personal finance app for Android: simple to use, complete, offline and open so
 ## What it does
 
 - **Log by typing or speaking.** Type or say "lunch 12.50 on debit" or "tv 500 in 10 installments on credit card". Cryo understands the amount, the category, the account, the date and the installments. You just check and save.
-- **A financial engine on your phone.** The end-of-month forecast now comes with a range and the chance of ending in the red (2,000 scenarios simulated from your own history). Cryo also finds your salary, rent and subscriptions on its own, projects your balance for the next 12 months, flags unusual and repeated charges, gives a financial health score with tips, shows the interest built into your debts with a payoff plan, and the real yearly return of your investments. All calculated offline.
+- **A financial engine on your phone.** The end-of-month forecast comes with a range checked against your own past, and its number is always the sum of the lines that explain it — including your bills, your budgets and what you invested. Cryo finds your salary, rent and subscriptions on its own, answers **"How will I end the year?"** with red signals on the days that need attention, tells you whether your **goals fit** at your current pace, flags unusual and repeated charges, gives a financial health score (right next to your balance), shows the interest built into your debts with a payoff plan, and the real yearly return of your investments. All calculated offline.
 - **Spending heatmap and money flow.** See which days you spend the most, where the money came from and where it went.
 - **Import bank statements.** OFX, CSV, spreadsheet (XLSX) or PDF: you review the list before anything goes in, with suggested categories, what is already in Cryo unchecked and credit card bill payments recognized.
 - **Credit cards.** Bills, available limit and installment purchases, each installment on the right bill.
 - **Debts.** Loans, financing, agreements and money you owe someone, kept apart from the rest: how much is left, late installments, how much of your income goes to installments and when you will be debt-free.
-- **Planning.** Recurring bills with reminders, a budget per category and savings goals with a suggested monthly amount.
+- **Planning.** Recurring bills (monthly, yearly or in instalments) with reminders, upcoming bills in the Statement and skipping a month, a budget per category — or **planned from your income** — that warns you when your bills do not fit, and savings goals.
+- **A statement per account**, like your bank's: each entry with the balance after it and the balance at the end of each day. In the main Statement, each entry shows its account, and you can filter by one.
 - **Investments and transfers** between accounts.
-- **10 languages and your currency.** English, Portuguese, Spanish, French, German, Italian, Japanese, Korean, Chinese and Hindi, in the currency you choose (dollar, euro, pound, yen, won, rupee, real and more). Logging by phrase and importing statements work in all of them.
+- **14 languages and your currency.** English, Portuguese, Spanish, French, German, Italian, Japanese, Korean, Chinese, Hindi, Russian, Ukrainian, Arabic and Hebrew (right to left), in the currency you choose (dollar, euro, pound, yen, won, rupee, real, rouble, hryvnia, shekel, riyal and more). Logging by phrase and importing statements work in all of them.
 - **A quick animated tour** shows how to use the app the first time you open it (and again whenever you want, in Settings).
 - **Material You**, light and dark themes and smooth animations that follow your phone's "Remove animations" setting.
 
@@ -51,7 +56,7 @@ A personal finance app for Android: simple to use, complete, offline and open so
 - **Password-protected backups** (optional): the files are encrypted with AES-256 and can't be read without your password. The key stays in Android's secure keystore.
 - Backup to a `.json` file and export to a `.csv` spreadsheet, whenever you want.
 
-Voice entry uses the speech recognition already installed on your phone. Typing the phrase always works.
+**Voice that stays on your phone.** Voice is understood on the phone itself by Whisper (an open speech model); the audio never becomes a file. The model is downloaded once with your browser — Cryo has no internet permission — and Cryo only accepts the official file, checking its SHA-256 ([the models](docs/VOZ-MODELOS.md)). Without it, your phone's own offline recogniser is used. Typing the phrase always works.
 
 ## Install
 
@@ -71,7 +76,7 @@ Requirements: JDK 21 and the Android SDK (platform 36). The published APK is bui
 
 To sign with your own key, create `keystore/keystore.properties` with `storeFile`, `storePassword`, `keyAlias` and `keyPassword`. The `keystore/` folder never goes into the repository.
 
-To regenerate the screenshots of the F-Droid page and of these READMEs (`fastlane/` folder), in the 10 languages:
+To regenerate the screenshots of the F-Droid page and of these READMEs (`fastlane/` folder), in the 14 languages:
 
 ```bash
 ./gradlew testDebugUnitTest --tests '*StoreScreenshotsTest' --tests '*StoreAssetsTest' -PstoreAssets=true
@@ -91,9 +96,9 @@ The project documents (requirements in [docs/PRD.md](docs/PRD.md), visual guide,
 
 ## Contributing
 
-Suggestions and bug reports are welcome in [Issues](https://github.com/H3yK0/cryo/issues), in any of the 10 languages.
+Suggestions and bug reports are welcome in [Issues](https://github.com/H3yK0/cryo/issues), in any of the 14 languages.
 
-- **Translations:** the 9 translations were made with the help of AI. If you speak one of these languages and find something odd, please open an issue: native review is very welcome.
+- **Translations:** the 13 translations were made with the help of AI. If you speak one of these languages and find something odd, please open an issue: native review is very welcome.
 - **Statements from your bank:** the app has a **developer mode** (tap the version 7 times in Settings › About) with a test mode that uses a separate database and sample data, sample statements in every format and a reading report that can be shared in an anonymous version. If your bank's statement is not read correctly, you can help without sending your data: see [docs/IMPORTACAO.md](docs/IMPORTACAO.md#ajudar-a-melhorar-a-leitura) (in Portuguese).
 
 ## Support

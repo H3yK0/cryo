@@ -51,8 +51,17 @@ class PrdConformanceTest {
     @Test fun vozSemRedeECompilacaoReproduzivel() { // RF-VOZ-10, RNF-PRIV-01
         // O código de voz (Kotlin e a ponte nativa) não fala com a rede nem grava o áudio em arquivo.
         val voice = kotlinFiles(File(main, "voice")) + listOf(File(app, "src/main/cpp/cryo_whisper.cpp"), File(app, "src/main/cpp/cryo_whisper_stub.cpp"))
-        val net = Regex("""\b(?:java\.net|okhttp|HttpURLConnection|URL\(|Socket|socket\(|connect\(|curl|FileOutputStream|fopen|ofstream|MediaRecorder\.OutputFormat)""")
-        voice.forEach { f -> assertTrue("rede ou arquivo em ${f.name}", !net.containsMatchIn(f.readText().lines().filterNot { it.trim().startsWith("//") || it.trim().startsWith("*") }.joinToString("\n"))) }
+        val net = Regex("""\b(?:java\.net|okhttp|HttpURLConnection|URL\(|Socket|socket\(|connect\(|curl)""")
+        val file = Regex("""\b(?:FileOutputStream|fopen|ofstream|MediaRecorder\.OutputFormat)""")
+        fun code(f: File) = f.readText().lines().filterNot { it.trim().startsWith("//") || it.trim().startsWith("*") }.joinToString("\n")
+        voice.forEach { f ->
+            assertTrue("rede em ${f.name}", !net.containsMatchIn(code(f)))
+            // RF-VOZ-15 (1.6): o único arquivo que a voz grava é o modelo que a pessoa escolheu, conferido, na pasta dele.
+            if (f.name != "WhisperModelStore.kt") assertTrue("arquivo em ${f.name}", !file.containsMatchIn(code(f)))
+        }
+        val store = code(File(main, "voice/WhisperModelStore.kt"))
+        assertTrue("o modelo fica em noBackupFilesDir/whisper", store.contains("File(app.noBackupFilesDir, \"whisper\")"))
+        assertTrue("o guardião do modelo não mexe com áudio", !Regex("""AudioRecord|MicInput|FloatArray|pcm""").containsMatchIn(store))
         // Compilação nativa igual em qualquer máquina.
         val cmake = File(app, "src/main/cpp/CMakeLists.txt").readText()
         listOf("GGML_NATIVE OFF", "GGML_CPU_KLEIDIAI OFF", "GGML_OPENMP OFF", "-ffile-prefix-map=\${CMAKE_SOURCE_DIR}", "-ffile-prefix-map=\${ANDROID_NDK}", "-g0", "CRYO_GGML_COMMIT")
@@ -184,7 +193,7 @@ class PrdConformanceTest {
     @Test fun asDezLinguasTemTodosOsTextos() { // RF-LNG-01, RF-LNG-04
         val folders = res.listFiles()!!.filter { it.isDirectory && it.name.startsWith("values") && File(it, "strings.xml").exists() }
             .map { it.name }.toSet()
-        assertEquals("Pastas de texto: a base (pt-BR) e as 9 línguas do RF-LNG-01", APP_LANGS, folders)
+        assertEquals("Pastas de texto: a base (pt-BR) e as 13 línguas do RF-LNG-01 e RF-LNG-11", APP_LANGS, folders)
 
         val base = strings(File(res, "values/strings.xml"))
         val baseKeys = base.keys.map { it.substringBefore('#') }.toSet()
@@ -235,7 +244,7 @@ class PrdConformanceTest {
                 }
             }
         }
-        assertEquals("Textos da loja (F-Droid) nas 10 línguas", emptyList<String>(), problems)
+        assertEquals("Textos da loja (F-Droid) nas 14 línguas", emptyList<String>(), problems)
     }
 
     @Test fun semAnimacaoInfinita() { // DS-MOV-10
@@ -256,6 +265,22 @@ class PrdConformanceTest {
             }
         }
         assertEquals("Botão principal sem volume: use CryoButton (DS-PROF-05)", emptyList<String>(), found)
+    }
+
+    /**
+     * ERR-059 (DS-PAD-03): toda folha que sobe de baixo é a `CryoSheet`. O `ModalBottomSheet` direto deixa a folha entrar
+     * embaixo da barra de status, e com o conteúdo quase enchendo a tela ela tremia sem parar (a lista de idiomas na 1.6).
+     */
+    @Test fun folhasPelaCryoSheet() {
+        val found = kotlinFiles(File(main, "ui")).filter { it.name != "Sheet.kt" }.flatMap { f ->
+            f.readLines().mapIndexedNotNull { i, line ->
+                if (Regex("""(?<![A-Za-z.])ModalBottomSheet\(""").containsMatchIn(line)) "${f.relativeTo(root).path}:${i + 1}" else null
+            }
+        }
+        assertEquals("Folha sem a CryoSheet: use CryoSheet (DS-PAD-03, ERR-059)", emptyList<String>(), found)
+        // A CryoSheet tira a barra de status por fora da folha: é isso que corta a conta que fazia a folha tremer.
+        val sheet = File(main, "ui/components/Sheet.kt").readText()
+        assertTrue("CryoSheet precisa manter a folha abaixo da barra de status", sheet.contains("windowInsetsPadding(WindowInsets.safeDrawing.only(WindowInsetsSides.Top))"))
     }
 
     @Test fun nadaEmLogs() { // RF-SEG-07
@@ -298,7 +323,7 @@ class PrdConformanceTest {
 
     @Test fun readmeNasDezLinguas() { // RF-LNG-09
         val pages = listOf(File(root, "README.md")) + README_LANGS.map { File(root, "docs/readme/README.$it.md") }
-        val names = listOf("English", "Português", "Español", "Français", "Deutsch", "Italiano", "日本語", "한국어", "中文", "हिन्दी")
+        val names = listOf("English", "Português", "Español", "Français", "Deutsch", "Italiano", "日本語", "한국어", "中文", "हिन्दी", "Русский", "Українська", "العربية", "עברית")
         val link = Regex("""(?:href|src)="([^"]+)"|\]\(([^)\s]+)\)""")
         val problems = pages.flatMap { f ->
             val name = f.relativeTo(root).path
@@ -312,7 +337,7 @@ class PrdConformanceTest {
                 .map { "$name aponta para $it, que não existe" }
             missingLang + broken
         }
-        assertEquals("README nas 10 línguas (RF-LNG-09)", emptyList<String>(), problems)
+        assertEquals("README nas 14 línguas (RF-LNG-09)", emptyList<String>(), problems)
         assertTrue("README.md (a página principal) em inglês", "## What it does" in File(root, "README.md").readText())
     }
 
@@ -323,8 +348,13 @@ class PrdConformanceTest {
     }
 
     private companion object {
-        val README_LANGS = listOf("pt-BR", "es", "fr", "de", "it", "ja", "ko", "zh-CN", "hi")
-        val APP_LANGS = setOf("values", "values-en", "values-es", "values-fr", "values-de", "values-it", "values-ja", "values-ko", "values-zh-rCN", "values-hi")
-        val STORE_LANGS = listOf("pt-BR", "en-US", "es-ES", "fr-FR", "de-DE", "it-IT", "ja-JP", "ko-KR", "zh-CN", "hi-IN")
+        // RF-LNG-11 (1.6): russo, ucraniano, árabe e hebraico. O hebraico fica em values-iw e iw-IL (o código antigo, que é
+        // o que o Android e o F-Droid procuram); os READMEs usam o código de hoje ("he").
+        val README_LANGS = listOf("pt-BR", "es", "fr", "de", "it", "ja", "ko", "zh-CN", "hi", "ru", "uk", "ar", "he")
+        val APP_LANGS = setOf(
+            "values", "values-en", "values-es", "values-fr", "values-de", "values-it", "values-ja", "values-ko", "values-zh-rCN", "values-hi",
+            "values-ru", "values-uk", "values-ar", "values-iw",
+        )
+        val STORE_LANGS = listOf("pt-BR", "en-US", "es-ES", "fr-FR", "de-DE", "it-IT", "ja-JP", "ko-KR", "zh-CN", "hi-IN", "ru-RU", "uk", "ar", "iw-IL")
     }
 }
