@@ -106,7 +106,7 @@ F-Droid 페이지와 이 README들의 화면 이미지(`fastlane/` 폴더)를 14
 
 Cryo는 무료이고 광고도, 추적도, 인터넷 접속도 없습니다. 도움이 되었고 커피 한 잔 사 주고 싶다면 정말 감사합니다. 물론 선택 사항입니다.
 
-<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a> <a href="https://github.com/sponsors/H3yK0" target="_blank"><img src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub" height="48"></a>
 
 ## 라이선스
 

@@ -106,7 +106,7 @@ Las sugerencias y los reportes de errores son bienvenidos en [Issues](https://gi
 
 Cryo es gratuito y no tiene anuncios, rastreo ni acceso a internet. Si te ayuda y quieres invitar un café, es muy bienvenido, y del todo opcional.
 
-<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a> <a href="https://github.com/sponsors/H3yK0" target="_blank"><img src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub" height="48"></a>
 
 ## Licencia
 

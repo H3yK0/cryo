@@ -106,7 +106,7 @@ Vorschläge und Fehlermeldungen sind unter [Issues](https://github.com/H3yK0/cry
 
 Cryo ist kostenlos, ohne Werbung, ohne Tracking und ohne Internetzugriff. Wenn es dir hilft und du einen Kaffee spendieren möchtest, freue ich mich sehr — ganz freiwillig.
 
-<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a>
+<a href="https://www.buymeacoffee.com/H3YK0" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png" alt="Buy Me a Coffee" height="48"></a> <a href="https://github.com/sponsors/H3yK0" target="_blank"><img src="https://img.shields.io/badge/Sponsor-GitHub-ea4aaa?style=for-the-badge&logo=githubsponsors&logoColor=white" alt="Sponsor on GitHub" height="48"></a>
 
 ## Lizenz
 
