@@ -36,7 +36,7 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
 
 - **Saisie par phrase ou à la voix.** Écrivez ou dites « déjeuner 12,50 par carte bancaire » ou « télé 500 en 10 fois avec la carte de crédit ». Cryo comprend le montant, la catégorie, le compte, la date et les échéances. Vous n'avez qu'à vérifier et enregistrer.
 - **Un moteur financier dans votre téléphone.** La prévision de fin de mois est désormais accompagnée d'une fourchette et du risque de finir dans le rouge (2 000 scénarios simulés à partir de votre propre historique). Cryo trouve aussi tout seul votre salaire, votre loyer et vos abonnements, projette votre solde sur les 12 prochains mois, signale les dépenses inhabituelles et les prélèvements en double, donne une note de santé financière avec des conseils, montre les intérêts intégrés à vos dettes avec un plan de remboursement et le rendement réel de vos placements. Tout est calculé hors ligne.
-- **Calendrier de chaleur et flux de l'argent.** Voyez les jours où vous dépensez le plus, d'où vient l'argent et où il est allé.
+- **Calendrier de chaleur et flux de l'argent.** Voyez les jours où vous dépensez le plus, aux couleurs de la température, et d'où vient l'argent et où il va, en barres ou en entonnoir. Touchez une partie pour voir ses opérations.
 - **Import de relevés bancaires.** OFX, CSV, tableur (XLSX) ou PDF : vous vérifiez la liste avant qu'elle n'entre, avec des catégories suggérées, ce qui est déjà dans Cryo décoché et le paiement de la carte reconnu.
 - **Cartes de crédit.** Relevés, plafond disponible et achats en plusieurs fois, chaque échéance sur le bon relevé.
 - **Dettes.** Prêts, crédits, accords et argent que vous devez à quelqu'un, à part du reste : ce qu'il reste, les échéances en retard, la part de vos revenus qui part en remboursements et quand vous serez libre.
@@ -44,13 +44,15 @@ Application Android de finances personnelles : simple, complète, hors ligne et 
 - **Investissements et virements** entre comptes.
 - **14 langues et votre monnaie.** Français, anglais, portugais, espagnol, allemand, italien, japonais, coréen, chinois, hindi, russe, ukrainien, arabe et hébreu (de droite à gauche), dans la monnaie de votre choix (euro, dollar, livre, yen, won, roupie, rouble, hryvnia, shekel, riyal et d'autres). La saisie par phrase et l'import de relevés fonctionnent dans toutes.
 - **Une visite animée** montre comment utiliser l'app à la première ouverture (et à nouveau quand vous voulez, dans les Réglages).
+- **Un widget sur l'écran d'accueil**, à la taille voulue et avec ce qui compte pour vous : la fin du mois, le solde, ce qui reste du budget global ou le patrimoine, avec les prochaines charges, les budgets ou les objectifs et un bouton « Ajouter ».
+- **Vos écrans, à votre façon.** Glissez sur le côté pour changer d'onglet et organisez chaque écran : les blocs dans l'ordre que vous préférez, en masquant ceux que vous n'utilisez pas.
 - **Material You**, thème clair et sombre et animations fluides qui respectent l'option « Supprimer les animations » du téléphone.
 
 ## Confidentialité
 
 - Vos données restent sur votre téléphone. **L'app n'a pas l'autorisation d'accès à internet.**
 - Sans inscription, sans publicité et sans pistage.
-- Verrouillage par empreinte, visage ou verrouillage d'écran du téléphone.
+- Verrouillage par empreinte, visage ou verrouillage d'écran du téléphone, de nouveau tout de suite ou après le délai choisi, et un **mode confidentialité** facultatif qui rend noires les captures et les enregistrements d'écran.
 - **Sauvegarde automatique** dans un dossier du téléphone ou dans votre cloud (Google Drive, Nextcloud et d'autres), chaque jour, chaque semaine ou chaque mois. Cryo écrit le fichier via le sélecteur de fichiers d'Android, et c'est l'app du cloud qui l'envoie.
 - **Sauvegardes protégées par mot de passe** (facultatif) : les fichiers sont chiffrés en AES-256 et illisibles sans votre mot de passe. La clé reste dans le coffre sécurisé d'Android.
 - Sauvegarde dans un fichier `.json` et export vers un tableur `.csv`, quand vous voulez.

@@ -120,10 +120,12 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import io.github.h3yk0.cryo.domain.Res
+import io.github.h3yk0.cryo.ui.components.tabSwipe
+import androidx.compose.ui.graphics.graphicsLayer
 
 object Routes {
     const val HOME = "home"
-    const val TXS = "txs?category={category}"
+    const val TXS = "txs?category={category}&month={month}&out={out}"
     const val PLAN = "plan?tab={tab}"
     const val WALLET = "wallet"
     const val INSIGHTS = "insights"
@@ -165,7 +167,8 @@ object Routes {
     const val LEARN = "learn"
     const val IMPORTS = "imports"
 
-    fun txs(category: Long = 0) = "txs?category=$category"
+    /** RF-EXT-12: [month] em AAAAMM (0 = o mês de hoje). */
+    fun txs(category: Long = 0, month: Int = 0, out: Boolean = false) = "txs?category=$category&month=$month&out=$out"
     fun plan(tab: Int = 0) = "plan?tab=$tab"
     /** [invoice]: a fatura (AAAAMM) em que a compra do cartão entra (RF-CAR-12); 0 = a da data. */
     fun txNew(type: TxType = TxType.EXPENSE, account: Long = 0, card: Long = 0, invoice: Int = 0) =
@@ -252,11 +255,16 @@ fun CryoRoot(openOnStart: String?) {
     // de novo para a tela do aviso.
     var opened by rememberSaveable { mutableStateOf(false) }
     var voiceOnStart by remember { mutableStateOf(false) }
+    // RF-WID-05 (1.7): o "Lançar" do widget abre o registro por frase escrita.
+    var typeOnStart by remember { mutableStateOf(false) }
     // RF-ALC-01: a voz (tocar) e a frase escrita (segurar) a partir do botão do meio, em qualquer aba.
     val ledger = rememberLedger()
     val voice = rememberVoiceLauncher(ledger)
     LaunchedEffect(voiceOnStart, ledger != null) {
         if (voiceOnStart && ledger != null) { voiceOnStart = false; voice.listen() }
+    }
+    LaunchedEffect(typeOnStart, ledger != null) {
+        if (typeOnStart && ledger != null) { typeOnStart = false; voice.type() }
     }
     // RF-AVI-11: pergunta o horário do lembrete do dia, uma vez (não no modo de teste: os avisos são dos dados de verdade).
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -287,6 +295,7 @@ fun CryoRoot(openOnStart: String?) {
             "insights" -> navigator.tab(Routes.INSIGHTS)
             "wallet" -> navigator.go(Routes.WALLET)
             "voice" -> voiceOnStart = true
+            "entry" -> typeOnStart = true
         }
     }
 
@@ -313,6 +322,14 @@ fun CryoRoot(openOnStart: String?) {
         else -> null
     }
 
+    // RF-GES-01..03 (1.7, LA7): arrastar para os lados troca de aba. O anfitrião guarda as áreas que já se arrastam
+    // para o lado e o passo de dentro de Planejar; o lambda lê a aba de agora (o detector não reinicia a cada troca).
+    val swipe = remember { io.github.h3yk0.cryo.ui.components.TabSwipeHost() }
+    val patternNow = androidx.compose.runtime.rememberUpdatedState(currentPattern)
+    val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+    LaunchedEffect(currentPattern) { swipe.fingerSign = 0 }
+    val dragShift by androidx.compose.animation.core.animateFloatAsState(swipe.drag * 0.25f, label = "swipeShift")
+
     // ERR-046: a altura de verdade da barra de mensagem, para o botão "+" das telas subir só o necessário.
     val density = androidx.compose.ui.platform.LocalDensity.current
     var snackHeight by remember { mutableStateOf(0.dp) }
@@ -320,6 +337,7 @@ fun CryoRoot(openOnStart: String?) {
 
     androidx.compose.runtime.CompositionLocalProvider(
         LocalNav provides navigator,
+        io.github.h3yk0.cryo.ui.components.LocalTabSwipe provides swipe,
         io.github.h3yk0.cryo.ui.components.LocalGuideSpots provides guideSpots,
         io.github.h3yk0.cryo.ui.components.LocalFabLift provides fabLift,
     ) {
@@ -347,17 +365,40 @@ fun CryoRoot(openOnStart: String?) {
                 }
             },
         ) { pad ->
-          androidx.compose.foundation.layout.Box {
+          androidx.compose.foundation.layout.Box(
+              Modifier.tabSwipe(swipe, enabled = isTab(currentPattern), rtl = rtl) { dir ->
+                  // RF-GES-02: em Planejar, primeiro as partes; da primeira ou da última, a aba vizinha.
+                  if (swipe.inner?.invoke(dir) == true) {
+                      swipe.fingerSign = 0
+                  } else {
+                      val i = tabs.indexOfFirst { it.pattern == patternNow.value }
+                      val next = i + dir
+                      if (i >= 0 && next in tabs.indices) navigator.tab(tabs[next].route) else swipe.fingerSign = 0
+                  }
+              },
+          ) {
             NavHost(
                 navController = nav,
                 startDestination = Routes.HOME,
                 // O botão de voz sobe acima da barra (RF-ALC-01): o conteúdo continua por baixo dessa parte.
-                modifier = Modifier.padding(bottom = (pad.calculateBottomPadding() - if (showBar) MIC_RISE else 0.dp).coerceAtLeast(0.dp)),
+                modifier = Modifier
+                    .padding(bottom = (pad.calculateBottomPadding() - if (showBar) MIC_RISE else 0.dp).coerceAtLeast(0.dp))
+                    .graphicsLayer { translationX = dragShift },
                 enterTransition = {
-                    if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabEnter() else Motion.forwardEnter()
+                    val tabs2 = isTab(initialState.destination.route) && isTab(targetState.destination.route)
+                    when {
+                        tabs2 && swipe.fingerSign != 0 -> Motion.swipeEnter(swipe.fingerSign)
+                        tabs2 -> Motion.tabEnter()
+                        else -> Motion.forwardEnter()
+                    }
                 },
                 exitTransition = {
-                    if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabExit() else Motion.forwardExit()
+                    val tabs2 = isTab(initialState.destination.route) && isTab(targetState.destination.route)
+                    when {
+                        tabs2 && swipe.fingerSign != 0 -> Motion.swipeExit(swipe.fingerSign)
+                        tabs2 -> Motion.tabExit()
+                        else -> Motion.forwardExit()
+                    }
                 },
                 popEnterTransition = {
                     if (isTab(initialState.destination.route) && isTab(targetState.destination.route)) Motion.tabEnter() else Motion.backEnter()
@@ -369,8 +410,18 @@ fun CryoRoot(openOnStart: String?) {
                 composable(Routes.HOME) { HomeScreen() }
                 composable(
                     Routes.TXS,
-                    arguments = listOf(navArgument("category") { type = NavType.LongType; defaultValue = 0L }),
-                ) { e -> TransactionsScreen(categoryFilter = e.arguments?.getLong("category")?.takeIf { it > 0 }) }
+                    arguments = listOf(
+                        navArgument("category") { type = NavType.LongType; defaultValue = 0L },
+                        navArgument("month") { type = NavType.IntType; defaultValue = 0 },
+                        navArgument("out") { type = NavType.BoolType; defaultValue = false },
+                    ),
+                ) { e ->
+                    TransactionsScreen(
+                        categoryFilter = e.arguments?.getLong("category")?.takeIf { it > 0 },
+                        initialMonth = e.arguments?.getInt("month")?.takeIf { it > 0 },
+                        onlyOut = e.arguments?.getBoolean("out") == true,
+                    )
+                }
                 composable(
                     Routes.PLAN,
                     arguments = listOf(navArgument("tab") { type = NavType.IntType; defaultValue = 0 }),

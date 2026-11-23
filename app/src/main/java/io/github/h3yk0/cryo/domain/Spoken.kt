@@ -51,12 +51,17 @@ object Spoken {
         "请不吝点赞", "字幕由", "感谢观看", "देखने के लिए धन्यवाद",
     )
 
+    /** Espaços e quebras de linha de todo tipo (o "\\s" do Java não inclui os de Unicode). */
+    private val BLANKS = Regex("[\\s\\u0085\\u00A0\\u1680\\u2000-\\u200A\\u2028\\u2029\\u202F\\u205F\\u3000]+")
+
     private val FILLERS = Regex("^(?:(?:é|eh|ah|ahn|hã|hum|hmm|uhm|uh|tipo|então|entao|aí|olha)[,.!]?\\s+)+", RegexOption.IGNORE_CASE)
 
     /** Tira ruído, repetições ("meu e o meu e o meu"), pontuação de fim e espaços. Vazio se não sobrou fala. */
     fun clean(heard: String): String {
         var t = heard.replace(Regex("[\\[(（【][^\\])）】]*[\\])）】]"), " ")   // [Música], (risos), (inaudível)
-            .replace('\n', ' ').replace(Regex("\\s+"), " ").trim()
+            // ERR-069: toda quebra de linha e todo espaço viram um espaço comum, inclusive os que o "\\s" do Java não pega
+            // (U+0085, U+2028, U+2029 e o espaço que não quebra): sem isso, a leitura dos números fechava o app.
+            .replace(BLANKS, " ").trim()
         // Frase a frase: o que for "legenda de vídeo" sai.
         val sentences = t.split(Regex("(?<=[.!?])\\s+|(?<=[。！？])")).filter { s ->
             val low = s.lowercase()
@@ -244,10 +249,13 @@ internal object PtNumbers {
 
     private class Tok(val orig: String, val word: String, val punct: String)
 
+    /** A palavra e a pontuação grudada no fim dela ("32," = "32" + ","). Com DOT_MATCHES_ALL ela sempre acha (ERR-069). */
+    private val TRAILING_PUNCT = Regex("^(.*?)([,.!?;:]*)$", RegexOption.DOT_MATCHES_ALL)
+
     private fun tokens(t: String): List<Tok> = t.split(' ').filter { it.isNotEmpty() }.map { raw ->
-        val m = Regex("^(.*?)([,.!?;:]*)$").find(raw)!!
-        val core = m.groupValues[1].ifEmpty { raw }
-        val punct = if (m.groupValues[1].isEmpty()) "" else m.groupValues[2]
+        val m = TRAILING_PUNCT.find(raw)
+        val core = m?.groupValues?.get(1).orEmpty().ifEmpty { raw }
+        val punct = if (m == null || m.groupValues[1].isEmpty()) "" else m.groupValues[2]
         Tok(core, core.normalized(), punct)
     }
 

@@ -94,6 +94,7 @@ import io.github.h3yk0.cryo.ui.components.txSignedAmount
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import java.time.LocalDate
+import io.github.h3yk0.cryo.ui.components.noTabSwipe
 
 /** O nome vem na hora de mostrar (não na criação do enum), para acompanhar a troca de idioma. */
 private enum class TxFilter(private val labelRes: Int) {
@@ -103,13 +104,14 @@ private enum class TxFilter(private val labelRes: Int) {
 }
 
 @Composable
-fun TransactionsScreen(categoryFilter: Long?) {
+fun TransactionsScreen(categoryFilter: Long?, initialMonth: Int? = null, onlyOut: Boolean = false) {
     val l = rememberLedger() ?: return LoadingBox()
     val nav = LocalNav.current
-    var ymKey by rememberSaveable { mutableStateOf(l.today.ym().key()) }
+    // RF-EXT-12: outra tela (o fluxo do dinheiro, RF-ANA-10) pode abrir o Extrato já no mês dela e só nas saídas.
+    var ymKey by rememberSaveable(initialMonth) { mutableStateOf(initialMonth ?: l.today.ym().key()) }
     val ym = ymOf(ymKey)
     var mode by rememberSaveable { mutableStateOf(0) }
-    var filter by rememberSaveable { mutableStateOf(TxFilter.ALL) }
+    var filter by rememberSaveable(onlyOut) { mutableStateOf(if (onlyOut) TxFilter.OUT else TxFilter.ALL) }
     var searching by rememberSaveable { mutableStateOf(false) }
     var query by rememberSaveable { mutableStateOf("") }
     var category by rememberSaveable(categoryFilter) { mutableStateOf(categoryFilter) }
@@ -278,7 +280,7 @@ fun TransactionsScreen(categoryFilter: Long?) {
             } else {
                 item {
                     Row(
-                        Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
+                        Modifier.fillMaxWidth().noTabSwipe().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp),
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         SourceChip(source, l, onOpen = { pickingSource = true }, onClear = { sourceKey = "" })
@@ -388,7 +390,7 @@ private fun PlannedBillRow(s: io.github.h3yk0.cryo.domain.BillStatus, l: Ledger)
             }
             MoneyText(if (income) b.amount else -b.amount, signed = true, style = MaterialTheme.typography.titleSmall)
         }
-        Row(Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(Modifier.fillMaxWidth().noTabSwipe().horizontalScroll(rememberScrollState()), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             // Já paguei: o mesmo caminho do aviso e de Planejar (liga ao pagamento que já está no Extrato, se houver).
             FilledTonalButton(onClick = {
                 val before = l.s.txs.mapTo(HashSet()) { it.id }

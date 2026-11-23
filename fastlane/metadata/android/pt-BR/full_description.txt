@@ -17,13 +17,15 @@ Escreva ou diga "almoço 32,50 no débito" ou "tv 1200 em 10x no cartão". O Cry
 <li>Metas e caixinhas: mostra quanto guardar por mês para chegar lá, e as concluídas vão para o arquivo</li>
 <li>Investimentos: aportes, resgates e rendimento</li>
 <li>Transferências entre contas</li>
+<li>Widget na tela inicial: mude o tamanho e escolha o que aparece (fim do mês, saldo, orçamento Geral ou patrimônio, mais contas fixas, orçamentos ou metas)</li>
+<li>Arraste para os lados entre as abas e organize cada tela: mude a ordem dos blocos ou esconda os que não usa</li>
 </ul>
 
 <b>Privacidade de verdade</b>
 <ul>
 <li>Os dados ficam só no seu celular. O app não tem permissão de acesso à internet</li>
 <li>Sem cadastro, sem anúncios e sem rastreamento</li>
-<li>Bloqueio com digital, rosto ou senha do celular</li>
+<li>Bloqueio com digital, rosto ou senha do celular, de novo na hora ou depois do tempo que você escolher, e um modo privacidade que impede prints</li>
 <li>Modo para esconder os valores da tela</li>
 <li>Backup automático numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras): quem envia o arquivo é o app da nuvem</li>
 <li>Backups protegidos com senha (AES-256), com a chave guardada no cofre seguro do Android</li>

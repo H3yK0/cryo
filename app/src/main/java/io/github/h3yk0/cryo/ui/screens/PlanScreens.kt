@@ -152,11 +152,20 @@ import kotlin.math.max
 import io.github.h3yk0.cryo.ui.components.CryoButton
 import io.github.h3yk0.cryo.ui.components.depthCard
 import io.github.h3yk0.cryo.ui.components.CryoSheet
+import io.github.h3yk0.cryo.ui.components.ArrangeGroup
+import io.github.h3yk0.cryo.ui.components.ArrangeSheet
+import io.github.h3yk0.cryo.ui.components.Block
+import io.github.h3yk0.cryo.ui.components.OrganizeButton
+import io.github.h3yk0.cryo.ui.components.arranged
 
 @Composable
 fun PlanScreen(initialTab: Int) {
     val l = rememberLedger() ?: return LoadingBox()
-    var tab by rememberSaveable(initialTab) { mutableIntStateOf(initialTab.coerceIn(0, 2)) }
+    val tabState = rememberSaveable(initialTab) { mutableIntStateOf(initialTab.coerceIn(0, 2)) }
+    var tab by tabState
+    // RF-GES-02 (1.7, LA7): arrastar para o lado anda entre as partes antes de ir para a aba vizinha.
+    val step = remember(tabState) { { dir: Int -> val t = tabState.intValue + dir; if (t in 0..2) { tabState.intValue = t; true } else false } }
+    io.github.h3yk0.cryo.ui.components.TabSwipeInner(step)
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.tab_plan)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         Column(Modifier.padding(pad).fillMaxSize()) {
             PrimaryTabRow(selectedTabIndex = tab) {
@@ -164,10 +173,13 @@ fun PlanScreen(initialTab: Int) {
                     Tab(selected = tab == i, onClick = { tab = i }, text = { Text(t, maxLines = 1) })
                 }
             }
-            when (tab) {
-                0 -> BudgetsTab(l)
-                1 -> BillsTab(l)
-                else -> GoalsTab(l)
+            // DS-MOV-09: a parte nova entra pelo lado do passo (para a frente ou para trás).
+            androidx.compose.animation.AnimatedContent(tab, transitionSpec = { with(io.github.h3yk0.cryo.ui.components.Motion) { steps() } }, label = "planTab") { t ->
+                when (t) {
+                    0 -> BudgetsTab(l)
+                    1 -> BillsTab(l)
+                    else -> GoalsTab(l)
+                }
             }
         }
     }
@@ -199,11 +211,15 @@ private fun BudgetsTab(l: Ledger) {
     val generalSuggestion = remember(l) { GeneralBudget.suggestion(MonthEnds.of(l)) }
     var editingGeneral by remember { mutableStateOf(false) }
 
+    val layout = LocalSettings.current.layout(io.github.h3yk0.cryo.domain.Layouts.BUDGETS)
+    var organizing by rememberSaveable { mutableStateOf(false) }
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        item(key = "geral") { GeneralBudgetCard(general, generalSuggestion, hide) { editingGeneral = true } }
+      // RF-ORG (1.7, LA8): as partes de Orçamentos são blocos que a pessoa arruma; o botão de novo orçamento fica no fim.
+      arranged(layout, listOfNotNull(
+        Block("geral", Res.s(R.string.budget_general_title)) { item(key = "geral") { GeneralBudgetCard(general, generalSuggestion, hide) { editingGeneral = true } } },
 
         // RF-ORC-11: as sugestões das contas fixas juntas num cartão só, fechadas com setinha (DS-EXP).
-        if (billSuggestions.isNotEmpty()) {
+        if (billSuggestions.isEmpty()) null else Block("bb", Res.s(R.string.org_block_bill_suggestions)) {
             item(key = "bb") {
                 FlatItem {
                     Expandable(
@@ -222,18 +238,19 @@ private fun BudgetsTab(l: Ledger) {
                     }
                 }
             }
-        }
+        },
 
         // DS-BLOCO-02: planejar pela renda (RF-ORC-07) e o painel do mês (RF-ORC-06) como botões-bloco.
-        item(key = "acoes") {
+        Block("acoes", Res.s(R.string.org_block_budget_actions)) { item(key = "acoes") {
             TileRow(
                 first = { m -> TileButton(Res.s(R.string.plan_by_income_title), Icons.Rounded.AccountBalanceWallet, m, subtitle = Res.s(R.string.plan_by_income_short), stacked = usages.isNotEmpty()) { nav.go(Routes.BUDGET_INCOME) } },
                 second = if (usages.isEmpty()) null else { m ->
                     TileButton(Res.s(R.string.moment_panel), Icons.Rounded.Dashboard, m, subtitle = Res.s(R.string.budget_panel_short), stacked = true) { nav.go(Routes.BUDGET_MONTH) }
                 },
             )
-        }
+        } },
 
+        Block("categorias", Res.s(R.string.budget_by_category)) {
         if (usages.isEmpty()) {
             item {
                 EmptyState(
@@ -253,8 +270,9 @@ private fun BudgetsTab(l: Ledger) {
                 }
             }
         }
+        },
         // RF-ORC-03: as sugestões pela média, fechadas com setinha.
-        if (suggestions.isNotEmpty()) {
+        if (suggestions.isEmpty()) null else Block("media", Res.s(R.string.plan_sugestoes_pela_sua_media)) {
             item(key = "media") {
                 FlatItem {
                     Expandable(Res.s(R.string.plan_sugestoes_pela_sua_media), summary = suggestions.joinToString(", ") { it.first.name }) {
@@ -266,12 +284,23 @@ private fun BudgetsTab(l: Ledger) {
                     }
                 }
             }
-        }
-        item {
+        },
+      ))
+        item(key = "novo") {
             CryoButton(onClick = { editing = null to 0L }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_novo_orcamento))
             }
         }
+        item(key = "organizar") { OrganizeButton { organizing = true } }
+    }
+    if (organizing) {
+        ArrangeSheet(listOf(ArrangeGroup(io.github.h3yk0.cryo.domain.Layouts.BUDGETS, null, listOf(
+            "geral" to Res.s(R.string.budget_general_title),
+            "bb" to Res.s(R.string.org_block_bill_suggestions),
+            "acoes" to Res.s(R.string.org_block_budget_actions),
+            "categorias" to Res.s(R.string.budget_by_category),
+            "media" to Res.s(R.string.plan_sugestoes_pela_sua_media),
+        ))), onDismiss = { organizing = false })
     }
 
     if (editingGeneral) {
@@ -608,6 +637,9 @@ private fun BillsTab(l: Ledger) {
         c.billReview.value = null
     }
 
+    val billLayout = LocalSettings.current.layout(io.github.h3yk0.cryo.domain.Layouts.BILLS)
+    var organizingBills by rememberSaveable { mutableStateOf(false) }
+    val skipped = l.skippedBills(ym)
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         item {
             io.github.h3yk0.cryo.ui.components.MonthSelector(
@@ -633,7 +665,10 @@ private fun BillsTab(l: Ledger) {
         // RF-FIX-13: três blocos no topo; as que faltam primeiro; as pagas (e as puladas) fechadas com setinha (DS-EXP).
         val onPayBill: (BillStatus) -> Unit = { s -> if (found.any { it.bill.id == s.bill.id && it.ym == s.ym }) { thenPay = s; reviewing = s.bill.id } else paying = s }
         val onUndoBill: (BillStatus) -> Unit = { s -> if (s.inferred) reviewing = s.bill.id else undoing = s }
-        if (pay.isNotEmpty()) {
+      // RF-ORG (1.7, LA8): as partes de Contas fixas são blocos que a pessoa arruma; o mês fica no alto e os botões de
+      // nova conta fixa, no fim.
+      arranged(billLayout, listOfNotNull(
+        if (pay.isEmpty()) null else Block("pagar", Res.s(R.string.plan_pagar)) {
             val open = pay.filter { it.payment == null }
             val paid = pay.filter { it.payment != null }
             item(key = "resumo") {
@@ -656,9 +691,9 @@ private fun BillsTab(l: Ledger) {
                     }
                 }
             }
-        }
-        if (installments.isNotEmpty()) {
-            item {
+        },
+        if (installments.isEmpty()) null else Block("dividas", Res.s(R.string.plan_parcelas_dividas)) {
+            item(key = "dividas") {
                 SummaryLine(
                     Res.s(R.string.plan_parcelas_dividas), Res.s(R.string.plan_pagas, installments.count { it.paid }, installments.size),
                     installments.sumOf { it.info.debt.installmentAmount }, hide,
@@ -675,9 +710,9 @@ private fun BillsTab(l: Ledger) {
                     }
                 }
             }
-        }
-        if (receive.isNotEmpty()) {
-            item {
+        },
+        if (receive.isEmpty()) null else Block("receber", Res.s(R.string.plan_receber)) {
+            item(key = "receber") {
                 val total = receive.sumOf { it.bill.amount }
                 val got = receive.count { it.payment != null }
                 SummaryLine(Res.s(R.string.plan_receber), Res.s(R.string.plan_recebidos, got, receive.size), total, hide)
@@ -695,10 +730,9 @@ private fun BillsTab(l: Ledger) {
                     }
                 }
             }
-        }
+        },
         // RF-FIX-12: as puladas neste mês, com "Voltar a contar" (fechadas com setinha).
-        val skipped = l.skippedBills(ym)
-        if (skipped.isNotEmpty()) {
+        if (skipped.isEmpty()) null else Block("puladas", Res.s(R.string.org_block_skipped)) {
             item(key = "puladas") {
                 Expandable(Res.s(R.string.bills_skipped_group, skipped.size), Modifier.padding(horizontal = 4.dp)) {
                     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -719,8 +753,15 @@ private fun BillsTab(l: Ledger) {
                     }
                 }
             }
-        }
-        item {
+        },
+        // RF-FIX-13, DS-BLOCO-02: "O que se repete" (RF-MOT-02) num botão-bloco.
+        Block("repete", Res.s(R.string.engine_recurring_title)) {
+            item(key = "repete") {
+                TileButton(Res.s(R.string.engine_recurring_title), Icons.Rounded.Autorenew, subtitle = Res.s(R.string.bills_recurring_sub)) { nav.go(Routes.RECURRING) }
+            }
+        },
+      ))
+        item(key = "nova") {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().padding(top = 8.dp)) {
                 CryoButton(onClick = { nav.go(Routes.billEdit(kind = CategoryKind.EXPENSE)) }, modifier = Modifier.weight(1f).height(52.dp)) {
                     Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(6.dp)); Text(Res.s(R.string.plan_conta_pagar))
@@ -730,10 +771,16 @@ private fun BillsTab(l: Ledger) {
                 }
             }
         }
-        // RF-FIX-13, DS-BLOCO-02: "O que se repete" (RF-MOT-02) num botão-bloco no fim da aba.
-        item(key = "repete") {
-            TileButton(Res.s(R.string.engine_recurring_title), Icons.Rounded.Autorenew, subtitle = Res.s(R.string.bills_recurring_sub)) { nav.go(Routes.RECURRING) }
-        }
+        item(key = "organizar") { OrganizeButton { organizingBills = true } }
+    }
+    if (organizingBills) {
+        ArrangeSheet(listOf(ArrangeGroup(io.github.h3yk0.cryo.domain.Layouts.BILLS, null, listOf(
+            "pagar" to Res.s(R.string.plan_pagar),
+            "dividas" to Res.s(R.string.plan_parcelas_dividas),
+            "receber" to Res.s(R.string.plan_receber),
+            "puladas" to Res.s(R.string.org_block_skipped),
+            "repete" to Res.s(R.string.engine_recurring_title),
+        ))), onDismiss = { organizingBills = false })
     }
 
     paying?.let { s ->
@@ -1273,6 +1320,8 @@ private fun GoalsTab(l: Ledger) {
     var opened by remember { mutableStateOf<Goal?>(null) }
     val engine = rememberEngine()
     val forecast = engine?.goalForecast
+    val goalLayout = LocalSettings.current.layout(io.github.h3yk0.cryo.domain.Layouts.GOALS)
+    var organizingGoals by rememberSaveable { mutableStateOf(false) }
     LazyColumn(contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         if (l.activeGoals.isEmpty()) {
             item {
@@ -1289,6 +1338,9 @@ private fun GoalsTab(l: Ledger) {
                 }
             }
         } else {
+          // RF-ORG (1.7, LA8): o total e as metas são blocos que a pessoa arruma (com as arquivadas, no fim).
+          arranged(goalLayout, listOfNotNull(
+            Block("total", Res.s(R.string.org_block_goals_total)) {
             item(key = "total") {
                 FlatItem {
                     Text(Res.s(R.string.plan_guardado_metas), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -1311,6 +1363,8 @@ private fun GoalsTab(l: Ledger) {
                     }
                 }
             }
+            },
+            Block("metas", Res.s(R.string.home_goals_short)) {
             l.activeGoals.chunked(2).forEachIndexed { i, row ->
                 item(key = "metas$i-" + row.joinToString("-") { it.id.toString() }) {
                     TileRow(
@@ -1319,17 +1373,33 @@ private fun GoalsTab(l: Ledger) {
                     )
                 }
             }
+            },
+            if (archived.isEmpty()) null else Block("arquivadas", Res.s(R.string.org_block_goals_archived)) {
+                item(key = "arquivadas") {
+                    TileButton(Res.s(R.string.plan_metas_arquivadas_2, archived.size), Icons.Rounded.Inventory2) { nav.go(Routes.GOALS_ARCHIVE) }
+                }
+            },
+          ))
         }
-        item {
+        item(key = "nova") {
             CryoButton(onClick = { nav.go(Routes.goalEdit()) }, modifier = Modifier.fillMaxWidth().height(52.dp)) {
                 Icon(Icons.Rounded.Add, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.plan_nova_meta))
             }
         }
-        if (archived.isNotEmpty()) {
-            item {
+        // Sem metas ativas, as arquivadas continuam à vista (não há o que arrumar).
+        if (l.activeGoals.isEmpty() && archived.isNotEmpty()) {
+            item(key = "arquivadas") {
                 TileButton(Res.s(R.string.plan_metas_arquivadas_2, archived.size), Icons.Rounded.Inventory2) { nav.go(Routes.GOALS_ARCHIVE) }
             }
         }
+        if (l.activeGoals.isNotEmpty()) item(key = "organizar") { OrganizeButton { organizingGoals = true } }
+    }
+    if (organizingGoals) {
+        ArrangeSheet(listOf(ArrangeGroup(io.github.h3yk0.cryo.domain.Layouts.GOALS, null, listOf(
+            "total" to Res.s(R.string.org_block_goals_total),
+            "metas" to Res.s(R.string.home_goals_short),
+            "arquivadas" to Res.s(R.string.org_block_goals_archived),
+        ))), onDismiss = { organizingGoals = false })
     }
     opened?.let { g ->
         GoalSheet(

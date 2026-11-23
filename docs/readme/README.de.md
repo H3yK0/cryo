@@ -36,7 +36,7 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
 
 - **Erfassen per Satz oder Sprache.** Schreib oder sag „Mittagessen 12,50 mit Karte“ oder „Fernseher 500 in 10 Raten mit Kreditkarte“. Cryo versteht Betrag, Kategorie, Konto, Datum und Raten. Du prüfst nur noch und speicherst.
 - **Ein Finanz-Rechenkern auf deinem Handy.** Die Prognose zum Monatsende kommt jetzt mit einer Spanne und der Wahrscheinlichkeit, im Minus zu landen (2.000 Szenarien, simuliert aus deinem eigenen Verlauf). Cryo findet außerdem selbst Gehalt, Miete und Abos, berechnet deinen Saldo für die nächsten 12 Monate, warnt vor ungewöhnlichen und doppelten Abbuchungen, gibt eine Note für deine finanzielle Gesundheit mit Tipps, zeigt die eingerechneten Zinsen deiner Schulden mit Tilgungsplan und die tatsächliche Jahresrendite deiner Anlagen. Alles offline berechnet.
-- **Ausgaben-Heatmap und Geldfluss.** Sieh, an welchen Tagen du am meisten ausgibst, woher das Geld kam und wohin es ging.
+- **Ausgaben-Heatmap und Geldfluss.** Sieh, an welchen Tagen du am meisten ausgibst, in Temperaturfarben, und woher das Geld kam und wohin es ging – als Balken oder als Trichter. Tippe auf einen Teil, um seine Umsätze zu sehen.
 - **Kontoauszüge importieren.** OFX, CSV, Tabelle (XLSX) oder PDF: Du prüfst die Liste, bevor etwas übernommen wird, mit vorgeschlagenen Kategorien, schon Vorhandenem abgewählt und erkannter Kreditkartenzahlung.
 - **Kreditkarten.** Abrechnungen, verfügbares Limit und Ratenkäufe, jede Rate in der richtigen Abrechnung.
 - **Schulden.** Kredite, Finanzierungen, Vereinbarungen und Geld, das du jemandem schuldest, getrennt vom Rest: wie viel noch fehlt, überfällige Raten, wie viel deines Einkommens in Raten geht und wann du schuldenfrei bist.
@@ -44,13 +44,15 @@ Android-App für persönliche Finanzen: einfach, vollständig, offline und quell
 - **Geldanlagen und Überweisungen** zwischen Konten.
 - **14 Sprachen und deine Währung.** Deutsch, Englisch, Portugiesisch, Spanisch, Französisch, Italienisch, Japanisch, Koreanisch, Chinesisch, Hindi, Russisch, Ukrainisch, Arabisch und Hebräisch (von rechts nach links), in der Währung deiner Wahl (Euro, Dollar, Pfund, Yen, Won, Rupie, Rubel, Hrywnja, Schekel, Riyal und mehr). Erfassen per Satz und Kontoauszug-Import funktionieren in allen.
 - **Eine kurze animierte Tour** zeigt beim ersten Öffnen, wie die App funktioniert (und wieder, wann du willst, in den Einstellungen).
+- **Ein Widget für den Startbildschirm**, in jeder Größe und mit dem, was dir wichtig ist: das Monatsende, der Kontostand, was vom Gesamtbudget übrig ist oder dein Vermögen, mit den nächsten Fixkosten, Budgets oder Sparzielen und einer Schaltfläche „Erfassen“.
+- **Deine Bildschirme, wie du willst.** Wische seitlich, um den Tab zu wechseln, und ordne jeden Bildschirm: die Blöcke in deiner Reihenfolge, ausgeblendet, was du nicht nutzt.
 - **Material You**, helles und dunkles Design und flüssige Animationen, die der Handy-Option „Animationen entfernen“ folgen.
 
 ## Datenschutz
 
 - Deine Daten bleiben auf deinem Handy. **Die App hat keine Internetberechtigung.**
 - Keine Anmeldung, keine Werbung, kein Tracking.
-- Sperre per Fingerabdruck, Gesicht oder Displaysperre des Handys.
+- Sperre per Fingerabdruck, Gesicht oder Displaysperre des Handys – erneut sofort oder nach der Zeit deiner Wahl – und ein optionaler **Privatsphäre-Modus**, der Screenshots und Bildschirmaufnahmen schwarz macht.
 - **Automatische Sicherung** in einem Ordner auf dem Handy oder in deiner Cloud (Google Drive, Nextcloud und andere), täglich, wöchentlich oder monatlich. Cryo schreibt die Datei über die Dateiauswahl von Android, und die Cloud-App lädt sie hoch.
 - **Passwortgeschützte Sicherungen** (optional): Die Dateien werden mit AES-256 verschlüsselt und sind ohne dein Passwort nicht lesbar. Der Schlüssel bleibt im sicheren Schlüsselspeicher von Android.
 - Sicherung in eine `.json`-Datei und Export als `.csv`-Tabelle, wann du willst.

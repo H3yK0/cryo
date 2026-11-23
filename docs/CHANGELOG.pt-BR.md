@@ -2,6 +2,36 @@
 
 [English](../CHANGELOG.md) · **Português**
 
+## 1.7 — widget na tela inicial, bloqueio do seu jeito, arrastar entre as abas e telas que você organiza
+
+**Bloqueio e privacidade** (pedido de quem usa, issues #6 e #7)
+- **Bloquear de novo no tempo que você escolher**, em Ajustes › Privacidade e segurança: Na hora, depois de 1, 5 ou 15 minutos fora do Cryo (1 minuto continua o padrão). "Na hora" pede a cada volta, inclusive depois de apagar a tela. Voltar do que o próprio Cryo abriu (escolher um arquivo para importar ou restaurar, o navegador do modelo de voz, compartilhar) tem 5 minutos de folga, para uma importação não ficar pela metade
+- **Modo privacidade**: com o bloqueio ligado, prints, gravações e o compartilhamento da tela do Cryo saem pretos, como nos apps de banco. Começa desligado; no Android 12 ou anterior essa proteção já vem ligada junto com o bloqueio
+
+**Widget na tela inicial**
+- **Os seus números do Cryo na tela inicial, do tamanho que você quiser**: pequeno mostra um número, médio acrescenta uma linha, grande mostra tudo o que você escolheu e um botão "Lançar". Ele se arruma sozinho conforme você aumenta ou diminui
+- **Você escolhe o que aparece**: o número principal (Fim do mês, Saldo em contas, Quanto resta do orçamento Geral ou Patrimônio) e as linhas de baixo (Próximas contas, Orçamentos, Metas, o botão "Lançar"). Cada widget tem a sua escolha; segure o widget para editar de novo (Android 12+)
+- Os mesmos números do app, atualizados assim que algo muda. Tocar abre o Cryo, que continua pedindo o desbloqueio; "Lançar" abre o campo de escrever o lançamento. O widget mostra os valores mesmo com o bloqueio ou o "Esconder valores" ligados: ele fica à vista na tela inicial
+- Com a cara do Cryo, cantos arredondados e as cores do tema (as do papel de parede no Android 12+), claro e escuro, na sua língua e na sua moeda
+
+**Andar mais rápido pelo app**
+- **Arraste para os lados** para ir à aba vizinha, e entre Orçamentos, Contas fixas e Metas em Planejar. As bordas da tela continuam do gesto de voltar do Android, e as listas e gráficos que andam de lado funcionam como antes
+- **Organize cada tela**: no fim do Início, de Análises, de Planejar e da Carteira, "Organizar esta tela" deixa você segurar e arrastar os blocos para a ordem que quiser e esconder os que não usa (pelo menos um fica à vista). No Início, os blocos da grade também. "Voltar ao padrão" desfaz, e a arrumação vai junto nos backups
+
+**Análises** (pedido de quem usa)
+- **A saúde financeira sempre no topo**, em qualquer mês escolhido (a nota é de agora, não do mês escolhido)
+- **O fluxo do dinheiro numa caixa só**, com Entrou, Saiu e Sobrou e duas vistas à escolha, **Barras** ou **Funil**. O funil agora é um funil de verdade, saltado: começa com o dinheiro do mês e vai estreitando conforme cada parte sai, até o que sobrou, com de onde o dinheiro veio em cima. O Cryo lembra a vista que você escolheu
+- **Toque para ver as movimentações**: nas duas vistas, tocar numa parte abre o Extrato filtrado por aquela categoria, naquele mês. Investimentos abre a Carteira, Metas abre Planejar › Metas, Dinheiro emprestado abre Dívidas e "Outras categorias" abre as saídas do mês
+- **O calendário de calor nas cores da temperatura**: azuis nos dias de pouco gasto, depois amarelo, laranja e vermelho conforme o gasto cresce, comparando com o seu próprio dia típico daquele mês; as mesmas cores no claro e no escuro, qualquer que seja o papel de parede
+
+**Correções**
+- Depois do primeiro desbloqueio o app ficava aberto: sair e voltar logo, ou apagar e acender a tela, nunca pedia de novo (issue #6). Agora ele segue o tempo que você escolheu
+- No Android 13 ou mais novo não havia como impedir que prints e gravações mostrassem os seus dados (issue #7): o modo privacidade faz isso
+- A voz podia fechar o app quando o texto ouvido trazia uma quebra de linha incomum
+- O calendário de calor mostrava as iniciais dos dias da semana em português em todas as línguas
+- Com "Esconder valores" ligado, o desenho do fluxo do dinheiro ainda mostrava o total, e o leitor de tela lia todos os valores
+- Antes de cada versão, todas as telas agora são abertas sozinhas sem dado nenhum, com os dados de exemplo, com os valores escondidos, no escuro, em árabe e com a letra em 200%: um travamento é pego antes de chegar a você
+
 ## 1.6 — visual novo, o fim do mês real, quatro línguas novas e o ano pela frente
 
 **Visual novo, mais calmo e fácil de ler** (pedido de quem usa)

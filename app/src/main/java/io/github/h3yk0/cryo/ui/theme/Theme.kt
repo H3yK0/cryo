@@ -117,6 +117,17 @@ private val DarkExt = CryoColors(
     isDark = true,
 )
 
+/**
+ * RF-WID-06 (1.7): as cores do Cryo para quem desenha fora do Compose do app (o widget, com o Glance). As mesmas do app, no
+ * claro e no escuro.
+ */
+object CryoPalette {
+    val light: androidx.compose.material3.ColorScheme get() = LightColors
+    val dark: androidx.compose.material3.ColorScheme get() = DarkColors
+    val lightExt: CryoColors get() = LightExt
+    val darkExt: CryoColors get() = DarkExt
+}
+
 val LocalCryoColors = staticCompositionLocalOf { LightExt }
 
 /**
@@ -148,6 +159,26 @@ private val DarkTones = CryoTones(
 )
 
 val LocalCryoTones = staticCompositionLocalOf { LightTones }
+
+/**
+ * DS-COR-06 (1.7, RF-ANA-02): a paleta de temperatura do calendário de calor, do frio ao quente. [levels] são os níveis 1 a 5
+ * (azul-claro, azul, amarelo, laranja, vermelho; o nível 0, sem gasto, fica no tom do cartão) e [on] é a cor do número do
+ * dia em cada um, com contraste de 4,5:1 ou mais. Não muda com o papel de parede: é significado, como os tons (DS-TOM-01).
+ */
+@Immutable
+data class CryoHeat(val levels: List<Color>, val on: List<Color>)
+
+private val LightHeat = CryoHeat(
+    levels = listOf(Color(0xFFD6ECFA), Color(0xFF7DBBEA), Color(0xFFF7D774), Color(0xFFF4A259), Color(0xFFC8372D)),
+    on = listOf(Color(0xFF0B3550), Color(0xFF062A44), Color(0xFF3D2E00), Color(0xFF3B1D00), Color(0xFFFFFFFF)),
+)
+
+private val DarkHeat = CryoHeat(
+    levels = listOf(Color(0xFF1F3B52), Color(0xFF2F6FA3), Color(0xFFC9A43A), Color(0xFFD2793A), Color(0xFFC63E35)),
+    on = listOf(Color(0xFFCFE8FA), Color(0xFFFFFFFF), Color(0xFF1F1600), Color(0xFF1F0E00), Color(0xFFFFFFFF)),
+)
+
+val LocalCryoHeat = staticCompositionLocalOf { LightHeat }
 
 /** O degradê do ícone (DS-ICO-02), usado no cabeçalho do Início quando as cores do papel de parede estão desligadas. */
 private val IconStart = Color(0xFF0A4F66)
@@ -181,6 +212,10 @@ object CryoTheme {
     /** DS-TOM: os tons pastel por prioridade (alerta, atenção, bom, informação). */
     val tones: CryoTones
         @Composable get() = LocalCryoTones.current
+
+    /** DS-COR-06: a paleta de temperatura do calendário de calor. */
+    val heat: CryoHeat
+        @Composable get() = LocalCryoHeat.current
 }
 
 private val CryoTypography = Typography().let { t ->
@@ -233,6 +268,7 @@ fun CryoTheme(mode: ThemeMode = ThemeMode.SYSTEM, dynamicColor: Boolean = true, 
         LocalCryoColors provides if (dark) DarkExt else LightExt,
         LocalCryoDepth provides depth,
         LocalCryoTones provides if (dark) DarkTones else LightTones,
+        LocalCryoHeat provides if (dark) DarkHeat else LightHeat,
     ) {
         MaterialTheme(colorScheme = grouped, typography = CryoTypography, shapes = CryoShapes, content = content)
     }

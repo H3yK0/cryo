@@ -50,6 +50,7 @@ import io.github.h3yk0.cryo.ui.CryoRoot
 import io.github.h3yk0.cryo.ui.components.Motion
 import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
+import io.github.h3yk0.cryo.domain.LockRules
 import io.github.h3yk0.cryo.ui.screens.LockScreen
 import io.github.h3yk0.cryo.ui.screens.OnboardingScreen
 import io.github.h3yk0.cryo.ui.screens.TestModeStrip
@@ -76,6 +77,12 @@ class MainActivity : FragmentActivity() {
     private var locked by mutableStateOf(false)
     /** O bloqueio está ligado (copiado dos ajustes, para usar ao voltar de segundo plano). */
     private var lockOn = false
+    /** RF-BLQ-02: segundos fora do app até pedir o desbloqueio de novo (0 = na hora). */
+    private var lockAfter = LockRules.DEFAULT
+    /** RF-BLQ-07: o modo privacidade (a janela protegida contra prints e gravações). */
+    private var privacy = false
+    /** Para os testes: o tempo de "Bloquear de novo" que esta tela já leu dos ajustes. */
+    @VisibleForTesting internal val lockAfterNow: Int get() = lockAfter
     private var authenticating = false
     private val app get() = application as CryoApp
     /** Os dados que esta tela mostra (de verdade ou de teste). */
@@ -94,7 +101,8 @@ class MainActivity : FragmentActivity() {
         // Os avisos de contas e de dívidas falam dos dados de verdade: tocar num deles com o modo de teste ligado abre
         // os dados de verdade (senão o pagamento seria registrado nos dados de exemplo).
         val fromAlert = savedInstanceState == null && intent?.hasExtra(io.github.h3yk0.cryo.notify.Alerts.EXTRA_KIND) == true
-        if ((openOnStart == "bills" || openOnStart == "debts" || openOnStart == "voice" || fromAlert) && app.container.sandbox) app.switchData(false)
+        // RF-WID-05: o "Lançar" do widget também é dos dados de verdade.
+        if ((openOnStart == "bills" || openOnStart == "debts" || openOnStart == "voice" || openOnStart == "entry" || fromAlert) && app.container.sandbox) app.switchData(false)
         // RF-AVI-04: abriu o aviso (não ignorou): aquele tipo volta à frequência normal.
         if (fromAlert) runCatching {
             io.github.h3yk0.cryo.notify.AlertState(this).markOpened(io.github.h3yk0.cryo.notify.AlertKind.valueOf(intent.getStringExtra(io.github.h3yk0.cryo.notify.Alerts.EXTRA_KIND).orEmpty()))
@@ -104,23 +112,29 @@ class MainActivity : FragmentActivity() {
         // Pede o desbloqueio sempre que o app abre do zero, inclusive quando o Android fechou o app em segundo plano e
         // a tela volta sozinha (aí a tela antiga vem "restaurada"). Girar a tela ou trocar para o modo de teste não pede
         // de novo. Leitura rápida, para não mostrar nada antes do bloqueio.
-        lockOn = runBlocking { container.lockSettings.current().lockEnabled }
+        val lockStart = runBlocking { container.lockSettings.current() }
+        lockOn = lockStart.lockEnabled
+        lockAfter = lockStart.lockAfter
+        privacy = lockStart.privacyMode
         // RF-BLQ-02 (ERR-039): abrir do zero pede o desbloqueio mesmo com o processo ainda vivo (a pessoa tirou o app dos
         // Recentes e abriu de novo antes de 1 minuto: o "desbloqueado" continuava valendo). Girar a tela e as recriações do
         // próprio app (modo de teste, língua) chegam com o estado salvo e não pedem de novo.
         if (lockOn && savedInstanceState == null) app.unlocked = false
         if (!lockOn) app.unlocked = true
         locked = lockOn && !app.unlocked
-        hideFromRecents(lockOn)
+        applyPrivacy(lockOn, privacy)
 
         setContent {
             val settings by container.settings.flow.collectAsStateWithLifecycle(initialValue = null)
             val lockSettings by container.lockSettings.flow.collectAsStateWithLifecycle(initialValue = null)
             val lockNow = lockSettings?.lockEnabled ?: lockOn
+            val privacyNow = lockSettings?.privacyMode ?: privacy
             val appState = rememberSaveableStateHolder()
             SideEffect {
-                if (lockOn != lockNow) hideFromRecents(lockNow)
+                if (lockOn != lockNow || privacy != privacyNow) applyPrivacy(lockNow, privacyNow)
                 lockOn = lockNow
+                privacy = privacyNow
+                lockAfter = lockSettings?.lockAfter ?: lockAfter
                 // Sem bloqueio, a sessão conta como desbloqueada: ligar o bloqueio agora não tranca quem já está dentro.
                 if (!lockNow) app.unlocked = true
             }
@@ -183,17 +197,26 @@ class MainActivity : FragmentActivity() {
 
     override fun onStop() {
         super.onStop()
-        if (!authenticating) app.lastStop = SystemClock.elapsedRealtime()
+        // Girar a tela e as recriações do próprio app (língua, modo de teste) não são sair do app: com "Na hora", contariam.
+        if (!authenticating && !isChangingConfigurations) {
+            val now = SystemClock.elapsedRealtime()
+            app.lastStop = now
+            app.stopByOwnLaunch = LockRules.stopByOwnLaunch(app.ownLaunchAt, now)
+        }
     }
 
     override fun onStart() {
         super.onStart()
-        // Volta a bloquear se o app ficou mais de 1 minuto em segundo plano.
-        if (lockOn && app.lastStop > 0 && SystemClock.elapsedRealtime() - app.lastStop > 60_000) {
+        // RF-BLQ-02 e RF-BLQ-08 (ERR-070): volta a bloquear depois do tempo que a pessoa escolheu fora do app (na hora,
+        // 1, 5 ou 15 minutos). Até a 1.6 era sempre 1 minuto: sair e voltar logo, ou apagar e acender a tela, nunca pedia.
+        val away = if (app.lastStop > 0) SystemClock.elapsedRealtime() - app.lastStop else null
+        if (LockRules.relock(lockOn, away, lockAfter, app.stopByOwnLaunch)) {
             app.unlocked = false
             locked = true
         }
         app.lastStop = 0
+        app.stopByOwnLaunch = false
+        app.ownLaunchAt = 0
         // A troca entre os dados de verdade e os de teste aconteceu enquanto esta tela não estava à vista (por exemplo,
         // a tela girou no meio da preparação dos dados de exemplo): recria para mostrar os dados certos. Depois do
         // bloqueio: a tela nova também pede o desbloqueio, se for o caso.
@@ -226,25 +249,58 @@ class MainActivity : FragmentActivity() {
         prompt.authenticate(info)
     }
 
-    /** Desbloqueado (digital, rosto ou senha do celular): vale até o app ficar 1 minuto em segundo plano. */
+    /** Desbloqueado (digital, rosto ou senha do celular): vale até a pessoa sair do app pelo tempo escolhido (RF-BLQ-02). */
     @VisibleForTesting
     internal fun unlock() {
+        // Desbloqueado, não há mais pergunta em andamento: a próxima saída do app conta (RF-BLQ-02). Sem isso, um
+        // desbloqueio que não passasse pelo retorno da digital deixaria o app achando que ainda pergunta, e ele nunca
+        // mais voltaria a bloquear nesta sessão.
+        authenticating = false
         app.unlocked = true
         locked = false
     }
 
     /**
-     * Com o bloqueio ligado, a miniatura do app em Recentes (que mostra a última tela, com saldos e movimentações)
-     * não é guardada (Android 13 ou mais novo).
+     * RF-BLQ-05 e RF-BLQ-07: com o bloqueio ligado, a miniatura do app em Recentes (que mostra a última tela, com saldos e
+     * movimentações) não é guardada (Android 13 ou mais novo). Com o modo privacidade, a janela inteira fica protegida:
+     * prints, gravações e o compartilhamento de tela saem pretos, como nos apps de banco. Folhas, diálogos e menus herdam a
+     * proteção (o padrão do Compose é seguir a janela de baixo). No Android 8 a 12 não há como tirar só a miniatura: ali,
+     * com o bloqueio ligado, a janela fica sempre protegida.
      */
-    private fun hideFromRecents(lock: Boolean) {
+    private fun applyPrivacy(lock: Boolean, privacyMode: Boolean) {
         if (Build.VERSION.SDK_INT >= 33) runCatching { setRecentsScreenshotEnabled(!lock) }
-        // Android 8 a 12 não tem como tirar só a miniatura: com o bloqueio ligado, a janela inteira fica protegida (a
-        // miniatura sai em branco e capturas de tela ficam desligadas enquanto o bloqueio estiver ligado).
-        else runCatching {
+        runCatching {
             val flag = android.view.WindowManager.LayoutParams.FLAG_SECURE
-            if (lock) window.addFlags(flag) else window.clearFlags(flag)
+            if (LockRules.secure(lock, privacyMode, Build.VERSION.SDK_INT)) window.addFlags(flag) else window.clearFlags(flag)
         }
+    }
+
+    /* RF-BLQ-08: o que o próprio Cryo abre (escolher arquivo, compartilhar, navegador, foto do perfil) fica marcado, para a
+     * volta não pedir o desbloqueio no meio do que a pessoa está fazendo. */
+    private fun markOwnLaunch() {
+        app.ownLaunchAt = SystemClock.elapsedRealtime()
+    }
+
+    override fun startActivity(intent: android.content.Intent, options: Bundle?) {
+        markOwnLaunch()
+        super.startActivity(intent, options)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun startActivityForResult(intent: android.content.Intent, requestCode: Int, options: Bundle?) {
+        markOwnLaunch()
+        @Suppress("DEPRECATION")
+        super.startActivityForResult(intent, requestCode, options)
+    }
+
+    @Deprecated("Deprecated in Java")
+    override fun startIntentSenderForResult(
+        intent: android.content.IntentSender, requestCode: Int, fillInIntent: android.content.Intent?,
+        flagsMask: Int, flagsValues: Int, extraFlags: Int, options: Bundle?,
+    ) {
+        markOwnLaunch()
+        @Suppress("DEPRECATION")
+        super.startIntentSenderForResult(intent, requestCode, fillInIntent, flagsMask, flagsValues, extraFlags, options)
     }
 
     private companion object {

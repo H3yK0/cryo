@@ -17,13 +17,15 @@ Cryo est une appli de gestion de budget simple et complète. Elle suit revenus, 
 <li>Objectifs d'épargne : combien mettre de côté par mois, avec une archive pour ceux atteints</li>
 <li>Placements : versements, retraits et gains</li>
 <li>Virements entre comptes</li>
+<li>Widget sur l'écran d'accueil : redimensionnez-le et choisissez ce qu'il affiche (fin du mois, solde, budget global ou patrimoine, plus charges, budgets ou objectifs)</li>
+<li>Glissez entre les onglets et organisez chaque écran : changez l'ordre des blocs ou masquez ceux que vous n'utilisez pas</li>
 </ul>
 
 <b>Une vraie confidentialité</b>
 <ul>
 <li>Vos données restent sur votre téléphone. L'appli n'a pas l'autorisation d'accès à internet</li>
 <li>Sans inscription, sans pub et sans pistage</li>
-<li>Verrouillage par empreinte, visage ou code du téléphone</li>
+<li>Verrouillage par empreinte, visage ou code du téléphone, de nouveau tout de suite ou après le délai choisi, et un mode confidentialité qui bloque les captures d'écran</li>
 <li>Option pour masquer les montants à l'écran</li>
 <li>Sauvegarde automatique dans un dossier du téléphone ou dans votre cloud (Google Drive, Nextcloud…) : c'est l'appli du cloud qui envoie le fichier</li>
 <li>Sauvegardes protégées par mot de passe (AES-256), avec la clé dans le coffre sécurisé d'Android</li>

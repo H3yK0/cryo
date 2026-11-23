@@ -17,13 +17,15 @@ Escribe o di "almuerzo 12,50 con débito" o "tele 600 en 12 cuotas con tarjeta".
 <li>Metas de ahorro: cuánto apartar al mes para llegar, con archivo para las cumplidas</li>
 <li>Inversiones: aportes, retiros y rendimiento</li>
 <li>Transferencias entre cuentas</li>
+<li>Widget en la pantalla de inicio: cambia su tamaño y elige qué muestra (fin de mes, saldo, presupuesto general o patrimonio, más pagos fijos, presupuestos o metas)</li>
+<li>Desliza entre pestañas y organiza cada pantalla: cambia el orden de los bloques u oculta los que no usas</li>
 </ul>
 
 <b>Privacidad de verdad</b>
 <ul>
 <li>Tus datos se quedan en tu móvil. La app no tiene permiso de internet</li>
 <li>Sin registro, sin anuncios y sin rastreo</li>
-<li>Bloqueo con huella, rostro o el PIN del móvil</li>
+<li>Bloqueo con huella, rostro o el PIN del móvil, otra vez al instante o después del tiempo que elijas, y un modo privacidad que impide las capturas</li>
 <li>Opción para ocultar los importes en pantalla</li>
 <li>Copia automática en una carpeta del móvil o en tu nube (Google Drive, Nextcloud y otras): la subida la hace la app de la nube</li>
 <li>Copias protegidas con contraseña (AES-256), con la clave en el almacén seguro de Android</li>

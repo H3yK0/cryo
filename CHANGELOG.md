@@ -2,6 +2,36 @@
 
 **English** · [Português](docs/CHANGELOG.pt-BR.md)
 
+## 1.7 — a home-screen widget, a lock you can tune, swipe between tabs and screens you arrange
+
+**Lock and privacy** (requested by users, issues #6 and #7)
+- **Lock again after the time you choose**, in Settings › Privacy and security: Immediately, after 1, 5 or 15 minutes away from Cryo (1 minute is still the default). "Immediately" asks every time you come back, even after the screen turns off. Coming back from something Cryo itself opened (picking a file to import or restore, the browser for the voice model, sharing) has 5 minutes of grace, so an import is not cut in half
+- **Privacy mode**: with the lock on, screenshots, screen recordings and screen sharing of Cryo come out black, like in banking apps. It starts off; on Android 12 or earlier this protection is always on together with the lock
+
+**Home-screen widget**
+- **Your Cryo numbers on the home screen, at any size**: small shows one number, medium adds a line, large shows everything you chose and an "Add" button. It arranges itself as you resize it
+- **You choose what it shows**: the main number (End of month, Balance in accounts, what's left of the Overall budget or Net worth) and the lines below (Upcoming bills, Budgets, Goals, the "Add" button). Each widget has its own choice; touch and hold the widget to edit it again (Android 12+)
+- The same numbers as the app, refreshed as soon as something changes. Tapping opens Cryo, which still asks to unlock; "Add" opens typing an entry. The widget shows the amounts even with the lock or "Hide amounts" on: it sits in plain sight on your home screen
+- In Cryo's look, with rounded corners and your theme colours (your wallpaper's on Android 12+), light and dark, in your language and currency
+
+**Move around faster**
+- **Swipe left or right** to go to the next tab, and between Budgets, Bills and Goals in Plan. The edges of the screen stay with Android's back gesture, and lists and charts that move sideways keep working as before
+- **Arrange each screen**: at the end of Home, Insights, Plan and Wallet, "Arrange this screen" lets you hold and drag blocks into the order you want and hide the ones you don't use (at least one stays visible). On Home, the tiles too. "Reset to default" undoes it, and your arrangement goes with your backups
+
+**Insights** (requested by users)
+- **Financial health always on top**, in any month you choose (the score is about now, not about the chosen month)
+- **The money flow in one box**, with In, Out and Left and two views to choose from, **Bars** or **Funnel**. The funnel is now a real funnel, raised: it starts with the month's money and narrows as each part goes out, down to what was left, with where the money came from on top. Cryo remembers your view
+- **Tap to see the transactions**: in either view, tapping a part opens the Activity filtered by that category in that month. Investments open the Wallet, Goals open Plan › Goals, Borrowed money opens Debts and "Other categories" opens the month's expenses
+- **The heat calendar in temperature colours**: blues on days of little spending, then yellow, orange and red as spending grows, compared with your own typical day of that month; the same colours in light and dark mode, whatever your wallpaper
+
+**Fixes**
+- After the first unlock the app stayed open: leaving and coming back quickly, or turning the screen off and on, never asked again (issue #6). Now it follows the time you chose
+- On Android 13 or newer there was no way to keep screenshots and recordings from showing your data (issue #7): privacy mode does it
+- Voice could close the app when the recognised text had an unusual line break in it
+- The heat calendar showed the weekday initials in Portuguese in every language
+- With "Hide amounts" on, the money flow drawing still showed the total, and the screen reader read every amount
+- Every screen is now opened automatically before each release with no data, with sample data, with hidden amounts, in dark mode, in Arabic and with text at 200%, so a crash is caught before it reaches you
+
 ## 1.6 — a new look, the real end of the month, four new languages and the year ahead
 
 **A new look, calmer and easier to scan** (requested by users)

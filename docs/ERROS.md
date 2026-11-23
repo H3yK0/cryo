@@ -124,6 +124,15 @@ principal falha; S3 = texto, visual, acessibilidade.
 | ERR-065 | S2 | 1.6 | Ninguém viu acontecer: a ponte com o Whisper só era segura porque a escuta nunca fechava o modelo durante uma conta. Se alguma mudança fechasse no meio, `nativeTranscribe` ou `nativeNoSpeech` mexeriam num modelo já solto e o app fecharia. | O `WhisperEngine` conta as chamadas em andamento: fechar pede para parar, espera elas terminarem e solta o modelo uma vez só; depois de fechar, nenhuma chamada chega à ponte; "Cancelar" continua parando a conta em andamento. | `WhisperEngineGuardTest.fecharEsperaAContaEmAndamento`, `WhisperEngineGuardTest.nadaChegaAoModeloDepoisDeFechar` |
 | ERR-066 | S2 | 1.6 | Depois de instalado, o modelo de voz só era conferido pelo tamanho e pela data: um arquivo mexido que mantinha os dois passava. Uma cópia interrompida deixava o temporário (até 264 MB) para sempre, e um modelo bom que o Whisper não conseguia abrir (falta de memória) era apagado como estragado. | No primeiro uso de cada abertura do app o modelo é conferido pelo SHA-256 inteiro; o temporário de uma cópia interrompida é apagado; um modelo que bate com o SHA-256 nunca é apagado por não abrir. | `WhisperModelStoreTest.modeloMexidoComMesmoTamanhoEDataSaiComAviso`, `WhisperModelStoreTest.copiaInterrompidaNaoDeixaArquivo`, `WhisperModelStoreTest.modeloBomQueNaoAbreNaoEhApagado` |
 
+## Caça a travamentos e revisão da 1.7 (22/11/2026)
+
+| ID | Sev. | Versão | O que acontecia | Lei | Guarda |
+|---|---|---|---|---|---|
+| ERR-067 | S3 | 1.7 | O calendário de calor mostrava as iniciais dos dias da semana em português ("D S T Q Q S S") em todas as línguas: em inglês, japonês ou árabe, a linha de cima não correspondia aos dias. Existia desde a 1.4 (quando o app ganhou outras línguas); achado na caça a travamentos da 1.7. | Nome de dia, de mês ou qualquer outro texto de data sai da língua do app (`AppLocale.locale`; as iniciais, de `weekInitials`), nunca de uma lista escrita no código. | `HeatLevelsTest.iniciaisDaSemanaNaLinguaDoApp`, `InsightsFlowTest.calendarioComAsIniciaisDaLingua` |
+| ERR-068 | S2 | 1.7 | Com "Esconder valores" ligado, o desenho do fluxo do dinheiro continuava mostrando o total no meio, e a descrição para o leitor de tela lia o valor de cada parte (quem estava ao lado ouvia tudo). Existia desde a 1.0; achado ao refazer o funil na 1.7. | Com os valores escondidos, nenhum valor aparece em lugar nenhum: nem no desenho (total, nomes e porcentagens), nem na descrição para o leitor de tela (ACS-04). | `InsightsFlowTest.funilSemValoresQuandoEscondidos` |
+| ERR-069 | S1 | 1.7 | Se o texto ouvido (do Whisper ou do reconhecedor do celular) trouxesse um separador de linha diferente do comum (U+2028, U+2029 ou U+0085), o registro por voz fechava o app: a limpeza só trocava o "\n" e os espaços comuns, o separador ficava grudado numa palavra, e a expressão que separa a pontuação do fim da palavra (o "." dela não aceita separador de linha) não achava nada; o `!!` virava NullPointerException. Existia desde a 1.5 (voz no aparelho); achado na caça a travamentos da 1.7. | Texto que vem de fora (voz, extrato, frase) troca **todo** tipo de espaço e de quebra de linha por um espaço comum antes de ser lido (`Spoken.BLANKS`), e nenhuma leitura de palavra usa `!!` no resultado de uma expressão regular: sem casar, a palavra fica como veio. | `SpokenTest.separadorDeLinhaIncomumNaoFechaOApp` |
+| ERR-070 | S1 | 1.7 | Issue #6 (Motorola G86, Android 16), explicado pelo Hanry: depois do primeiro desbloqueio o app ficava aberto. Ele só voltava a pedir depois de 1 minuto fora, então sair e voltar logo, ou apagar e acender a tela, nunca pedia de novo; e no Android 13 ou mais novo prints e gravações da tela mostravam os dados, sem como proteger (issue #7). Existia desde a 1.3. | A pessoa escolhe quando o Cryo volta a pedir o desbloqueio (na hora, 1, 5 ou 15 minutos; o padrão continua 1 minuto). Com "Na hora", toda saída pede na volta, menos girar a tela e o retorno do que o próprio Cryo abriu (até 5 minutos). Com o bloqueio ligado, o modo privacidade protege a janela (prints e gravações pretos). Desbloquear sempre encerra a pergunta da digital em andamento. | `LockRulesTest.tempoEscolhidoMandaNaVolta`, `LockFlowTest.naHoraPedeDeNovoACadaVolta`, `LockFlowTest.modoPrivacidadeProtegeAJanela` |
+
 ## Regras sem guarda automática (conferir à mão)
 
 Estas não dão para testar no computador; quem mexer na área confere e escreve no relatório da entrega:
@@ -132,6 +141,15 @@ Estas não dão para testar no computador; quem mexer na área confere e escreve
   Não remover: é o que esconde a miniatura em Recentes nesses aparelhos.
 - **Release só depois do push** (1.4): criar a Release antes do push prendeu as etiquetas `v1.3` e `v1.4` no código antigo.
 - **Nunca dar push, criar tag ou Release sem o "pode publicar" do Hanry**; commits sempre com a identidade pública dele.
+- **Receita do F-Droid só sai conferida** (22/11/2026, merge request !58632): o rascunho da receita da 1.6 reprovou em três jobs
+  do CI (`schema validation`: faltava `AutoUpdateMode`; `fdroid rewritemeta`: `disable:` depois de `commit:`, `sudo:` de um
+  comando só como lista, sem quebra de linha no fim; e o `fdroid build`). Antes de entregar qualquer receita, rodar
+  `check-jsonschema --schemafile schemas/metadata.json` (o arquivo do fdroiddata) e `fdroid rewritemeta` sem nenhuma diferença,
+  e partir sempre da receita **oficial de agora** (o fdroiddata pode ter mudado: lá a 1.5 já tinha entrado).
+- **LA → DLA → código, cada passo só com o ok explícito do Hanry** (falha crítica de 22/11/2026): o Claude recebeu os lotes
+  da 1.7, fez a DLA sozinho e desenvolveu tudo sem o ok; o Hanry ainda tinha informações novas, e o esforço foi gasto à toa.
+  Uma lista de LAs nunca é autorização: anotar, perguntar se a lista está fechada e se pode ir para a DLA; depois apresentar
+  a DLA e só escrever código quando ele aprovar (PRC-11).
 - **Whisper**: o resultado final usa a janela inteira (a curta ouviu "32,40" no lugar de "32,50"); o som de "pode falar" não
   entra na gravação; a biblioteca só é carregada depois de conferir o processador.
 - **Cofre do Android de verdade** (Keystore): o Robolectric não tem; o caminho real só roda no celular.

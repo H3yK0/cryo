@@ -2,12 +2,12 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.components
 
-import androidx.compose.foundation.gestures.detectTransformGestures
-import io.github.h3yk0.cryo.R
-import io.github.h3yk0.cryo.domain.Res
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.gestures.detectTransformGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
@@ -30,7 +30,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,8 +42,8 @@ import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.drawscope.clipRect
 import androidx.compose.ui.input.pointer.pointerInput
-import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -53,15 +52,21 @@ import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import io.github.h3yk0.cryo.R
 import io.github.h3yk0.cryo.domain.Dates
 import io.github.h3yk0.cryo.domain.FlowKind
+import io.github.h3yk0.cryo.domain.FlowNode
 import io.github.h3yk0.cryo.domain.Money
+import io.github.h3yk0.cryo.domain.MoneyFlow
 import io.github.h3yk0.cryo.domain.MonthBar
 import io.github.h3yk0.cryo.domain.MonthForecast
-import io.github.h3yk0.cryo.domain.MoneyFlow
+import io.github.h3yk0.cryo.domain.Num
+import io.github.h3yk0.cryo.domain.Res
 import io.github.h3yk0.cryo.domain.engine.BandPoint
 import io.github.h3yk0.cryo.domain.engine.Projection
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
@@ -262,7 +267,11 @@ fun LegendDot(color: Color, size: Dp = 10.dp) {
 
 /* ======================= Calendário de calor ======================= */
 
-/** Mapeia o gasto do dia para um nível de 0 a 4, comparando com a mediana dos dias com gasto. */
+/**
+ * RF-ANA-02 (1.7): o nível de temperatura de cada dia, de 0 a 5, comparando com a mediana dos dias com gasto do próprio mês
+ * (o que é muito para uma pessoa não é para outra): 0 = sem gasto; 1 = até a metade da mediana; 2 = até a mediana; 3 = até
+ * 1,5×; 4 = até 2,5×; 5 = acima. As contas são em inteiros (centavos), sem arredondar a mediana.
+ */
 fun heatLevels(daily: LongArray): IntArray {
     val nonZero = daily.drop(1).filter { it > 0 }.sorted()
     val median = if (nonZero.isEmpty()) 0L else nonZero[nonZero.size / 2]
@@ -270,12 +279,18 @@ fun heatLevels(daily: LongArray): IntArray {
         val v = daily[i]
         when {
             i == 0 || v <= 0 -> 0
-            v <= median / 2 -> 1
+            v * 2 <= median -> 1
             v <= median -> 2
-            v <= median * 2 -> 3
-            else -> 4
+            v * 2 <= median * 3 -> 3
+            v * 2 <= median * 5 -> 4
+            else -> 5
         }
     }
+}
+
+/** ERR-067: as iniciais dos dias da semana, de domingo a sábado, na língua do app (eram fixas em português). */
+fun weekInitials(locale: java.util.Locale): List<String> = (0L..6L).map {
+    java.time.DayOfWeek.SUNDAY.plus(it).getDisplayName(java.time.format.TextStyle.NARROW, locale)
 }
 
 @Composable
@@ -288,16 +303,18 @@ fun HeatmapCalendar(
     modifier: Modifier = Modifier,
 ) {
     val levels = remember(daily) { heatLevels(daily) }
+    val heat = CryoTheme.heat
     val primary = MaterialTheme.colorScheme.primary
-    val alphas = listOf(0f, 0.22f, 0.42f, 0.7f, 1f)
     val emptyBg = MaterialTheme.colorScheme.surfaceContainerHigh
+    fun bgOf(lvl: Int) = if (lvl == 0) emptyBg else heat.levels[lvl - 1]
+    val initials = remember(io.github.h3yk0.cryo.domain.AppLocale.locale) { weekInitials(io.github.h3yk0.cryo.domain.AppLocale.locale) }
     val firstDow = ym.atDay(1).dayOfWeek.value % 7 // domingo = 0
     val days = ym.lengthOfMonth()
     val cells = firstDow + days
     val rows = (cells + 6) / 7
     Column(modifier.fillMaxWidth()) {
         Row(Modifier.fillMaxWidth()) {
-            listOf("D", "S", "T", "Q", "Q", "S", "S").forEach {
+            initials.forEach {
                 Text(
                     it, Modifier.weight(1f), textAlign = TextAlign.Center,
                     style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -315,11 +332,10 @@ fun HeatmapCalendar(
                             val date = ym.atDay(day)
                             val future = date.isAfter(today)
                             val lvl = levels[day]
-                            val bg = if (lvl == 0) emptyBg else primary.copy(alpha = alphas[lvl]).compositeOver(emptyBg)
                             val fg = when {
                                 future -> MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
-                                lvl >= 3 -> MaterialTheme.colorScheme.onPrimary
-                                else -> MaterialTheme.colorScheme.onSurface
+                                lvl == 0 -> MaterialTheme.colorScheme.onSurface
+                                else -> heat.on[lvl - 1]
                             }
                             val sel = selectedDay == day
                             val label = if (daily[day] > 0) Res.s(R.string.chart_dia_gastou, day, Money.format(daily[day])) else Res.s(R.string.chart_dia_sem_gastos, day)
@@ -327,7 +343,7 @@ fun HeatmapCalendar(
                                 Modifier
                                     .matchParentSizeCompat()
                                     .clip(RoundedCornerShape(10.dp))
-                                    .background(if (future) Color.Transparent else bg)
+                                    .background(if (future) Color.Transparent else bgOf(lvl))
                                     .then(
                                         if (sel) Modifier.border(2.dp, MaterialTheme.colorScheme.onSurface, RoundedCornerShape(10.dp))
                                         else if (date == today) Modifier.border(1.5.dp, primary, RoundedCornerShape(10.dp))
@@ -350,14 +366,12 @@ fun HeatmapCalendar(
             }
         }
         Spacer(Modifier.height(8.dp))
+        // A legenda: as seis cores, do frio ao quente.
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center, verticalAlignment = Alignment.CenterVertically) {
             Text(Res.s(R.string.chart_menos), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Spacer(Modifier.width(6.dp))
-            alphas.forEachIndexed { i, a ->
-                Box(
-                    Modifier.padding(horizontal = 2.dp).size(14.dp).clip(RoundedCornerShape(4.dp))
-                        .background(if (i == 0) emptyBg else primary.copy(alpha = a).compositeOver(emptyBg)),
-                )
+            for (lvl in 0..5) {
+                Box(Modifier.padding(horizontal = 2.dp).size(14.dp).clip(RoundedCornerShape(4.dp)).background(bgOf(lvl)))
             }
             Spacer(Modifier.width(6.dp))
             Text(Res.s(R.string.chart_mais), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -367,93 +381,226 @@ fun HeatmapCalendar(
 
 private fun Modifier.matchParentSizeCompat() = this.then(Modifier.fillMaxWidth().aspectRatio(1f))
 
-fun Color.compositeOver(bg: Color): Color {
-    val a = alpha
-    return Color(
-        red = red * a + bg.red * (1 - a),
-        green = green * a + bg.green * (1 - a),
-        blue = blue * a + bg.blue * (1 - a),
-        alpha = 1f,
-    )
-}
-
 /* ========================= Fluxo do dinheiro ========================= */
 
+/** Um polígono com os cantos arredondados (cada canto vira uma curva de raio até [r], sem passar da metade do lado). */
+private fun roundedPolygon(points: List<Offset>, r: Float): Path {
+    val path = Path()
+    val n = points.size
+    for (i in 0 until n) {
+        val p = points[i]
+        val prev = points[(i - 1 + n) % n]
+        val next = points[(i + 1) % n]
+        val d1 = prev - p
+        val d2 = next - p
+        val l1 = d1.getDistance().coerceAtLeast(0.001f)
+        val l2 = d2.getDistance().coerceAtLeast(0.001f)
+        val rr = min(r, min(l1, l2) / 2)
+        val a = p + d1 * (rr / l1)
+        val b = p + d2 * (rr / l2)
+        if (i == 0) path.moveTo(a.x, a.y) else path.lineTo(a.x, a.y)
+        path.quadraticTo(p.x, p.y, b.x, b.y)
+    }
+    path.close()
+    return path
+}
+
+/** Uma faixa do funil: o que ela mostra e as larguras (frações da área do funil) em cima e embaixo. */
+private class FunnelBand(
+    val node: FlowNode?,
+    val name: String,
+    val value: Long,
+    val color: Color,
+    val topFrac: Float,
+    val bottomFrac: Float,
+)
+
 /**
- * Diagrama de fluxo (Sankey) na vertical: em cima, de onde o dinheiro veio; no meio, o total do mês;
- * embaixo, para onde ele foi. A largura de cada faixa é proporcional ao valor.
+ * As faixas do funil, de cima para baixo (RF-ANA-09, revisto na DLA de 23/11/2026): a primeira é todo o dinheiro do mês
+ * (o que entrou e, se faltou, o que saiu do saldo de antes); cada saída, da maior para a menor, estreita o funil pelo
+ * tanto que levou; no fundo, o que sobrou. A boca nunca fecha num ponto ([MIN_MOUTH] da largura), para caber o toque.
+ */
+private fun funnelBands(flow: MoneyFlow, topName: String, topColor: Color, surplusColor: Color, neutral: Color): List<FunnelBand> {
+    val total = flow.total.toFloat().coerceAtLeast(1f)
+    fun frac(remaining: Long) = MIN_MOUTH + (1f - MIN_MOUTH) * (remaining.coerceAtLeast(0) / total)
+    val bands = mutableListOf(FunnelBand(null, topName, flow.total, topColor, 1f, 1f))
+    var remaining = flow.total
+    flow.destinations.filter { it.kind != FlowKind.SURPLUS }.forEach { d ->
+        val top = frac(remaining)
+        remaining -= d.value
+        val color = if (d.kind == FlowKind.FROM_BALANCE) neutral else Color(d.color)
+        bands += FunnelBand(d, d.label, d.value, color, top, frac(remaining))
+    }
+    flow.destinations.firstOrNull { it.kind == FlowKind.SURPLUS }?.let { sp ->
+        val w = frac(sp.value)
+        bands += FunnelBand(sp, sp.label, sp.value, surplusColor, w, w)
+    }
+    return bands
+}
+
+private const val MIN_MOUTH = 0.24f
+private val FUNNEL_ROW = 46.dp
+private val FUNNEL_SIDE = 5.dp
+private val FUNNEL_GAP = 6.dp
+
+/**
+ * RF-ANA-09 (1.7, LA4: "mais com cara de funil mesmo, só que saltado e clicável"): o funil do fluxo do dinheiro. Em cima, as
+ * entradas como etiquetas que levam às movimentações delas; embaixo, o funil: o dinheiro do mês entra pela boca larga e
+ * escorre pelas saídas, cada faixa mais estreita que a anterior pelo tanto que aquela saída levou, até o que sobrou. As
+ * faixas têm volume (degradê, a beirada de baixo mais escura e sombra suave, DS-PROF) e afundam um pouco ao toque; o nome, o
+ * valor e a porcentagem ficam ao lado. Em árabe e hebraico, espelhado. Com [hide], nenhum valor aparece, nem para o leitor
+ * de tela (ERR-068). Tocar numa faixa (ou no nome dela) que [canOpen] aceita chama [onNode] (RF-ANA-10).
  */
 @Composable
-fun SankeyChart(flow: MoneyFlow, modifier: Modifier = Modifier, height: Dp = 260.dp) {
-    val surplus = CryoTheme.colors.income
-    val neutral = MaterialTheme.colorScheme.outline
-    val mid = MaterialTheme.colorScheme.onSurface
-    val onMid = MaterialTheme.colorScheme.surface
+fun FlowFunnel(
+    flow: MoneyFlow,
+    hide: Boolean,
+    onNode: (FlowNode) -> Unit,
+    modifier: Modifier = Modifier,
+    canOpen: (FlowNode) -> Boolean = { true },
+) {
+    if (flow.isEmpty) return
+    val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
     val measurer = rememberTextMeasurer()
-    val midStyle = TextStyle(color = onMid, fontSize = 12.sp, fontWeight = FontWeight.Bold)
-    fun colorOf(kind: FlowKind, raw: Int): Color = when (kind) {
-        FlowKind.SURPLUS -> surplus
-        FlowKind.FROM_BALANCE -> neutral
-        else -> Color(raw)
+    val haptics = rememberHaptics()
+    val dark = CryoTheme.colors.isDark
+    val income = CryoTheme.colors.income
+    val neutral = MaterialTheme.colorScheme.outline
+    val shadow = CryoTheme.depth.shadow
+    val nameStyle = MaterialTheme.typography.labelLarge.copy(color = MaterialTheme.colorScheme.onSurface, fontWeight = FontWeight.SemiBold)
+    val valueStyle = MaterialTheme.typography.labelMedium.copy(color = MaterialTheme.colorScheme.onSurfaceVariant)
+    val topName = Res.s(R.string.insights_funnel_top)
+    // No escuro, o verde das letras é claro demais para encher uma faixa: o funil usa um verde do meio, como as outras cores.
+    val bandIncome = if (dark) androidx.compose.ui.graphics.lerp(income, Color.Black, 0.42f) else income
+    val bands = remember(flow, topName, bandIncome, neutral) { funnelBands(flow, topName, bandIncome, bandIncome, neutral) }
+    val total = flow.total.coerceAtLeast(1)
+    val appear by rememberAppear(durationMillis = Motion.LONG * 2)
+    var pressed by remember { mutableIntStateOf(-1) }
+    val press by androidx.compose.animation.core.animateFloatAsState(if (pressed >= 0) 1f else 0f, label = "funnelPress")
+    var lastPressed by remember { mutableIntStateOf(-1) }
+    if (pressed >= 0) lastPressed = pressed
+    fun valueOf(v: Long) = (if (hide) Money.HIDDEN else Money.compact(v)) + " · " + Num.percent((v * 100 / total).toInt())
+    // O texto mais largo ao lado das faixas (nome ou valor): o funil fica com o resto da largura, entre 42% e 56%.
+    val longest = remember(bands, hide, nameStyle, valueStyle) {
+        bands.maxOf { b ->
+            max(measurer.measure(b.name, nameStyle, maxLines = 1).size.width, measurer.measure(valueOf(b.value), valueStyle, maxLines = 1).size.width)
+        }.toFloat()
     }
+    // ACS-04 e ERR-068: com os valores escondidos, o leitor de tela também não lê valor nenhum.
     val desc = Res.s(
         R.string.chart_flow_a11y,
-        flow.sources.joinToString { "${it.label} ${Money.format(it.value)}" },
-        flow.destinations.joinToString { "${it.label} ${Money.format(it.value)}" },
+        flow.sources.joinToString { if (hide) "${it.label} ${Money.HIDDEN}" else "${it.label} ${Money.format(it.value)}" },
+        flow.destinations.joinToString { if (hide) "${it.label} ${Money.HIDDEN}" else "${it.label} ${Money.format(it.value)}" },
     )
-    Canvas(modifier.fillMaxWidth().height(height).semantics { contentDescription = desc }) {
-        val total = flow.total.toFloat()
-        if (total <= 0f) return@Canvas
-        val barH = 14.dp.toPx()
-        val gap = 3.dp.toPx()
-        val midW = size.width * 0.42f
-        val midX = (size.width - midW) / 2
-        val midY = size.height / 2 - barH / 2
-        val bottomY = size.height - barH
-
-        fun layout(values: List<Long>, width: Float, x0: Float, gapPx: Float): List<Pair<Float, Float>> {
-            val usable = width - gapPx * max(0, values.size - 1)
-            var x = x0
-            return values.map { v ->
-                val w = v / total * usable
-                val r = x to x + w
-                x += w + gapPx
-                r
+    Column(modifier.fillMaxWidth()) {
+        // A boca do funil: de onde o dinheiro veio, cada entrada uma etiqueta (as que são movimentações levam a elas).
+        androidx.compose.foundation.layout.FlowRow(
+            Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            flow.sources.forEach { n ->
+                val open = canOpen(n)
+                val color = if (n.kind == FlowKind.FROM_BALANCE) neutral else Color(n.color)
+                Row(
+                    Modifier.clip(RoundedCornerShape(50)).background(CryoTheme.depth.grouped)
+                        .then(if (open) Modifier.clickable(role = Role.Button) { haptics.tap(); onNode(n) } else Modifier)
+                        .padding(horizontal = 12.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Box(Modifier.size(10.dp).clip(CircleShape).background(color))
+                    Spacer(Modifier.width(6.dp))
+                    Text(n.label, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    Spacer(Modifier.width(6.dp))
+                    Text(valueOf(n.value), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1)
+                }
             }
         }
-
-        val top = layout(flow.sources.map { it.value }, size.width, 0f, gap)
-        val bottom = layout(flow.destinations.map { it.value }, size.width, 0f, gap)
-        val midIn = layout(flow.sources.map { it.value }, midW, midX, 0f)
-        val midOut = layout(flow.destinations.map { it.value }, midW, midX, 0f)
-
-        fun ribbon(a: Pair<Float, Float>, ay: Float, b: Pair<Float, Float>, by: Float, c: Color) {
-            val cy1 = ay + (by - ay) * 0.5f
-            val p = Path().apply {
-                moveTo(a.first, ay)
-                cubicTo(a.first, cy1, b.first, cy1, b.first, by)
-                lineTo(b.second, by)
-                cubicTo(b.second, cy1, a.second, cy1, a.second, ay)
-                close()
+        Spacer(Modifier.height(10.dp))
+        val rowStep = FUNNEL_ROW + FUNNEL_SIDE + FUNNEL_GAP
+        val height = rowStep * bands.size
+        Canvas(
+            Modifier.fillMaxWidth().height(height)
+                .pointerInput(bands, rtl) {
+                    val step = rowStep.toPx()
+                    fun bandAt(y: Float): Int {
+                        val i = (y / step).toInt()
+                        val inside = y - i * step <= (FUNNEL_ROW + FUNNEL_SIDE).toPx()
+                        return if (i in bands.indices && inside && bands[i].node?.let(canOpen) == true) i else -1
+                    }
+                    detectTapGestures(
+                        onPress = { p ->
+                            val i = bandAt(p.y)
+                            if (i >= 0) {
+                                pressed = i
+                                tryAwaitRelease()
+                                pressed = -1
+                            }
+                        },
+                        onTap = { p -> bandAt(p.y).takeIf { it >= 0 }?.let { i -> haptics.tap(); bands[i].node?.let(onNode) } },
+                    )
+                }
+                .semantics { contentDescription = desc },
+        ) {
+            val w = size.width
+            val labelGap = 14.dp.toPx()
+            val funnelW = (w - labelGap - longest).coerceIn(w * 0.42f, w * 0.56f)
+            val labelW = (w - funnelW - labelGap).toInt().coerceAtLeast(1)
+            val row = FUNNEL_ROW.toPx()
+            val side = FUNNEL_SIDE.toPx()
+            val step = rowStep.toPx()
+            val radius = 10.dp.toPx()
+            fun mx(x: Float) = if (rtl) w - x else x
+            bands.forEachIndexed { i, b ->
+                // As faixas aparecem uma a uma, de cima para baixo (o dinheiro escorrendo).
+                val t = (appear * (bands.size + 1) - i).coerceIn(0f, 1f)
+                if (t <= 0f) return@forEachIndexed
+                val sink = if (i == lastPressed) press * (side - 1.dp.toPx()) else 0f
+                val top = i * step + sink
+                val cx = funnelW / 2
+                val tw = funnelW * b.topFrac / 2
+                val bw = funnelW * b.bottomFrac / 2
+                // O trapézio da faixa (cantos arredondados), deslocado [dy] para baixo: a beirada e a sombra são cópias dele.
+                fun body(dy: Float) = roundedPolygon(
+                    listOf(
+                        Offset(mx(cx - tw), top + dy), Offset(mx(cx + tw), top + dy),
+                        Offset(mx(cx + bw), top + dy + row), Offset(mx(cx - bw), top + dy + row),
+                    ),
+                    radius,
+                )
+                val a = t
+                // Sombra suave embaixo (some quando a faixa afunda).
+                drawPath(body(side + 3.dp.toPx() - sink * 0.6f), shadow.copy(alpha = shadow.alpha * a))
+                // A beirada de baixo, mais escura: dá a espessura ("saltado").
+                drawPath(body(side - sink), androidx.compose.ui.graphics.lerp(b.color, Color.Black, if (dark) 0.45f else 0.30f).copy(alpha = a))
+                // O corpo, com degradê de cima (mais claro) para baixo.
+                drawPath(
+                    body(0f),
+                    androidx.compose.ui.graphics.Brush.verticalGradient(
+                        listOf(
+                            androidx.compose.ui.graphics.lerp(b.color, Color.White, if (dark) 0.10f else 0.22f).copy(alpha = a),
+                            b.color.copy(alpha = a),
+                        ),
+                        startY = top, endY = top + row,
+                    ),
+                )
+                // O fio de luz em cima.
+                drawLine(
+                    Color.White.copy(alpha = (if (dark) 0.18f else 0.45f) * a),
+                    Offset(mx(cx - tw + radius), top + 1.dp.toPx()), Offset(mx(cx + tw - radius), top + 1.dp.toPx()),
+                    strokeWidth = 1.5.dp.toPx(), cap = StrokeCap.Round,
+                )
+                // O nome, o valor e a porcentagem ao lado, alinhados ao meio da faixa.
+                val name = measurer.measure(b.name, nameStyle, overflow = TextOverflow.Ellipsis, maxLines = 1, constraints = Constraints(maxWidth = labelW))
+                val value = measurer.measure(valueOf(b.value), valueStyle, overflow = TextOverflow.Ellipsis, maxLines = 1, constraints = Constraints(maxWidth = labelW))
+                val blockH = name.size.height + value.size.height
+                val y = top + (row + side) / 2 - blockH / 2
+                val lx = funnelW + labelGap
+                fun x(width: Int) = if (rtl) w - lx - width else lx
+                drawText(name, topLeft = Offset(x(name.size.width), y), alpha = a)
+                drawText(value, topLeft = Offset(x(value.size.width), y + name.size.height), alpha = a)
             }
-            drawPath(p, c.copy(alpha = 0.38f))
         }
-
-        flow.sources.forEachIndexed { i, n ->
-            val c = colorOf(n.kind, n.color)
-            ribbon(top[i], barH, midIn[i], midY, c)
-            drawRoundRect(c, Offset(top[i].first, 0f), Size(max(1f, top[i].second - top[i].first), barH), CornerRadius(barH / 3))
-        }
-        flow.destinations.forEachIndexed { i, n ->
-            val c = colorOf(n.kind, n.color)
-            ribbon(midOut[i], midY + barH, bottom[i], bottomY, c)
-            drawRoundRect(c, Offset(bottom[i].first, bottomY), Size(max(1f, bottom[i].second - bottom[i].first), barH), CornerRadius(barH / 3))
-        }
-        // nó central com o total
-        val nodeH = 26.dp.toPx()
-        drawRoundRect(mid, Offset(midX, midY + barH / 2 - nodeH / 2), Size(midW, nodeH), CornerRadius(nodeH / 2))
-        val t = measurer.measure(Money.compact(flow.total), midStyle)
-        drawText(t, topLeft = Offset(size.width / 2 - t.size.width / 2, midY + barH / 2 - t.size.height / 2))
     }
 }
 
@@ -483,6 +630,7 @@ fun YearChart(
     val widthPx = androidx.compose.runtime.remember { androidx.compose.runtime.mutableFloatStateOf(1f) }
     Canvas(
         modifier.fillMaxWidth().height(height)
+            .noTabSwipe()
             .semantics { contentDescription = description }
             .pointerInput(n) {
                 detectTransformGestures { centroid, pan, zoom, _ ->

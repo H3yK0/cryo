@@ -36,7 +36,7 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 
 - **Registro por frase ou voz.** Escreva ou fale "almoço 32,50 no débito" ou "tv 1300 em 10x no cartão". O Cryo entende o valor, a categoria, a conta, a data e as parcelas. Você só confere e salva.
 - **Um motor financeiro no seu celular.** A previsão do fim do mês agora vem com uma faixa e a chance de fechar no vermelho (2.000 cenários simulados com o seu próprio histórico). O Cryo também acha sozinho salário, aluguel e assinaturas, projeta o saldo dos próximos 12 meses, avisa de gastos fora do comum e cobranças repetidas, dá uma nota de saúde financeira com dicas, mostra os juros embutidos nas dívidas com um plano para quitar e o rendimento real dos investimentos. Tudo calculado sem internet.
-- **Calendário de calor e fluxo do dinheiro.** Veja em quais dias você mais gasta, de onde o dinheiro veio e para onde foi.
+- **Calendário de calor e fluxo do dinheiro.** Veja em quais dias você mais gasta, nas cores da temperatura, e de onde o dinheiro veio e para onde foi — em barras ou num funil. Toque numa parte para ver as movimentações dela.
 - **Importar extrato do banco.** OFX, CSV, planilha (XLSX) ou PDF: você confere a lista antes de entrar, com categorias sugeridas, o que já está no Cryo desmarcado e o pagamento da fatura do cartão reconhecido.
 - **Cartões de crédito.** Faturas, limite disponível e compras parceladas, cada parcela na fatura certa.
 - **Dívidas.** Empréstimos, financiamentos, acordos e dinheiro que você deve a alguém, separados do resto: quanto falta, parcelas atrasadas, quanto da renda vai para parcelas e quando você fica livre.
@@ -44,13 +44,15 @@ App Android de finanças pessoais: simples de usar, completo, offline e de códi
 - **Investimentos e transferências** entre contas.
 - **14 línguas e a sua moeda.** Português, inglês, espanhol, francês, alemão, italiano, japonês, coreano, chinês, hindi, russo, ucraniano, árabe e hebraico (da direita para a esquerda), na moeda que você escolher (real, dólar, euro, libra, iene, won, rúpia, rublo, grívnia, shekel, rial e outras). O registro por frase e a importação de extratos funcionam em todas elas.
 - **Um passeio animado** mostra como usar o app na primeira vez (e de novo quando quiser, em Ajustes).
+- **Widget na tela inicial**, do tamanho que você quiser e com o que importa para você: o fim do mês, o saldo, quanto resta do orçamento Geral ou o patrimônio, com as próximas contas, os orçamentos ou as metas e um botão "Lançar".
+- **As telas do seu jeito.** Arraste para os lados para trocar de aba e organize cada tela: os blocos na ordem que você preferir, escondendo os que não usa.
 - **Material You**, tema claro e escuro e animações suaves, que seguem a opção "Remover animações" do celular.
 
 ## Privacidade
 
 - Os dados ficam só no celular. **O app não tem permissão de internet.**
 - Sem cadastro, sem anúncios e sem rastreamento.
-- Bloqueio com digital, rosto ou senha do aparelho.
+- Bloqueio com digital, rosto ou senha do aparelho — de novo na hora ou depois do tempo que você escolher — e um **modo privacidade** opcional, que deixa prints e gravações da tela pretos.
 - **Backup automático** numa pasta do celular ou na sua nuvem (Google Drive, Nextcloud e outras), todo dia, toda semana ou todo mês. O Cryo grava o arquivo pelo seletor de arquivos do Android, e quem envia para a internet é o app da nuvem.
 - **Backups protegidos com senha** (opcional): os arquivos ficam criptografados com AES-256 e ninguém lê sem a sua senha. A chave fica no cofre seguro do Android.
 - Backup em arquivo `.json` e exportação para planilha `.csv`, quando você quiser.

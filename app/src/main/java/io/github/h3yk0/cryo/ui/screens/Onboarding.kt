@@ -305,6 +305,7 @@ fun OnboardingScreen() {
                 restoring = null
                 c.launch {
                     c.repo.replaceAll(snap, fromOldVersion = restored.version < Backup.VERSION)
+                    if (restored.layouts.isNotEmpty()) c.settings.setLayouts(restored.layouts)
                     snap.accounts.firstOrNull { !it.archived }?.let { c.settings.setDefaultAccount(it.id) }
                     c.settings.setOnboardingDone(true)
                     c.message(Res.s(R.string.settings_backup_restaurado))

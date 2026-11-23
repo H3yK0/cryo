@@ -338,7 +338,10 @@ fun AutoBackupScreen() {
                     running = true
                     c.safely({ running = false }) {
                         val restored = check.found.restored
-                        val ok = runCatching { c.repo.replaceAll(restored.snapshot, fromOldVersion = restored.version < Backup.VERSION) }.isSuccess
+                        val ok = runCatching {
+                            c.repo.replaceAll(restored.snapshot, fromOldVersion = restored.version < Backup.VERSION)
+                            if (restored.layouts.isNotEmpty()) c.settings.setLayouts(restored.layouts)
+                        }.isSuccess
                         if (ok) {
                             usePlace(c, ctx, p.t, p.uri, p.previous, restored = true, fresh = true, mode = p.mode)
                         } else {

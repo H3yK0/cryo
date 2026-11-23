@@ -109,6 +109,19 @@ class SpokenTest {
         assertEquals("almoço 30", Spoken.clean("é, tipo, almoço 30"))
     }
 
+    /**
+     * ERR-069: um separador de linha que não é o "\\n" comum (U+2028, U+2029, U+0085) chegava inteiro até a leitura dos
+     * números, e a expressão que separa a pontuação não achava nada: o app fechava no meio da voz.
+     */
+    @Test fun separadorDeLinhaIncomumNaoFechaOApp() {
+        for (sep in listOf("\u2028", "\u2029", "\u0085", "\r", "\u000B")) {
+            val heard = "almoço trinta e dois${sep}no débito"
+            val out = Spoken.phrases(heard, AppLanguage.PT_BR)
+            assertEquals(listOf("almoço 32 no débito"), out.map { it.lowercase() })
+            assertTrue(Spoken.entries(heard, ctx).isNotEmpty())
+        }
+    }
+
     @Test fun outrasLinguasSoLimpaEDivide() {
         assertEquals(listOf("lunch 12.50", "uber 8"), Spoken.phrases("Lunch 12.50 and uber 8.", AppLanguage.EN).map { it.lowercase() })
         assertTrue(Spoken.phrases("Thank you for watching.", AppLanguage.EN).isEmpty())

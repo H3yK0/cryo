@@ -212,6 +212,8 @@ Suave e com propósito: o movimento mostra de onde a tela veio, para onde foi e 
 | Atalhos do Início e botão principal | Encolhem (92% e 97%) enquanto o dedo está neles e voltam com mola (1.5) | mola |
 | Apresentação | Passos deslizam para a frente ou para trás; barra de progresso anda suave; campos do cartão abrem com a altura animada | 300 ms |
 | Passeio | Cada página tem uma linha do tempo de 2,8 s que começa quando a página para na tela e termina no quadro final | 2,8 s |
+| Arrastar entre as abas (1.7, RF-GES) | A tela segue um quarto do dedo; ao soltar (80 dp ou um gesto rápido), a vizinha entra pelo lado do dedo, com fade (`Motion.swipeEnter`/`swipeExit`); se não chegar lá, a tela volta ao lugar | 300 ms |
+| Organizar a tela (1.7, RF-ORG) | O bloco segurado sobe (sombra de 8 dp, fundo mais claro) e segue o dedo; os outros deslizam para abrir espaço | mola |
 
 Curvas: "emphasized" do Material 3 (`Motion.Emphasized`, `EmphasizedDecelerate` para entrar, `EmphasizedAccelerate` para sair).
 
@@ -294,6 +296,25 @@ A folha de voz (`ui/tx/VoiceSheet.kt`, RF-VOZ-08) segue o protótipo aprovado pe
 - **Anel de progresso** (`ProgressRing`): a meta, com a porcentagem no meio; cresce ao aparecer.
 - Imagens: 115–125 (`ScreensVisualTest`).
 
+### 6.2b Organizar a tela, Ajustes do bloqueio e o widget (1.7)
+
+- **"Organizar esta tela"** (`OrganizeButton`, um `TileButton` com o ícone de painel): o último item do Início, de Análises, de
+  cada parte de Planejar e da Carteira. Abre a **folha de organizar** (`ArrangeSheet`, numa `CryoSheet`): o título, uma linha
+  de explicação e uma linha de 56 dp por bloco, com a **alça** à esquerda (arrastar por ela não precisa segurar antes), o nome
+  e o **olho** à direita (azul = à vista; riscado e o nome apagado = escondido). Segurar a linha também arrasta. Embaixo,
+  "Voltar ao padrão" (texto) e "Pronto" (`CryoButton`). No Início são dois grupos: as partes da tela e os blocos da grade. A
+  tela muda na hora, por trás da folha. Para o leitor de tela, cada linha tem "Subir" e "Descer".
+- **Ajustes › Privacidade e segurança** com o bloqueio ligado: "Bloquear de novo" (uma linha com o valor escolhido, que abre
+  uma folha com as quatro escolhas em botões de rádio e a explicação) e a chave **Modo privacidade** com a linha de baixo
+  "Impede prints e gravação de tela…". No Android 12 ou anterior a chave aparece ligada e apagada, com a explicação.
+- **Widget** (`ui/widget/CryoWidget.kt`, Glance): fundo do tema (no Android 12+, as cores do papel de parede; antes, as do
+  Cryo, pela forma pronta `widget_bg`), cantos de 22 dp, 14 dp de margem. Em cima, a marca pequena (`ic_cryo_badge`, 14–16 dp)
+  e o nome do número; depois **o número grande** em negrito (28, 22 ou 18 sp, conforme o espaço; verde quando é bom,
+  vermelho quando é ruim) e uma linha curta (quanto dá por dia, de quanto é o Geral). Embaixo, as linhas escolhidas: contas
+  (nome, quando vence e o valor; numa linha só quando o widget é baixo), orçamentos e metas (nome, porcentagem e uma barra
+  fina na cor da categoria ou da meta). O botão **Lançar** (40 dp, cantos de 20 dp, na cor `primary`) só nos grandes. Uma conta
+  de espaço (`widgetFit`) decide o que cabe em cada tamanho: nada sai cortado. Imagens 135–138 (`WidgetTest`).
+
 ### 6.2 Barra com voz, ilustrações e momentos (1.5)
 
 - **Barra de baixo com o botão de voz no centro** (RF-ALC-01): 2 abas de cada lado; o botão tem 68 dp, a cor principal com
@@ -344,9 +365,21 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 - **Próximos meses** (`ProjectionChart`, 1.5): saldo das contas por 3, 6 ou 12 meses, faixa e linha do mais provável; o dia mais
   apertado ganha um ponto (vermelho se negativo).
 - **Nota de saúde** (`ScoreRing`, 1.5): anel de 0 a 100.
-- **Calendário de calor** (`HeatmapCalendar`): um quadradinho por dia; quanto mais gasto, mais forte a cor `primary`
-  (5 níveis: 0, 22%, 42%, 70%, 100%); dias futuros apagados.
-- **Fluxo do dinheiro** (`SankeyChart`): de onde o dinheiro veio e para onde foi.
+- **Calendário de calor** (`HeatmapCalendar`): um quadradinho por dia, nas **cores da temperatura** (1.7, DS-COR-06,
+  `CryoTheme.heat`): sem gasto no tom do cartão; azul-claro (até metade da mediana dos dias com gasto do mês), azul (até a
+  mediana), amarelo (até 1,5×), laranja (até 2,5×) e vermelho (acima). Cada cor tem a sua cor de número (contraste de 4,5:1
+  ou mais), no claro e no escuro, e não segue o papel de parede (é significado). Legenda com as seis cores de "Menos" a
+  "Mais"; as iniciais da semana vêm da língua do app (`weekInitials`).
+- **Fluxo do dinheiro** (1.7, RF-ANA-09): uma caixa só (`FlowBox`) com o seletor **Barras | Funil**, as três caixinhas
+  Entrou, Saiu e Sobrou num tom mais claro de dentro (`CryoTheme.depth.grouped`, sem sombra dentro de sombra) e a dica
+  "Toque numa parte…". **Barras** (`FlowBars`): de onde veio e para onde foi, uma linha por parte com o nome, o valor, a
+  porcentagem, a barra e a setinha (só nas que levam a algum lugar). **Funil** (`FlowFunnel`, refeito na 1.7 depois da
+  DLA: "cara de funil mesmo, saltado e clicável"): de onde o dinheiro veio em pílulas no alto (tocáveis); embaixo, o funil
+  **escorre** de cima para baixo: a boca é "O dinheiro do mês" (o total) e cada faixa estreita pelo que saiu para um
+  destino, até "Sobrou" (a boca nunca fica menor que 24% da largura). Cada faixa tem 46 dp, a cor da parte em degradê, o
+  lado mais escuro, um fio de luz em cima e a sombra do cartão (o "saltado"); afunda um pouco ao toque. O nome e o valor de
+  cada faixa ficam ao lado, e o funil toma a largura que sobra (42% a 56%). No escuro, a boca fica mais funda para não
+  ofuscar. Espelhado em árabe e hebraico. Com "Esconder valores", nenhum valor aparece nem é lido (ERR-068).
 - **Gastos por categoria** (`DonutChart`) com `LegendDot`; **últimos 6 meses** (`MonthBarsChart`).
 
 ## 9. Como escrever (voz e tom)
@@ -386,6 +419,8 @@ Todos em `ui/components/Charts.kt`, desenhados em Canvas com as cores do tema:
 | <img src="visual/ajustes.png" width="220"><br>Ajustes | <img src="visual/backup-automatico.png" width="220"><br>Backup automático | <img src="visual/backup-encontrado.png" width="220"><br>Backup encontrado |
 | <img src="visual/boas-vindas.png" width="220"><br>Boas-vindas | <img src="visual/inicio-escuro.png" width="220"><br>Tema escuro | <img src="visual/inicio-material-you.png" width="220"><br>Material You |
 | <img src="visual/central-de-avisos.png" width="220"><br>Central de avisos (1.6) | <img src="visual/orcamento-geral.png" width="220"><br>Orçamento Geral (1.6) | <img src="visual/ajustes-voz.png" width="220"><br>Ajustes › Voz (1.6) |
+| <img src="visual/analises-funil.png" width="220"><br>Fluxo do dinheiro: o Funil (1.7) | <img src="visual/calendario-temperatura.png" width="220"><br>Calendário de temperatura (1.7) | <img src="visual/organizar-tela.png" width="220"><br>Organizar esta tela (1.7) |
+| <img src="visual/ajustes-bloqueio.png" width="220"><br>Bloquear de novo e modo privacidade (1.7) | <img src="visual/widget.png" width="220"><br>Widget, nos três tamanhos (1.7) | <img src="visual/widget-editar.png" width="220"><br>Editar o widget (1.7) |
 
 **Motor financeiro (1.5)**: os números vêm com a explicação de onde saíram e, quando são previsão, com a faixa (8 em cada 10
 cenários). A nota de saúde usa verde (Bem/Ótima), âmbar (Em construção) e vermelho (Atenção), sempre com a palavra junto.

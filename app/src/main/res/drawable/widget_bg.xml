@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- RF-WID-06 (1.7): o fundo arredondado do widget no Android 8 a 11 (no 12+ o Glance arredonda e usa as cores do papel de parede). -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/cryo_widget_bg" />
+    <corners android:radius="22dp" />
+</shape>

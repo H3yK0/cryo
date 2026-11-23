@@ -149,7 +149,8 @@ fun Ledger.forecast(): MonthForecast {
 
 enum class FlowKind { CATEGORY, SURPLUS, FROM_BALANCE, BORROWED, INVEST, GOALS, OTHERS }
 
-data class FlowNode(val label: String, val value: Long, val color: Int, val kind: FlowKind = FlowKind.CATEGORY)
+/** Uma parte do fluxo. [categoryId] = a categoria dela (RF-ANA-10: o toque abre o Extrato filtrado); null nas que não são categoria. */
+data class FlowNode(val label: String, val value: Long, val color: Int, val kind: FlowKind = FlowKind.CATEGORY, val categoryId: Long? = null)
 
 data class MoneyFlow(val sources: List<FlowNode>, val destinations: List<FlowNode>) {
     val total: Long get() = max(sources.sumOf { it.value }, destinations.sumOf { it.value })
@@ -159,11 +160,11 @@ data class MoneyFlow(val sources: List<FlowNode>, val destinations: List<FlowNod
 fun Ledger.moneyFlow(ym: YearMonth, maxDestinations: Int = 6): MoneyFlow {
     val until = if (ym == today.ym()) today.dayOfMonth else null
     val sources = byCategory(ym, CategoryKind.INCOME, until).map {
-        FlowNode(it.category?.name ?: Res.s(R.string.insights_sem_categoria), it.total, it.category?.color ?: 0xFF8A9296.toInt())
+        FlowNode(it.category?.name ?: Res.s(R.string.insights_sem_categoria), it.total, it.category?.color ?: 0xFF8A9296.toInt(), categoryId = it.category?.id)
     }.toMutableList()
     val expenses = byCategory(ym, CategoryKind.EXPENSE, until)
     val dest = expenses.take(maxDestinations).map {
-        FlowNode(it.category?.name ?: Res.s(R.string.insights_sem_categoria), it.total, it.category?.color ?: 0xFF8A9296.toInt())
+        FlowNode(it.category?.name ?: Res.s(R.string.insights_sem_categoria), it.total, it.category?.color ?: 0xFF8A9296.toInt(), categoryId = it.category?.id)
     }.toMutableList()
     val others = expenses.drop(maxDestinations).sumOf { it.total }
     if (others > 0) dest += FlowNode(Res.s(R.string.analytics_outras_categorias), others, 0xFF9E9E9E.toInt(), FlowKind.OTHERS)

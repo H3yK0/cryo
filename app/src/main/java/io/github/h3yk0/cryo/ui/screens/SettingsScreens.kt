@@ -122,6 +122,11 @@ import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
+import androidx.compose.material3.RadioButton
+import androidx.compose.ui.semantics.Role
+import androidx.compose.material.icons.rounded.Timer
 
 /**
  * RF-BLQ-01 (ERR-039): ligar o bloqueio passa por ele uma vez, com a mesma pergunta de quando o app abre. A pessoa vê na hora
@@ -147,6 +152,16 @@ fun confirmDeviceLock(ctx: Context, onOk: () -> Unit) {
     )
 }
 
+/** RF-BLQ-02: o nome de cada escolha de "Bloquear de novo". */
+internal fun lockAfterLabel(seconds: Int): String = Res.s(
+    when (seconds) {
+        0 -> R.string.lock_again_now
+        300 -> R.string.lock_again_5
+        900 -> R.string.lock_again_15
+        else -> R.string.lock_again_1
+    },
+)
+
 fun canUseDeviceLock(ctx: Context): Boolean =
     BiometricManager.from(ctx).canAuthenticate(
         BiometricManager.Authenticators.BIOMETRIC_WEAK or BiometricManager.Authenticators.DEVICE_CREDENTIAL,
@@ -165,6 +180,7 @@ fun SettingsScreen() {
     var pendingImport by remember { mutableStateOf<Backup.Restored?>(null) }
     var confirmErase by rememberSaveable { mutableStateOf(false) }
     var showMainAccount by rememberSaveable { mutableStateOf(false) }
+    var showLockAfter by rememberSaveable { mutableStateOf(false) }
     val autoBackup by c.autoBackup.flow.collectAsState(initial = null)
     // O bloqueio vale para o app inteiro (no modo de teste, vem dos ajustes de verdade).
     val lock by c.lockSettings.flow.collectAsState(initial = null)
@@ -180,7 +196,7 @@ fun SettingsScreen() {
             val now = System.currentTimeMillis()
             // RF-SEG-03: com a proteção ligada, ou a cópia sai trancada ou não sai (nunca aberta sem a pessoa saber).
             val text = try {
-                c.backupProtection.seal(Backup.export(c.repo.loadOnce(), exportedAt = now, testMode = c.sandbox), now, c.sandbox)
+                c.backupProtection.seal(Backup.export(c.repo.loadOnce(), exportedAt = now, testMode = c.sandbox, layouts = c.settings.current().layouts), now, c.sandbox)
             } catch (e: io.github.h3yk0.cryo.data.BackupProtection.Unavailable) {
                 c.message(e.message ?: Res.s(R.string.settings_nao_foi_possivel_salvar))
                 return@launch
@@ -271,6 +287,17 @@ fun SettingsScreen() {
                         },
                         Res.s(R.string.settings_pede_desbloqueio_ao_abrir),
                     )
+                    // RF-BLQ-02 e RF-BLQ-07 (1.7, LA2 e LA6): com o bloqueio ligado, quando ele volta a pedir e o modo privacidade.
+                    if (lock?.lockEnabled ?: s.lockEnabled) {
+                        val after = lock?.lockAfter ?: s.lockAfter
+                        SettingLink(Icons.Rounded.Timer, Res.s(R.string.lock_again_title), lockAfterLabel(after)) { showLockAfter = true }
+                        val old = io.github.h3yk0.cryo.domain.LockRules.privacyLocked(android.os.Build.VERSION.SDK_INT)
+                        SwitchRow(
+                            Res.s(R.string.privacy_title), old || (lock?.privacyMode ?: s.privacyMode),
+                            { v -> if (!old) c.launch { c.lockSettings.setPrivacyMode(v) } },
+                            Res.s(if (old) R.string.privacy_sub_old else R.string.privacy_sub),
+                        )
+                    }
                     SwitchRow(Res.s(R.string.hide_values), s.hideValues, { v -> c.launch { c.settings.setHideValues(v) } }, Res.s(R.string.settings_hide_values_hint, Money.HIDDEN))
                     // RF-SEG-03: a senha dos backups é segurança, então mora aqui (antes ficava no meio de "Seus dados").
                     SwitchRow(
@@ -437,6 +464,32 @@ fun SettingsScreen() {
             }
         }
     }
+    if (showLockAfter) {
+        val current = lock?.lockAfter ?: s.lockAfter
+        CryoSheet(onDismissRequest = { showLockAfter = false }) {
+            Column(Modifier.padding(start = 24.dp, end = 24.dp, bottom = 32.dp).selectableGroup()) {
+                Text(Res.s(R.string.lock_again_title), style = MaterialTheme.typography.titleLarge)
+                Spacer(Modifier.height(4.dp))
+                Text(Res.s(R.string.lock_again_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Spacer(Modifier.height(8.dp))
+                io.github.h3yk0.cryo.domain.LockRules.CHOICES.forEach { secs ->
+                    Row(
+                        Modifier.fillMaxWidth().clip(MaterialTheme.shapes.medium)
+                            .selectable(selected = secs == current, role = Role.RadioButton, onClick = {
+                                c.launch { c.lockSettings.setLockAfter(secs) }
+                                showLockAfter = false
+                            })
+                            .padding(vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = secs == current, onClick = null)
+                        Spacer(Modifier.width(12.dp))
+                        Text(lockAfterLabel(secs), style = MaterialTheme.typography.bodyLarge)
+                    }
+                }
+            }
+        }
+    }
     if (showCurrency) CurrencySheet(onDismiss = { showCurrency = false })
     if (editName) {
         var name by remember { mutableStateOf(s.userName) }
@@ -477,6 +530,7 @@ fun SettingsScreen() {
                 pendingImport = null
                 c.launch {
                     c.repo.replaceAll(snap, fromOldVersion = restored.version < Backup.VERSION)
+                    if (restored.layouts.isNotEmpty()) c.settings.setLayouts(restored.layouts)
                     c.message(Res.s(R.string.settings_backup_restaurado))
                 }
             },

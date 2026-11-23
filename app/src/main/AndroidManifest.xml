@@ -35,6 +35,29 @@
             </intent-filter>
         </activity>
 
+        <!-- RF-WID (1.7, LA9): o widget na tela inicial e a tela de editar o widget (só escolhas de tela, nenhum dado). -->
+        <receiver
+            android:name=".ui.widget.CryoWidgetReceiver"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/cryo_widget_info" />
+        </receiver>
+        <activity
+            android:name=".ui.widget.WidgetConfigActivity"
+            android:exported="true"
+            android:excludeFromRecents="true"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Cryo">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_CONFIGURE" />
+            </intent-filter>
+        </activity>
+
         <!-- RF-AVI-03: os botões das notificações ("Já paguei", "Dia sem gastos"...). Só o próprio app chama. -->
         <receiver
             android:name=".notify.AlertActionReceiver"

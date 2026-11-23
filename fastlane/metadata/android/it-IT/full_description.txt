@@ -17,13 +17,15 @@ Scrivi o di' "pranzo 14 con bancomat" o "tv 1000 in 10 rate con carta di credito
 <li>Obiettivi di risparmio: quanto mettere da parte al mese, con archivio per quelli raggiunti</li>
 <li>Investimenti: versamenti, prelievi e rendimento</li>
 <li>Trasferimenti tra conti</li>
+<li>Widget nella schermata Home: ridimensionalo e scegli cosa mostra (fine mese, saldo, budget generale o patrimonio, più spese fisse, budget o obiettivi)</li>
+<li>Scorri tra le schede e organizza ogni schermata: cambia l'ordine dei blocchi o nascondi quelli che non usi</li>
 </ul>
 
 <b>Privacy vera</b>
 <ul>
 <li>I tuoi dati restano sul telefono. L'app non ha il permesso di accedere a internet</li>
 <li>Senza registrazione, senza pubblicità e senza tracciamento</li>
-<li>Blocco con impronta, volto o codice del telefono</li>
+<li>Blocco con impronta, volto o codice del telefono, di nuovo subito o dopo il tempo che scegli, e una modalità privacy che impedisce gli screenshot</li>
 <li>Opzione per nascondere gli importi sullo schermo</li>
 <li>Backup automatico in una cartella del telefono o nel tuo cloud (Google Drive, Nextcloud e altri): il caricamento lo fa l'app del cloud</li>
 <li>Backup protetti da password (AES-256), con la chiave nell'archivio sicuro di Android</li>

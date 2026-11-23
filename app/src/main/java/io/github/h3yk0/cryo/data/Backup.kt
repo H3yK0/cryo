@@ -44,13 +44,17 @@ object Backup {
     /**
      * [exportedAt] fixo (ex.: 0) gera sempre o mesmo texto para os mesmos dados: serve para saber se algo mudou.
      * [testMode]: cópia dos dados de teste (modo desenvolvedor); ela nunca substitui os dados de verdade.
+     * [layouts]: RF-ORG-04 (1.7), a arrumação das telas (campo "layout", que as versões antigas ignoram).
      */
-    fun export(s: Snapshot, exportedAt: Long = System.currentTimeMillis(), testMode: Boolean = false): String {
+    fun export(s: Snapshot, exportedAt: Long = System.currentTimeMillis(), testMode: Boolean = false, layouts: Map<String, String> = emptyMap()): String {
         val root = JSONObject()
         root.put("app", "Cryo")
         root.put("version", VERSION)
         root.put("exportedAt", exportedAt)
         if (testMode) root.put("testMode", true)
+        io.github.h3yk0.cryo.domain.Layouts.clean(layouts).takeIf { it.isNotEmpty() }?.let { m ->
+            root.put("layout", JSONObject().also { o -> m.toSortedMap().forEach { (k, v) -> o.put(k, v) } })
+        }
         root.put("accounts", s.accounts.toJson {
             JSONObject().put("id", it.id).put("name", it.name).put("type", it.type.name)
                 .put("initialBalance", it.initialBalance).put("color", it.color).put("includeInTotal", it.includeInTotal)
@@ -132,7 +136,14 @@ object Backup {
     }
 
     /** [exportedAt]: quando o backup foi salvo (nulo se o arquivo não disser). [testMode]: cópia dos dados de teste. */
-    data class Restored(val snapshot: Snapshot, val version: Int, val exportedAt: Long? = null, val testMode: Boolean = false)
+    data class Restored(
+        val snapshot: Snapshot,
+        val version: Int,
+        val exportedAt: Long? = null,
+        val testMode: Boolean = false,
+        /** RF-ORG-04 (1.7): a arrumação das telas que veio no backup (vazio nos backups antigos). */
+        val layouts: Map<String, String> = emptyMap(),
+    )
 
     /** Backup de uma versão mais nova do Cryo (a mensagem é a de cada língua; quem precisa saber o motivo olha o tipo). */
     class NewerVersion : IllegalArgumentException(Res.s(R.string.backup_newer_version))
@@ -154,7 +165,11 @@ object Backup {
         } catch (e: Exception) {
             throw IllegalArgumentException(Res.s(R.string.backup_invalid_file))
         }
-        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 }, root.optBoolean("testMode", false))
+        // RF-ORG-04: a arrumação é só um ajuste de tela; se vier estragada, fica de fora (os dados continuam valendo).
+        val layouts = runCatching {
+            root.optJSONObject("layout")?.let { o -> o.keys().asSequence().associateWith { k -> o.optString(k) } }.orEmpty()
+        }.getOrDefault(emptyMap()).let { io.github.h3yk0.cryo.domain.Layouts.clean(it) }
+        return Restored(snapshot, version, root.optLong("exportedAt", 0L).takeIf { it > 0 }, root.optBoolean("testMode", false), layouts)
     }
 
     private fun money(v: Long, signed: Boolean = false): Long {

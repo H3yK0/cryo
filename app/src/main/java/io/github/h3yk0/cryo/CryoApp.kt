@@ -33,6 +33,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.drop
 
 /** Mensagem rápida (barra na parte de baixo), com ação opcional, como "Desfazer". */
 data class UiMessage(val text: String, val actionLabel: String? = null, val action: (suspend () -> Unit)? = null)
@@ -75,7 +77,7 @@ class AppContainer(val app: Application, val sandbox: Boolean = false, lockFrom:
 
     /** RF-SEG-03: backups protegidos com senha (a chave fica trancada pelo cofre). */
     val backupProtection = BackupProtection(app, sandbox, vault)
-    val backupRunner = AutoBackupRunner(repo, autoBackup, SafBackupStorage(app), enabled = !sandbox, protection = backupProtection)
+    val backupRunner = AutoBackupRunner(repo, autoBackup, SafBackupStorage(app), enabled = !sandbox, protection = backupProtection, layouts = { settings.current().layouts })
 
     /** Como foi a leitura do último extrato (para o relatório do modo desenvolvedor). */
     val lastImport = MutableStateFlow<ImportReport?>(null)
@@ -166,8 +168,14 @@ class CryoApp : Application() {
     /** Já desbloqueado com digital ou senha neste processo (some quando o Android fecha o app). */
     @Volatile var unlocked = false
 
-    /** Quando a tela saiu de vista pela última vez (para bloquear de novo depois de 1 minuto). */
+    /** Quando a tela saiu de vista pela última vez (para bloquear de novo depois do tempo escolhido, RF-BLQ-02). */
     @Volatile var lastStop = 0L
+
+    /** RF-BLQ-08: quando o próprio Cryo abriu outra tela (escolher arquivo, compartilhar, navegador) pela última vez. */
+    @Volatile var ownLaunchAt = 0L
+
+    /** RF-BLQ-08: a última saída de vista foi para algo que o próprio Cryo abriu. */
+    @Volatile var stopByOwnLaunch = false
 
     override fun onCreate() {
         super.onCreate()
@@ -186,6 +194,13 @@ class CryoApp : Application() {
         }
         runCatching { AutoBackupWork.createChannel(this) }
         startBackup()
+        // RF-WID-03 (1.7): o widget acompanha os dados de verdade (uma atualização depois que as mudanças param por 2 s).
+        runCatching {
+            @OptIn(kotlinx.coroutines.FlowPreview::class)
+            real.appScope.launch {
+                real.repo.snapshot.drop(1).debounce(2_000).collect { io.github.h3yk0.cryo.ui.widget.WidgetUpdates.refresh(this@CryoApp) }
+            }
+        }
     }
 
     /**

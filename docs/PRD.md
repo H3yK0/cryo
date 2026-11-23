@@ -12,9 +12,9 @@
 |---|---|
 | Produto | Cryo · "Seu dinheiro, claro como gelo." |
 | Dono do produto | Hanry Franco (aprova tudo o que vai para o público) |
-| Versão do PRD | **3.18** (21/11/2026) |
-| Próxima versão do app | **1.6.1** (a combinar): as pequenas melhorias que o Hanry achou no teste da 1.6. O nome é só com números porque a receita do F-Droid só olha etiquetas `v` seguidas de números (`UpdateCheckMode: Tags ^v[0-9.]+$`) |
-| Versão publicada do app | **1.6** no GitHub (21/11/2026, "pode publicar" do Hanry; etiqueta `v1.6`) · F-Droid: **1.4** na loja (receita com a licença AGPL aceita em 07/11/2026, !56186); a 1.6 entra quando o merge request da receita (NDK e a 1.5 desligada, `docs/fdroid/1.6-receita.md`) for aceito e o servidor compilar. A 1.5 não vai para a loja (decisão do Hanry, 16/11/2026: ela leva o modelo de voz dentro do APK, que o F-Droid não aceita) |
+| Versão do PRD | **3.22** (23/11/2026) |
+| Próxima versão do app | **1.7** (`versionCode` 12): os lotes LA1–LA12 da 1.7 (seção 11.1c, DLA aprovada pelo Hanry em 23/11/2026; a LA5, importar do xpenc, foi para a 1.8): travamentos, o bloqueio por tempo e o modo privacidade, o toque no fluxo, o funil de verdade, arrastar entre abas, organizar os blocos em todas as telas, o widget, a saúde no topo, o fluxo numa caixa só e o calendário de temperatura. A proposta antiga da 1.7 (contas a receber e as outras ideias da olhada no Tally) passou para a **1.8** |
+| Versão publicada do app | **1.6** no GitHub ("pode publicar" do Hanry em 21/11/2026; Releases `v1.6`, com `Cryo-1.6.apk`, e `voice-model-1`, com o modelo de voz, criadas por ele em 22/11/2026) · F-Droid: **1.4** na loja (receita com a licença AGPL aceita em 07/11/2026, !56186); a 1.6 entra quando o merge request da receita (!58632, com o NDK; os 9 jobs do CI verdes em 23/11/2026, receita em `docs/fdroid/io.github.h3yk0.cryo.yml`) for aceito pelos mantenedores e o servidor compilar. A 1.7 não precisa de merge request (os mesmos passos de compilação, `docs/fdroid/COMO-ATUALIZAR.md`). A 1.5 não vai para a loja (decisão do Hanry, 16/11/2026: ela leva o modelo de voz dentro do APK, que o F-Droid não aceita) |
 | Documentos anexos | [`docs/VISUAL.md`](VISUAL.md) (detalhe visual), [`docs/IMPORTACAO.md`](IMPORTACAO.md) (detalhe da importação), [`CLAUDE.md`](../CLAUDE.md) (como trabalhar no código), [`CHANGELOG.md`](../CHANGELOG.md) (em inglês; em português: [`docs/CHANGELOG.pt-BR.md`](CHANGELOG.pt-BR.md)) |
 
 **Hierarquia**: PRD → anexos → código. Os anexos detalham o que o PRD define; se algum anexo disser outra coisa, vale o PRD e o
@@ -47,6 +47,10 @@ anexo é corrigido no mesmo commit.
 | 2.2 | 04/11/2026 | 1.4 pronta para o teste do Hanry: requisitos da 1.4 marcados como feitos; componentes DS-COMP-18..20; conformidade das 10 línguas, de texto no código e da loja (PRC-09). |
 | 2.5 | 07/11/2026 | Pedidos do Hanry para a 1.5: ícone novo (G4: o C quadrado dourado, com volume, sem a estrela) escolhido com base em pesquisa de psicologia da atenção (DS-ICO-02..05); **profundidade** em todo o app, "com peso de app de iPhone" (DS-PROF, seção 9.9); DS-DIR-01 revisto (seções em cartões). |
 | 2.4 | 06/11/2026 | 1.3 e 1.4 publicadas no GitHub. Página inicial do repositório em inglês (pedido do Hanry): `CHANGELOG.md` em inglês (português em `docs/CHANGELOG.pt-BR.md`) e mensagens de commit em inglês (RF-LNG-09, PRC-02). |
+| 3.22 | 23/11/2026 | **1.7 pronta para o teste do Hanry**: os 11 lotes aprovados feitos (a LA5 ficou para a 1.8, seção 11.1c); o widget conferido para o F-Droid com os verificadores do próprio F-Droid, sem nenhum problema e com as mesmas permissões da 1.6 (**RF-WID-07**); os critérios do widget apontam para `WidgetTest` e `WidgetFlowTest`; o teste de fumaça (RNF-EST-01) passou a abrir também as telas novas (Ajustes com o bloqueio, telas com blocos escondidos, a folha de organizar, a tela de editar o widget); 47 textos novos nas 14 línguas. |
+| 3.21 | 23/11/2026 | **DLA da 1.7 aprovada pelo Hanry** (lista fechada com 12 lotes, seção 11.1c): o bloqueio por tempo (**RF-BLQ-02** revisto, **RF-BLQ-08**) e o **modo privacidade** (**RF-BLQ-07**, issues #6 e #7); o funil de verdade, saltado e clicável (**RF-ANA-09** revisto); arrastar entre as abas (**RF-GES-01..03**); organizar os blocos em todas as telas (**RF-ORG-01..05**); o widget (**RF-WID-01..07**, com a biblioteca Glance, PRC-07). A LA5 (importar do xpenc, issue #5) vai para a 1.8. |
+| 3.20 | 22/11/2026 | **Falha crítica de processo** (apontada pelo Hanry): o Claude recebeu os lotes da 1.7, fez a DLA sozinho e desenvolveu tudo sem o ok, e o Hanry ainda tinha informações novas para a 1.7. O PRC-11 ganha as **duas portas** com o ok explícito dele (LA → DLA e DLA → desenvolvimento); a DLA da seção 11.1c fica **não aprovada** e o código da 1.7, parado e sem commit, até a DLA ser refeita com os itens novos. |
+| 3.19 | 22/11/2026 | **Lotes da 1.7** (pedido do Hanry, 22/11/2026: "melhorias pequenas e resolução de bugs como travamentos"; LA1 a LA6 da 1.7 e a DLA na seção 11.1c): caça a travamentos com um teste que abre todas as telas em situações difíceis (**RNF-EST-01**) e os defeitos achados (ERR-067 em diante); a saúde financeira sempre no topo de Análises (**RF-ANA-08**); o fluxo do dinheiro numa caixa só, com as vistas Barras e Funil à escolha e o funil redesenhado (**RF-ANA-09**, RF-ANA-03); tocar numa parte do fluxo abre as movimentações dela (**RF-ANA-10**, com o Extrato aberto num mês e numa categoria, **RF-EXT-12**); o calendário de calor nas cores da temperatura (**RF-ANA-02**, **DS-COR-06**). A proposta antiga da 1.7 passou para a 1.8. |
 | 3.18 | 21/11/2026 | **1.6 lançada** ("pode publicar" do Hanry, depois do teste no celular): os requisitos marcados ✅ 1.6 passam a ✅ 1.6. A próxima é a **1.6.1**, com as pequenas melhorias do teste (a combinar). |
 | 3.17 | 21/11/2026 | **Reforma visual da 1.6** (pedido do Hanry, 21/11/2026; lotes **LA9 a LA13**, DLA na seção 11.1b): central de avisos com o sino e um destaque só no momento certo (**RF-INI-19/20**); Início em blocos (**RF-INI-21**); tons pastel por prioridade (**DS-TOM**), blocos quase quadrados (**DS-BLOCO**), resumo com setinha (**DS-EXP**) e os princípios de psicologia da atenção que guiam tudo (**DS-PSI**); o **fim do mês real**, renda × despesas, sem cenários (**RF-PRV-10** reescrito, ERR-056 e ERR-064 com a lei nova; **RF-PRV-11** só no ano); Análises reorganizada (**RF-ANA-07**: saem as percepções, a previsão de metas e "O que se repete"; o fluxo em blocos; os 6 meses mais em cima); orçamento **Geral** e orçamentos em blocos (**RF-ORC-10/11**, DAD-17); contas fixas e metas mais limpas (**RF-FIX-13**, **RF-MET-07**); Ajustes por tipo e a voz numa segunda tela (**RF-AJU-13**, **RF-VOZ-16**). Telas novas: TELA-CENTRAL e TELA-VOZ. |
 | 3.16 | 21/11/2026 | **Auditoria independente da 1.6** (relatório do GPT-6 conferido pelo Claude no código e com testes; correções aprovadas pelo Hanry em 21/11/2026): um lançamento agendado não apaga mais a recorrência inteira da projeção (RF-MOT-02, ERR-060); pagamento de dívida agendado só cobre parcela dentro do período e a de vencimento mais perto (RF-MOT-04, ERR-061); a importação não toma a mesma fatura sozinha por repetida e pareia pela fatura e pela data mais perto, nunca pela ordem do arquivo (RF-IMP-11, ERR-062); backup aberto com a palavra "cipher" nos dados abre sem senha (RF-SEG-03, ERR-063); o fim do mês sem o motor não conta o orçamento em dobro (RF-PRV-10, ERR-064); nenhuma chamada chega ao Whisper depois de fechar (RF-VOZ-09, ERR-065); o modelo de voz é conferido pelo SHA-256 no primeiro uso de cada abertura, cópia interrompida não deixa arquivo e modelo bom que não abre não é apagado (RF-VOZ-15, ERR-066). Conferidos e sem defeito: a criptografia do backup (RF-SEG-03), a compilação reproduzível (o APK sai idêntico compilado em outra pasta), o alinhamento de 16 KB das bibliotecas e a escolha do processador para o Whisper. Nenhum formato mudou (banco, backup, receita do F-Droid). |
@@ -160,6 +164,8 @@ Toda decisão é conferida contra estes princípios, nesta ordem de prioridade.
   seções com ›. As seções de contas, cartões, investimentos e dívidas ficam no Início; a Carteira completa (TELA-CARTEIRA:
   patrimônio detalhado, todas as contas, cartões, investimentos e arquivados) abre pelo patrimônio e pelas seções.
 - Telas internas abrem por cima, com seta de voltar.
+- **Arrastar para os lados** (1.7, RF-GES): nas abas, arrastar o dedo para o lado passa para a aba vizinha (em Planejar,
+  primeiro pelas partes Orçamentos › Contas fixas › Metas).
 
 ### 5.2 Catálogo de telas (TELA)
 
@@ -169,7 +175,7 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | ID | Tela | Rota | Arquivo |
 |---|---|---|---|
 | TELA-INICIO | Início (painel) | `home` | `ui/screens/HomeScreen.kt` |
-| TELA-EXTRATO | Extrato (movimentações por mês, busca, calendário) | `txs?category={category}` | `ui/screens/TransactionsScreen.kt` |
+| TELA-EXTRATO | Extrato (movimentações por mês, busca, calendário) | `txs?category={category}&month={month}&out={out}` | `ui/screens/TransactionsScreen.kt` |
 | TELA-PLANEJAR | Planejar (abas Orçamentos, Contas fixas, Metas) | `plan?tab={tab}` | `ui/screens/PlanScreens.kt` |
 | TELA-CARTEIRA | Carteira completa (patrimônio, contas, cartões, dívidas, investimentos); aba até a 1.3, tela interna na 1.4 | `wallet` | `ui/screens/WalletScreens.kt` |
 | TELA-ANALISES | Análises (desde 21/11/2026, RF-ANA-07: o fim do mês real, os 6 meses, como vou fechar o ano, saúde financeira, fluxo em blocos, categorias, calendário de calor) | `insights` | `ui/screens/InsightsScreen.kt` |
@@ -209,6 +215,7 @@ Toda rota de `ui/Nav.kt` (`Routes`) está aqui. Tela nova = linha nova nesta tab
 | TELA-IMPORTACOES | As importações já feitas, com o que cada uma trouxe e o botão de apagar a importação inteira; abre pela tela de importar (RF-IMP-23) | `imports` | `ui/screens/ImportsScreen.kt` |
 | TELA-BOAS-VINDAS | Apresentação inicial (sem rota: antes do app); inclui o passeio (RF-TOUR-02) | — | `ui/screens/Onboarding.kt`, `ui/screens/Tour.kt` |
 | TELA-BLOQUEIO | Cryo bloqueado (sem rota: no lugar do app) | — | `ui/screens/Onboarding.kt` (`LockScreen`) |
+| TELA-WIDGET | O widget na tela inicial do celular e a tela de configurar o widget (sem rota: fora do app, RF-WID) | — | `ui/widget/CryoWidget.kt`, `ui/widget/WidgetConfigActivity.kt` |
 
 Folhas e diálogos que fazem parte de uma tela (registro rápido, pagar dívida, conferir linha da importação) seguem o padrão
 DS-PAD-03 e são citados no requisito da tela.
@@ -339,6 +346,7 @@ código-fonte, MIT) compilado pelo NDK, uma ponte JNI, a tela de "ouvindo" e as 
 | RF-EXT-09 | **Filtrar por conta** (pedido de quem usa, LA3-1) | O botão "Todas as contas", ao lado dos filtros, abre a lista das contas e cartões; escolhida uma, o Extrato mostra só os lançamentos dela (inclusive as transferências que entram ou saem dela) e o resumo do topo passa a ser o dela. | Teste do filtro (`StatementTest`). | ✅ 1.6 |
 | RF-EXT-10 | **Agendado com cara de agendado** (pedido de quem usa, LA5-1) | Lançamento com data futura aparece com **fundo de outro tom** e um **reloginho** junto do valor (além da palavra "agendado"): não se confunde com o que já aconteceu. Vale no Extrato, no extrato da conta e nas listas do Início. | Imagem (`Screens16Test`). | ✅ 1.6 |
 | RF-EXT-11 | **Contas previstas no Extrato** (pedido de quem usa, LA5-2) | Ao lado de Tudo, Saídas, Entradas e Outros, o filtro **"Previstas"** mostra as contas fixas do mês escolhido ainda não pagas (ou recebidas), com o dia e o valor previstos, e o total delas. Cada uma tem três ações: **Já paguei** (o caminho de sempre, que liga ao lançamento que já existe, RF-CFX), **Ajustar** (pagar com outro valor, outra conta ou outro dia: abre o lançamento já preenchido) e **Pular este mês** (RF-FIX-12). São as mesmas que entram no fim do mês previsto (RF-PRV-10). | Teste: pular tira a conta da lista, da previsão e dos avisos; desfazer devolve (`BillSkipTest`). Imagem (`Screens16Test`). | ✅ 1.6 |
+| RF-EXT-12 | **Abrir o Extrato num mês e numa categoria** (1.7, para o RF-ANA-10) | Outra tela pode abrir o Extrato já no mês e na categoria que importam, ou só nas saídas (rota `txs?category={category}&month={month}&out={out}`, mês como AAAAMM; 0 = o mês de hoje; `out=true` = o filtro "Saídas"). A pessoa continua podendo trocar o mês e tirar os filtros. | `InsightsFlowTest`. | 🟡 1.7 |
 
 ### 6.5 Contas e transferências — RF-CON (TELA-CARTEIRA, TELA-CONTA, TELA-CONTA-EDITAR, TELA-ARQUIVADOS)
 
@@ -446,13 +454,16 @@ Código: `domain/Debts.kt`. Testes: `DebtsTest`, `DebtFlowTest`.
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
 | RF-ANA-01 | Previsão do fim do mês | Desde 21/11/2026, o fim do mês real (RF-PRV-10): renda × despesas, sem cenários; "Como cheguei nesse número" fechado com setinha. | ✅ 1.0 · ✅ 1.6 |
-| RF-ANA-02 | Calendário de calor | Um quadrado por dia, 5 níveis de cor. | ✅ 1.0 |
-| RF-ANA-03 | Fluxo do dinheiro | De onde veio e para onde foi (Sankey). Desde 21/11/2026, em blocos separados dentro da caixa: Entrou, Saiu e Sobrou lado a lado; "De onde veio" e "Para onde foi" cada um no seu bloco, com barras (RF-ANA-07). | ✅ 1.0 · ✅ 1.6 |
+| RF-ANA-02 | Calendário de calor | Um quadrado por dia. Desde a 1.7 (LA6 da 1.7), na **cor da temperatura** do gasto (DS-COR-06): dia sem gasto no tom do cartão; pouco gasto nos **azuis** (azul-claro até a metade da mediana dos dias com gasto do mês, azul até a mediana); depois **amarelo** (até 1,5× a mediana), **laranja** (até 2,5×) e **vermelho** (acima). O número do dia fica legível em todas as cores, no claro e no escuro; a legenda mostra as seis cores de "Menos" a "Mais"; as iniciais dos dias da semana vêm da língua do app (ERR-067). Critério: `HeatLevelsTest` (os seis níveis e os limites), imagens no claro, no escuro e em árabe (`InsightsFlowTest`). | ✅ 1.0 · 🟡 1.7 |
+| RF-ANA-03 | Fluxo do dinheiro | De onde veio e para onde foi. Desde 21/11/2026, em blocos (Entrou, Saiu e Sobrou; "De onde veio" e "Para onde foi" com barras, RF-ANA-07); desde a 1.7, tudo numa caixa só e com duas vistas à escolha, **Barras** e **Funil** (RF-ANA-09), e cada parte leva às movimentações dela (RF-ANA-10). | ✅ 1.0 · ✅ 1.6 · 🟡 1.7 |
 | RF-ANA-04 | Gastos por categoria | Rosca com legenda; toque abre o extrato filtrado. | ✅ 1.0 |
 | RF-ANA-05 | Últimos 6 meses | Barras de entradas e saídas. Desde 21/11/2026, logo abaixo do fim do mês, para comparar de relance (RF-ANA-07). | ✅ 1.0 · ✅ 1.6 |
 | RF-ANA-06 | "O Cryo percebeu" | Observações automáticas sobre o mês. Desde 21/11/2026, na central de avisos (RF-INI-19), não mais em Análises. | ✅ 1.0 · ✅ 1.6 |
 
 | RF-ANA-07 | **Análises resumida, em blocos** (pedido do Hanry, LA11) | Ordem: o mês (seletor); **Previsão do fim do mês** (RF-PRV-10: o número na cor do resultado, Renda × Despesas em duas barras e as linhas fechadas com setinha); **Últimos 6 meses**; **Como vou fechar o ano?** (RF-MOT-17, sem mudança na conta; a explicação fechada com setinha); a saúde financeira (um bloco); **Fluxo do dinheiro** em blocos (RF-ANA-03); gastos por categoria (as 4 maiores, "Ver todas" com setinha); o calendário de calor. Saem de Análises: as percepções e o que saiu do padrão (central, RF-INI-19), a previsão de metas (fica em Planejar › Metas, RF-MOT-16) e "O que se repete" (a tela continua, aberta pela central e por Planejar › Contas fixas). | Imagem de Análises (`ScreensTest`, `ScreensVisualTest`); `MonthEndTest`. | ✅ 1.6 |
+| RF-ANA-08 | **A saúde financeira sempre no topo** (pedido do Hanry, LA4 da 1.7: "está perdendo destaque") | O bloco da saúde financeira (RF-MOT-08) é o **primeiro** de Análises, acima do seletor do mês, em qualquer mês escolhido (a nota é de agora, não do mês); enquanto o motor calcula, o lugar fica reservado (a tela não pula). Critério: imagem de Análises (`InsightsFlowTest`), a saúde antes do seletor e num mês passado. | 🟡 1.7 |
+| RF-ANA-09 | **O fluxo do dinheiro numa caixa só, com duas vistas** (pedido do Hanry, LA4 e LA11 da 1.7) | Uma caixa com o título "Fluxo do dinheiro" e, dentro dela, tudo o que é do fluxo: o seletor **Barras \| Funil**, os três números (Entrou, Saiu, Sobrou) em caixinhas de dentro e o gráfico escolhido (região comum, DS-PSI-04). **Barras**: "De onde veio" e "Para onde foi", cada parte com o nome, o valor, a porcentagem e a barra. **Funil** (revisto em 23/11/2026, na DLA: "mais com cara de funil mesmo, só que saltado e clicável"): o dinheiro **entra em cima e escorre**: a faixa de cima é tudo o que entrou (cada entrada é um pedaço dela), e embaixo vem uma faixa para cada saída, da maior para a menor, cada uma mais estreita que a anterior pelo tanto que aquela saída levou, até "Sobrou" no fundo (o funil não fecha num ponto: guarda uma boca mínima). As faixas têm **volume** (degradê de cima para baixo, a beirada de baixo mais escura e uma sombra suave, como os cartões, DS-PROF), com um respiro entre elas; o nome, o valor e a porcentagem ficam ao lado de cada faixa; **cada faixa e o nome dela são clicáveis** (RF-ANA-10) e afundam um pouco ao toque; as faixas aparecem uma a uma (DS-MOV, paradas com "Remover animações"); espelhado em árabe e hebraico; com "Esconder valores", nenhum valor no desenho nem para o leitor de tela (ERR-068). A escolha fica guardada (`AppSettings.flowView`, PRI-09); a primeira vista é Barras. Critério: imagens das duas vistas no claro, no escuro e em árabe (`InsightsFlowTest`); a escolha guardada; o toque numa faixa. | 🟡 1.7 |
+| RF-ANA-10 | **Tocar no fluxo abre as movimentações** (pedido do Hanry, LA2 da 1.7) | Nas duas vistas, tocar numa parte leva às movimentações dela no mês escolhido: uma categoria (de entrada ou de saída) abre o Extrato nesse mês, filtrado por ela (RF-EXT-12); "Investimentos" abre a Carteira; "Metas" abre Planejar › Metas; "Dinheiro emprestado" abre Dívidas; "Outras categorias" abre o Extrato do mês só nas saídas (o filtro "Saídas"). "Sobrou" e "Do saldo que você já tinha" não são movimentações e não levam a lugar nenhum. No funil, o toque vale para a parte e para o nome dela. Critério: `InsightsFlowTest` (tocar numa categoria, nas barras e no funil, abre o Extrato filtrado, no mês certo; "Outras categorias" abre as saídas do mês). | 🟡 1.7 |
 
 Código: `domain/Analytics.kt`, `ui/components/Charts.kt`.
 
@@ -642,11 +653,13 @@ Testes: `AutoBackupTest`, `BackupFlowTest`, `RepositoryTest`.
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
 | RF-BLQ-01 | Bloquear com digital, rosto ou senha do celular | Ligável em Ajustes; exige trava no aparelho. **Ligar passa pelo desbloqueio uma vez** (a mesma pergunta de quando o app abre): a chave só liga se ele for aceito (1.5, ERR-039). | ✅ 1.0 · revisto 1.5 |
-| RF-BLQ-02 | Quando bloqueia | **Toda vez que o app abre do zero** (tela criada sem estado salvo: inclusive quando a pessoa tira o app dos Recentes e abre de novo antes de 1 minuto, com o processo ainda vivo; 1.5, ERR-039), depois de 1 min em segundo plano e quando o Android fechou o app e restaura a tela. Girar a tela e as recriações do próprio app (modo de teste, língua) não pedem de novo. | ✅ 1.3 · revisto 1.5 |
+| RF-BLQ-02 | Quando bloqueia | **Toda vez que o app abre do zero** (tela criada sem estado salvo: inclusive quando a pessoa tira o app dos Recentes e abre de novo com o processo ainda vivo; 1.5, ERR-039) e quando o Android fechou o app e restaura a tela. Depois de sair do app, **a pessoa escolhe** (1.7, LA2, issue #6, ERR-070) em Ajustes › Privacidade e segurança › "Bloquear de novo": **Na hora** (toda saída do app pede o desbloqueio na volta, inclusive apagar a tela), **Depois de 1 minuto** (o padrão, como até a 1.6), **Depois de 5 minutos** ou **Depois de 15 minutos**. Girar a tela e as recriações do próprio app (modo de teste, língua) não pedem de novo; voltar de uma tela que o próprio Cryo abriu segue o RF-BLQ-08. | ✅ 1.3 · revisto 1.5 · 🟡 1.7 |
 | RF-BLQ-03 | Nada do app à vista | Bloqueado, o app sai da tela (nem diálogos, menus ou folhas; nem Voltar ou teclado chegam a ele). | ✅ 1.3 |
 | RF-BLQ-04 | Volta para onde estava | O estado é guardado e volta ao desbloquear. | ✅ 1.3 |
-| RF-BLQ-05 | Recentes | Com o bloqueio ligado, a miniatura não guarda a tela (Android 13+). | ✅ 1.3 |
+| RF-BLQ-05 | Recentes | Com o bloqueio ligado, a miniatura não guarda a tela (Android 13+). No Android 8 a 12 isso só existe protegendo a janela inteira, então ali, com o bloqueio ligado, prints e gravações já saem pretos sempre (o modo privacidade aparece ligado e travado, com a explicação). | ✅ 1.3 · 🟡 1.7 |
 | RF-BLQ-06 | Não prender a pessoa fora | Sem trava no aparelho ou sem biometria, libera. | ✅ 1.0 |
+| RF-BLQ-07 | **Modo privacidade** (1.7, LA2 e LA6, issues #6 e #7) | Com o bloqueio ligado, uma chave logo abaixo dele: "Modo privacidade — impedir prints e gravação de tela". Ligada, o Cryo protege a janela (`FLAG_SECURE`): prints, gravações e o compartilhamento de tela saem **pretos**, como nos apps de banco, e a miniatura em Recentes também. Começa **desligada** (o Hanry usa prints para a loja e para as issues). Desligar o bloqueio desliga a proteção (a chave some). Critério: `LockFlowTest` (a janela protegida com a chave, sem ela e sem o bloqueio). | 🟡 1.7 |
+| RF-BLQ-08 | **Voltar do que o próprio Cryo abriu** (1.7) | Escolher um arquivo (importar, restaurar, backup), compartilhar, abrir o navegador (o modelo de voz, apoiar), a foto do perfil e a confirmação do próprio sistema não contam como sair do app por até **5 minutos**: sem isso, "Na hora" bloquearia no meio da importação e o arquivo escolhido se perderia. Depois de 5 minutos fora, vale a regra do RF-BLQ-02. Critério: `LockRulesTest`, `LockFlowTest`. | 🟡 1.7 |
 
 Testes: `DevModeFlowTest` (bloqueio).
 
@@ -900,7 +913,26 @@ aconteceu, e criar a conta fixa depois pergunta se os lançamentos já existente
 
 | ID | Requisito | Critério de aceite | Status |
 |---|---|---|---|
-| RF-WID-01 | Widgets na tela inicial | Detalhar com o Hanry (quais, que dados, como respeitar "esconder valores" e o bloqueio). | 🔵 depois da 1.5 |
+| RF-WID-01 | **Widget do Cryo** (1.7, LA9) | Um widget na tela inicial do celular que a pessoa **aumenta e diminui** (de 2×1 a 4×4 ou mais). Ele se arruma sozinho pelo tamanho: **pequeno** (o número principal e o nome dele), **médio** (o número e até duas linhas), **grande** (o número, as linhas escolhidas e o botão "Lançar"). | `WidgetTest.tresTamanhos` (imagens 135–137), `WidgetTest.androidAntigo` | 🟡 1.7 |
+| RF-WID-02 | **O conteúdo é da pessoa** | Ao colocar o widget (e depois, em "Editar o widget": segurar o widget › editar, no Android 12+; nos mais antigos, ao colocar), ela escolhe o **número principal** (Saldo em contas, Fim do mês, Quanto resta do orçamento Geral ou Patrimônio) e **o que aparece embaixo** (Próximas contas, Orçamentos, Metas, o botão "Lançar"). Cada widget tem a sua escolha; sem escolha, Fim do mês + Próximas contas + "Lançar". | `WidgetTest.escolhaGuardada`, `WidgetTest.soOQueFoiEscolhido`, `WidgetTest.telaDeEditar` (imagem 138) | 🟡 1.7 |
+| RF-WID-03 | **Os números de verdade** | Sempre os dados de verdade (nunca o modo de teste) e os mesmos números do app (o fim do mês é o `MonthEnds.of`, RF-PRV-10). Atualiza quando algo muda no app e pelo menos a cada hora (a virada do dia). | `WidgetTest.mesmosNumerosDoApp`, `WidgetFlowTest.comOModoDeTesteAbreOsDadosDeVerdade` | 🟡 1.7 |
+| RF-WID-04 | **Privacidade** (decisão do Hanry, 23/11/2026) | O widget mostra os valores **mesmo com o bloqueio e com "Esconder valores"**: pôr um widget na tela é escolher a conveniência. O app continua bloqueado como sempre. | — | 🟡 1.7 |
+| RF-WID-05 | **Tocar** | Tocar no widget abre o Cryo (passa pelo bloqueio, como sempre); "Lançar" abre o registro por frase. | `WidgetFlowTest` | 🟡 1.7 |
+| RF-WID-06 | **Bonito** ("garanta que ficará bonitinho") | Com a cara do Cryo: cantos arredondados, o número grande, a marca pequena, as cores do tema (as do papel de parede no Android 12+), claro e escuro com o sistema, na língua e na moeda do app; nada cortado em nenhum tamanho. | `WidgetTest` (imagens 135–137c) | 🟡 1.7 |
+| RF-WID-07 | **A biblioteca** (PRC-07) | Jetpack Glance (`androidx.glance:glance-appwidget` e `glance-material3` 1.2.0, Apache-2.0, do próprio Android, sem rede): decisão no CLAUDE.md (seção 13). **Conferido em 23/11/2026** com o fdroidserver 2.4.5: o verificador do código (`scan_source`, o mesmo que o servidor do F-Droid roda antes de compilar) e o do APK (`fdroid scanner`, as assinaturas de bibliotecas não livres) sem nenhum problema; as **mesmas permissões** e as mesmas bibliotecas nativas da 1.6; só 6 módulos novos, todos `androidx` (Glance e `core-remoteviews`), nenhuma versão antiga mudou. | — | 🟡 1.7 |
+
+### 6.21 Gestos e organização — RF-GES, RF-ORG (1.7)
+
+| ID | Requisito | Critério de aceite | Status |
+|---|---|---|---|
+| RF-GES-01 | **Arrastar entre as abas** (LA7) | Nas 4 abas, arrastar o dedo para a esquerda leva à aba seguinte e para a direita à anterior (ao contrário em árabe e hebraico), com a tela deslizando para o lado do gesto. Pede um movimento claro para o lado (mais para o lado que para cima ou para baixo, e uma distância mínima ou um gesto rápido). | `TabSwipeTest` | 🟡 1.7 |
+| RF-GES-02 | **Planejar por partes** | Em Planejar, o arrasto passa primeiro pelas partes (Orçamentos › Contas fixas › Metas); da primeira ou da última, vai para a aba vizinha. | `TabSwipeTest` | 🟡 1.7 |
+| RF-GES-03 | **Sem brigar com outros gestos** (DLA: "uma borda de uso maior") | O arrasto não começa nos **48 dp** de cada lado da tela (a borda fica livre para o "voltar" do Android, que usa uns 24 dp), nem em algo que já se arrasta para o lado (o gráfico do ano, listas que rolam para o lado), nem no meio de uma rolagem para cima ou para baixo. Com "Remover animações", a aba troca sem deslizar. | `TabSwipeTest` | 🟡 1.7 |
+| RF-ORG-01 | **Organizar em todas as telas de blocos** (LA8: "em tudo") | Início, Análises, Planejar (Orçamentos, Contas fixas e Metas) e Carteira têm, no fim, o botão "Organizar esta tela". Ele abre uma folha com os blocos da tela na ordem em que estão. | `ArrangeTest` | 🟡 1.7 |
+| RF-ORG-02 | **Arrastar, esconder, voltar ao padrão** | Na folha, segurar um bloco e arrastar muda o lugar dele; o olho esconde ou mostra; "Voltar ao padrão" desfaz tudo. A tela muda na hora, por trás da folha. Para o leitor de tela, cada bloco tem as ações "Subir" e "Descer" (ACS). O que não é bloco (o cabeçalho, o seletor do mês, as partes de Planejar) fica no lugar. | `ArrangeTest` | 🟡 1.7 |
+| RF-ORG-03 | **Os blocos do Início também** | Os blocos da grade do Início (cartões, contas, orçamentos, dívidas, investimentos, metas) mudam de lugar e somem um a um, além das seções. | `ArrangeTest` | 🟡 1.7 |
+| RF-ORG-04 | **Fica guardado** | A arrumação de cada tela fica guardada e vai junto no backup (campo `layout`, que as versões antigas ignoram); um bloco novo de uma versão futura entra no lugar padrão dele; "Apagar todos os dados" volta ao padrão. A ordem padrão é a de sempre (a saúde no topo de Análises, RF-ANA-08). | `ArrangeTest`, `BackupFlowTest` | 🟡 1.7 |
+| RF-ORG-05 | **Nunca some tudo** | Pelo menos um bloco fica à vista em cada tela; a folha não deixa esconder o último. | `ArrangeTest` | 🟡 1.7 |
 
 ---
 
@@ -919,6 +951,7 @@ aconteceu, e criar a conta fixa depois pergunta se os lançamentos já existente
 | RNF-COMP-01 | Android 8 (API 26) em diante; alvo API 36. | `app/build.gradle.kts` | ✅ |
 | RNF-COMP-02 | Funciona sem serviços do Google. | Revisão de dependências | ✅ |
 | RNF-DES-01 | O app abre mesmo se lembretes ou backup falharem (`runCatching`). | Revisão | ✅ |
+| RNF-EST-01 | **Nenhuma tela fecha nem trava** (1.7, LA1 da 1.7): todas as telas abrem e respondem sem dado nenhum, com os dados de exemplo, com os valores escondidos, no tema escuro, em árabe (da direita para a esquerda) e com a fonte em 200%. Todo travamento achado vira uma linha do `docs/ERROS.md` com o seu teste-guarda. | `CrashSmokeTest` | 🟡 1.7 |
 | RNF-DES-02 | Listas longas sem travar (LazyColumn); importação de milhares de linhas fora da linha principal. | Testes de importação | ✅ |
 | RNF-ACS-01 | Acessibilidade conforme ACS-01..07. | Revisão + testes de tela | ✅ |
 | RNF-IDI-01 | Interface nas 10 línguas e na moeda escolhida (RF-LNG, RF-MOE); até a 1.3, só português e reais. | `PrdConformanceTest` (traduções completas, sem texto no código) | ✅ 1.4 |
@@ -976,6 +1009,7 @@ roxo.
 | DS-COR-03 | Entrada verde com `+`; saída em listas na cor do texto com `−`, vermelha só nos resumos e quando estoura; nunca só a cor (sempre sinal, ícone ou texto). |
 | DS-COR-04 | Cabeçalho do Início: claro → `primary`/`onPrimary`; escuro → `primaryContainer`/`onPrimaryContainer`. |
 | DS-COR-05 | Modo de teste: `tertiaryContainer` + ícone de frasco, em qualquer lugar onde apareça. |
+| DS-COR-06 | **Paleta de temperatura** (1.7, RF-ANA-02): seis cores para o calendário de calor, do frio ao quente: sem gasto (o tom do cartão), azul-claro, azul, amarelo, laranja e vermelho, cada uma com a cor do número do dia (contraste de 4,5:1 ou mais), no claro e no escuro. Ficam em `CryoTheme.heat` (`ui/theme/Theme.kt`) e não mudam com o papel de parede (são significado, como os tons por prioridade, DS-TOM-01). |
 | DS-TOM-01 | **Tons por prioridade** (pedido do Hanry, LA10-1): quatro fundos pastel, brandos, para blocos e cartões inteiros: **alerta** (rosa claro), **atenção** (pêssego claro), **bom** (menta claro) e **informação** (azul-gelo claro); no escuro, os mesmos tons profundos e apagados. Cada tom tem a cor do texto e a do destaque com contraste de 4,5:1 ou mais. Ficam em `CryoTheme.tones` (`ui/theme/Theme.kt`) e não mudam com o papel de parede (são significado, como o verde e o vermelho). |
 | DS-TOM-02 | **Só onde há prioridade**: no máximo um ou dois blocos com tom por tela; o resto fica no cartão neutro (efeito de isolamento, DS-PSI). Tom nunca é o único sinal: sempre há ícone ou texto (ACS). A profundidade continua (sombra e fio de luz, DS-PROF). |
 
@@ -1171,6 +1205,10 @@ desenvolvimento.
   grande fica para a DLA e o desenvolvimento.
 - **Origem**: cada item guarda de onde veio (o Hanry, um issue do GitHub, quem usa).
 - **Anotar, não fazer**: o lote é anotado e fica esperando; nada é desenvolvido até a DLA.
+- **Duas portas, cada uma com o ok explícito do Hanry** (reforçado em 22/11/2026, depois de uma falha crítica): (1) **LA →
+  DLA** só quando o Hanry disser que a lista está fechada e pode ir para a DLA (ele pode ainda ter itens para acrescentar);
+  (2) **DLA → desenvolvimento** só quando ele aprovar a DLA. Uma lista de LAs, sozinha, **nunca** autoriza a DLA nem o
+  código. Na dúvida, perguntar e esperar: isso evita gastar esforço (e tokens) sem necessidade.
 - **Ordem por criticidade**: primeiro os **defeitos**, depois as **ideias novas**, por último os **ajustes pequenos** (os
   necessários, mas não tão importantes). Isso economiza esforço.
 - **Fluxo**: **LA → DLA → desenvolvimento** (o ciclo normal do PRC-01, a partir do passo 2).
@@ -1225,6 +1263,73 @@ fim. Os pedidos, separados por tipo (PRC-11):
 6. *Ajustes.* As seções já existiam; o que misturava era "Registro rápido" (conta principal, categorias e voz juntos) e a
    explicação longa dos dados. Escolha: um grupo por tipo, cada linha com uma frase; a conta principal numa folha; a voz
    numa linha que abre Ajustes › Voz.
+
+### 11.1c Lotes LA1 a LA12 da 1.7 (22 e 23/11/2026) e a DLA
+
+> **Falha de processo (22/11/2026):** estes lotes foram anotados, a DLA abaixo foi escrita pelo Claude sozinho e tudo foi
+> desenvolvido **sem o ok do Hanry** para a DLA (ele ainda tinha informações novas para a 1.7). A DLA abaixo **não está
+> aprovada**: será refeita com os itens novos, e o código já feito fica parado, sem commit, até lá (PRC-11, as duas portas).
+> **Resolvido em 23/11/2026:** o Hanry fechou a lista (12 lotes), liberou a DLA e aprovou as respostas abaixo.
+
+Origem: o Hanry, na conversa de 22/11/2026, depois de publicar a 1.6 ("essas são as LAs para a versão 1.7, serão de
+melhorias pequenas e resolução de bugs como travamentos, se encontrar"). Os pedidos, separados por tipo e na ordem de
+criticidade (PRC-11: primeiro os defeitos, depois as ideias novas, por último os ajustes):
+
+Lista reorganizada em 23/11/2026 (pedido do Hanry), por criticidade: defeitos, ideias novas, ajustes. "Feito" = já está no
+código antes da DLA (falha de processo acima); a DLA de 23/11/2026, logo abaixo, decidiu o que fica.
+
+*Defeitos*
+- **LA1 - 1.7** (Hanry): resolver travamentos, se aparecerem. → RNF-EST-01, ERR-067 a ERR-069. *Feito.*
+- **LA2 - 1.7** (issue #6, serrq): "app lock doesn't run at all" — o bloqueio não funciona na 1.6 (Motorola G86, Android 16).
+  → RF-BLQ-02, RF-BLQ-08, ERR-070. *Feito depois da DLA (23/11/2026).*
+
+*Ideias novas*
+- **LA3 - 1.7** (Hanry): tocar numa parte do fluxo do dinheiro leva às movimentações daquela categoria. → RF-ANA-10,
+  RF-EXT-12. *Feito.*
+- **LA4 - 1.7** (Hanry; revisto em 23/11/2026): o funil como uma das vistas do fluxo (Barras ou Funil, à escolha). O funil
+  redesenhado ficou feio: **voltar ao desenho anterior** e só deixá-lo mais bonito (talvez saltado ou em 3D, talvez com o
+  fundo clicável). → RF-ANA-09. *Feito depois da DLA (23/11/2026): a escolha Barras | Funil ficou, e o funil foi refeito com
+  cara de funil, saltado e clicável.*
+- **LA5 - 1.7** (issue #5, serrq): importar o banco de dados do xpenc, mesmo criptografado. *Vai para a 1.8 (DLA).*
+- **LA6 - 1.7** (issue #7, serrq): proteção contra print (captura de tela), com uma chave para ligar e desligar. → RF-BLQ-07.
+  *Feito depois da DLA (23/11/2026).*
+- **LA7 - 1.7** (Hanry): passar de uma aba para outra arrastando para os lados, como os gestos do iOS e do Android.
+  → RF-GES-01..03. *Feito depois da DLA (23/11/2026).*
+- **LA8 - 1.7** (Hanry): a pessoa edita a disposição dos blocos livremente (decide o que fica e onde). → RF-ORG-01..05.
+  *Feito depois da DLA (23/11/2026).*
+- **LA9 - 1.7** (Hanry): widget na tela inicial do celular, com o conteúdo à escolha da pessoa e redimensionável.
+  → RF-WID-01..07. *Feito depois da DLA (23/11/2026).*
+
+*Ajustes*
+- **LA10 - 1.7** (Hanry): a saúde financeira sempre no topo de Análises. → RF-ANA-08. *Feito.*
+- **LA11 - 1.7** (Hanry): o fluxo do dinheiro numa caixa só, para se ver que tudo pertence a ele. → RF-ANA-09. *Feito.*
+- **LA12 - 1.7** (Hanry): o calendário de calor nas cores da temperatura (azuis no pouco gasto; depois amarelo, laranja e
+  vermelho). → RF-ANA-02, DS-COR-06. *Feito.*
+
+**DLA aprovada pelo Hanry em 23/11/2026** ("tudo na 1.7", menos a LA5):
+
+- **LA1** (travamentos): mantém. → RNF-EST-01, ERR-067 a ERR-069.
+- **LA2** (o bloqueio, issue #6): o Hanry explicou o defeito: (1) o app bloqueia só uma vez e fica aberto depois de
+  desbloqueado (só voltava a pedir depois de 1 minuto fora); (2) não impede a captura de tela quando bloqueado (tela
+  preta, como na Netflix ou nos apps de banco). Solução: opções de **bloquear de novo** na hora ou depois de um tempo
+  (RF-BLQ-02, RF-BLQ-08) e uma **chave de modo privacidade** com o bloqueio ligado (RF-BLQ-07). → ERR-070.
+- **LA3** (toque no fluxo): mantém. → RF-ANA-10, RF-EXT-12.
+- **LA4** (o funil): ficam as duas vistas, Barras e Funil, mas o funil da 1.7 ficou feio: ele deve ter **cara de funil
+  mesmo**, saltado e clicável. → RF-ANA-09 revisto.
+- **LA5** (xpenc, issue #5): o Hanry vai conversar com quem pediu; fica para a **1.8**.
+- **LA6** (proteção contra print, issue #7): aprovada, junto com a LA2 (a chave do modo privacidade, que começa desligada).
+- **LA7** (arrastar entre abas): como proposto, também nas partes de Planejar, com **uma borda de uso maior** para não
+  brigar com o voltar do sistema. → RF-GES-01..03.
+- **LA8** (organizar os blocos): como proposto, **em todas as telas** de blocos. → RF-ORG-01..05.
+- **LA9** (widget): a biblioteca nova (Glance) está aceita, desde que o F-Droid aceite também. O widget mostra os valores
+  **mesmo com o bloqueio** ("é sinal claro de que a pessoa abre mão da privacidade pela conveniência"), e precisa ficar
+  bonito. → RF-WID-01..07.
+- **LA10, LA11 e LA12**: mantêm. → RF-ANA-08, RF-ANA-09, RF-ANA-02, DS-COR-06.
+
+Escolhas do Claude dentro do que foi aprovado (para o Hanry conferir no teste): o padrão de "Bloquear de novo" continua
+**1 minuto** (quem já usa não leva susto) e o retorno do que o próprio Cryo abriu tem 5 minutos de folga (RF-BLQ-08); a borda
+livre do arrasto é de 48 dp de cada lado; o funil "escorre" do que entrou até o que sobrou; o widget ignora também
+"Esconder valores" (RF-WID-04).
 
 ### 11.2 Rastreabilidade (PRC-02)
 
@@ -1354,14 +1459,15 @@ Regra nova que dá para conferir sozinha **entra nesse teste**.
 | 1.3 | ✅ 06/11/2026 (GitHub) | Importar extrato, modo desenvolvedor, correções de bloqueio. |
 | **1.4** | ✅ 06/11/2026 (GitHub; F-Droid pela etiqueta) | **AGPL** (RNF-LIC-01) · **PRD e conformidade** (PRC-01..10) · **Direção visual 2.0** em todas as telas (DS-DIR-01..05, RF-INI-11..17) · **Mais fácil**: 4 abas (RF-INI-14), atalhos, restaurar na apresentação (RF-BOA-06) · **10 línguas** (RF-LNG) e **moeda do país** (RF-MOE), frases nas 10 línguas (RF-REG-09), extratos de outros países (RF-IMP-21) · Bancos do Hanry (RF-IMP-20) · **Passeio animado** "Como usar o Cryo" (RF-TOUR) · **Movimento** em todo o app (DS-MOV) · **GitHub nas 10 línguas**, inglês como principal (RF-LNG-09, RF-LNG-10). |
 | **1.5** | ✅ 16/11/2026 (só no GitHub). Junta as cinco etapas feitas depois da 1.4 | **Etapa 1**: **Ícone novo G4** (DS-ICO-02..05) · **Profundidade** em todo o app, com peso de app de iPhone (DS-PROF-01..09) · vibração ao toque · **Motor financeiro** robusto, todo no aparelho (RF-MOT-01..15): recorrências, previsão com faixa, próximos meses, fora do padrão, saúde financeira, ritmo das categorias, juros e plano das dívidas, rendimento real, metas, categoria aprendida, 500 testes de garantia · **Proteção dos dados** com hash e criptografia (RF-SEG). <br>**Etapa 2**: **Voz no aparelho** (RF-VOZ-01..12): Whisper local, microfone ao vivo com animação de eco, vocabulário da pessoa, números por extenso, vários lançamentos numa frase, correções faladas. <br>**Etapa 3**: **Avisos inteligentes** no estilo Duolingo, todos no aparelho (RF-AVI-01..11, com figurinha animada e modo compras ao vivo) · **sons próprios** de cristal (RF-SOM) · **momentos animados** (RF-MOM: meta, orçamento, sequência, fechamento do mês) · **ilustrações próprias** no lugar dos emojis (RF-ILU) · **banco versão 4** e **painel geral dos gastos**, remanejar só no mês (RF-ORC-04/06, DAD-12..14) · **alertas de orçamento** ao salvar e pelo ritmo (RF-ORC-04/05) · **botão de voz ao alcance do polegar** (RF-ALC, One UI) · **voz mais rápida** (RF-VOZ-13). Widgets (RF-WID-01): depois. <br>**Etapa 4**: **Auditoria do código inteiro** com as correções (RF-AUD-01..07) e a **biblioteca de erros como lei** (`docs/ERROS.md`, PRC-08) · **Previsor novo, feito do zero** (RF-PRV-01..09): conjunto de modelos clássicos pesados pelo passado da própria pessoa, faixa conferida no passado (calibração conforme), época do ano, previsão por categoria com a chance de passar do limite, investimentos "se continuar como foi" (rentabilidade no tempo, sobe e desce, maior queda, 1/3/5 anos), e as telas que explicam a conta. <br>**Etapa 5**: **Contas fixas e extrato** (RF-CFX-01..08: o Cryo reconhece o pagamento da conta fixa na linha importada, arruma o que já entrou em dobro e não conta duas vezes na previsão) · **Perfil** (RF-PRF-01..04: a bolinha com desenho, emoji ou foto abre um painel bonito no lugar da engrenagem) · **Guia "Aprender o Cryo"** (RF-GUI-01..07: dicas por regras, no ritmo de quem usa, no máximo uma por dia). · **Cartão** (RF-CAR-07 corrigido, RF-CAR-10 e 11, do issue #3: estorno à mão, escolher a fatura, ajustar o total) · **Sons mais abafados** (RF-SOM-01 revisto). |
-| **1.6** | 🟡 Pronta para o teste do Hanry (19/11/2026) | **Modelo de voz fora do APK**, com seis modelos para escolher (RF-VOZ-15) · **fim do mês que fecha** (RF-PRV-10) e **com os orçamentos** (RF-PRV-11) · **orçamento pela renda** (RF-ORC-07/08) e **com as contas fixas** (RF-ORC-09) · **russo, ucraniano, árabe e hebraico** (RF-LNG-11) · **lotes LA1–LA8**: saúde no Início (RF-INI-18), extrato da conta com o saldo a cada lançamento (RF-CON-08), a conta de cada lançamento à vista e o filtro por conta (RF-EXT-08/09), agendados com cara própria (RF-EXT-10), contas previstas e pular um mês (RF-EXT-11, RF-FIX-12, banco versão 6), a fatura da tela e o último dia no lançamento (RF-CAR-12, RF-LAN-10), previsão de metas (RF-MOT-16) e "Como vou fechar o ano?" (RF-MOT-17), a lista de idiomas que tremia (ERR-059). |
-| 1.7 | 🔵 Proposta (14/11/2026, era a da 1.6) | **Contas a receber** (o espelho das dívidas, pedido de quem usa no issue #3; no Tally é "loans and lendings", por pessoa, com vários saques e pagamentos parciais) · **Corrigir o saldo de uma conta** (digitar quanto a conta tem de verdade e o Cryo lança a diferença, como o "Ajustar total" da fatura, RF-CAR-11) · **Escolher vários lançamentos no Extrato** (segurar para marcar, apagar em lote) · **Calculadora no campo de valor** · **Widget na tela inicial** · dívida quitada e última parcela como momentos (RF-MOM-04) · as lições que ficaram fora do guia. | |
+| **1.6** | ✅ 21/11/2026 (GitHub; F-Droid depois do merge request da receita) | **Modelo de voz fora do APK**, com seis modelos para escolher (RF-VOZ-15) · **fim do mês que fecha** (RF-PRV-10) e **com os orçamentos** (RF-PRV-11) · **orçamento pela renda** (RF-ORC-07/08) e **com as contas fixas** (RF-ORC-09) · **russo, ucraniano, árabe e hebraico** (RF-LNG-11) · **lotes LA1–LA8**: saúde no Início (RF-INI-18), extrato da conta com o saldo a cada lançamento (RF-CON-08), a conta de cada lançamento à vista e o filtro por conta (RF-EXT-08/09), agendados com cara própria (RF-EXT-10), contas previstas e pular um mês (RF-EXT-11, RF-FIX-12, banco versão 6), a fatura da tela e o último dia no lançamento (RF-CAR-12, RF-LAN-10), previsão de metas (RF-MOT-16) e "Como vou fechar o ano?" (RF-MOT-17), a lista de idiomas que tremia (ERR-059). |
+| **1.7** | 🟡 Em desenvolvimento (22/11/2026) | Melhorias pequenas e caça a travamentos (LA1–LA6 da 1.7, seção 11.1c): **nenhuma tela trava** (RNF-EST-01) · **saúde financeira sempre no topo** de Análises (RF-ANA-08) · **fluxo do dinheiro numa caixa só**, com as vistas **Barras e Funil** (RF-ANA-09) e o **toque que abre as movimentações** (RF-ANA-10, RF-EXT-12) · **calendário de calor nas cores da temperatura** (RF-ANA-02, DS-COR-06). |
+| 1.8 | 🔵 Proposta (14/11/2026; era a da 1.6 e depois a da 1.7) | **Contas a receber** (o espelho das dívidas, pedido de quem usa no issue #3; no Tally é "loans and lendings", por pessoa, com vários saques e pagamentos parciais) · **Corrigir o saldo de uma conta** (digitar quanto a conta tem de verdade e o Cryo lança a diferença, como o "Ajustar total" da fatura, RF-CAR-11) · **Escolher vários lançamentos no Extrato** (segurar para marcar, apagar em lote) · **Calculadora no campo de valor** · **Widget na tela inicial** · dívida quitada e última parcela como momentos (RF-MOM-04) · as lições que ficaram fora do guia. | |
 
 > **Olhada no Tally** (14/11/2026, sugestão de quem usa; https://github.com/IamAndelib/Tally-android). O que ele tem e o
 > Cryo não: correção de saldo ("digite quanto a conta tem de verdade"), seleção de vários lançamentos de uma vez,
 > calculadora no campo de valor, empréstimos por pessoa com vários saques, widget, layout de duas colunas em tablet e
 > vibração com intensidade. O que o Cryo tem e ele não: orçamentos, previsão, contas fixas, importação de extratos, voz
-> e o guia. As cinco primeiras ideias entraram no roteiro da 1.7 (eram da 1.6); o resto fica anotado aqui para não se perder.
+> e o guia. As cinco primeiras ideias entraram no roteiro da 1.8 (eram da 1.6 e depois da 1.7, que virou a versão das melhorias pequenas); o resto fica anotado aqui para não se perder.
 
 ## 13. Glossário
 

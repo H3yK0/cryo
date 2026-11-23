@@ -66,12 +66,26 @@ data class AppSettings(
     val avatarColor: Int = 0,
     /** RF-LAN-10: o último dia usado num lançamento (fica guardado para a próxima vez). */
     val lastTxDate: LocalDate? = null,
-)
+    /** RF-ANA-09 (1.7): a vista do fluxo do dinheiro em Análises (0 = Barras, 1 = Funil); a escolha fica guardada (PRI-09). */
+    val flowView: Int = 0,
+    /** RF-BLQ-02 (1.7, LA2): segundos fora do app até pedir o desbloqueio de novo (0 = na hora; `LockRules.CHOICES`). */
+    val lockAfter: Int = io.github.h3yk0.cryo.domain.LockRules.DEFAULT,
+    /** RF-BLQ-07 (1.7, LA2 e LA6): o modo privacidade (prints e gravações pretos), só com o bloqueio ligado. */
+    val privacyMode: Boolean = false,
+    /** RF-ORG-04 (1.7, LA8): a arrumação de cada tela (o texto de `ScreenLayout`), pela tela (`Layouts`). */
+    val layouts: Map<String, String> = emptyMap(),
+) {
+    /** A arrumação de uma tela (a padrão, se a pessoa nunca mexeu). */
+    fun layout(screen: String): io.github.h3yk0.cryo.domain.ScreenLayout = io.github.h3yk0.cryo.domain.ScreenLayout.decode(layouts[screen])
+}
 
 private val Context.dataStore by preferencesDataStore("settings")
 
 /** Ajustes do modo de teste (modo desenvolvedor): separados dos de verdade. */
 private val Context.testDataStore by preferencesDataStore("settings_test")
+
+/** RF-ORG-04: o começo do nome de cada arrumação guardada ("layout_home", "layout_insights"...). */
+private const val LAYOUT = "layout_"
 
 class SettingsRepository(context: Context, sandbox: Boolean = false) {
     private val store = if (sandbox) context.testDataStore else context.dataStore
@@ -88,6 +102,9 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
         val avatar = stringPreferencesKey("avatar")
         val avatarColor = intPreferencesKey("avatar_color")
         val lastTxDate = longPreferencesKey("last_tx_date")
+        val flowView = intPreferencesKey("flow_view")
+        val lockAfter = intPreferencesKey("lock_after")
+        val privacy = booleanPreferencesKey("privacy")
     }
 
     val flow: Flow<AppSettings> = store.data.map { p ->
@@ -103,6 +120,12 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
             avatar = p[K.avatar] ?: "",
             avatarColor = p[K.avatarColor] ?: 0,
             lastTxDate = p[K.lastTxDate]?.let { runCatching { LocalDate.ofEpochDay(it) }.getOrNull() },
+            flowView = (p[K.flowView] ?: 0).coerceIn(0, 1),
+            lockAfter = io.github.h3yk0.cryo.domain.LockRules.normalize(p[K.lockAfter] ?: io.github.h3yk0.cryo.domain.LockRules.DEFAULT),
+            privacyMode = p[K.privacy] ?: false,
+            layouts = p.asMap().entries
+                .mapNotNull { (k, v) -> if (k.name.startsWith(LAYOUT) && v is String) k.name.removePrefix(LAYOUT) to v else null }
+                .toMap().let { io.github.h3yk0.cryo.domain.Layouts.clean(it) },
         )
     }
 
@@ -116,6 +139,21 @@ class SettingsRepository(context: Context, sandbox: Boolean = false) {
     suspend fun setAvatar(value: String, color: Int) = store.edit { it[K.avatar] = value.take(64); it[K.avatarColor] = color }
     suspend fun setReminders(v: Boolean) = store.edit { it[K.reminders] = v }
     suspend fun setLastTxDate(d: LocalDate) = store.edit { it[K.lastTxDate] = d.toEpochDay() }
+    suspend fun setFlowView(v: Int) = store.edit { it[K.flowView] = v.coerceIn(0, 1) }
+    suspend fun setLockAfter(seconds: Int) = store.edit { it[K.lockAfter] = io.github.h3yk0.cryo.domain.LockRules.normalize(seconds) }
+    suspend fun setPrivacyMode(v: Boolean) = store.edit { it[K.privacy] = v }
+
+    /** RF-ORG-02: guarda a arrumação de uma tela (a padrão apaga o que estava guardado). */
+    suspend fun setLayout(screen: String, layout: io.github.h3yk0.cryo.domain.ScreenLayout) = store.edit {
+        if (screen !in io.github.h3yk0.cryo.domain.Layouts.ALL) return@edit
+        val key = stringPreferencesKey(LAYOUT + screen)
+        if (layout.isDefault) it.remove(key) else it[key] = layout.encode()
+    }
+
+    /** RF-ORG-04: a arrumação que veio num backup (só telas conhecidas; as outras ficam como estão). */
+    suspend fun setLayouts(raw: Map<String, String>) = store.edit {
+        io.github.h3yk0.cryo.domain.Layouts.clean(raw).forEach { (screen, text) -> it[stringPreferencesKey(LAYOUT + screen)] = text }
+    }
     /** Volta todos os ajustes ao padrão. */
     suspend fun clear() = store.edit { it.clear() }
 

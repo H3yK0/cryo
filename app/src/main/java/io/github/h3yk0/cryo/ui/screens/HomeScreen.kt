@@ -97,6 +97,12 @@ import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
 import io.github.h3yk0.cryo.ui.tx.QuickEntryBar
 import io.github.h3yk0.cryo.ui.tx.QuickEntryHint
+import io.github.h3yk0.cryo.domain.Layouts
+import io.github.h3yk0.cryo.ui.components.ArrangeGroup
+import io.github.h3yk0.cryo.ui.components.ArrangeSheet
+import io.github.h3yk0.cryo.ui.components.Block
+import io.github.h3yk0.cryo.ui.components.OrganizeButton
+import androidx.compose.foundation.lazy.LazyListScope
 
 /**
  * TELA-INICIO (PRD 6.1). Direção visual 2.0: cabeçalho na cor do Cryo com o saldo (RF-INI-11), atalhos (RF-INI-12) e
@@ -127,7 +133,12 @@ fun HomeScreen() {
 
     var shopping by remember { mutableStateOf(false) }
     if (shopping) ShoppingStartSheet(onDismiss = { shopping = false })
-    val tiles = homeTiles(l, nav, hide)
+    // RF-ORG-03: os blocos da grade, na ordem da pessoa e sem os escondidos.
+    val allTiles = homeTiles(l, nav, hide)
+    val tileLayout = settings.layout(Layouts.HOME_TILES)
+    val tiles = tileLayout.visible(allTiles.map { it.key }).mapNotNull { k -> allTiles.firstOrNull { it.key == k } }
+    val layout = settings.layout(Layouts.HOME)
+    var organizing by rememberSaveable { mutableStateOf(false) }
 
     // RF-INI-16: sem botão flutuante; "Lançar" é o primeiro atalho.
     Scaffold(contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
@@ -145,69 +156,109 @@ fun HomeScreen() {
                 }
             }
 
-            item { Shortcuts(homeShortcuts(l, nav, onShopping = if (c.sandbox) null else ({ shopping = true })), Modifier.padding(top = 16.dp)) }
-
-            // RF-AVI-10: a ida às compras em andamento (sempre os dados de verdade).
-            if (!c.sandbox) item { ShoppingBanner(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) }
-
-            item {
-                Column(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) {
-                    QuickEntryBar(l, Modifier.guideTarget(io.github.h3yk0.cryo.domain.Lesson.PHRASE))
-                    QuickEntryHint(Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp))
-                }
-            }
-
-            // RF-INI-20: no máximo um destaque, o mais importante ainda não visto; "×" ou o toque o dão por visto.
-            highlight?.let { h ->
-                item(key = "destaque") {
-                    ToneNotice(
-                        inboxIcon(h.kind), h.text, toneOf(h, CryoTheme.tones),
-                        modifier = Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp),
-                        onClick = {
-                            quiet = true
-                            c.inbox.markSeen(listOf(h.key), l.today.toEpochDay())
-                            h.target?.let { openTarget(nav, it) } ?: nav.go(Routes.INBOX)
-                        },
-                        onDismiss = { quiet = true; c.inbox.markSeen(listOf(h.key), l.today.toEpochDay()) },
-                    )
-                }
-            }
-
-            item { Spacer(Modifier.height(10.dp)) }
-
-            item { MonthCard(l, month.income, month.expense, monthEnd, hide) { nav.tab(Routes.INSIGHTS) } }
-
-            // RF-INI-21: os blocos, em duas colunas (DS-BLOCO).
-            tiles.chunked(2).forEachIndexed { i, row ->
-                item(key = "blocos$i") {
-                    TileRow(
-                        Modifier.padding(horizontal = Depth.Margin, vertical = TileGap / 2),
-                        first = row[0], second = row.getOrNull(1),
-                    )
-                }
-            }
-
+            // RF-ORG-01..05 (1.7, LA8): as partes do Início são blocos que a pessoa arruma. O cabeçalho fica no alto; a ida às
+            // compras e o destaque (o que pede atenção agora) ficam logo antes do primeiro bloco de números (o mês, a grade ou
+            // as últimas), para nunca sumirem junto com um bloco escondido.
             val recent = l.s.txs.filter { !it.date.isAfter(l.today) }.take(MAX_ROWS)
-            item {
-                Spacer(Modifier.height(6.dp))
-                CryoSection(stringResource(R.string.home_recent), onClick = { nav.tab(Routes.txs()) }, headerOnly = true) {
-                    if (recent.isEmpty()) {
-                        InfoCard(
-                            Icons.Rounded.AutoAwesome,
-                            stringResource(R.string.home_empty_hint),
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    } else {
-                        recent.forEachIndexed { i, t ->
-                            if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
-                            TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.padding(horizontal = 0.dp))
+            val blocks = listOf(
+                Block("atalhos", Res.s(R.string.org_block_shortcuts)) {
+                    item(key = "atalhos") { Shortcuts(homeShortcuts(l, nav, onShopping = if (c.sandbox) null else ({ shopping = true })), Modifier.padding(top = 16.dp)) }
+                },
+                Block("frase", Res.s(R.string.org_block_phrase)) {
+                    item(key = "frase") {
+                        Column(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) {
+                            QuickEntryBar(l, Modifier.guideTarget(io.github.h3yk0.cryo.domain.Lesson.PHRASE))
+                            QuickEntryHint(Modifier.padding(start = 16.dp, end = 16.dp, top = 6.dp))
                         }
                     }
+                },
+                Block("mes", Res.s(R.string.org_block_month)) {
+                    item(key = "mes") { MonthCard(l, month.income, month.expense, monthEnd, hide) { nav.tab(Routes.INSIGHTS) } }
+                },
+                // RF-INI-21: os blocos, em duas colunas (DS-BLOCO), na ordem que a pessoa escolheu (RF-ORG-03).
+                Block("blocos", Res.s(R.string.org_group_tiles)) {
+                    tiles.chunked(2).forEachIndexed { i, row ->
+                        item(key = "blocos$i-" + row.joinToString("-") { it.key }) {
+                            TileRow(
+                                Modifier.padding(horizontal = Depth.Margin, vertical = TileGap / 2),
+                                first = row[0].slot, second = row.getOrNull(1)?.slot,
+                            )
+                        }
+                    }
+                },
+                Block("recentes", Res.s(R.string.home_recent)) {
+                    item(key = "recentes") {
+                        Spacer(Modifier.height(6.dp))
+                        CryoSection(stringResource(R.string.home_recent), onClick = { nav.tab(Routes.txs()) }, headerOnly = true) {
+                            if (recent.isEmpty()) {
+                                InfoCard(
+                                    Icons.Rounded.AutoAwesome,
+                                    stringResource(R.string.home_empty_hint),
+                                    tint = MaterialTheme.colorScheme.primary,
+                                )
+                            } else {
+                                recent.forEachIndexed { i, t ->
+                                    if (i > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                                    TxRow(t, l, onClick = { nav.go(Routes.txEdit(t.id)) }, modifier = Modifier.padding(horizontal = 0.dp))
+                                }
+                            }
+                        }
+                    }
+                },
+            )
+            var fixedDone = false
+            fun LazyListScope.fixed() {
+                fixedDone = true
+                // RF-AVI-10: a ida às compras em andamento (sempre os dados de verdade).
+                if (!c.sandbox) item(key = "compras") { ShoppingBanner(Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp)) }
+                // RF-INI-20: no máximo um destaque, o mais importante ainda não visto; "×" ou o toque o dão por visto.
+                highlight?.let { h ->
+                    item(key = "destaque") {
+                        ToneNotice(
+                            inboxIcon(h.kind), h.text, toneOf(h, CryoTheme.tones),
+                            modifier = Modifier.padding(start = SectionPadding, end = SectionPadding, top = 12.dp),
+                            onClick = {
+                                quiet = true
+                                c.inbox.markSeen(listOf(h.key), l.today.toEpochDay())
+                                h.target?.let { openTarget(nav, it) } ?: nav.go(Routes.INBOX)
+                            },
+                            onDismiss = { quiet = true; c.inbox.markSeen(listOf(h.key), l.today.toEpochDay()) },
+                        )
+                    }
                 }
+                item(key = "respiro") { Spacer(Modifier.height(10.dp)) }
             }
+            val byKey = blocks.associateBy { it.key }
+            layout.visible(blocks.map { it.key }).forEach { key ->
+                if (!fixedDone && key in NUMBER_BLOCKS) fixed()
+                byKey[key]?.content?.invoke(this)
+            }
+            if (!fixedDone) fixed()
+            item(key = "organizar") { OrganizeButton(Modifier.padding(horizontal = Depth.Margin, vertical = 12.dp)) { organizing = true } }
         }
     }
+    if (organizing) {
+        ArrangeSheet(
+            listOf(
+                ArrangeGroup(Layouts.HOME, Res.s(R.string.org_group_sections), HOME_BLOCKS.map { (k, r) -> k to Res.s(r) }),
+                ArrangeGroup(Layouts.HOME_TILES, Res.s(R.string.org_group_tiles), allTiles.map { it.key to it.label }),
+            ),
+            onDismiss = { organizing = false },
+        )
+    }
 }
+
+/** RF-ORG: as partes do Início na ordem padrão, com o nome de cada uma na folha de organizar. */
+private val HOME_BLOCKS = listOf(
+    "atalhos" to R.string.org_block_shortcuts,
+    "frase" to R.string.org_block_phrase,
+    "mes" to R.string.org_block_month,
+    "blocos" to R.string.org_group_tiles,
+    "recentes" to R.string.home_recent,
+)
+
+/** As partes com números: a ida às compras e o destaque ficam logo antes da primeira delas. */
+private val NUMBER_BLOCKS = setOf("mes", "blocos", "recentes")
 
 /**
  * RF-INI-19: o sino. O número conta os avisos importantes ainda não vistos; só percepção nova acende um ponto. O leitor de
@@ -271,16 +322,19 @@ private fun MonthCard(l: Ledger, income: Long, expense: Long, end: io.github.h3y
 /** RF-INI-21: um bloco do Início = a função que desenha ele com o modificador da grade. */
 private typealias TileSlot = @Composable (Modifier) -> Unit
 
+/** RF-ORG-03: um bloco da grade com a chave (guardada na arrumação) e o nome (na folha de organizar). */
+private class TileEntry(val key: String, val label: String, val slot: TileSlot)
+
 /** RF-INI-21: os blocos do Início, na ordem do dia a dia; cada um só aparece quando existe o que mostrar. */
 @Composable
-private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: Boolean): List<TileSlot> {
-    val out = ArrayList<TileSlot>()
+private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: Boolean): List<TileEntry> {
+    val out = ArrayList<TileEntry>()
     val tones = CryoTheme.tones
     for (card in l.activeCards) {
         val inv = l.focusInvoice(card)
         val st = inv.status(l.today)
         val used = (card.limitAmount - l.availableLimit(card)).toFloat() / card.limitAmount.coerceAtLeast(1)
-        out += { m ->
+        out += TileEntry("card${card.id}", card.name) { m ->
             CryoTile(
                 card.name, m, icon = Icons.Rounded.CreditCard, iconColor = Color(card.color),
                 subtitle = invoiceStatusText(st, inv.due, l), progress = used, progressColor = Color(card.color),
@@ -293,7 +347,7 @@ private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: B
     val accounts = l.activeAccounts
     if (accounts.isNotEmpty()) {
         val main = accounts.firstOrNull { it.id == LocalSettings.current.defaultAccountId } ?: accounts.maxBy { l.balance(it.id) }
-        out += { m ->
+        out += TileEntry("contas", Res.s(R.string.home_accounts)) { m ->
             CryoTile(
                 stringResource(R.string.home_accounts), m, icon = accountIcon(main.type), iconColor = Color(main.color),
                 subtitle = if (accounts.size > 1) stringResource(R.string.home_tile_accounts_sub, main.name, accounts.size - 1) else main.name,
@@ -305,7 +359,7 @@ private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: B
     val budget = io.github.h3yk0.cryo.domain.GeneralBudget.usage(l, l.today.ym())
     val usages = l.budgetUsages(l.today.ym())
     if (budget != null || usages.isNotEmpty()) {
-        out += { m ->
+        out += TileEntry("orcamentos", Res.s(R.string.home_budgets_short)) { m ->
             val ratio = budget?.ratio ?: (usages.sumOf { it.spent }.toFloat() / usages.sumOf { it.limit }.coerceAtLeast(1))
             CryoTile(
                 stringResource(R.string.home_budgets_short), m, icon = Icons.Rounded.PieChart,
@@ -331,7 +385,7 @@ private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: B
     if (l.debtOverview.open.isNotEmpty()) {
         val ov = l.debtOverview
         val next = ov.open.filter { it.nextDue != null && it.hasInstallments }.minByOrNull { it.nextDue!! }
-        out += { m ->
+        out += TileEntry("dividas", Res.s(R.string.home_debts)) { m ->
             CryoTile(
                 stringResource(R.string.home_debts), m, icon = Icons.Rounded.RequestQuote, iconColor = CryoTheme.colors.expense,
                 subtitle = next?.let { stringResource(R.string.home_tile_debt_next, it.debt.name, Dates.short(it.nextDue!!)) },
@@ -342,7 +396,7 @@ private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: B
         }
     }
     if (l.activeInvestments.isNotEmpty()) {
-        out += { m ->
+        out += TileEntry("investimentos", Res.s(R.string.home_investments)) { m ->
             CryoTile(
                 stringResource(R.string.home_investments), m, icon = Icons.Rounded.Savings, iconColor = CryoTheme.colors.income,
                 subtitle = stringResource(R.string.home_tile_yield, if (hide) Money.HIDDEN else Money.signed(l.totalYield)),
@@ -354,7 +408,7 @@ private fun homeTiles(l: Ledger, nav: io.github.h3yk0.cryo.ui.Navigator, hide: B
     if (l.activeGoals.isNotEmpty()) {
         val saved = l.activeGoals.sumOf { l.goalSaved(it.id) }
         val target = l.activeGoals.sumOf { it.target }
-        out += { m ->
+        out += TileEntry("metas", Res.s(R.string.home_goals_short)) { m ->
             CryoTile(
                 stringResource(R.string.home_goals_short), m, icon = Icons.Rounded.Flag, iconColor = Color(l.activeGoals.first().color),
                 subtitle = stringResource(R.string.home_tile_goals_sub, l.activeGoals.size),

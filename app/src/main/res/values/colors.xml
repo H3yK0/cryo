@@ -1,4 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="window_bg">#F6FAFD</color>
+    <color name="cryo_widget_bg">#FFF6FAFD</color>
+    <color name="cryo_widget_button">#FF00677F</color>
 </resources>

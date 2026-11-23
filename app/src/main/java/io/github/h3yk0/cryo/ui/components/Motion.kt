@@ -99,6 +99,18 @@ object Motion {
     fun tabExit(): ExitTransition = fadeOut(tween(90, easing = EmphasizedAccelerate))
 
     /**
+     * RF-GES-01: trocar de aba arrastando: a tela nova entra pelo lado de onde o dedo veio e a antiga sai para o lado do
+     * dedo ([fingerSign]: -1 = o dedo foi para a esquerda). O lado já é o do dedo, então vale igual em árabe e hebraico.
+     */
+    fun swipeEnter(fingerSign: Int): EnterTransition =
+        slideInHorizontally(tween(MEDIUM, easing = EmphasizedDecelerate)) { -fingerSign * it / 3 } +
+            fadeIn(tween(MEDIUM - 90, delayMillis = 60, easing = EmphasizedDecelerate))
+
+    fun swipeExit(fingerSign: Int): ExitTransition =
+        slideOutHorizontally(tween(MEDIUM, easing = EmphasizedAccelerate)) { fingerSign * it / 3 } +
+            fadeOut(tween(120, easing = EmphasizedAccelerate))
+
+    /**
      * DS-MOV-09: passos (apresentação, passeio): para a frente quando o número do passo sobe, para trás quando desce.
      * Para usar no `transitionSpec` de um AnimatedContent com o número do passo.
      */

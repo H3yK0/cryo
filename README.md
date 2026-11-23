@@ -36,7 +36,7 @@ A personal finance app for Android: simple to use, complete, offline and open so
 
 - **Log by typing or speaking.** Type or say "lunch 12.50 on debit" or "tv 500 in 10 installments on credit card". Cryo understands the amount, the category, the account, the date and the installments. You just check and save.
 - **A financial engine on your phone.** The end-of-month forecast comes with a range checked against your own past, and its number is always the sum of the lines that explain it — including your bills, your budgets and what you invested. Cryo finds your salary, rent and subscriptions on its own, answers **"How will I end the year?"** with red signals on the days that need attention, tells you whether your **goals fit** at your current pace, flags unusual and repeated charges, gives a financial health score (right next to your balance), shows the interest built into your debts with a payoff plan, and the real yearly return of your investments. All calculated offline.
-- **Spending heatmap and money flow.** See which days you spend the most, where the money came from and where it went.
+- **Spending heatmap and money flow.** See which days you spend the most, in temperature colours, and where the money came from and where it went — as bars or as a funnel. Tap any part to see its transactions.
 - **Import bank statements.** OFX, CSV, spreadsheet (XLSX) or PDF: you review the list before anything goes in, with suggested categories, what is already in Cryo unchecked and credit card bill payments recognized.
 - **Credit cards.** Bills, available limit and installment purchases, each installment on the right bill.
 - **Debts.** Loans, financing, agreements and money you owe someone, kept apart from the rest: how much is left, late installments, how much of your income goes to installments and when you will be debt-free.
@@ -45,13 +45,15 @@ A personal finance app for Android: simple to use, complete, offline and open so
 - **Investments and transfers** between accounts.
 - **14 languages and your currency.** English, Portuguese, Spanish, French, German, Italian, Japanese, Korean, Chinese, Hindi, Russian, Ukrainian, Arabic and Hebrew (right to left), in the currency you choose (dollar, euro, pound, yen, won, rupee, real, rouble, hryvnia, shekel, riyal and more). Logging by phrase and importing statements work in all of them.
 - **A quick animated tour** shows how to use the app the first time you open it (and again whenever you want, in Settings).
+- **A home-screen widget** you can resize and fill with what matters to you: the end of the month, your balance, what's left of your overall budget or your net worth, with your next bills, budgets or goals and an "Add" button.
+- **Your screens, your way.** Swipe sideways to move between tabs, and arrange each screen: put the blocks in the order you like and hide the ones you don't use.
 - **Material You**, light and dark themes and smooth animations that follow your phone's "Remove animations" setting.
 
 ## Privacy
 
 - Your data stays on your phone. **The app has no internet permission.**
 - No sign-up, no ads, no tracking.
-- Lock with fingerprint, face or your phone's screen lock.
+- Lock with fingerprint, face or your phone's screen lock — again right away or after the time you choose — and an optional **privacy mode** that turns screenshots and screen recordings black.
 - **Automatic backup** to a folder on your phone or to your cloud (Google Drive, Nextcloud and others), daily, weekly or monthly. Cryo writes the file through Android's file picker, and the cloud app is the one that uploads it.
 - **Password-protected backups** (optional): the files are encrypted with AES-256 and can't be read without your password. The key stays in Android's secure keystore.
 - Backup to a `.json` file and export to a `.csv` spreadsheet, whenever you want.

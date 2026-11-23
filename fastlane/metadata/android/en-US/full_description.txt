@@ -17,13 +17,15 @@ Type or say a phrase like "lunch 32.50 on debit" or "tv 1200 in 10 installments 
 <li>Savings goals that tell you how much to save per month, with an archive for finished ones</li>
 <li>Investments: contributions, withdrawals and returns</li>
 <li>Transfers between accounts</li>
+<li>Home-screen widget: resize it and choose what it shows (end of month, balance, overall budget or net worth, plus bills, budgets or goals)</li>
+<li>Swipe sideways between tabs and arrange each screen: reorder blocks or hide the ones you don't use</li>
 </ul>
 
 <b>Real privacy</b>
 <ul>
 <li>Your data stays on your phone. The app has no internet permission</li>
 <li>No account, no ads, no tracking</li>
-<li>Lock with fingerprint, face or your device PIN</li>
+<li>Lock with fingerprint, face or your device PIN, again right away or after the time you choose, and a privacy mode that blocks screenshots</li>
 <li>Option to hide amounts on screen</li>
 <li>Automatic backup to a folder on your phone or to your cloud (Google Drive, Nextcloud and others): the cloud app does the uploading</li>
 <li>Password-protected backups (AES-256), with the key kept in Android's secure keystore</li>

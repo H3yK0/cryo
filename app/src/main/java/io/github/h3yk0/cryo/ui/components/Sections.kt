@@ -198,7 +198,8 @@ data class ShortcutItem(val label: String, val icon: ImageVector, val onClick: (
 @Composable
 fun Shortcuts(items: List<ShortcutItem>, modifier: Modifier = Modifier) {
     LazyRow(
-        modifier.fillMaxWidth(),
+        // RF-GES-03: a fileira rola para o lado; o arrasto entre abas não começa nela.
+        modifier.fillMaxWidth().noTabSwipe(),
         contentPadding = PaddingValues(horizontal = SectionPadding - 4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
     ) {

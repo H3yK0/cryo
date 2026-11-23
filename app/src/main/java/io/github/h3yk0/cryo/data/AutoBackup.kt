@@ -511,6 +511,8 @@ class AutoBackupRunner(
     val enabled: Boolean = true,
     /** RF-SEG-03: com a proteção ligada, os backups saem trancados com a senha (e são abertos com a chave guardada). */
     private val protection: BackupProtection? = null,
+    /** RF-ORG-04 (1.7): a arrumação das telas, que vai junto no backup. */
+    private val layouts: suspend () -> Map<String, String> = { emptyMap() },
 ) {
     private val mutex = Mutex()
 
@@ -565,7 +567,7 @@ class AutoBackupRunner(
         val hash = BackupPolicy.dataHash(snap)
         // A impressão digital é sempre dos dados abertos: ligar ou desligar a senha não faz gravar cópia igual à toa.
         val json = try {
-            Backup.export(snap, exportedAt = now).let { protection?.seal(it, now) ?: it }
+            Backup.export(snap, exportedAt = now, layouts = runCatching { layouts() }.getOrDefault(emptyMap())).let { protection?.seal(it, now) ?: it }
         } catch (e: BackupProtection.Unavailable) {
             // RF-SEG-03: a proteção está ligada e o cofre não abriu. Sem senha nada é gravado; a pessoa é avisada.
             return due.map { t ->

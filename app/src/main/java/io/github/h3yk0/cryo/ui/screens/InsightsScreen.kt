@@ -2,6 +2,7 @@
 // Copyright (C) 2026 Hanry Franco
 package io.github.h3yk0.cryo.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -13,23 +14,28 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
@@ -64,12 +70,13 @@ import io.github.h3yk0.cryo.ui.components.FlatItem
 import io.github.h3yk0.cryo.ui.components.HeatmapCalendar
 import io.github.h3yk0.cryo.ui.components.IconBadge
 import io.github.h3yk0.cryo.ui.components.LegendDot
+import io.github.h3yk0.cryo.ui.components.LocalContainer
 import io.github.h3yk0.cryo.ui.components.LocalSettings
 import io.github.h3yk0.cryo.ui.components.MoneyText
 import io.github.h3yk0.cryo.ui.components.MonthBarsChart
 import io.github.h3yk0.cryo.ui.components.MonthSelector
-import io.github.h3yk0.cryo.ui.components.SankeyChart
 import io.github.h3yk0.cryo.ui.components.SectionTitle
+import io.github.h3yk0.cryo.ui.components.Segmented
 import io.github.h3yk0.cryo.ui.components.UsageBar
 import io.github.h3yk0.cryo.ui.components.categoryIcon
 import io.github.h3yk0.cryo.ui.components.depthCard
@@ -77,6 +84,11 @@ import io.github.h3yk0.cryo.ui.components.rememberEngine
 import io.github.h3yk0.cryo.ui.components.rememberLedger
 import io.github.h3yk0.cryo.ui.theme.CryoTheme
 import io.github.h3yk0.cryo.ui.tx.LoadingBox
+import io.github.h3yk0.cryo.domain.Layouts
+import io.github.h3yk0.cryo.ui.components.ArrangeGroup
+import io.github.h3yk0.cryo.ui.components.ArrangeSheet
+import io.github.h3yk0.cryo.ui.components.Block
+import io.github.h3yk0.cryo.ui.components.OrganizeButton
 
 /**
  * TELA-ANALISES (RF-ANA-07, reforma visual da 1.6, LA11): o mês (seletor), o fim do mês real (RF-PRV-10), os últimos 6
@@ -98,6 +110,8 @@ fun InsightsScreen() {
     val nav = LocalNav.current
     // RF-MOT: o motor calcula fora da linha principal; enquanto não chega, a tela mostra o que já tinha.
     val engine = rememberEngine()
+    var organizing by rememberSaveable { mutableStateOf(false) }
+    val layout = LocalSettings.current.layout(Layouts.INSIGHTS)
 
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.tab_insights)) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(
@@ -105,43 +119,88 @@ fun InsightsScreen() {
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = 32.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            item {
-                MonthSelector(
-                    Dates.monthYear(ym, l.today), { ymKey = ym.minusMonths(1).key() }, { ymKey = ym.plusMonths(1).key() },
-                    nextEnabled = ym.isBefore(l.today.ym().plusMonths(1)),
-                )
-            }
-
-            item(key = "fim") { if (isCurrent) MonthEndCard(end) else MonthResultCard(summary) }
-
-            // DS-PSI-02: a comparação rápida logo abaixo do mês.
-            item { SectionTitle(Res.s(R.string.insights_ultimos_6_meses)) }
-            item {
-                FlatItem {
-                    MonthBarsChart(bars)
-                    Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        LegendDot(CryoTheme.colors.income); Text(Res.s(R.string.insights_entradas), style = MaterialTheme.typography.labelMedium)
-                        LegendDot(CryoTheme.colors.expense); Text(Res.s(R.string.insights_saidas), style = MaterialTheme.typography.labelMedium)
+            // RF-ORG-01..05 (1.7, LA8): cada parte é um bloco que a pessoa põe na ordem dela e esconde. A ordem padrão é a de
+            // sempre: a saúde financeira primeiro (RF-ANA-08: a nota é de agora, não do mês escolhido). O seletor do mês não
+            // é bloco: fica logo antes do primeiro bloco que depende do mês.
+            val blocks = listOfNotNull(
+                Block("saude", Res.s(R.string.engine_health_title)) {
+                    item(key = "saude") {
+                        val e = engine
+                        // Enquanto o motor calcula, o lugar fica reservado, para a tela não pular.
+                        if (e != null) HealthCard(e.health) { nav.go(Routes.HEALTH) } else HealthPlaceholder()
+                    }
+                },
+                Block("fim", Res.s(R.string.insights_previsao_fim_mes)) {
+                    item(key = "fim") { if (isCurrent) MonthEndCard(end) else MonthResultCard(summary) }
+                },
+                // DS-PSI-02: a comparação rápida logo abaixo do mês.
+                Block("seis", Res.s(R.string.insights_ultimos_6_meses)) {
+                    item(key = "seis_titulo") { SectionTitle(Res.s(R.string.insights_ultimos_6_meses)) }
+                    item(key = "seis") {
+                        FlatItem {
+                            MonthBarsChart(bars)
+                            Row(Modifier.padding(top = 8.dp), verticalAlignment = Alignment.CenterVertically) {
+                                LegendDot(CryoTheme.colors.income); Text(Res.s(R.string.insights_entradas), style = MaterialTheme.typography.labelMedium)
+                                LegendDot(CryoTheme.colors.expense); Text(Res.s(R.string.insights_saidas), style = MaterialTheme.typography.labelMedium)
+                            }
+                        }
+                    }
+                },
+                // RF-MOT-17: o ano (só no mês de agora, quando o motor já respondeu).
+                engine?.year?.takeIf { isCurrent }?.let { y -> Block("ano", Res.s(R.string.yr_title)) { item(key = "ano") { YearOutlookCard(l, y) } } },
+                Block("fluxo", Res.s(R.string.insights_fluxo_dinheiro)) {
+                    item(key = "fluxo_titulo") { SectionTitle(Res.s(R.string.insights_fluxo_dinheiro)) }
+                    item(key = "fluxo") {
+                        // RF-ANA-09 (1.7): a vista guardada (Barras ou Funil); a local responde na hora, a guardada vale da próxima vez.
+                        val c = LocalContainer.current
+                        val saved = LocalSettings.current.flowView
+                        var view by rememberSaveable(saved) { mutableIntStateOf(saved) }
+                        FlowBox(flow, view, onView = { v -> view = v; c.launch { c.settings.setFlowView(v) } }) { node -> openFlowNode(nav, node, ym) }
+                    }
+                },
+                Block("categorias", Res.s(R.string.insights_gastos_por_categoria_2)) {
+                    item(key = "categorias_titulo") { SectionTitle(Res.s(R.string.insights_gastos_por_categoria_2)) }
+                    item(key = "categorias") { CategoriesBlock(cats) { id -> nav.open(Routes.txs(id, ym.key())) } }
+                },
+                Block("calendario", Res.s(R.string.insights_calendario_calor)) {
+                    item(key = "calendario_titulo") { SectionTitle(Res.s(R.string.insights_calendario_calor)) }
+                    item(key = "calendario") { HeatBlock(l, ym, ymKey, isCurrent) }
+                },
+            )
+            var selectorDone = false
+            val byKey = blocks.associateBy { it.key }
+            layout.visible(blocks.map { it.key }).forEach { key ->
+                if (!selectorDone && key != "saude") {
+                    selectorDone = true
+                    item(key = "mes") {
+                        MonthSelector(
+                            Dates.monthYear(ym, l.today), { ymKey = ym.minusMonths(1).key() }, { ymKey = ym.plusMonths(1).key() },
+                            nextEnabled = ym.isBefore(l.today.ym().plusMonths(1)),
+                        )
                     }
                 }
+                byKey[key]?.content?.invoke(this)
             }
+            item(key = "organizar") { OrganizeButton(Modifier.padding(top = 8.dp)) { organizing = true } }
+        }
+    }
+    if (organizing) ArrangeSheet(listOf(ArrangeGroup(Layouts.INSIGHTS, null, INSIGHTS_BLOCKS.map { (k, r) -> k to Res.s(r) })), onDismiss = { organizing = false })
+}
 
-            if (isCurrent) {
-                engine?.let { e ->
-                    // RF-MOT-17: o ano continua aqui; a saúde financeira é um bloco só.
-                    e.year?.let { y -> item(key = "ano") { YearOutlookCard(l, y) } }
-                    item(key = "saude") { HealthCard(e.health) { nav.go(Routes.HEALTH) } }
-                }
-            }
+/** RF-ORG: os blocos de Análises na ordem padrão (todos, mesmo os que só aparecem em alguns meses), com o nome de cada um. */
+private val INSIGHTS_BLOCKS = listOf(
+    "saude" to R.string.engine_health_title,
+    "fim" to R.string.insights_previsao_fim_mes,
+    "seis" to R.string.insights_ultimos_6_meses,
+    "ano" to R.string.yr_title,
+    "fluxo" to R.string.insights_fluxo_dinheiro,
+    "categorias" to R.string.insights_gastos_por_categoria_2,
+    "calendario" to R.string.insights_calendario_calor,
+)
 
-            item { SectionTitle(Res.s(R.string.insights_fluxo_dinheiro)) }
-            item { FlowBlocks(flow) }
-
-            item { SectionTitle(Res.s(R.string.insights_gastos_por_categoria_2)) }
-            item { CategoriesBlock(cats) { id -> nav.open(Routes.txs(id)) } }
-
-            item { SectionTitle(Res.s(R.string.insights_calendario_calor)) }
-            item {
+/** RF-ANA-02: o calendário de calor do mês, o dia tocado e quantos dias tiveram gasto. */
+@Composable
+private fun HeatBlock(l: io.github.h3yk0.cryo.domain.Ledger, ym: java.time.YearMonth, ymKey: Int, isCurrent: Boolean) {
                 var day by remember(ymKey) { mutableStateOf<Int?>(null) }
                 val daily = remember(l, ymKey) { l.dailyExpenses(ym) }
                 FlatItem {
@@ -161,9 +220,6 @@ fun InsightsScreen() {
                         modifier = Modifier.padding(top = 6.dp),
                     )
                 }
-            }
-        }
-    }
 }
 
 /**
@@ -277,48 +333,72 @@ private fun pendingText(item: EndItem, hide: Boolean): String? {
 
 private fun money(v: Long, hide: Boolean) = if (hide) Money.HIDDEN else Money.format(v)
 
+/** RF-ANA-08: o lugar da saúde financeira enquanto o motor faz a primeira conta (a tela não pula quando ela chega). */
+@Composable
+private fun HealthPlaceholder() {
+    FlatItem {
+        Text(Res.s(R.string.engine_health_title), style = MaterialTheme.typography.titleMedium)
+        Spacer(Modifier.height(56.dp))
+    }
+}
+
 /**
- * RF-ANA-03 e RF-ANA-07: o fluxo do dinheiro em blocos: Entrou, Saiu e Sobrou lado a lado; "De onde veio" e "Para onde
- * foi" cada um no seu bloco, com barras. O desenho do caminho (Sankey) continua, fechado com setinha (DS-EXP).
+ * RF-ANA-10 (1.7): para onde cada parte do fluxo leva. Uma categoria abre o Extrato do mês filtrado por ela (RF-EXT-12);
+ * investimentos, metas e o dinheiro emprestado abrem as telas deles; "Outras categorias" abre o Extrato do mês só nas saídas.
+ * "Sobrou" e "Do saldo que você já tinha" não são movimentações: não levam a lugar nenhum.
+ */
+private fun flowTarget(node: FlowNode): Boolean = node.categoryId != null || node.kind in setOf(FlowKind.INVEST, FlowKind.GOALS, FlowKind.BORROWED, FlowKind.OTHERS)
+
+private fun openFlowNode(nav: io.github.h3yk0.cryo.ui.Navigator, node: FlowNode, ym: java.time.YearMonth) {
+    when {
+        node.categoryId != null -> nav.open(Routes.txs(node.categoryId, ym.key()))
+        node.kind == FlowKind.INVEST -> nav.go(Routes.WALLET)
+        node.kind == FlowKind.GOALS -> nav.open(Routes.plan(2))
+        node.kind == FlowKind.BORROWED -> nav.go(Routes.DEBTS)
+        node.kind == FlowKind.OTHERS -> nav.open(Routes.txs(0, ym.key(), out = true))
+    }
+}
+
+/**
+ * RF-ANA-09 e RF-ANA-03 (1.7, LA3 e LA5 da 1.7): o fluxo do dinheiro numa caixa só (região comum, DS-PSI-04): o seletor
+ * Barras | Funil, os três números em caixinhas de dentro e o gráfico escolhido. Tocar numa parte chama [onNode] (RF-ANA-10).
  */
 @Composable
-private fun FlowBlocks(flow: MoneyFlow) {
-    if (flow.isEmpty) {
-        FlatItem { Text(Res.s(R.string.insights_registre_entradas_saidas_para), color = MaterialTheme.colorScheme.onSurfaceVariant) }
-        return
-    }
-    val totalIn = flow.sources.filter { it.kind != FlowKind.FROM_BALANCE }.sumOf { it.value }
-    val totalOut = flow.destinations.filter { it.kind != FlowKind.SURPLUS }.sumOf { it.value }
-    val left = totalIn - totalOut
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+private fun FlowBox(flow: MoneyFlow, view: Int, onView: (Int) -> Unit, onNode: (FlowNode) -> Unit) {
+    val hide = LocalSettings.current.hideValues
+    FlatItem {
+        if (flow.isEmpty) {
+            Text(Res.s(R.string.insights_registre_entradas_saidas_para), color = MaterialTheme.colorScheme.onSurfaceVariant)
+            return@FlatItem
+        }
+        Segmented(listOf(0 to Res.s(R.string.insights_flow_view_bars), 1 to Res.s(R.string.insights_flow_view_funnel)), view, onView)
+        Spacer(Modifier.height(12.dp))
+        val totalIn = flow.sources.filter { it.kind != FlowKind.FROM_BALANCE }.sumOf { it.value }
+        val totalOut = flow.destinations.filter { it.kind != FlowKind.SURPLUS }.sumOf { it.value }
+        val left = totalIn - totalOut
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             FlowStat(Res.s(R.string.month_in), totalIn, CryoTheme.colors.income, Modifier.weight(1f))
             FlowStat(Res.s(R.string.month_out), totalOut, CryoTheme.colors.expense, Modifier.weight(1f))
-            FlowStat(
-                Res.s(R.string.insights_sobrou), left, if (left >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
-                Modifier.weight(1f), signed = true,
-            )
+            FlowStat(Res.s(R.string.insights_sobrou), left, if (left >= 0) CryoTheme.colors.income else CryoTheme.colors.expense, Modifier.weight(1f), signed = true)
         }
-        FlowBars(Res.s(R.string.insights_onde_veio), flow.sources, totalIn.coerceAtLeast(1))
-        FlowBars(Res.s(R.string.insights_para_onde_foi), flow.destinations, maxOf(totalIn, totalOut).coerceAtLeast(1))
-        FlatItem {
-            Expandable(Res.s(R.string.insights_flow_drawing)) {
-                Text(
-                    Res.s(R.string.insights_onde_dinheiro_veio_cima),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.height(12.dp))
-                SankeyChart(flow)
-            }
+        Spacer(Modifier.height(10.dp))
+        Text(Res.s(R.string.insights_flow_tap_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Spacer(Modifier.height(6.dp))
+        if (view == 1) {
+            io.github.h3yk0.cryo.ui.components.FlowFunnel(flow, hide, onNode = { if (flowTarget(it)) onNode(it) }, modifier = Modifier.padding(top = 4.dp), canOpen = ::flowTarget)
+        } else {
+            FlowBars(Res.s(R.string.insights_onde_veio), flow.sources, totalIn.coerceAtLeast(1), onNode)
+            Spacer(Modifier.height(8.dp))
+            FlowBars(Res.s(R.string.insights_para_onde_foi), flow.destinations, maxOf(totalIn, totalOut).coerceAtLeast(1), onNode)
         }
     }
 }
 
-/** Um dos três blocos pequenos do fluxo (Entrou, Saiu, Sobrou). */
+/** Um dos três números do fluxo (Entrou, Saiu, Sobrou), numa caixinha de dentro, no tom do fundo (sem sombra dentro de sombra). */
 @Composable
 private fun FlowStat(label: String, value: Long, color: Color, modifier: Modifier, signed: Boolean = false) {
     Column(
-        modifier.depthCard(shape = MaterialTheme.shapes.large).padding(horizontal = 12.dp, vertical = 12.dp),
+        modifier.clip(MaterialTheme.shapes.medium).background(CryoTheme.depth.grouped).padding(horizontal = 10.dp, vertical = 10.dp),
     ) {
         Text(label, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         Spacer(Modifier.height(4.dp))
@@ -326,26 +406,36 @@ private fun FlowStat(label: String, value: Long, color: Color, modifier: Modifie
     }
 }
 
-/** "De onde veio" ou "Para onde foi": cada parte numa barra, com o valor e quanto é do total. */
+/** "De onde veio" ou "Para onde foi": cada parte numa linha com o valor, quanto é do total e a barra; as que levam a algum lugar têm a setinha. */
 @Composable
-private fun FlowBars(title: String, nodes: List<FlowNode>, total: Long) {
+private fun FlowBars(title: String, nodes: List<FlowNode>, total: Long, onNode: (FlowNode) -> Unit) {
     val hide = LocalSettings.current.hideValues
     val surplus = CryoTheme.colors.income
     val neutral = MaterialTheme.colorScheme.outline
-    FlatItem {
-        Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.semantics { heading() })
-        nodes.forEach { n ->
-            val color = when (n.kind) {
-                FlowKind.SURPLUS -> surplus
-                FlowKind.FROM_BALANCE -> neutral
-                else -> Color(n.color)
-            }
-            Row(Modifier.fillMaxWidth().padding(top = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+    Text(title, style = MaterialTheme.typography.titleSmall, modifier = Modifier.padding(top = 4.dp).semantics { heading() })
+    nodes.forEach { n ->
+        val color = when (n.kind) {
+            FlowKind.SURPLUS -> surplus
+            FlowKind.FROM_BALANCE -> neutral
+            else -> Color(n.color)
+        }
+        val target = flowTarget(n)
+        Column(
+            Modifier.fillMaxWidth().clip(MaterialTheme.shapes.small)
+                .then(if (target) Modifier.clickable(role = androidx.compose.ui.semantics.Role.Button) { onNode(n) } else Modifier)
+                .padding(vertical = 8.dp),
+        ) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Text(n.label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f), maxLines = 1, overflow = TextOverflow.Ellipsis)
                 Text(
                     (if (hide) "" else Money.compact(n.value) + " · ") + Num.percent((n.value * 100 / total).toInt()),
                     style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                if (target) {
+                    Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                } else {
+                    Spacer(Modifier.width(18.dp))
+                }
             }
             Spacer(Modifier.height(4.dp))
             UsageBar(n.value.toFloat() / total, height = 8.dp, baseColor = color, warn = false)

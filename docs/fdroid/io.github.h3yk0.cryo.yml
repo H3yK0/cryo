@@ -5,7 +5,6 @@ AuthorName: Hanry Franco
 SourceCode: https://github.com/H3yK0/cryo
 IssueTracker: https://github.com/H3yK0/cryo/issues
 Changelog: https://github.com/H3yK0/cryo/blob/HEAD/CHANGELOG.md
-Donate: https://www.buymeacoffee.com/H3YK0
 
 AutoName: Cryo
 
@@ -28,9 +27,27 @@ Builds:
     gradle:
       - yes
 
+  - versionName: '1.5'
+    versionCode: 10
+    commit: 18444d8b6a646c85b694133a3f75d5e8edc74d48
+    subdir: app
+    gradle:
+      - yes
+    scanignore:
+      - app/src/main/assets/whisper/ggml-base-q5_1.bin
+
+  - versionName: '1.6'
+    versionCode: 11
+    commit: ddeb228ec0b7de1a830177271632a8744cf0046e
+    subdir: app
+    sudo: sdkmanager "cmake;3.22.1"
+    gradle:
+      - yes
+    ndk: r27c
+
 AllowedAPKSigningKeys: 6e13e284c2f00b72473589391776ed2f28dbad5506f515de3fac99a364a3a2e7
 
 AutoUpdateMode: Version
-UpdateCheckMode: Tags
-CurrentVersion: '1.4'
-CurrentVersionCode: 5
+UpdateCheckMode: Tags ^v[0-9.]+$
+CurrentVersion: '1.6'
+CurrentVersionCode: 11

@@ -11,7 +11,7 @@ Para mexer em telas, leia também **[docs/VISUAL.md](docs/VISUAL.md)**. Para a i
 
 Este arquivo é **público** (vai para o GitHub junto com o código): nunca escrever aqui senhas, chaves ou dados pessoais.
 
-Situação descrita aqui: **21/11/2026**.
+Situação descrita aqui: **23/11/2026**.
 
 ---
 
@@ -50,7 +50,8 @@ importação de extratos do banco (OFX, CSV, XLSX, PDF) com conferência antes d
 | 1.3 | 4 | **Publicada no GitHub em 06/11/2026** (Release `v1.3` com `Cryo-1.3.apk`; etiqueta no commit `5377d7a`, branch `versao-1.3`). |
 | 1.4 | 5 | **Publicada no GitHub em 06/11/2026** (Release `v1.4` com `Cryo-1.4.apk`, SHA-256 `4208d49e…82b5`; etiqueta no commit `f8a402b`, branches `main` e `versao-1.4`). F-Droid: merge request **!56186** (licença AGPL + build da 1.4) **aceito em 07/11/2026** (por @linsui); a 1.4 entra na loja quando o servidor do F-Droid compilar e conferir com o APK da Release (alguns dias). |
 | 1.5 | 10 | **Publicada no GitHub em 16/11/2026** (Release `v1.5`, etiqueta no commit `18444d8`, branches `main` e `versao-1.5`). **Não vai para o F-Droid** (decisão do Hanry, 16/11/2026): o modelo de voz ia dentro do APK (ERR-057). Junta as cinco etapas feitas depois da 1.4 (descritas abaixo). |
-| 1.6 | 11 | **Lançada em 21/11/2026** (o Hanry testou o APK no celular e deu o "pode publicar"): branches `main` e `versao-1.6` e etiqueta `v1.6` neste commit; etiqueta `voice-model-1` no commit da 1.4 (`f8a402b`). As **Releases** `v1.6` (com `Cryo-1.6.apk`, SHA-256 `daebb287…3e86ee`) e `voice-model-1` (com `ggml-base-q5_1.bin` e a licença) são criadas pelo Hanry na página do GitHub (daqui não há como criar Release); o **merge request do F-Droid** também é dele (`docs/fdroid/1.6-receita.md`). Conferir com `list_releases` na próxima sessão. Modelo de voz fora do APK, o fim do mês real, orçamento pela renda e o Geral, 4 línguas novas, os lotes LA1–LA8 e o visual em blocos com a central de avisos (descrição abaixo). **Reconstruída em 20/11/2026**: o contêiner foi apagado com a 1.6 sem commit (veja "Salvar o trabalho" na seção 4). |
+| 1.6 | 11 | **Publicada no GitHub em 22/11/2026** (o Hanry testou o APK e deu o "pode publicar" em 21/11; push de `main` e `versao-1.6` no commit `ddeb228`). As **Releases** foram criadas pelo Hanry na página do GitHub em 22/11/2026 (conferidas com `get_release_by_tag`): `v1.6` (etiqueta em `ddeb228`, `Cryo-1.6.apk` com SHA-256 `daebb287…3e86ee`, o mesmo testado) e `voice-model-1` (etiqueta no commit da 1.4, `f8a402b`; `ggml-base-q5_1.bin` com SHA-256 `422f1ae4…8898` e a licença MIT). Daqui não dá para criar etiqueta nem Release (o push de etiqueta é recusado pela rede, HTTP 403): elas nascem com a Release. Falta o **merge request do F-Droid**, que é do Hanry (`docs/fdroid/1.6-receita.md`). Modelo de voz fora do APK, o fim do mês real, orçamento pela renda e o Geral, 4 línguas novas, os lotes LA1–LA8 e o visual em blocos com a central de avisos (descrição abaixo). **Reconstruída em 20/11/2026**: o contêiner foi apagado com a 1.6 sem commit (veja "Salvar o trabalho" na seção 4). |
+| 1.7 | 12 | **Aprovada pelo Hanry em 23/11/2026** ("pode salvar e publicar"): commit e push de `versao-1.7` e `main`; a Release `v1.7` (com `Cryo-1.7.apk`) é dele, como na 1.6. A DLA foi aprovada por ele em 23/11/2026 (PRD 11.1c: "tudo na 1.7", menos a LA5, que foi para a 1.8), depois da falha de processo de 22/11/2026 (seção 4). Branch `versao-1.7`, saído do `main` da 1.6. APK de teste `Cryo-1.7.apk` (SHA-256 `7b8fe0de…157af0`, compilado num clone limpo do `ddeb228` com o backup 11 por cima) entregue em 23/11/2026; compilado de novo em outra pasta, sem a chave, e com a assinatura copiada (`apksigcopier`), sai idêntico byte a byte (o mesmo teste do F-Droid); permissões iguais às da 1.6. Sem commit até o "pode salvar" do Hanry: o trabalho fica nos backups zip (`Cryo-1.7-backup-N.zip`, por cima do `ddeb228`). Não precisa de merge request no F-Droid (os mesmos passos de compilação). |
 
 > **Numeração (decisão do Hanry, 12/11/2026).** A próxima versão pública é a **1.5** e ela junta tudo o que veio depois da 1.4.
 > O trabalho foi feito em cinco etapas, que na época tinham nome de versão mas nunca saíram: **etapa 1** (ícone, profundidade,
@@ -329,12 +330,76 @@ código anterior. Todos os testes passam.
   - Conferidos sem defeito: a criptografia do backup, a compilação reproduzível (o APK sai idêntico compilado em outra
     pasta), o alinhamento de 16 KB e a escolha do processador.
 
+### O que a 1.7 traz (versionCode 12; pronta para o teste do Hanry, branch `versao-1.7`)
+
+Pedido do Hanry (22/11/2026): "melhorias pequenas e resolução de bugs como travamentos"; em 23/11/2026, as issues #5, #6 e #7
+e quatro ideias novas. Lotes LA1–LA12 e a DLA aprovada no PRD 11.1c (a LA5, importar o banco do xpenc, ficou para a 1.8).
+
+- **Caça a travamentos** (LA1, RNF-EST-01): `CrashSmokeTest` abre ~60 telas (inclusive as de detalhe com um id que não existe
+  e as da 1.7: Ajustes com o bloqueio, telas com blocos escondidos, a folha de organizar e a tela de editar o widget) em seis
+  situações: sem dado nenhum, com os dados de exemplo, com os valores escondidos, no escuro, em árabe (RTL) e com a fonte em
+  200%, rolando cada uma; falha em qualquer exceção. Nenhuma tela quebrou. Na leitura do código saíram três defeitos:
+  **ERR-067** (as iniciais da semana do calendário fixas em português; agora `weekInitials(AppLocale.locale)` em `Charts.kt`),
+  **ERR-068** (com "Esconder valores", o desenho do fluxo mostrava o total e o leitor de tela lia os valores) e **ERR-069**
+  (a voz fechava o app com U+2028, U+2029 ou U+0085 no texto ouvido: `Spoken.BLANKS` e `TRAILING_PUNCT` com `DOT_MATCHES_ALL`,
+  sem `!!`).
+- **Bloqueio por tempo e modo privacidade** (LA2 e LA6, issues #6 e #7, RF-BLQ-02, 05, 07 e 08, **ERR-070**):
+  `domain/LockRules.kt` é a regra pura (`relock`, `stopByOwnLaunch`, `secure`; `CHOICES` = 0, 60, 300 e 900 s, padrão 60).
+  `AppSettings.lockAfter` e `privacyMode` (`setLockAfter`, `setPrivacyMode`). Em `MainActivity`, o `onStop` guarda a hora da
+  saída (menos ao girar a tela e durante a pergunta da digital) e o `onStart` pergunta ao `LockRules.relock`; `startActivity`,
+  `startActivityForResult` e `startIntentSenderForResult` marcam `CryoApp.ownLaunchAt` (5 minutos de folga para voltar do que o
+  próprio Cryo abriu); `applyPrivacy` põe o `FLAG_SECURE` (no Android 12 ou anterior, sempre que o bloqueio está ligado).
+  Ajustes › Privacidade e segurança: "Bloquear de novo" (folha com as quatro escolhas, `lockAfterLabel`) e a chave do modo
+  privacidade (ligada e travada no Android ≤ 12). `unlock()` encerra a pergunta da digital em andamento (`authenticating`).
+- **Toque no fluxo** (LA3, RF-ANA-10, RF-EXT-12): `FlowNode.categoryId`; `openFlowNode` leva a categoria ao Extrato filtrado no
+  mês (`Routes.txs(id, ym.key())`), Investimentos à Carteira, Metas a Planejar › Metas, Dinheiro emprestado a Dívidas e
+  "Outras categorias" às saídas do mês (`Routes.txs(0, ym, out = true)`). A rota do Extrato agora é
+  `txs?category={category}&month={month}&out={out}` (`TransactionsScreen(categoryFilter, initialMonth, onlyOut)`).
+- **O funil de verdade** (LA4, RF-ANA-09 revisto: "cara de funil mesmo, saltado e clicável"): `FlowFunnel` em `Charts.kt`
+  refeito. `funnelBands` monta as faixas: a boca é o dinheiro do mês (`insights_funnel_top`) e cada destino estreita a faixa
+  pelo que saiu, até "Sobrou" (boca mínima de 24% da largura). Faixas de 46 dp com sombra (`CryoTheme.depth.shadow`), o lado
+  mais escuro, degradê e um fio de luz (o "saltado"); cada uma afunda um pouco ao toque. De onde o dinheiro veio fica em
+  pílulas (`FlowRow`) acima; o nome e o valor de cada faixa ao lado. `canOpen` (= `flowTarget`) diz o que é tocável.
+- **Arrastar entre as abas** (LA7, RF-GES-01..03): `ui/components/TabSwipe.kt`. `Modifier.tabSwipe` fica no `Box` do `NavHost`
+  (`Nav.kt`): um detector no passe `Initial` que só toma o gesto claramente de lado (|dx| > 1,5 × |dy|) e larga no vertical;
+  troca com 80 dp ou 900 dp/s. Bordas de 48 dp livres (`TAB_SWIPE_EDGE`, o voltar do Android); `Modifier.noTabSwipe()` marca o
+  que arrasta de lado (o gráfico do ano, as fileiras de atalhos e de filtros); `TabSwipeInner` deixa Planejar passar pelas três
+  partes antes de trocar de aba; em RTL o lado espelha. A tela nova entra pelo lado do dedo (`Motion.swipeEnter`/`swipeExit`).
+- **Organizar os blocos** (LA8, RF-ORG-01..05): `domain/Layouts.kt` (`ScreenLayout`: a ordem e os escondidos, em texto
+  "a,-b,c"; `arrange`, `visible` nunca vazio, `moved`, `toggled`; as telas em `Layouts`: `HOME`, `HOME_TILES`, `INSIGHTS`,
+  `BUDGETS`, `BILLS`, `GOALS`, `WALLET`) e `ui/components/Arrange.kt` (`Block`, `LazyListScope.arranged`, `OrganizeButton`,
+  `ArrangeSheet`: segurar e arrastar, a alça, o olho e as ações "Subir"/"Descer" do leitor de tela). Guardado em
+  `AppSettings.layouts` (chaves `layout_<tela>` do DataStore; `setLayout`, `setLayouts`) e no backup (`"layout"`). Início (as
+  partes e os blocos da grade), Análises, Planejar (as três partes) e Carteira.
+- **Widget** (LA9, RF-WID-01..07): `domain/WidgetContent.kt` (`WidgetMain`, `WidgetLine`, `WidgetConfig` em texto "MAIN|A,B",
+  `WidgetContents.of(ledger, config)`: os números do `MonthEnds.of` e do `Ledger`, as próximas contas, orçamentos e metas),
+  `data/WidgetPrefs.kt` (SharedPreferences `cryo_widgets`, uma escolha por widget), `ui/widget/CryoWidget.kt` (o
+  `GlanceAppWidget` com `SizeMode.Responsive` em 5 tamanhos; `widgetFit` é a conta de espaço que decide o que cabe;
+  `WidgetTheme` com as cores do papel de parede no Android 12+ e `CryoPalette` antes; no Android 8–11 os cantos vêm da forma
+  pronta `widget_bg`; "Lançar" abre a `MainActivity` com `EXTRA_OPEN = "entry"`, que abre o campo de escrever),
+  `ui/widget/WidgetConfigActivity.kt` (a tela de editar, sem dados) e `res/xml/cryo_widget_info.xml`. `CryoApp` atualiza os
+  widgets 2 s depois de cada mudança nos dados de verdade (`WidgetUpdates.refresh`); o Android também chama de hora em hora.
+- **Saúde no topo** (LA10, RF-ANA-08): o primeiro item de Análises (`item(key = "saude")`), acima do seletor do mês, em
+  qualquer mês; `HealthPlaceholder` guarda o lugar enquanto o motor calcula.
+- **Fluxo numa caixa só, Barras | Funil** (LA11, RF-ANA-09): `FlowBox` em `InsightsScreen.kt` (o `Segmented`, as três
+  caixinhas `FlowStat` no tom `CryoTheme.depth.grouped`, a dica do toque e a vista escolhida). Barras = `FlowBars`; Funil =
+  `FlowFunnel`. A escolha fica em `AppSettings.flowView` (0 = Barras, 1 = Funil; `setFlowView`).
+- **Calendário de temperatura** (LA12, RF-ANA-02, DS-COR-06): `CryoTheme.heat` (`CryoHeat` em `Theme.kt`: 5 cores + a cor do
+  número, no claro e no escuro, sem seguir o papel de parede) e `heatLevels` (6 níveis pela mediana dos dias com gasto do mês:
+  ≤ ½ azul-claro, ≤ 1× azul, ≤ 1,5× amarelo, ≤ 2,5× laranja, acima vermelho).
+- 50 textos novos nas 14 línguas (`tr_17.py` e `tr_17b.py` no rascunho da sessão); 3 saíram (`insights_flow_drawing`,
+  `insights_onde_dinheiro_veio_cima` e `widget_label`: o widget usa o `app_name`). Nenhuma permissão nova (conferido com o
+  `aapt2`); banco de dados continua na versão 6; uma biblioteca nova, o Jetpack Glance 1.2.0 (seção 13).
+
 ### Para a próxima sessão
 
-1. **Proposta da 1.7** (PRD, roteiro): contas a receber, corrigir o saldo de uma conta, escolher vários lançamentos, calculadora
-   no campo de valor (a lista da olhada no Tally).
-2. Registro por frase: aceitar milhar separado por espaço ("25 000", comum em russo, ucraniano e francês) — ideia, não pedida.
-3. Revisão das traduções por quem fala cada língua (RF-LNG-08), principalmente as 4 novas.
+1. **1.7**: o Hanry testa o APK (o que conferir está no relatório de 23/11/2026: o bloqueio "Na hora", o modo privacidade, o
+   widget nos três tamanhos e o "Editar o widget", arrastar entre as abas, "Organizar esta tela", o funil novo); commit no
+   "pode salvar", push no "pode publicar"; as Releases são dele. A 1.7 não precisa de merge request no F-Droid.
+2. **1.8** (PRD, roteiro): a LA5 (importar o banco do xpenc, issue #5: o Hanry vai conversar com quem pediu) e a proposta
+   antiga (contas a receber, corrigir o saldo de uma conta, escolher vários lançamentos, calculadora no campo de valor).
+3. Registro por frase: aceitar milhar separado por espaço ("25 000", comum em russo, ucraniano e francês) — ideia, não pedida.
+4. Revisão das traduções por quem fala cada língua (RF-LNG-08), principalmente as 4 novas.
 
 ### Os pedidos de 17/11/2026 (feitos na 1.6)
 
@@ -354,25 +419,25 @@ código anterior. Todos os testes passam.
 
 ### Próximos passos imediatos
 
+0. **1.7** (`versionCode` 12, branch `versao-1.7`): os lotes LA1–LA12 da 1.7, menos a LA5 (DLA aprovada em 23/11/2026). APK
+   `Cryo-1.7.apk` (SHA-256 `7b8fe0de4d0bd956ad47b29f8e638c3f226f2dcd352a7f649b251d374d157af0`) entregue para ele testar em 23/11/2026; nada de commit nem push antes do
+   "pode salvar"/"pode publicar". Suíte inteira: 1.177 testes, nenhuma falha (32 só rodam sob pedido).
 1. **1.6** (`versionCode` 11): pronta em 20/11/2026, com as correções da auditoria e a reforma visual em 21/11/2026;
-   `Cryo-1.6.apk` (SHA-256 `daebb287…3e86ee`) **testado pelo Hanry e aprovado como lançável** em 21/11/2026. Ele achou
-   "algumas coisinhas que podem melhorar" (ainda não ditas: perguntar). O que foi conferido no teste: o Início em blocos, o
+   `Cryo-1.6.apk` (SHA-256 `daebb287…3e86ee`) **testado pelo Hanry e aprovado como lançável** em 21/11/2026. O que foi
+   conferido no teste: o Início em blocos, o
    sino e a central de avisos (o destaque some no ×; abrir a central zera o número); o fim do mês real (Início e Análises, com
    "Como cheguei nesse número"); o Geral em Planejar › Orçamentos (a sugestão e o dividido); contas fixas e metas em blocos;
    Ajustes por tipo e Ajustes › Voz; a folha "Baixe a voz do Cryo uma vez" (o modelo que ele já baixou serve); árabe e hebraico
    (tela espelhada, algarismos 0–9 no árabe); o extrato da conta; "Todas as contas" e as "Previstas" com "Pular este mês";
    "Como vou fechar o ano?" (zoom na primeira vista, arrastar e pinçar).
-2. **1.6 lançada** (21/11/2026, "pode publicar" do Hanry): push de `versao-1.6` e de `main` e das etiquetas `v1.6` (este
-   commit) e `voice-model-1` (no commit da 1.4, `f8a402b`, para o robô do F-Droid não tomá-la por versão). O APK compilado de
-   um clone limpo deste commit é idêntico ao que o Hanry testou (`daebb287…3e86ee`).
-3. **O que ficou com o Hanry** (daqui não há como criar Release nem abrir merge request no GitLab): a Release `v1.6` (escolher
-   a etiqueta que já existe, anexar `Cryo-1.6.apk` com esse nome exato, notas em inglês e português), a Release
-   `voice-model-1` (escolher a etiqueta que já existe, anexar `ggml-base-q5_1.bin` e a licença MIT; sem ela o botão "Baixar o
-   modelo" do app dá erro, e só o link do Hugging Face funciona) e o merge request no fdroiddata (rascunho em
-   `docs/fdroid/1.6-receita.md`: bloco da 1.6 com NDK, 1.5 desligada, `UpdateCheckMode: Tags ^v[0-9.]+$`). Conferir na
-   próxima sessão (`list_releases`) e acompanhar a 1.6 entrar na loja.
-4. **1.6.1** (nome só com números: a receita do F-Droid só olha etiquetas `v` + números): as "coisinhas que podem melhorar"
-   que o Hanry achou no teste da 1.6 (pequenas e incrementais; perguntar quais são). PRD primeiro, como sempre.
+2. **1.6 publicada**: push de `versao-1.6` e de `main` (`ddeb228`, 21/11/2026); o APK compilado de um clone limpo desse commit
+   é idêntico ao que o Hanry testou (`daebb287…3e86ee`). As Releases `v1.6` e `voice-model-1` (que criam as etiquetas) foram
+   feitas pelo Hanry em 22/11/2026, com os arquivos certos; a `voice-model-1` aponta para o commit da 1.4 (`f8a402b`), para o
+   robô do F-Droid não tomá-la por versão.
+3. **F-Droid**: o Hanry abriu o merge request **!58632** (a 1.6, com o NDK) e os 9 jobs do CI passaram em 23/11/2026, com a
+   receita de `docs/fdroid/io.github.h3yk0.cryo.yml`; falta os mantenedores aceitarem. Acompanhar a 1.6 entrar na loja. Para as
+   próximas versões, o passo a passo dele: `docs/fdroid/COMO-ATUALIZAR.md`.
+4. As versões seguem com nome só de números (`v1.7`, `v1.8`): a receita do F-Droid só olha etiquetas `v` + números.
 5. **Issue #3** do GitHub: responder agora que a 1.6 saiu (só o Hanry posta).
 6. As traduções foram feitas pelo Claude: pedir revisão de quem fala cada língua (RF-LNG-08, por issue).
 7. Voz: medir no A55 o tempo com e sem a chave "Atenção rápida no Whisper" (modo desenvolvedor › Voz; RF-VOZ-13).
@@ -393,6 +458,11 @@ código anterior. Todos os testes passam.
   guardada (só a chave derivada, trancada pelo cofre do Android). Nada de `Log`, `println` ou `printStackTrace` (RF-SEG-07).
 
 **Processo**
+- **LA → DLA → código: cada passo só com o ok explícito do Hanry** (PRC-11; **falha crítica de 22/11/2026**). Uma lista de
+  LAs serve para **anotar**, nunca para desenvolver: anotar no PRD, perguntar se a lista está fechada e se pode ir para a
+  DLA (ele pode ter mais itens), apresentar a DLA com as dúvidas e só escrever código depois que ele aprovar. Em 22/11/2026
+  o Claude pulou as duas portas na 1.7 (fez a DLA sozinho e desenvolveu tudo), e o Hanry ainda tinha informações novas:
+  esforço e tokens gastos sem necessidade. Na dúvida, perguntar e esperar.
 - **Salvar o trabalho sem commit** (lição de 19–20/11/2026: o contêiner da nuvem é apagado quando a sessão fica parada, e a 1.6
   inteira se perdeu duas vezes): enquanto o Hanry não autoriza commit, a cada etapa concluída o Claude gera um backup zip (os
   arquivos mudados e novos por cima do commit-base, mais `APAGADOS.txt` e um LEIA-ME) e entrega ao Hanry pelo envio de arquivos.
@@ -410,7 +480,7 @@ código anterior. Todos os testes passam.
 - Compilação reproduzível: o APK do GitHub precisa ser idêntico ao que o F-Droid compila. Não mexer em `vcsInfo`,
   `dependenciesInfo` nem reativar as tarefas de ArtProfile em `app/build.gradle.kts` sem entender o efeito (seção 11).
 - Toda versão nova: subir `versionCode` e `versionName`, escrever `CHANGELOG.md` (em inglês) e `docs/CHANGELOG.pt-BR.md`, e
-  `fastlane/metadata/android/<língua>/changelogs/<versionCode>.txt` nas 10 línguas (máximo 500 caracteres cada).
+  `fastlane/metadata/android/<língua>/changelogs/<versionCode>.txt` nas 14 línguas (máximo 500 caracteres cada).
 - **O que aparece na página inicial do GitHub é em inglês** (pedido do Hanry, 06/11/2026): README, CHANGELOG, notas das Releases
   (inglês primeiro, depois português) e **mensagens de commit**. Comentários do código e documentos de trabalho continuam em português.
 - Mudança no banco de dados = nova versão do Room com migração e teste em `MigrationTest` (os schemas ficam em `app/schemas/`).
@@ -471,10 +541,13 @@ app/src/main/java/io/github/h3yk0/cryo/
 ├── data/               Room (db/), Repository.kt (FinanceRepository + SettingsRepository), Backup.kt (JSON e CSV),
 │                       AutoBackup.kt (backup automático), DefaultData.kt (categorias, paleta, ícones),
 │                       SampleData.kt (dados de exemplo), Dev.kt (modo desenvolvedor), LocaleSettings.kt (língua e moeda),
-│                       Vault.kt (cofre: Keystore, HMAC, AES), BackupCrypto.kt (backup com senha), EngineStore.kt
+│                       Vault.kt (cofre: Keystore, HMAC, AES), BackupCrypto.kt (backup com senha), EngineStore.kt,
+│                       WidgetPrefs.kt (1.7, a escolha de cada widget)
 ├── domain/             Regras sem Android: Ledger.kt (saldos, faturas, contas fixas, orçamentos), Analytics.kt (previsão,
 │                       calendário, fluxo), Debts.kt (dívidas), PhraseParser.kt + PhraseLang.kt (registro por frase e as
 │                       palavras de cada língua), Format.kt (valores e datas), I18n.kt (língua, moeda, Res),
+│                       (1.7) LockRules.kt (quando o bloqueio volta), Layouts.kt (a arrumação das telas),
+│                       WidgetContent.kt (o que o widget mostra),
 │                       engine/ (o motor financeiro: Engine.kt junta tudo; Stats, Recurrences, Outlook, Projection,
 │                       Signals, Health, Wealth, CategoryModel, TxKey),
 │                       predict/ (1.5, o previsor: Series, Models, Season, Ensemble, Forecaster, CategoryForecast,
@@ -485,8 +558,9 @@ app/src/main/java/io/github/h3yk0/cryo/
 ├── notify/             Avisos (1.5): AlertPlanner (regras), Alerts (canais e notificação), AlertWork (manhã, noite, botões),
 │                       AlertState, Shopping (modo compras ao vivo), Sounds; Reminders (contas e dívidas); backup automático
 └── ui/                 Nav.kt (rotas, barra de abas, transições), components/ (peças reutilizáveis; Motion.kt = movimento,
-                        Depth.kt = profundidade e vibração), screens/ (telas; Tour.kt = passeio), tx/ (lançamento),
-                        theme/ (Theme.kt: cores, CryoTheme.colors, CryoTheme.depth)
+                        Depth.kt = profundidade e vibração; 1.7: TabSwipe.kt = arrastar entre as abas, Arrange.kt =
+                        organizar a tela), screens/ (telas; Tour.kt = passeio), tx/ (lançamento),
+                        theme/ (Theme.kt: cores, CryoTheme.colors, CryoTheme.depth), widget/ (1.7: o widget, com o Glance)
 ```
 
 Código nativo (1.5): `app/src/main/cpp/` = `CMakeLists.txt` (opções da compilação reproduzível), `cryo_whisper.cpp` (a ponte
@@ -538,7 +612,8 @@ contas fixas, chave `billId` + `ym`; vai no backup como `billSkips`). Schemas em
 (`CardMath.invoiceFor`). Parcelado = uma movimentação por parcela, ligadas por `installmentGroup`.
 
 **Backup** (`data/Backup.kt`): JSON `{"app":"Cryo","version":2,"exportedAt":…, accounts, cards, categories, transactions, investments,
-yields, goals, bills, budgets, debts, debtAdjustments}`. Backups da 1.0 (versão 1) continuam abrindo. Cópia feita no modo de
+yields, goals, bills, budgets, debts, debtAdjustments}` (e, desde a 1.7, `"layout"`, a arrumação das telas, opcional: os
+backups antigos abrem sem ela e as versões antigas a ignoram). Backups da 1.0 (versão 1) continuam abrindo. Cópia feita no modo de
 teste leva `"testMode": true` e se chama `cryo-teste-backup-<data>.json`: não pode ser restaurada por cima dos dados de verdade.
 Exportação para planilha: CSV com `;`.
 
@@ -548,7 +623,9 @@ Proteções: só substitui ou apaga arquivos que este celular gravou; se outro a
 sumirem de repente, pausa e avisa; se nada mudou, não grava cópia igual.
 
 **Ajustes**: DataStore `settings` (tema, cores do papel de parede, bloqueio, esconder valores, nome, lembretes, conta principal,
-apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPreferences `cryo_dev` (modo desenvolvedor).
+apresentação vista; desde a 1.7, a vista do fluxo do dinheiro `flowView`, o tempo do bloqueio `lock_after`, o modo privacidade
+`privacy` e a arrumação de cada tela `layout_<tela>`); `settings_test` no modo de teste; `auto_backup`; SharedPreferences
+`cryo_dev` (modo desenvolvedor) e (1.7) `cryo_widgets` (a escolha de cada widget, `w<id>`; sai quando o widget é tirado).
 
 **Importação**: cada movimentação importada guarda `importKey` = `a<conta>|<formato>.id:<FITID>` ou `c<cartão>|<formato>.h:<hash>`
 (ex.: `a3|ofx.id:123`, `c7|csv.h:9f3a…`; + `#n` para linhas repetidas). Detalhes em `docs/IMPORTACAO.md`.
@@ -594,10 +671,16 @@ apresentação vista); `settings_test` no modo de teste; `auto_backup`; SharedPr
 | Blocos, resumo com setinha, tons por prioridade (1.6, LA10) | `ui/components/Tiles.kt`, `CryoTheme.tones` em `ui/theme/Theme.kt` |
 | Orçamento Geral (1.6, LA12) | `domain/GeneralBudget.kt`, `GeneralBudgetCard`/`GeneralBudgetSheet` em `ui/screens/PlanScreens.kt` |
 | Ajustes › Voz (1.6, LA13) | `VoiceSettingsScreen` em `ui/screens/VoiceModelUi.kt`, `voiceSummary` em `SettingsScreens.kt` |
+| Fluxo do dinheiro: caixa, Barras e Funil, toque (1.7) | `FlowBox`, `FlowBars`, `openFlowNode` em `InsightsScreen.kt`; `FlowFunnel` em `Charts.kt`; `FlowNode.categoryId` em `domain/Analytics.kt` |
+| Calendário de calor na temperatura (1.7) | `heatLevels`, `weekInitials`, `HeatmapCalendar` em `Charts.kt`; `CryoTheme.heat` em `ui/theme/Theme.kt` |
+| Bloqueio por tempo e modo privacidade (1.7) | `domain/LockRules.kt`, `MainActivity.kt` (`onStop`/`onStart`, `applyPrivacy`, `markOwnLaunch`), "Bloquear de novo" em `SettingsScreens.kt` |
+| Arrastar entre as abas (1.7) | `ui/components/TabSwipe.kt`, `Box` do `NavHost` em `ui/Nav.kt`, `TabSwipeInner` em `PlanScreens.kt` |
+| Organizar esta tela (1.7) | `domain/Layouts.kt`, `ui/components/Arrange.kt`, os `Block` de `HomeScreen.kt`, `InsightsScreen.kt`, `PlanScreens.kt` e `WalletScreens.kt` |
+| Widget (1.7) | `domain/WidgetContent.kt`, `data/WidgetPrefs.kt`, `ui/widget/CryoWidget.kt`, `ui/widget/WidgetConfigActivity.kt`, `res/xml/cryo_widget_info.xml` |
 
 ## 10. Testes
 
-Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 1.100 testes:
+Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 1.180 testes:
 
 | Arquivo | O que cobre |
 |---|---|
@@ -624,6 +707,10 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 | `MonthEndTest`, `IncomePlanTest`, `BudgetBillsTest`, `WhisperModelStoreTest`, `SourceTreeTest` | 1.6: o fim do mês (com os orçamentos), o orçamento pela renda e com as contas fixas, o modelo de voz baixado, nenhum binário no repositório |
 | `AccountStatementTest`, `StatementTest`, `EntryDefaultsTest`, `BillSkipTest`, `YearOutlookTest`, `GoalForecastTest`, `Screens16Test` | 1.6 (lotes LA): extrato da conta, filtro por conta, último dia e fatura da tela, pular o mês (com o backup), o ano, as metas e as imagens 106–114 |
 | `InboxTest`, `GeneralBudgetTest`, `MonthEndTest`, `ScreensVisualTest` | Reforma visual da 1.6 (LA9–LA13): a central (grupos, ordem, o sino, o destaque, nada repetido, o "visto" só em HMAC), o Geral (o gasto que conta, a sugestão, o dividido, nunca vira categoria), o fim do mês real (a soma das linhas, nada estimado) e as imagens 115–125 |
+| `CrashSmokeTest`, `HeatLevelsTest`, `InsightsFlowTest` | 1.7: todas as telas em seis situações difíceis (RNF-EST-01); os seis níveis do calendário e as iniciais da semana (JVM puro); a saúde no topo, Barras e Funil com a escolha guardada, o toque que abre o Extrato (categoria no mês, "Outras categorias" nas saídas), o funil sem valores escondidos e as imagens 126–132 |
+| `LockRulesTest`, `LockFlowTest` | 1.7 (ERR-070): o tempo escolhido manda na volta, a folga do que o Cryo abriu, a janela protegida (JVM puro); no app de verdade: "Na hora" a cada volta, 1 minuto, girar a tela, voltar do seletor de arquivos, o modo privacidade, o Android antigo e a imagem 133 |
+| `TabSwipeTest`, `ArrangeTest` | 1.7: arrastar troca de aba, a borda livre, rolar não troca, as partes de Planejar, o gráfico do ano, árabe; a arrumação (blocos novos no lugar de sempre, nunca tudo escondido, o texto guardado, a folha, o Início, o backup) e a imagem 134 |
+| `WidgetTest`, `WidgetFlowTest` | 1.7: a escolha guardada, os mesmos números do app, só o que foi escolhido, os tamanhos e o Android 11 desenhados de verdade (imagens 135–137c, pelo `GlanceRemoteViews`), a tela de editar (138); "Lançar" abre o campo de escrever, passa pelo bloqueio e sai do modo de teste |
 | `RecurrenceScheduledTest`, `DebtProjectionTest`, `BackupEnvelopeTest`, `WhisperEngineGuardTest` | Auditoria da 1.6 (ERR-060 a ERR-066): agendado × recorrência, parcelas de dívida na projeção, backup aberto com "cipher", fechar o Whisper com contas em andamento (mais os testes novos em `StatementImportTest`, `MonthEndTest`, `WhisperModelStoreTest` e `WhisperHostTest`) |
 | `EngineStabilityTest`, `EngineScalabilityTest`, `EnginePerformanceTest`, `EngineResourcesTest`, `EngineSecurityTest` | Os **500 testes de garantia** (RF-MOT-15), 100 casos cada; o de segurança roda no Robolectric (`ParameterizedRobolectricTestRunner`) |
 
@@ -635,7 +722,14 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
 - ViewModel com `viewModelScope`: esperar com `rule.waitUntil { ShadowLooper.idleMainLooper(); condição }` (veja `ImportFlowTest.waitFor`).
 - Itens de `LazyColumn` fora da tela não existem na árvore: rolar antes (`performScrollToNode`) ou esperar por textos do topo.
 - Animações infinitas (spinner) impedem o "idle": não deixar `CircularProgressIndicator` na tela enquanto o teste espera.
-- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 104 conta fixa paga por fora, 105 busca com período, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual), 106–114 lotes LA1–LA8, 115–125 reforma visual (`ScreensVisualTest`).
+- Numeração das imagens: 01–36 telas e fluxos (inclui backup), 37–43 importação, 44–46 modo desenvolvedor, 47–52 passeio, 53–57 motor, 58–62 voz, 63–68 protótipos dos avisos, 69–70 ilustrações, 71–81 avisos, momentos e painel do mês, 82–85 previsor, 86–88 perfil, 89–91 guia, 92–94 cartão, 100 importações feitas, 101–103 saldo depois de importar, 104 conta fixa paga por fora, 105 busca com período, 95–99 (pedidos do issue #3: lista de faturas, desfazer sem cobrir o botão, saldo mínimo, conta fixa anual), 106–114 lotes LA1–LA8, 115–125 reforma visual (`ScreensVisualTest`), 126–132 fluxo e calendário da 1.7 (`InsightsFlowTest`), 133 Ajustes do bloqueio (`LockFlowTest`), 134 organizar Análises
+  (`ArrangeTest`), 135–137c o widget (pequeno, médio, grande, patrimônio e metas, Android 11) e 138 editar o widget (`WidgetTest`).
+- **`CryoRoot("insights")` num teste com `createAndroidComposeRule`** dá "You must call setGraph() before calling getGraph()":
+  ali o `LaunchedEffect` da abertura roda antes do `NavHost` (que fica dentro do `Scaffold`, num subcompose) pôr o grafo. No
+  celular a ordem é outra (o NavHost compõe no mesmo quadro). Nos testes, abra `CryoRoot(null)` e toque na aba (veja
+  `InsightsFlowTest.app`).
+- **Imagem com um item da `LazyColumn` no alto**: `performScrollToKey("chave")` (põe o item no topo); `performScrollToNode`
+  só rola o mínimo e deixa a caixa cortada embaixo.
 - **`Navigator.tab(Routes.HOME)` a partir de uma tela empilhada não vai para o Início**: ele guarda as telas fechadas e as reabre
   na hora (é assim que a aba "lembra onde a pessoa estava"). Para ir mesmo ao Início use `Navigator.home()` (veja `showLesson`).
 - **Guia nos testes**: o `TestApp` desliga (`GuideStore.enabled = false`) e os fluxos com o `CryoApp` também (`guideOff`). Para
@@ -714,6 +808,20 @@ Robolectric 4.16.1 (JVM, sem celular) + Roborazzi (imagens das telas). Cerca de 
   Nunca devolva o arquivo para dentro do projeto (`SourceTreeTest`).
 - **Nada chama a ponte do Whisper por fora do `WhisperEngine`** (ERR-065): é ele que garante que nenhuma chamada chega a um
   modelo já solto. Para testar a ordem das chamadas entre threads, use uma `WhisperBridge` falsa (`WhisperEngineGuardTest`).
+- **Bloqueio nos testes** (1.7): a `LockScreen` chama a digital sozinha ao aparecer; desbloquear com `MainActivity.unlock()`
+  encerra essa pergunta (sem isso, a segunda volta não bloqueava). Depois de mudar o tempo, espere a tela ler o ajuste
+  (`rule.activity.lockAfterNow == segundos`): a leitura é por fluxo, fora da linha principal.
+- **Ajustes mudados no meio do teste chegam por fluxo**: nas esperas, chame `ShadowLooper.idleMainLooper()` (como em
+  `ArrangeTest`). E uma `LazyColumn` guarda a âncora da rolagem quando a arrumação chega depois da primeira composição: para
+  uma imagem estável, comece o teste já com os ajustes lidos (`remember { runBlocking { c.settings.current() } }`).
+- **Arrumação parcial não move nada**: `ScreenLayout` só reordena o que está na ordem guardada; o app sempre guarda a ordem
+  inteira (`moved`). Teste com a ordem inteira.
+- **Imagens do widget**: `GlanceRemoteViews().compose(ctx, DpSize)` (`@OptIn(androidx.glance.appwidget.ExperimentalGlanceRemoteViewsApi::class)`)
+  devolve o `RemoteViews` de verdade; `apply` numa `FrameLayout`, medir, desenhar num `Bitmap` (veja `WidgetTest.render`).
+  O `cornerRadius` do Glance só funciona no Android 12+: antes, o fundo é a forma pronta (`widget_bg`).
+- **Nada de `Button` do Glance**: o `PrdConformanceTest` procura `Button(` nas telas; o "Lançar" do widget é uma `Box` clicável.
+- **Abrir a `MainActivity` com um `Intent` próprio** (o "Lançar" do widget, os avisos): `createEmptyComposeRule()` e
+  `ActivityScenario.launch<MainActivity>(intent)` (veja `WidgetFlowTest`); o `createAndroidComposeRule` já abre a dele.
 
 ## 11. Publicar uma versão
 
@@ -756,11 +864,16 @@ desligadas (o perfil de inicialização saía diferente em cada máquina). JDK 2
   profundidade; motor financeiro e previsor conferido no passado; backup com senha e proteção dos dados; voz no aparelho com o
   Whisper; avisos inteligentes, sons, momentos e ilustrações próprias; painel do mês; auditoria e biblioteca de erros como lei;
   contas fixas que se acertam com o extrato; perfil; guia "Aprender o Cryo"; no cartão, estorno, escolha da fatura e ajustar total.
-- **1.6** (21/11/2026, no GitHub; no F-Droid depois do merge request da receita): modelo de voz fora do APK (F-Droid), o fim do mês real (renda −
+- **1.6** (21/11/2026; Release no GitHub em 22/11/2026; no F-Droid depois do merge request da receita): modelo de voz fora do APK (F-Droid), o fim do mês real (renda −
   despesas, nada estimado), orçamento pela renda, com as contas fixas e o Geral, russo, ucraniano, árabe e hebraico, os lotes
   LA1–LA8 (saúde no Início, extrato da conta, filtro por conta, previstas e pular o mês, último dia e fatura da tela, o ano e as
   metas, a lista que tremia) e a reforma visual LA9–LA13 (Início em blocos, central de avisos com o sino, tons pastel por
   prioridade, Análises e Planejar resumidos, Ajustes por tipo e a voz numa tela própria).
+- **1.7** (pronta para o teste em 23/11/2026): o bloqueio por tempo e o modo privacidade (issues #6 e #7), o widget na tela
+  inicial (Jetpack Glance), arrastar entre as abas, organizar os blocos de cada tela, o funil de verdade, a saúde no topo de
+  Análises, o fluxo numa caixa só com Barras e Funil e o toque que abre as movimentações, o calendário de calor nas cores da
+  temperatura e a caça a travamentos (teste de fumaça em todas as telas; a voz que fechava o app com um separador de linha
+  incomum, as iniciais da semana em todas as línguas, o fluxo sem valores quando escondidos).
 
 Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
 
@@ -882,6 +995,30 @@ Detalhes de cada uma em `CHANGELOG.md` (inglês) e `docs/CHANGELOG.pt-BR.md`.
   sinal (sempre há ícone ou texto), e a profundidade continua.
 - **Dados de exemplo escalados por moeda** com fatores inteiros (as contas dos exemplos continuam batendo); real, dólar, euro,
   libra e as outras de valor parecido ficam com os mesmos números.
+- **Widget com o Jetpack Glance** (1.7, PRC-07, aprovado pelo Hanry na DLA de 23/11/2026 "só se o F-Droid não impedir"):
+  escrever o widget à mão (RemoteViews e um layout XML por tamanho) seria muito mais código para manter, e o Glance é do
+  próprio Android (AndroidX, Apache-2.0, sem rede, sem código nativo). Conferido em 23/11/2026 com o fdroidserver 2.4.5: o
+  verificador do código (`scanner.scan_source`, o mesmo que o servidor do F-Droid roda antes de compilar; com o Firebase
+  posto de propósito numa cópia ele reclama, então a conferência é de verdade) e o do APK (`fdroid scanner`) sem nenhum
+  problema; as mesmas permissões e as mesmas bibliotecas nativas da 1.6; 6 módulos novos, todos `androidx`. O APK cresce
+  ~0,8 MB (o Glance traz ~960 layouts prontos). A lista de assinaturas mais nova (`-r`, em fdroid.gitlab.io) não abre
+  daqui: o verificador usou a que vem com ele. Repetir a conferência ao trocar a versão do Glance (`docs/fdroid/COMO-ATUALIZAR.md`).
+- **O widget mostra os valores mesmo com o bloqueio e com "Esconder valores"** (decisão do Hanry, 23/11/2026): pôr um widget
+  na tela é escolher a conveniência. Por isso ele nunca abre nada por fora do bloqueio (tocar abre o app, que pede o
+  desbloqueio) e a tela de editar só mostra escolhas, nunca dados. Sempre os dados de verdade, como os avisos.
+- **Bloqueio por tempo** (1.7, issues #6 e #7): Na hora, 1, 5 ou 15 minutos; o padrão continua 1 minuto (o de sempre). Voltar
+  do que o próprio Cryo abriu (escolher um arquivo, o navegador do modelo de voz, compartilhar) tem 5 minutos de folga, senão
+  "Na hora" pediria o desbloqueio no meio de uma importação. O **modo privacidade** é o `FLAG_SECURE` (print e gravação
+  saem pretos); no Android 12 ou anterior ele vem ligado com o bloqueio, porque ali não existe outro jeito de esconder a
+  miniatura de Recentes (`setRecentsScreenshotEnabled` é do Android 13).
+- **Arrastar entre as abas** (1.7): só o gesto claramente de lado (1,5 vez mais de lado que para cima) e nunca nos 48 dp de
+  cada borda, que são do gesto de voltar do Android; listas e gráficos que arrastam de lado ficam fora (`noTabSwipe`).
+- **A arrumação de cada tela é um texto curto** ("a,-b,c": a ordem e os escondidos) numa chave do DataStore por tela e no
+  backup (`"layout"`), sem migração do banco. Um bloco novo de uma versão futura entra logo depois do vizinho de sempre, e
+  pelo menos um bloco fica à vista.
+- **O funil escorre** (1.7, LA4: "mais com cara de funil, saltado e clicável"): a boca é o dinheiro do mês e cada faixa
+  estreita pelo que saiu para um destino, até o que sobrou; de onde o dinheiro veio fica em pílulas acima. Faixas com
+  sombra, lado mais escuro e brilho (o "saltado"), e cada uma afunda um pouco ao toque.
 
 Correções da primeira revisão da 1.3 (todas feitas e conferidas na revisão final): pagamento de fatura importado duas vezes; chaves
 globais escondendo movimentações; ano errado em datas sem ano; vazamentos no relatório anônimo (cabeçalhos, nome do arquivo);
@@ -901,9 +1038,9 @@ confirmação; caixa de marcar da conferência sem descrição para leitores de 
 ## 14. Roadmap (prioridades do Hanry)
 
 1. **1.3** e **1.4**: publicadas no GitHub (06/11/2026); receita do F-Droid atualizada (!56186, 07/11/2026): acompanhar a 1.4 na loja.
-2. **1.5**: publicada no GitHub (16/11/2026); não vai para o F-Droid. **1.6**: lançada no GitHub em 21/11/2026; entra no F-Droid quando o merge request da receita for aceito. Próxima: **1.6.1**.
+2. **1.5**: publicada no GitHub (16/11/2026); não vai para o F-Droid. **1.6**: publicada no GitHub (Releases de 22/11/2026); entra no F-Droid quando o merge request da receita for aceito. **1.7**: pronta para o teste do Hanry (23/11/2026); não precisa de merge request no F-Droid.
 3. Revisão das traduções por quem fala cada língua (RF-LNG-08).
-4. Depois da 1.6 (a próxima será a 1.7, proposta no PRD): widgets na tela inicial; dívida quitada e última parcela como momentos (RF-MOM-04);
+4. Depois da 1.7 (a 1.8, proposta no PRD): importar o banco do xpenc (LA5, issue #5); contas a receber e as outras ideias da olhada no Tally; dívida quitada e última parcela como momentos (RF-MOM-04);
    as lições que ficaram fora do guia (esconder valores, transferir, calendário, backup com senha).
 5. Importação: aprender os formatos dos bancos que o Hanry usa (com relatório anônimo, nunca o arquivo real).
 

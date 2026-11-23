@@ -137,6 +137,12 @@ import java.time.YearMonth
 import io.github.h3yk0.cryo.ui.components.BottomBarSurface
 import io.github.h3yk0.cryo.ui.components.CryoButton
 import io.github.h3yk0.cryo.ui.components.CryoSheet
+import io.github.h3yk0.cryo.ui.components.noTabSwipe
+import io.github.h3yk0.cryo.ui.components.ArrangeGroup
+import io.github.h3yk0.cryo.ui.components.ArrangeSheet
+import io.github.h3yk0.cryo.ui.components.Block
+import io.github.h3yk0.cryo.ui.components.OrganizeButton
+import io.github.h3yk0.cryo.ui.components.arranged
 
 /* =============================== Carteira =============================== */
 
@@ -149,140 +155,151 @@ fun WalletScreen() {
     val l = rememberLedger() ?: return LoadingBox()
     val nav = LocalNav.current
     val hide = LocalSettings.current.hideValues
+    val walletLayout = LocalSettings.current.layout(io.github.h3yk0.cryo.domain.Layouts.WALLET)
+    var organizing by rememberSaveable { mutableStateOf(false) }
     Scaffold(topBar = { CryoTopBar(Res.s(R.string.wallet_carteira), onBack = nav::back) }, contentWindowInsets = WindowInsets(0, 0, 0, 0)) { pad ->
         LazyColumn(Modifier.fillMaxSize().padding(pad), contentPadding = PaddingValues(bottom = 32.dp)) {
-            item {
-                // DS-PROF-02: o patrimônio é o destaque da tela, num cartão.
-                Column(Modifier.fillMaxWidth().padding(horizontal = Depth.Margin, vertical = 6.dp).depthCard().padding(18.dp)) {
-                    Text(Res.s(R.string.home_net_worth), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    MoneyText(l.netWorth, style = MaterialTheme.typography.displaySmall)
-                    Spacer(Modifier.height(12.dp))
-                    WorthLine(Res.s(R.string.home_accounts), l.totalBalance)
-                    WorthLine(Res.s(R.string.home_investments), l.totalInvestments)
-                    WorthLine(Res.s(R.string.home_goals), l.totalGoals)
-                    WorthLine(Res.s(R.string.wallet_cartoes_pagar), -l.s.cards.sumOf { l.cardOutstanding(it.id) })
-                    if (l.totalDebts != 0L) WorthLine(Res.s(R.string.home_shortcut_debts), -l.totalDebts)
+            // RF-ORG (1.7, LA8): as partes da Carteira são blocos que a pessoa arruma (os arquivados ficam no fim).
+            arranged(walletLayout, listOf(
+                Block("patrimonio", Res.s(R.string.home_net_worth)) {
+                item(key = "patrimonio") {
+                    // DS-PROF-02: o patrimônio é o destaque da tela, num cartão.
+                    Column(Modifier.fillMaxWidth().padding(horizontal = Depth.Margin, vertical = 6.dp).depthCard().padding(18.dp)) {
+                        Text(Res.s(R.string.home_net_worth), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        MoneyText(l.netWorth, style = MaterialTheme.typography.displaySmall)
+                        Spacer(Modifier.height(12.dp))
+                        WorthLine(Res.s(R.string.home_accounts), l.totalBalance)
+                        WorthLine(Res.s(R.string.home_investments), l.totalInvestments)
+                        WorthLine(Res.s(R.string.home_goals), l.totalGoals)
+                        WorthLine(Res.s(R.string.wallet_cartoes_pagar), -l.s.cards.sumOf { l.cardOutstanding(it.id) })
+                        if (l.totalDebts != 0L) WorthLine(Res.s(R.string.home_shortcut_debts), -l.totalDebts)
+                    }
                 }
-            }
-
-            item {
-                CryoSection(Res.s(R.string.home_accounts), action = { AddButton(Res.s(R.string.wallet_nova)) { nav.go(Routes.accountEdit()) } }) {
-                    if (l.activeAccounts.isEmpty()) {
-                        Text(Res.s(R.string.wallet_nenhuma_conta_ainda), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    l.activeAccounts.forEach { a ->
-                        val b = l.balance(a.id)
-                        CryoListRow(
-                            a.name,
-                            subtitle = accountTypeName(a.type) + if (!a.includeInTotal) Res.s(R.string.wallet_fora_total) else "",
-                            leading = { IconBadge(accountIcon(a.type), Color(a.color)) },
-                            trailing = { MoneyText(b, style = MaterialTheme.typography.titleSmall, color = if (b < 0) CryoTheme.colors.expense else Color.Unspecified) },
-                            onClick = { nav.go(Routes.account(a.id)) },
-                        )
-                    }
-                    if (l.activeAccounts.size >= 2) {
-                        TextButton(onClick = { nav.go(Routes.txNew(TxType.TRANSFER)) }, contentPadding = PaddingValues(horizontal = 0.dp)) {
-                            Icon(Icons.Rounded.SwapHoriz, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.wallet_transferir_entre_contas))
+                },
+                Block("contas", Res.s(R.string.home_accounts)) {
+                item(key = "contas") {
+                    CryoSection(Res.s(R.string.home_accounts), action = { AddButton(Res.s(R.string.wallet_nova)) { nav.go(Routes.accountEdit()) } }) {
+                        if (l.activeAccounts.isEmpty()) {
+                            Text(Res.s(R.string.wallet_nenhuma_conta_ainda), color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                    }
-                }
-            }
-
-            item {
-                CryoSection(Res.s(R.string.wallet_cartoes_credito), action = { AddButton(Res.s(R.string.wallet_novo)) { nav.go(Routes.cardEdit()) } }) {
-                    if (l.activeCards.isEmpty()) {
-                        Text(Res.s(R.string.wallet_nenhum_cartao_cadastrado), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    l.activeCards.forEach { c ->
-                        val inv = l.focusInvoice(c)
-                        val st = inv.status(l.today)
-                        CryoListRow(
-                            c.name,
-                            subtitle = invoiceStatusText(st, inv.due, l),
-                            leading = { IconBadge(Icons.Rounded.CreditCard, Color(c.color)) },
-                            trailing = { MoneyText(if (st == InvoiceStatus.OPEN) inv.total else inv.remaining, style = MaterialTheme.typography.titleSmall) },
-                            onClick = { nav.go(Routes.card(c.id)) },
-                        ) {
-                            Spacer(Modifier.height(8.dp))
-                            UsageBar((c.limitAmount - l.availableLimit(c)).toFloat() / c.limitAmount.coerceAtLeast(1), height = 6.dp, baseColor = Color(c.color))
+                        l.activeAccounts.forEach { a ->
+                            val b = l.balance(a.id)
+                            CryoListRow(
+                                a.name,
+                                subtitle = accountTypeName(a.type) + if (!a.includeInTotal) Res.s(R.string.wallet_fora_total) else "",
+                                leading = { IconBadge(accountIcon(a.type), Color(a.color)) },
+                                trailing = { MoneyText(b, style = MaterialTheme.typography.titleSmall, color = if (b < 0) CryoTheme.colors.expense else Color.Unspecified) },
+                                onClick = { nav.go(Routes.account(a.id)) },
+                            )
                         }
-                    }
-                }
-            }
-
-            item {
-                CryoSection(
-                    Res.s(R.string.home_shortcut_debts),
-                    onClick = if (l.s.debts.isNotEmpty()) ({ nav.go(Routes.DEBTS) }) else null,
-                    action = if (l.s.debts.isEmpty()) ({ AddButton(Res.s(R.string.wallet_nova)) { nav.go(Routes.debtEdit()) } }) else null,
-                ) {
-                    if (l.debtOverview.open.isEmpty()) {
-                        Text(
-                            if (l.s.debts.isEmpty()) {
-                                Res.s(R.string.wallet_emprestimos_financiamentos_acordos_ou)
-                            } else {
-                                Res.s(R.string.wallet_nenhuma_divida_aberto_veja)
-                            },
-                            style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    } else {
-                        DebtSummaryContent(l, hide)
-                    }
-                }
-            }
-
-            item {
-                CryoSection(Res.s(R.string.home_investments), action = { AddButton(Res.s(R.string.wallet_novo)) { nav.go(Routes.investmentEdit()) } }) {
-                    if (l.activeInvestments.isEmpty()) {
-                        Text(Res.s(R.string.wallet_cadastre_onde_seu_dinheiro), color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    } else {
-                        Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(bottom = 8.dp)) {
-                            Column(Modifier.weight(1f)) {
-                                Text(Res.s(R.string.wallet_total_investido_hoje), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                MoneyText(l.totalInvestments, style = MaterialTheme.typography.headlineSmall)
+                        if (l.activeAccounts.size >= 2) {
+                            TextButton(onClick = { nav.go(Routes.txNew(TxType.TRANSFER)) }, contentPadding = PaddingValues(horizontal = 0.dp)) {
+                                Icon(Icons.Rounded.SwapHoriz, null); Spacer(Modifier.width(8.dp)); Text(Res.s(R.string.wallet_transferir_entre_contas))
                             }
-                            Column(horizontalAlignment = Alignment.End) {
-                                Text(Res.s(R.string.home_yield), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                MoneyText(
-                                    l.totalYield, signed = true, style = MaterialTheme.typography.titleMedium,
-                                    color = if (l.totalYield >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+                        }
+                    }
+                }
+                },
+                Block("cartoes", Res.s(R.string.wallet_cartoes_credito)) {
+                item(key = "cartoes") {
+                    CryoSection(Res.s(R.string.wallet_cartoes_credito), action = { AddButton(Res.s(R.string.wallet_novo)) { nav.go(Routes.cardEdit()) } }) {
+                        if (l.activeCards.isEmpty()) {
+                            Text(Res.s(R.string.wallet_nenhum_cartao_cadastrado), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        l.activeCards.forEach { c ->
+                            val inv = l.focusInvoice(c)
+                            val st = inv.status(l.today)
+                            CryoListRow(
+                                c.name,
+                                subtitle = invoiceStatusText(st, inv.due, l),
+                                leading = { IconBadge(Icons.Rounded.CreditCard, Color(c.color)) },
+                                trailing = { MoneyText(if (st == InvoiceStatus.OPEN) inv.total else inv.remaining, style = MaterialTheme.typography.titleSmall) },
+                                onClick = { nav.go(Routes.card(c.id)) },
+                            ) {
+                                Spacer(Modifier.height(8.dp))
+                                UsageBar((c.limitAmount - l.availableLimit(c)).toFloat() / c.limitAmount.coerceAtLeast(1), height = 6.dp, baseColor = Color(c.color))
+                            }
+                        }
+                    }
+                }
+                },
+                Block("dividas", Res.s(R.string.home_debts)) {
+                item(key = "dividas") {
+                    CryoSection(
+                        Res.s(R.string.home_shortcut_debts),
+                        onClick = if (l.s.debts.isNotEmpty()) ({ nav.go(Routes.DEBTS) }) else null,
+                        action = if (l.s.debts.isEmpty()) ({ AddButton(Res.s(R.string.wallet_nova)) { nav.go(Routes.debtEdit()) } }) else null,
+                    ) {
+                        if (l.debtOverview.open.isEmpty()) {
+                            Text(
+                                if (l.s.debts.isEmpty()) {
+                                    Res.s(R.string.wallet_emprestimos_financiamentos_acordos_ou)
+                                } else {
+                                    Res.s(R.string.wallet_nenhuma_divida_aberto_veja)
+                                },
+                                style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        } else {
+                            DebtSummaryContent(l, hide)
+                        }
+                    }
+                }
+                },
+                Block("investimentos", Res.s(R.string.home_investments)) {
+                item(key = "investimentos") {
+                    CryoSection(Res.s(R.string.home_investments), action = { AddButton(Res.s(R.string.wallet_novo)) { nav.go(Routes.investmentEdit()) } }) {
+                        if (l.activeInvestments.isEmpty()) {
+                            Text(Res.s(R.string.wallet_cadastre_onde_seu_dinheiro), color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        } else {
+                            Row(verticalAlignment = Alignment.Bottom, modifier = Modifier.padding(bottom = 8.dp)) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(Res.s(R.string.wallet_total_investido_hoje), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    MoneyText(l.totalInvestments, style = MaterialTheme.typography.headlineSmall)
+                                }
+                                Column(horizontalAlignment = Alignment.End) {
+                                    Text(Res.s(R.string.home_yield), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    MoneyText(
+                                        l.totalYield, signed = true, style = MaterialTheme.typography.titleMedium,
+                                        color = if (l.totalYield >= 0) CryoTheme.colors.income else CryoTheme.colors.expense,
+                                    )
+                                }
+                            }
+                            // RF-MOT-09: a carteira toda, ao ano, contando cada aporte e resgate na sua data.
+                            val portfolio = remember(l) { Returns.of(l, null) }
+                            portfolio?.annual?.let {
+                                Text(
+                                    Res.s(R.string.engine_return_portfolio, Num.percent1(it)), style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp),
+                                )
+                            }
+                            // RF-PRV-07: onde a carteira pode estar, se continuar como foi (o mais provável dos cenários).
+                            rememberEngine()?.portfolioOutlook?.horizons?.lastOrNull()?.let { h ->
+                                Text(
+                                    Res.s(R.string.prv_inv_portfolio, h.years, if (LocalSettings.current.hideValues) Money.HIDDEN else Money.format(h.mid)),
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(bottom = 8.dp),
                                 )
                             }
                         }
-                        // RF-MOT-09: a carteira toda, ao ano, contando cada aporte e resgate na sua data.
-                        val portfolio = remember(l) { Returns.of(l, null) }
-                        portfolio?.annual?.let {
-                            Text(
-                                Res.s(R.string.engine_return_portfolio, Num.percent1(it)), style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp),
+                        l.activeInvestments.forEach { i ->
+                            val y = l.yieldOf(i.id)
+                            CryoListRow(
+                                i.name,
+                                subtitle = investmentKindName(i.kind),
+                                leading = { IconBadge(Icons.AutoMirrored.Rounded.TrendingUp, Color(i.color)) },
+                                trailing = {
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        MoneyText(l.investmentValue(i.id), style = MaterialTheme.typography.titleSmall)
+                                        if (y != 0L) MoneyText(y, signed = true, style = MaterialTheme.typography.bodySmall, color = if (y > 0) CryoTheme.colors.income else CryoTheme.colors.expense)
+                                    }
+                                },
+                                onClick = { nav.go(Routes.investment(i.id)) },
                             )
                         }
-                        // RF-PRV-07: onde a carteira pode estar, se continuar como foi (o mais provável dos cenários).
-                        rememberEngine()?.portfolioOutlook?.horizons?.lastOrNull()?.let { h ->
-                            Text(
-                                Res.s(R.string.prv_inv_portfolio, h.years, if (LocalSettings.current.hideValues) Money.HIDDEN else Money.format(h.mid)),
-                                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(bottom = 8.dp),
-                            )
-                        }
-                    }
-                    l.activeInvestments.forEach { i ->
-                        val y = l.yieldOf(i.id)
-                        CryoListRow(
-                            i.name,
-                            subtitle = investmentKindName(i.kind),
-                            leading = { IconBadge(Icons.AutoMirrored.Rounded.TrendingUp, Color(i.color)) },
-                            trailing = {
-                                Column(horizontalAlignment = Alignment.End) {
-                                    MoneyText(l.investmentValue(i.id), style = MaterialTheme.typography.titleSmall)
-                                    if (y != 0L) MoneyText(y, signed = true, style = MaterialTheme.typography.bodySmall, color = if (y > 0) CryoTheme.colors.income else CryoTheme.colors.expense)
-                                }
-                            },
-                            onClick = { nav.go(Routes.investment(i.id)) },
-                        )
                     }
                 }
-            }
+                },
+            ))
 
             val archived = l.s.accounts.count { it.archived } + l.s.cards.count { it.archived } + l.s.investments.count { it.archived }
             if (archived > 0) {
@@ -295,7 +312,17 @@ fun WalletScreen() {
                     }
                 }
             }
+            item(key = "organizar") { OrganizeButton(Modifier.padding(horizontal = Depth.Margin, vertical = 12.dp)) { organizing = true } }
         }
+    }
+    if (organizing) {
+        ArrangeSheet(listOf(ArrangeGroup(io.github.h3yk0.cryo.domain.Layouts.WALLET, null, listOf(
+            "patrimonio" to Res.s(R.string.home_net_worth),
+            "contas" to Res.s(R.string.home_accounts),
+            "cartoes" to Res.s(R.string.wallet_cartoes_credito),
+            "dividas" to Res.s(R.string.home_debts),
+            "investimentos" to Res.s(R.string.home_investments),
+        ))), onDismiss = { organizing = false })
     }
 }
 
@@ -581,7 +608,7 @@ fun AccountDetailScreen(id: Long) {
             }
             item {
                 Row(
-                    Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
+                    Modifier.fillMaxWidth().noTabSwipe().horizontalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 4.dp),
                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
                     listOf(R.string.txs_tudo, R.string.txs_saidas, R.string.txs_entradas, R.string.txs_transferencias_outros).forEachIndexed { i, res ->
